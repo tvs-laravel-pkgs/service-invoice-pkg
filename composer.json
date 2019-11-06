@@ -1,0 +1,31 @@
+{
+    "name": "abs/cn-dn-pkg",
+    "description": "For managing CN and DN invoices",
+    "type": "library",
+    "require":
+    {},
+    "require-dev":
+    {},
+    "authors": [
+    {
+        "name": "Abdul",
+        "email": "abdulpro@gmail.com"
+    }],
+    "minimum-stability": "dev",
+    "extra":
+    {
+        "laravel":
+        {
+            "providers": [
+                "Abs\\CnDnPkg\\CnDnPkgServiceProvider"
+            ]
+        }
+    },
+    "autoload":
+    {
+        "psr-4":
+        {
+            "Abs\\CnDnPkg\\": "src/"
+        }
+    }
+}
