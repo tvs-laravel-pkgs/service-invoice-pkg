@@ -1,6 +1,6 @@
 <?php
 
-Route::group(['namespace' => 'Abs\CnDnPkg', 'middleware' => ['web', 'auth'], 'prefix' => 'cn-dn-pkg'], function () {
-	Route::get('/dns/get-list', 'DnController@getDnList')->name('getDnList');
-	Route::get('/dn/save', 'DnController@saveDn')->name('saveDn');
+Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'auth'], 'prefix' => 'cn-dn-pkg'], function () {
+	Route::get('/service-invoices/get-list', 'ServiceInvoiceController@getServiceInvoiceList')->name('getServiceInvoiceList');
+	Route::get('/service-invoice/save', 'ServiceInvoiceController@saveServiceInvoice')->name('saveServiceInvoice');
 });

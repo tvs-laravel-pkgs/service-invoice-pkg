@@ -1,13 +1,13 @@
 <?php
 
-namespace Abs\CnDnPkg;
+namespace Abs\ServiceInvoicePkg;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class CnDnItem extends Model {
+class ServiceInvoiceItem extends Model {
 	use SoftDeletes;
-	protected $table = 'cn_dn_items';
+	protected $table = 'service_invoice_items';
 	protected $fillable = [
 		'created_by_id',
 		'updated_by_id',

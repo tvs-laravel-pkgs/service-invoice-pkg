@@ -1,10 +1,10 @@
 <?php
 
-namespace Abs\CnDnPkg;
+namespace Abs\ServiceInvoicePkg;
 
 use Illuminate\Support\ServiceProvider;
 
-class CnDnPkgServiceProvider extends ServiceProvider {
+class ServiceInvoicePkgServiceProvider extends ServiceProvider {
 	/**
 	 * Register services.
 	 *

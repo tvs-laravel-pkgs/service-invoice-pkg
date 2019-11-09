@@ -1,6 +1,6 @@
 {
-    "name": "abs/cn-dn-pkg",
-    "description": "For managing CN and DN invoices",
+    "name": "abs/service-invoice-pkg",
+    "description": "For managing Service invoices",
     "type": "library",
     "require":
     {},
@@ -17,7 +17,7 @@
         "laravel":
         {
             "providers": [
-                "Abs\\CnDnPkg\\CnDnPkgServiceProvider"
+                "Abs\\ServiceInvoicePkg\\ServiceInvoicePkgServiceProvider"
             ]
         }
     },
@@ -25,7 +25,7 @@
     {
         "psr-4":
         {
-            "Abs\\CnDnPkg\\": "src/"
+            "Abs\\ServiceInvoicePkg\\": "src/"
         }
     }
 }
