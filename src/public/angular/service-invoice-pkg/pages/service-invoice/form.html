@@ -1,0 +1,361 @@
+<!-- Content Wrap -->
+<div class="content-wrap cndn-wrap">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-inner">
+            <div class="page-header-content-left">
+                <div class="page-header-content button-block">
+                    <a href="{{$ctrl.list_url}}" type="button" class="btn-back btn-img"><img class="img-responsive" src="./public/theme/img/content/previous.svg" alt="Back" /></a>
+                </div><!-- Page Header Content -->
+                <div class="page-header-content title-block">
+                    <h1 class="title"><b>New Debit Note</b></h1>
+                    <!-- <p class="subtitle">Service Item category List / Form</p> -->
+                </div><!-- Page Header Content -->
+            </div><!-- Page Header Content Left -->
+        </div><!-- Page Header Inner -->
+    </div><!-- Page Header -->
+    <!-- Page Main Content -->
+    <div class="page-main-content form-content type2">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="page-form pb-80">
+                        <div class="flex-wrap">
+                            <ul class="flex-list bordered">
+                                <li class="flex-md-4">
+                                    <ul class="table-form-list">
+                                        <li>
+                                            <div class="table-form-list-wrap">
+                                                <label class="table-form-list-label">Branch <span class="mandatory">*</span></label>
+                                                <div class="table-form-list-control">
+                                                    <md-select class="type-sm" ng-model="$ctrl.service_invoice.branch_id" placeholder="Select Branch" md-on-close="clearSearchBranch()" data-md-container-class="selectdemoSelectHeader">
+                                                        <md-select-header class="demo-select-header">
+                                                            <input ng-model="searchBranch" type="search" placeholder="Search for a branch.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                                        </md-select-header>
+                                                        <md-optgroup label="branch">
+                                                            <md-option ng-value="branch.id" ng-repeat="branch in $ctrl.extras.branch_list | filter:searchBranch">{{branch.name}}</md-option>
+                                                        </md-optgroup>
+                                                    </md-select>
+                                                    <input type="hidden" name="branch_id" id="branch_id" value="{{$ctrl.service_invoice.branch_id}}" class="required">
+                                                </div><!-- Table Form List Control -->
+                                            </div><!-- Table Form List Wrap -->
+                                        </li>
+                                        <li>
+                                            <div class="table-form-list-wrap">
+                                                <label class="table-form-list-label">SBU <span class="mandatory">*</span></label>
+                                                <div class="table-form-list-control">
+                                                    <md-select class="type-sm" ng-model="$ctrl.service_invoice.sbu_id" placeholder="Select SBU" md-on-close="clearSearchSbu()" data-md-container-class="selectdemoSelectHeader">
+                                                        <md-select-header class="demo-select-header">
+                                                            <input ng-model="searchSbu" type="search" placeholder="Search for a sbu.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                                        </md-select-header>
+                                                        <md-optgroup label="sbu">
+                                                            <md-option ng-value="sbu.id" ng-repeat="sbu in $ctrl.extras.sbu_list | filter:searchSbu">{{sbu.name}}</md-option>
+                                                        </md-optgroup>
+                                                    </md-select>
+                                                    <input type="hidden" name="sbu_id" id="sbu_id" value="{{$ctrl.service_invoice.sbu_id}}" class="required">
+                                                </div><!-- Table Form List Control -->
+                                            </div><!-- Table Form List Wrap -->
+                                        </li>
+                                        <li>
+                                            <div class="table-form-list-wrap">
+                                                <label class="table-form-list-label">Category <span class="mandatory">*</span></label>
+                                                <div class="table-form-list-control">
+                                                    <md-select class="type-sm" ng-model="$ctrl.service_invoice.service_item_sub_category.category_id" placeholder="Select Category" md-on-close="clearSearchCategory()" data-md-container-class="selectdemoSelectHeader">
+                                                        <md-select-header class="demo-select-header">
+                                                            <input ng-model="searchCategory" type="search" placeholder="Search for a category.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                                        </md-select-header>
+                                                        <md-optgroup label="category">
+                                                            <md-option ng-value="category.id" ng-repeat="category in $ctrl.extras.category_list | filter:searchCategory">{{category.name}}</md-option>
+                                                        </md-optgroup>
+                                                    </md-select>
+                                                    <input type="hidden" name="category_id" id="category_id" value="{{$ctrl.service_invoice.service_item_sub_category.category_id}}" class="required">
+                                                </div><!-- Table Form List Control -->
+                                            </div><!-- Table Form List Wrap -->
+                                        </li>
+                                        <li>
+                                            <div class="table-form-list-wrap">
+                                                <label class="table-form-list-label">Sub Category <span class="mandatory">*</span></label>
+                                                <div class="table-form-list-control">
+                                                    <md-select class="type-sm" ng-model="$ctrl.service_invoice.sub_category_id" placeholder="Select sub category" md-on-close="clearSearchSubCategory()" data-md-container-class="selectdemoSelectHeader">
+                                                        <md-select-header class="demo-select-header">
+                                                            <input ng-model="searchSubCategory" type="search" placeholder="Search for a sub category.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                                        </md-select-header>
+                                                        <md-optgroup label="sub_category">
+                                                            <md-option ng-value="sub_category.id" ng-repeat="sub_category in $ctrl.extras.sub_category_list | filter:searchSubCategory">{{sub_category.name}}</md-option>
+                                                        </md-optgroup>
+                                                    </md-select>
+                                                    <input type="hidden" name="sub_category_id" id="sub_category_id" value="{{$ctrl.service_invoice.sub_category_id}}" class="required">
+                                                </div><!-- Table Form List Control -->
+                                            </div><!-- Table Form List Wrap -->
+                                        </li>
+                                    </ul><!-- Table Form List -->
+                                </li>
+                                <li class="flex-md-4">
+                                    <ul class="table-form-list">
+                                        <li>
+                                            <div class="table-form-list-wrap">
+                                                <label class="table-form-list-label">Invoice Date <span class="mandatory">*</span></label>
+                                                <div class="table-form-list-control">
+                                                    <div class="input-group date type-sm" data-provide="datepicker">
+                                                        <input name="invoice_date" type="text" class="form-control" placeholder="Select Invoice Date" readonly />
+                                                        <div class="input-group-addon">
+                                                            <img class="img-responsive" src="public/theme/img/content/calender-gray-icon.svg" alt="Calendar Image" />
+                                                        </div>
+                                                    </div><!-- Input Group -->
+                                                </div><!-- Table Form List Control -->
+                                            </div><!-- Table Form List Wrap -->
+                                        </li>
+                                        <li>
+                                            <div class="table-form-list-wrap">
+                                                <label class="table-form-list-label">Doc. Date <span class="mandatory">*</span></label>
+                                                <div class="table-form-list-control">
+                                                    <div class="input-group date type-sm" data-provide="datepicker">
+                                                        <input name="document_date" type="text" class="form-control" placeholder="Select Doc Date" readonly />
+                                                        <div class="input-group-addon">
+                                                            <img class="img-responsive" src="public/theme/img/content/calender-gray-icon.svg" alt="Calendar Image" />
+                                                        </div>
+                                                    </div><!-- Input Group -->
+                                                </div><!-- Table Form List Control -->
+                                            </div><!-- Table Form List Wrap -->
+                                        </li>
+                                        <li>
+                                            <div class="table-form-list-wrap">
+                                                <label class="table-form-list-label">Customer Code <span class="mandatory">*</span></label>
+                                                <div class="table-form-list-control">
+                                                    <input type="text" class="form-control type-sm" placeholder="Enter Customer Code" />
+                                                </div><!-- Table Form List Control -->
+                                            </div><!-- Table Form List Wrap -->
+                                        </li>
+                                        <li>
+                                            <input type="file" class="image_uploadify" accept="image/*,application/pdf" name="proposal_attachments[]" multiple>
+                                        </li>
+                                    </ul><!-- Table Form List -->
+                                </li>
+                                <li class="flex-md-4">
+                                    <div class="info-wrap">
+                                        <p class="info-content color-red right"><b>Invoice To</b></p>
+                                        <p class="info-title">Madurai Super Automobiles</p>
+                                        <p class="info-content-small italic">Customer Code : 786846484</p>
+                                    </div><!-- Info Wrap -->
+                                    <div class="info-wrap">
+                                        <p class="info-content"><b>+91 9898798987</b></p>
+                                        <p class="info-content">143 A New Garden Street, West mambalam, Chennai - 600029, Tamil Nadu.</p>
+                                        <div class="info-space"></div>
+                                        <p class="info-content">GST # 234284738374847</p>
+                                    </div><!-- Info Wrap -->
+                                </li>
+                            </ul><!-- Flex List -->
+                        </div><!-- Flex Wrap -->
+                        <div class="table-wrap-header">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5 class="table-wrap-title">Invoice Details</h5>
+                                </div><!-- Column -->
+                                <div class="col-md-6 text-right">
+                                    <a class="btn btn-secondary-dark btn-md type2" data-toggle="modal" data-target="#modal-cn-addnew">+ Add Item</a>
+                                </div><!-- Column -->
+                            </div><!-- Row -->
+                        </div><!-- Table Wrap Header -->
+                        <div class="table-wrap-body">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th class="action">Action</th>
+                                        <th>Item Code</th>
+                                        <th>Item Name</th>
+                                        <th>Description</th>
+                                        <th>Rate</th>
+                                        <th>Quantity</th>
+                                        <th>CGST</th>
+                                        <th>SGST</th>
+                                        <th>IGST</th>
+                                        <th>Total Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="action">
+                                            <a href="#!" class="">
+                                                <img class="img-responsive" src="./public/theme/img/table/cndn/edit.svg" alt="Edit" />
+                                            </a>
+                                            <a href="#!" class="">
+                                                <img class="img-responsive" src="./public/theme/img/table/cndn/delete.svg" alt="Delete" />
+                                            </a>
+                                        </td>
+                                        <td>G65876</td>
+                                        <td>Vehicle Sales</td>
+                                        <td>New Sales..</td>
+                                        <td>2,50,000</td>
+                                        <td>1</td>
+                                        <td>10,000</td>
+                                        <td>10,000</td>
+                                        <td>0</td>
+                                        <td>2,70,000</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="action">
+                                            <a href="#!" class="">
+                                                <img class="img-responsive" src="./public/theme/img/table/cndn/edit.svg" alt="Edit" />
+                                            </a>
+                                            <a href="#!" class="">
+                                                <img class="img-responsive" src="./public/theme/img/table/cndn/delete.svg" alt="Delete" />
+                                            </a>
+                                        </td>
+                                        <td>G65876</td>
+                                        <td>Vehicle Sales</td>
+                                        <td>New Sales..</td>
+                                        <td>2,50,000</td>
+                                        <td>1</td>
+                                        <td>10,000</td>
+                                        <td>10,000</td>
+                                        <td>0</td>
+                                        <td>2,70,000</td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th colspan="3"></th>
+                                        <th>Total</th>
+                                        <th>4,50,000</th>
+                                        <th>2</th>
+                                        <th>17,500</th>
+                                        <th>17,500</th>
+                                        <th>15,000</th>
+                                        <th>4,85,000</th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div><!-- Table Wrap Body -->
+                        <div class="page-form-footer">
+                            <div class="row">
+                                <div class="col-md-6 text-left">
+                                    <ul class="form-footer-list">
+                                        <li>
+                                            <span class="form-footer-label">Total Quantity</span>
+                                            <span class="form-footer-value">2</span>
+                                        </li>
+                                        <li>
+                                            <span class="form-footer-label">Total Amount</span>
+                                            <span class="form-footer-value">INR 4,85,000 <small>(4,50,000 + 35,000 GST)</small></span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <a href="#!" class="btn btn-white">Cancel</a>
+                                    <button class="btn btn-primary">Submit</button>
+                                </div>
+                            </div>
+                        </div><!-- Page Form Footer -->
+                    </div><!-- Page Form -->
+                </div><!-- Column -->
+            </div><!-- Row -->
+        </div><!-- Container -->
+    </div><!-- Page Main Content -->
+</div><!-- Content Wrap -->
+<!-- Modal -->
+<div class="modal fade" id="modal-cn-addnew" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-md fixed" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" class="icon ion-md-close"></span></button>
+                <h5 class="modal-title">Add Item to Invoice</h5>
+            </div><!-- Modal Header -->
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="table-form-list">
+                            <li>
+                                <div class="table-form-list-wrap">
+                                    <label class="table-form-list-label">Item Code <span class="mandatory">*</span></label>
+                                    <div class="table-form-list-control">
+                                        <input type="text" class="form-control type-sm" placeholder="Select Invoice Date" />
+                                    </div><!-- Table Form List Control -->
+                                </div><!-- Table Form List Wrap -->
+                            </li>
+                            <li>
+                                <div class="table-form-view-wrap">
+                                    <ul class="table-form-view-list">
+                                        <li class="list-12 border-bottom">
+                                            <span class="table-form-view-label">Item Name</span>
+                                            <span class="table-form-view-value">Two Wheeler Sales</span>
+                                        </li>
+                                        <li class="list-6 border-right">
+                                            <span class="table-form-view-label">COA Code</span>
+                                            <span class="table-form-view-value">1123</span>
+                                        </li>
+                                        <li class="list-6">
+                                            <span class="table-form-view-label">SAC Code</span>
+                                            <span class="table-form-view-value">2213</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul><!-- Table Form List -->
+                    </div><!-- Column -->
+                    <div class="col-md-6">
+                        <ul class="table-form-list">
+                            <li>
+                                <div class="table-form-list-wrap">
+                                    <label class="table-form-list-label">Description <span class="mandatory">*</span></label>
+                                    <div class="table-form-list-control">
+                                        <textarea class="form-control type-sm" rows="3" placeholder="Enter Description"></textarea>
+                                    </div><!-- Table Form List Control -->
+                                </div><!-- Table Form List Wrap -->
+                            </li>
+                            <li>
+                                <div class="table-form-list-wrap">
+                                    <label class="table-form-list-label">Quantity <span class="mandatory">*</span></label>
+                                    <div class="table-form-list-control">
+                                        <input type="text" class="form-control type-sm" placeholder="Enter Quantity" />
+                                    </div><!-- Table Form List Control -->
+                                </div><!-- Table Form List Wrap -->
+                            </li>
+                            <li>
+                                <div class="table-form-list-wrap">
+                                    <label class="table-form-list-label">Amount <span class="mandatory">*</span></label>
+                                    <div class="table-form-list-control">
+                                        <input type="text" class="form-control type-sm" placeholder="Select Amount" />
+                                    </div><!-- Table Form List Control -->
+                                </div><!-- Table Form List Wrap -->
+                            </li>
+                        </ul><!-- Table Form List -->
+                    </div><!-- Column -->
+                </div><!-- Row -->
+            </div><!-- Modal Body -->
+            <div class="modal-footer">
+                <div class="row">
+                    <div class="col-md-8 text-left">
+                        <div class="modal-footer-list-wrap">
+                            <ul class="modal-footer-list">
+                                <li>
+                                    <span class="modal-footer-list-label">Amount</span>
+                                    <span class="modal-footer-list-value">20,00,000</span>
+                                </li>
+                                <li>
+                                    <span class="modal-footer-list-label">CGST</span>
+                                    <span class="modal-footer-list-value">20,00,000</span>
+                                </li>
+                                <li>
+                                    <span class="modal-footer-list-label">SGST</span>
+                                    <span class="modal-footer-list-value">20,00,000</span>
+                                </li>
+                                <li>
+                                    <span class="modal-footer-list-label">IGST</span>
+                                    <span class="modal-footer-list-value">20,00,000</span>
+                                </li>
+                                <li class="color-red">
+                                    <span class="modal-footer-list-label">Total</span>
+                                    <span class="modal-footer-list-value">20,00,000</span>
+                                </li>
+                            </ul>
+                        </div><!-- Modal Footer List Wrap -->
+                    </div><!-- Column -->
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-white" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-default" data-dismiss="modal">Add</button>
+                    </div><!-- Column -->
+                </div><!-- Row -->
+            </div><!-- Modal Footer -->
+        </div><!-- Modal Content -->
+    </div><!-- Modal Dialog -->
+</div><!-- Modal -->

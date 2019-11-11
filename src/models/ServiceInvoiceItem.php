@@ -3,15 +3,19 @@
 namespace Abs\ServiceInvoicePkg;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ServiceInvoiceItem extends Model {
-	use SoftDeletes;
 	protected $table = 'service_invoice_items';
 	protected $fillable = [
-		'created_by_id',
-		'updated_by_id',
-		'deleted_by_id',
+		'service_invoice_id',
+		'service_item_id',
+		'description',
+		'qty',
+		'rate',
+		'sub_total',
 	];
 
+	public function serviceInvoice() {
+		return $this->belongsTo('Abs\AttributePkg\ServiceInvoice', 'service_invoice_id', 'id');
+	}
 }
