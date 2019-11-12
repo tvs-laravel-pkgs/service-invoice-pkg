@@ -15,6 +15,10 @@ class ServiceItemSubCategory extends Model {
 		'deleted_by_id',
 	];
 
+	public function serviceItemCategory() {
+		return $this->belongsTo('Abs\AttributePkg\ServiceItemCategory', 'category_id', 'id');
+	}
+
 	public static function createFromObject($record_data) {
 
 		$errors = [];

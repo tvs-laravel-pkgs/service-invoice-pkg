@@ -1,0 +1,68 @@
+<div class="content-wrap cndn-wrap">
+    <div class="page-header">
+        <div class="page-header-inner">
+            <div class="page-header-content-left">
+                <div class="page-header-content title-block">
+                    <h1 class="title type-2">Debit Notes</h1>
+                </div><!-- Page Header Content -->
+                <div class="page-header-content button-block">
+                    <button class="btn btn-bordered" data-toggle="modal" data-target="#filter"><i class="icon ion-md-funnel"></i>Filter</button>
+                </div><!-- Page Header Content -->
+            </div><!-- Page Header Content Left -->
+            <div class="page-header-content-right">
+                <div class="page-header-content search-block">
+                    <div class="search_filter">
+                        <label>
+                            <input type="search" id="search" class="form-control" placeholder="Search" />
+                            <button class="btn-clear search_clear">Clear</button>
+                        </label>
+                    </div><!-- Search Filter -->
+                </div><!-- Page Header Content -->
+                <div class="page-header-content button-block">
+                    <div class="dropdown">
+                        <a class="btn-extension dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                            <img class="img-responsive" src="./public/theme/img/content/extension-white.svg" alt="Extension" />
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu1">
+                            <li><a href="#">Create CN</a></li>
+                            <li><a href="#">Import</a></li>
+                        </ul>
+                    </div>
+                    <a href="#!/service-invoice-pkg/service-invoice/add" class="btn btn-primary">Add New</a>
+                </div><!-- Page Header Content -->
+            </div><!-- Page Header Content Right -->
+        </div><!-- Page Header Inner -->
+    </div><!-- Page Header -->
+    <div class="page-main-content list-page-content">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <table class="table" id="service-invoice-table" style="width: 100% !important;">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <div class="table-checkbox">
+                                        <input type="checkbox" id="parent" />
+                                        <label for="parent"></label>
+                                    </div>
+                                </th>
+                                <th class="action">Actions</th>
+                                <th>Invoice Date</th>
+                                <th>Invoice No</th>
+                                <th>Branch</th>
+                                <th>SBU</th>
+                                <th>Category</th>
+                                <th>Sub Category</th>
+                                <th>Customer Code</th>
+                                <th>Customer Name</th>
+                                <th>Total Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div><!-- Column -->
+            </div><!-- Row -->
+        </div><!-- Container -->
+    </div><!-- Page Main Content -->
+</div><!-- Content Wrap -->

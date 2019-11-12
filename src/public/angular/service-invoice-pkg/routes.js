@@ -13,7 +13,7 @@ app.config(['$routeProvider', function($routeProvider) {
     when('/service-invoice-pkg/service-invoice/edit/:id', {
         template: '<service-invoice-form></service-invoice-form>',
         title: 'Edit Service Invoice',
-    })
+    });
 
     //SERVICE ITEM CATEGORIES
     when('/service-invoice-pkg/service-item-category/list', {
