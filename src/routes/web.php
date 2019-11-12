@@ -15,4 +15,13 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 	Route::post('/service-invoice/service-item/search', 'ServiceInvoiceController@searchServiceItem')->name('searchServiceItem');
 	Route::post('/service-invoice/get-service-item-details', 'ServiceInvoiceController@getServiceItemDetails')->name('getServiceItemDetails');
 
+	//SERVICE ITEM CATEGORIES
+	Route::get('/service-item-categories/get-list', 'ServiceItemCategoryController@getServiceItemCategoryList')->name('getServiceItemCategoryList');
+	Route::get('/service-item-category/get-form-data/{id?}', 'ServiceItemCategoryController@getServiceItemCategoryFormData')->name('getServiceItemCategoryFormData');
+	Route::post('/service-item-category/save', 'ServiceItemCategoryController@saveServiceItemCategory')->name('saveServiceItemCategory');
+
+	//SERVICE ITEMS
+	Route::get('/service-items/get-list', 'ServiceItemController@getServiceItemList')->name('getServiceItemList');
+	Route::get('/service-item/get-form-data/{id?}', 'ServiceItemCategoryController@getServiceItemFormData')->name('getServiceItemFormData');
+	Route::post('/service-item/save', 'ServiceItemController@saveServiceItem')->name('saveServiceItem');
 });
