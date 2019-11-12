@@ -2,7 +2,9 @@
 
 namespace Abs\ServiceInvoicePkg;
 
+use Abs\ServiceInvoicePkg\ServiceItemCategory;
 use App\Company;
+use Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -17,6 +19,15 @@ class ServiceItemSubCategory extends Model {
 
 	public function serviceItemCategory() {
 		return $this->belongsTo('Abs\AttributePkg\ServiceItemCategory', 'category_id', 'id');
+	}
+
+	public static function getServiceItemSubCategories($service_item_category_id) {
+		$service_item_category = ServiceItemCategory::find($service_item_category_id);
+		if (!$service_item_category) {
+			return response()->json(['success' => false, 'error' => 'Service Item Category not found']);
+		}
+		$list = collect(ServiceItemSubCategory::where('category_id', $service_item_category_id)->where('company_id', Auth::user()->company_id)->select('name', 'id')->get())->prepend(['id' => '', 'name' => 'Select Sub Category']);
+		return response()->json(['success' => true, 'sub_category_list' => $list]);
 	}
 
 	public static function createFromObject($record_data) {

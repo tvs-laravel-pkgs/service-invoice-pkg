@@ -2,11 +2,15 @@
 
 namespace Abs\ServiceInvoicePkg;
 use Abs\ServiceInvoicePkg\ServiceInvoice;
+use Abs\ServiceInvoicePkg\ServiceItem;
 use Abs\ServiceInvoicePkg\ServiceItemCategory;
+use Abs\ServiceInvoicePkg\ServiceItemSubCategory;
+use App\Customer;
 use App\Http\Controllers\Controller;
 use App\Outlet;
 use App\Sbu;
 use Auth;
+use Illuminate\Http\Request;
 // use DB;
 // use Validator;
 use Yajra\Datatables\Datatables;
@@ -66,10 +70,11 @@ class ServiceInvoiceController extends Controller {
 			->make(true);
 	}
 
-	public function getServiceInvoiceFormdata($id = NULL) {
+	public function getFormData($id = NULL) {
 
 		if (!$id) {
 			$service_invoice = new ServiceInvoice;
+			$service_invoice->invoice_date = date('d-m-Y');
 			$this->data['action'] = 'Add';
 		} else {
 			$service_invoice = ServiceInvoice::with([
@@ -91,6 +96,41 @@ class ServiceInvoiceController extends Controller {
 		$this->data['service_invoice'] = $service_invoice;
 		$this->data['success'] = true;
 		return response()->json($this->data);
+	}
+
+	public function getServiceItemSubCategories($service_item_category_id) {
+		return ServiceItemSubCategory::getServiceItemSubCategories($service_item_category_id);
+	}
+
+	public function searchCustomer(Request $r) {
+		return Customer::searchCustomer($r);
+	}
+
+	public function getCustomerDetails(Request $request) {
+		$customer = Customer::find($request->customer_id);
+		if (!$customer) {
+			return response()->json(['success' => false, 'error' => 'Customer not found']);
+		}
+		$customer->formatted_address = $customer->getFormattedAddress();
+		return response()->json([
+			'success' => true,
+			'customer' => $customer,
+		]);
+	}
+
+	public function searchServiceItem(Request $r) {
+		return ServiceItem::searchServiceItem($r);
+	}
+
+	public function getServiceItemDetails(Request $request) {
+		$service_item = ServiceItem::find($request->service_item_id);
+		if (!$service_item) {
+			return response()->json(['success' => false, 'error' => 'Service Item not found']);
+		}
+		return response()->json([
+			'success' => true,
+			'service_item' => $service_item,
+		]);
 	}
 
 	public function saveFieldGroup(Request $request) {

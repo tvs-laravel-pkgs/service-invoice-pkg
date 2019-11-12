@@ -5,6 +5,7 @@ use Abs\AttributePkg\FieldGroup;
 use Abs\CoaPkg\CoaCode;
 use Abs\TaxPkg\TaxCode;
 use App\Company;
+use Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -19,6 +20,23 @@ class ServiceItem extends Model {
 
 	public function fieldGroups() {
 		return $this->belongsToMany('Abs\AttributePkg\FieldGroup', 'service_item_field_group');
+	}
+
+	public static function searchServiceItem($r) {
+		$key = $r->key;
+		$list = self::where('company_id', Auth::user()->company_id)
+			->select(
+				'id',
+				'name',
+				'code'
+			)
+			->where(function ($q) use ($key) {
+				$q->where('name', 'like', '%' . $key . '%')
+					->orWhere('code', 'like', '%' . $key . '%')
+				;
+			})
+			->get();
+		return response()->json($list);
 	}
 
 	public static function createFromCollection($records) {
