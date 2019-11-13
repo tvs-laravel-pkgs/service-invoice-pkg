@@ -2,11 +2,16 @@
 
 namespace Abs\ServiceInvoicePkg;
 use Abs\ServiceInvoicePkg\ServiceInvoice;
+use Abs\ServiceInvoicePkg\ServiceItem;
 use Abs\ServiceInvoicePkg\ServiceItemCategory;
+use Abs\ServiceInvoicePkg\ServiceItemSubCategory;
+use Abs\TaxPkg\Tax;
+use App\Customer;
 use App\Http\Controllers\Controller;
 use App\Outlet;
 use App\Sbu;
 use Auth;
+use Illuminate\Http\Request;
 // use DB;
 // use Validator;
 use Yajra\Datatables\Datatables;
@@ -66,14 +71,16 @@ class ServiceInvoiceController extends Controller {
 			->make(true);
 	}
 
-	public function getServiceInvoiceFormdata($id = NULL) {
+	public function getFormData($id = NULL) {
 
 		if (!$id) {
 			$service_invoice = new ServiceInvoice;
+			$service_invoice->invoice_date = date('d-m-Y');
 			$this->data['action'] = 'Add';
 		} else {
 			$service_invoice = ServiceInvoice::with([
 				'serviceInvoiceItems',
+				'serviceInvoiceItems.taxes',
 				'serviceItemSubCategory',
 			])->find($id);
 			if (!$service_invoice) {
@@ -85,12 +92,58 @@ class ServiceInvoiceController extends Controller {
 		$this->data['extras'] = [
 			'branch_list' => collect(Outlet::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Branch']),
 			'sbu_list' => collect(Sbu::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Sbu']),
+			'tax_list' => Tax::select('name', 'id')->where('company_id', Auth::user()->company_id)->get(),
 			'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
 			'sub_category_list' => [],
 		];
 		$this->data['service_invoice'] = $service_invoice;
 		$this->data['success'] = true;
 		return response()->json($this->data);
+	}
+
+	public function getServiceItemSubCategories($service_item_category_id) {
+		return ServiceItemSubCategory::getServiceItemSubCategories($service_item_category_id);
+	}
+
+	public function searchCustomer(Request $r) {
+		return Customer::searchCustomer($r);
+	}
+
+	public function getCustomerDetails(Request $request) {
+		$customer = Customer::find($request->customer_id);
+		if (!$customer) {
+			return response()->json(['success' => false, 'error' => 'Customer not found']);
+		}
+		$customer->formatted_address = $customer->getFormattedAddress();
+		return response()->json([
+			'success' => true,
+			'customer' => $customer,
+		]);
+	}
+
+	public function searchServiceItem(Request $r) {
+		return ServiceItem::searchServiceItem($r);
+	}
+
+	public function getServiceItemDetails(Request $request) {
+		$service_item = ServiceItem::with([
+			'fieldGroups',
+			'fieldGroups.fields',
+			'coaCode',
+			'taxCode',
+			'taxCode.taxes',
+		])
+			->find($request->service_item_id);
+		if (!$service_item) {
+			return response()->json(['success' => false, 'error' => 'Service Item not found']);
+		}
+		// dump($service_item->fieldGroups);
+		// dump($service_item->fieldGroups);
+		// dd($service_item->fieldGroups()->pluck('id')->toArray());
+		return response()->json([
+			'success' => true,
+			'service_item' => $service_item,
+		]);
 	}
 
 	public function saveFieldGroup(Request $request) {

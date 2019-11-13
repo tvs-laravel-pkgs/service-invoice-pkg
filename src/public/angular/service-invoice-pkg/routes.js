@@ -1,7 +1,7 @@
 app.config(['$routeProvider', function($routeProvider) {
 
     $routeProvider.
-    //DN
+    //SERVICE INVOICE
     when('/service-invoice-pkg/service-invoice/list', {
         template: '<service-invoice-list></service-invoice-list>',
         title: 'Service Invoices',
