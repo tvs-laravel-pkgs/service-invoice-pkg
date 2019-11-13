@@ -214,6 +214,9 @@ app.component('serviceInvoiceForm', {
             ).then(function(response) {
                 if (response.data.success) {
                     self.service_item_detail = response.data.service_item;
+
+                    //AMOUNT CALCULATION
+                    $scope.totalAmountCalc();
                 } else {
                     $noty = new Noty({
                         type: 'error',
@@ -260,6 +263,41 @@ app.component('serviceInvoiceForm', {
                     });
             }
         }
+
+        //PERCENTAGE CALC
+        $scope.percentage = function(num, per) {
+            return (num / 100) * per;
+        }
+
+        //PARSEINT
+        self.parseInt = function(num) {
+            return parseInt(num);
+        }
+
+        //ITEM TO INVOICE TOTAL AMOUNT CALC
+        $scope.totalAmountCalc = function() {
+            self.sub_total = 0;
+            self.total = 0;
+            self.gst_total = 0;
+            if (self.qty && self.rate) {
+                self.sub_total = self.qty * self.rate;
+                if (self.service_item_detail.tax_code.taxes.length > 0) {
+                    $(self.service_item_detail.tax_code.taxes).each(function(key, tax) {
+                        // console.log(tax.pivot)
+                        tax.pivot.amount = parseInt($scope.percentage(self.sub_total, parseInt(tax.pivot.percentage)));
+                        // tax.pivot = {
+                        //     amount: $scope.percentage(self.sub_total, parseInt(tax.pivot.percentage)),
+                        // };
+                        self.gst_total += parseInt($scope.percentage(self.sub_total, parseInt(tax.pivot.percentage)));
+                    });
+                }
+                self.total = self.sub_total + self.gst_total;
+                console.log(' == sub total ===' + self.sub_total);
+                console.log(' == gst total ===' + self.gst_total);
+                console.log(' == total ===' + self.total);
+                console.log(self.service_item_detail.tax_code.taxes);
+            }
+        };
 
         var form_id = '#form';
         var v = jQuery(form_id).validate({

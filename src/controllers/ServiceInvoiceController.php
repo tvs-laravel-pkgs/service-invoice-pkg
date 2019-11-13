@@ -5,6 +5,7 @@ use Abs\ServiceInvoicePkg\ServiceInvoice;
 use Abs\ServiceInvoicePkg\ServiceItem;
 use Abs\ServiceInvoicePkg\ServiceItemCategory;
 use Abs\ServiceInvoicePkg\ServiceItemSubCategory;
+use Abs\TaxPkg\Tax;
 use App\Customer;
 use App\Http\Controllers\Controller;
 use App\Outlet;
@@ -79,6 +80,7 @@ class ServiceInvoiceController extends Controller {
 		} else {
 			$service_invoice = ServiceInvoice::with([
 				'serviceInvoiceItems',
+				'serviceInvoiceItems.taxes',
 				'serviceItemSubCategory',
 			])->find($id);
 			if (!$service_invoice) {
@@ -90,6 +92,7 @@ class ServiceInvoiceController extends Controller {
 		$this->data['extras'] = [
 			'branch_list' => collect(Outlet::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Branch']),
 			'sbu_list' => collect(Sbu::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Sbu']),
+			'tax_list' => Tax::select('name', 'id')->where('company_id', Auth::user()->company_id)->get(),
 			'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
 			'sub_category_list' => [],
 		];
@@ -123,10 +126,20 @@ class ServiceInvoiceController extends Controller {
 	}
 
 	public function getServiceItemDetails(Request $request) {
-		$service_item = ServiceItem::find($request->service_item_id);
+		$service_item = ServiceItem::with([
+			'fieldGroups',
+			'fieldGroups.fields',
+			'coaCode',
+			'taxCode',
+			'taxCode.taxes',
+		])
+			->find($request->service_item_id);
 		if (!$service_item) {
 			return response()->json(['success' => false, 'error' => 'Service Item not found']);
 		}
+		// dump($service_item->fieldGroups);
+		// dump($service_item->fieldGroups);
+		// dd($service_item->fieldGroups()->pluck('id')->toArray());
 		return response()->json([
 			'success' => true,
 			'service_item' => $service_item,

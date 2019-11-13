@@ -18,4 +18,8 @@ class ServiceInvoiceItem extends Model {
 	public function serviceInvoice() {
 		return $this->belongsTo('Abs\AttributePkg\ServiceInvoice', 'service_invoice_id', 'id');
 	}
+
+	public function taxes() {
+		return $this->belongsToMany('Abs\TaxPkg\Tax', 'service_invoice_item_tax', 'service_invoice_item_id', 'tax_id')->withPivot(['percentage', 'amount']);
+	}
 }

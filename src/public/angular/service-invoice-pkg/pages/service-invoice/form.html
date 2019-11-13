@@ -178,33 +178,12 @@
                                             <th>Description</th>
                                             <th>Rate</th>
                                             <th>Quantity</th>
-                                            <th>CGST</th>
-                                            <th>SGST</th>
-                                            <th>IGST</th>
+                                            <th ng-repeat="(index, tax) in $ctrl.extras.tax_list">{{tax.name}}</th>
                                             <th>Total Amount</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td class="action">
-                                                <a href="#!" class="">
-                                                    <img class="img-responsive" src="./public/theme/img/table/cndn/edit.svg" alt="Edit" />
-                                                </a>
-                                                <a href="#!" class="">
-                                                    <img class="img-responsive" src="./public/theme/img/table/cndn/delete.svg" alt="Delete" />
-                                                </a>
-                                            </td>
-                                            <td>G65876</td>
-                                            <td>Vehicle Sales</td>
-                                            <td>New Sales..</td>
-                                            <td>2,50,000</td>
-                                            <td>1</td>
-                                            <td>10,000</td>
-                                            <td>10,000</td>
-                                            <td>0</td>
-                                            <td>2,70,000</td>
-                                        </tr>
-                                        <tr>
+                                        <tr ng-repeat="(index, service_invoice_item) in $ctrl.service_invoice.service_invoice_items">
                                             <td class="action">
                                                 <a href="#!" class="">
                                                     <img class="img-responsive" src="./public/theme/img/table/cndn/edit.svg" alt="Edit" />
@@ -305,11 +284,11 @@
                                             </li>
                                             <li class="list-6 border-right">
                                                 <span class="table-form-view-label">COA Code</span>
-                                                <span class="table-form-view-value">{{$ctrl.service_item_detail.coa_code}}</span>
+                                                <span class="table-form-view-value">{{$ctrl.service_item_detail.coa_code.code}}</span>
                                             </li>
                                             <li class="list-6">
                                                 <span class="table-form-view-label">SAC Code</span>
-                                                <span class="table-form-view-value">{{$ctrl.service_item_detail.sac_code}}</span>
+                                                <span class="table-form-view-value">{{$ctrl.service_item_detail.tax_code.code}}</span>
                                             </li>
                                         </ul>
                                     </div>
@@ -330,7 +309,7 @@
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">Quantity <span class="mandatory">*</span></label>
                                         <div class="table-form-list-control">
-                                            <input ng-model="$ctrl.qty" type="text" class="form-control type-sm required" placeholder="Enter Quantity" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');" />
+                                            <input ng-model="$ctrl.qty" type="text" class="form-control type-sm required" placeholder="Enter Quantity" ng-change="totalAmountCalc()" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');" />
                                         </div><!-- Table Form List Control -->
                                     </div><!-- Table Form List Wrap -->
                                 </li>
@@ -338,13 +317,22 @@
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">Amount <span class="mandatory">*</span></label>
                                         <div class="table-form-list-control">
-                                            <input ng-model="$ctrl.rate" type="text" class="form-control type-sm required" placeholder="Enter Amount" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');" />
+                                            <input ng-model="$ctrl.rate" type="text" class="form-control type-sm required" placeholder="Enter Amount" ng-change="totalAmountCalc()" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');" />
                                         </div><!-- Table Form List Control -->
                                     </div><!-- Table Form List Wrap -->
                                 </li>
                             </ul><!-- Table Form List -->
                         </div><!-- Column -->
                     </div><!-- Row -->
+                    <div class="row" ng-if="$ctrl.service_item_detail.field_groups.length > 0">
+                        <div class="col-md-6" ng-repeat="(index, field_group) in $ctrl.service_item_detail.field_groups">
+                            <h6>{{field_group.name}}</h6>
+                            <ul class="table-form-list">
+                                <li ng-repeat="(field_index, field) in field_group.fields">
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
                 </div><!-- Modal Body -->
                 <div class="modal-footer">
                     <div class="row">
@@ -353,15 +341,15 @@
                                 <ul class="modal-footer-list">
                                     <li>
                                         <span class="modal-footer-list-label">Amount</span>
-                                        <span class="modal-footer-list-value">{{$ctrl.sub_total}}</span>
+                                        <span class="modal-footer-list-value">{{($ctrl.sub_total ? $ctrl.sub_total : 0) | number}}</span>
                                     </li>
-                                    <li>
-                                        <span class="modal-footer-list-label">CGST</span>
-                                        <span class="modal-footer-list-value">20,00,000</span>
+                                    <li ng-repeat="(index, tax) in $ctrl.service_item_detail.tax_code.taxes">
+                                        <span class="modal-footer-list-label">{{tax.name}} ({{$ctrl.parseInt(tax.pivot.percentage)}}%)</span>
+                                        <span class="modal-footer-list-value">{{(tax.pivot.amount ? tax.pivot.amount : 0) | number}}</span>
                                     </li>
                                     <li class="color-red">
                                         <span class="modal-footer-list-label">Total</span>
-                                        <span class="modal-footer-list-value">{{$ctrl.total}}</span>
+                                        <span class="modal-footer-list-value">{{($ctrl.total ? $ctrl.total : 0) | number}}</span>
                                     </li>
                                 </ul>
                             </div><!-- Modal Footer List Wrap -->
