@@ -50,4 +50,9 @@ class ServiceItemCategory extends Model {
 			}
 		}
 	}
+
+	public function subCategory() {
+		return $this->hasMany('Abs\ServiceInvoicePkg\ServiceItemSubCategory','category_id')->withTrashed();
+	}
+
 }
