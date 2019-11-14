@@ -4,6 +4,7 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 	Route::get('/service-invoices/get-list', 'ServiceInvoiceController@getServiceInvoiceList')->name('getServiceInvoiceList');
 	Route::get('/service-invoice/get-form-data/{id?}', 'ServiceInvoiceController@getFormData')->name('getServiceInvoiceFormdata');
 	Route::post('/service-invoice/save', 'ServiceInvoiceController@saveServiceInvoice')->name('saveServiceInvoice');
+	Route::get('/service-invoice/download-pdf/{id?}', 'ServiceInvoiceController@downloadPdf')->name('downloadPdf');
 
 	Route::get('/get-service-item-sub-category/{service_item_category_id?}', 'ServiceInvoiceController@getServiceItemSubCategories')->name('getServiceItemSubCategories');
 
