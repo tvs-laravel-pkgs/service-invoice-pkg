@@ -17,6 +17,11 @@ class ServiceItemSubCategory extends Model {
 		'deleted_by_id',
 	];
 
+	protected $appends = ['switch_value'];
+   	public function getSwitchValueAttribute() {
+        return !empty($this->attributes['deleted_at']) ? 'Inactive' : 'Active';
+    }
+
 	public function serviceItemCategory() {
 		return $this->belongsTo('Abs\AttributePkg\ServiceItemCategory', 'category_id', 'id');
 	}
