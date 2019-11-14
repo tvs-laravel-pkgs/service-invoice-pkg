@@ -3,7 +3,7 @@
 Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'auth'], 'prefix' => 'service-invoice-pkg'], function () {
 	Route::get('/service-invoices/get-list', 'ServiceInvoiceController@getServiceInvoiceList')->name('getServiceInvoiceList');
 	Route::get('/service-invoice/get-form-data/{id?}', 'ServiceInvoiceController@getFormData')->name('getServiceInvoiceFormdata');
-	Route::get('/service-invoice/save', 'ServiceInvoiceController@saveServiceInvoice')->name('saveServiceInvoice');
+	Route::post('/service-invoice/save', 'ServiceInvoiceController@saveServiceInvoice')->name('saveServiceInvoice');
 
 	Route::get('/get-service-item-sub-category/{service_item_category_id?}', 'ServiceInvoiceController@getServiceItemSubCategories')->name('getServiceItemSubCategories');
 
@@ -14,6 +14,7 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 	// SERVICE ITEM
 	Route::post('/service-invoice/service-item/search', 'ServiceInvoiceController@searchServiceItem')->name('searchServiceItem');
 	Route::post('/service-invoice/get-service-item-details', 'ServiceInvoiceController@getServiceItemDetails')->name('getServiceItemDetails');
+	Route::post('/service-invoice/service-item/get', 'ServiceInvoiceController@getServiceItem')->name('getServiceItem');
 
 	//SERVICE ITEM CATEGORIES
 	Route::get('/service-item-categories/get-list', 'ServiceItemCategoryController@getServiceItemCategoryList')->name('getServiceItemCategoryList');

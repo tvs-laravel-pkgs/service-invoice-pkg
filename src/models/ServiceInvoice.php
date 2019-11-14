@@ -40,11 +40,19 @@ class ServiceInvoice extends Model {
 	}
 
 	public function serviceItemSubCategory() {
-		return $this->belongsTo('Abs\AttributePkg\ServiceItemSubCategory', 'sub_category_id', 'id');
+		return $this->belongsTo('Abs\ServiceInvoicePkg\ServiceItemSubCategory', 'sub_category_id', 'id');
+	}
+
+	public function customer() {
+		return $this->belongsTo('App\Customer', 'customer_id', 'id');
 	}
 
 	public function serviceInvoiceItems() {
-		return $this->hasMany('Abs\AttributePkg\ServiceInvoiceItem', 'service_invoice_id', 'id');
+		return $this->hasMany('Abs\ServiceInvoicePkg\ServiceInvoiceItem', 'service_invoice_id', 'id');
+	}
+
+	public function attachments() {
+		return $this->hasMany('App\Attachment', 'entity_id', 'id');
 	}
 
 }

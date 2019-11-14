@@ -15,8 +15,14 @@ class ServiceInvoiceItem extends Model {
 		'sub_total',
 	];
 
+	public $timestamps = false;
+
 	public function serviceInvoice() {
-		return $this->belongsTo('Abs\AttributePkg\ServiceInvoice', 'service_invoice_id', 'id');
+		return $this->belongsTo('Abs\ServiceInvoicePkg\ServiceInvoice', 'service_invoice_id', 'id');
+	}
+
+	public function serviceItem() {
+		return $this->belongsTo('Abs\ServiceInvoicePkg\ServiceItem', 'service_item_id', 'id');
 	}
 
 	public function taxes() {
