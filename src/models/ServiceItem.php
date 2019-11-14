@@ -29,6 +29,9 @@ class ServiceItem extends Model {
 	public function taxCode() {
 		return $this->belongsTo('Abs\TaxPkg\TaxCode', 'sac_code_id', 'id');
 	}
+	public function subCategory() {
+		return $this->belongsTo('Abs\ServiceInvoicePkg\ServiceItemSubCategory', 'sub_category_id', 'id');
+	}
 
 	public static function searchServiceItem($r) {
 		$key = $r->key;

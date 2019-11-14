@@ -23,6 +23,8 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 
 	//SERVICE ITEMS
 	Route::get('/service-items/get-list', 'ServiceItemController@getServiceItemList')->name('getServiceItemList');
-	Route::get('/service-item/get-form-data/{id?}', 'ServiceItemCategoryController@getServiceItemFormData')->name('getServiceItemFormData');
+	Route::get('/service-item/get-form-data/{id?}', 'ServiceItemController@getServiceItemFormData')->name('getServiceItemFormData');
 	Route::post('/service-item/save', 'ServiceItemController@saveServiceItem')->name('saveServiceItem');
+	Route::get('/service-item/get-sub-category/{id}', 'ServiceItemController@getSubCategory')->name('getSubCategory');
+	Route::get('/service-item/delete/{id?}', 'ServiceItemController@serviceItemDelete')->name('serviceItemDelete');
 });
