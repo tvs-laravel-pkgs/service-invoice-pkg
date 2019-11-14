@@ -115,7 +115,7 @@ app.component('serviceItemForm', {
                  $location.path('/service-invoice-pkg/service-invoice/list')
                  $scope.$apply()
              }*/
-            //console.log(response.data.service_item);
+            console.log(response.data.service_item.field_group_ids);
             self.action = response.data.action;
             self.list_url = service_invoice_list_url;
             self.extras = response.data.extras;
@@ -123,7 +123,7 @@ app.component('serviceItemForm', {
             self.service_item = response.data.service_item;
             self.field_group_ids = response.data.service_item.field_group_ids;
             self.all_field_group_ids = response.data.service_item.all_field_group_ids;
-            //console.log(self.all_field_group_ids);
+            console.log(self.field_group_ids);
             if (self.action == 'Add') {
                 //self.service_item.sub_category = [];
             }
@@ -162,9 +162,7 @@ app.component('serviceItemForm', {
 
 
         self.field_group_ids = [];
-
         $scope.selectAllFieldGroups = function() {
-            self.field_group_ids = [];
             self.field_group_ids = self.all_field_group_ids;
         };
 

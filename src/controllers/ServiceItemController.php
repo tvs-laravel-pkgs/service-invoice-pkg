@@ -80,20 +80,24 @@ class ServiceItemController extends Controller {
 			$sub_category=ServiceItemSubCategory::where('id',$service_item->sub_category_id)->first();
 			$main_category=ServiceItemCategory::select('id')->where('id',$sub_category->category_id)->first();
 			$service_item->main_category_id=$main_category->id;
-			$service_item->field_group_ids = ServiceItem::withTrashed()->join('service_item_field_group', 'service_item_field_group.service_item_id', 'service_items.id')
+			//dd($service_item->id);
+			$service_item->field_group_ids =ServiceItem::withTrashed()->join('service_item_field_group', 'service_item_field_group.service_item_id', 'service_items.id')
+			->where('service_item_field_group.service_item_id',$service_item->id)
 			->pluck('field_group_id')
 			->toArray();
-			$service_item->all_field_group_ids=FieldGroup::where('company_id', Auth::user()->company_id)->pluck('id')->toArray();
+
 //dd($service_item->all_field_group_ids);
 			if (!$service_item) {
 				return response()->json(['success' => false, 'error' => 'Service Item not found']);
 			}
 		}
+
+			$service_item->all_field_group_ids=FieldGroup::where('company_id', Auth::user()->company_id)->pluck('id')->toArray();
 		$this->data['extras'] = [
 			'main_category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
 			'coa_code_list' => collect(CoaCode::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Coa Code']),
 			'tax_list' => collect(TaxCode::select('code as name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Sac Code']),
-			'field_group_list' => FieldGroup::select('name', 'id')->where('company_id', Auth::user()->company_id)->get()
+			'field_group_list' => FieldGroup::select('name', 'id')->where('category_id',1040)->where('company_id', Auth::user()->company_id)->get()
 		];
 		$this->data['service_item'] = $service_item;
 		$this->data['success'] = true;
