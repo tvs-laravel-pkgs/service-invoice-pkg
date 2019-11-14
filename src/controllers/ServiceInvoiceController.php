@@ -2,18 +2,21 @@
 
 namespace Abs\ServiceInvoicePkg;
 use Abs\ServiceInvoicePkg\ServiceInvoice;
+use Abs\ServiceInvoicePkg\ServiceInvoiceItem;
 use Abs\ServiceInvoicePkg\ServiceItem;
 use Abs\ServiceInvoicePkg\ServiceItemCategory;
 use Abs\ServiceInvoicePkg\ServiceItemSubCategory;
 use Abs\TaxPkg\Tax;
+use App\Attachment;
 use App\Customer;
 use App\Http\Controllers\Controller;
 use App\Outlet;
 use App\Sbu;
 use Auth;
+use DB;
 use Illuminate\Http\Request;
-// use DB;
-// use Validator;
+use Illuminate\Support\Facades\Storage;
+use Validator;
 use Yajra\Datatables\Datatables;
 
 class ServiceInvoiceController extends Controller {
@@ -79,13 +82,35 @@ class ServiceInvoiceController extends Controller {
 			$this->data['action'] = 'Add';
 		} else {
 			$service_invoice = ServiceInvoice::with([
+				'attachments',
+				'customer',
 				'serviceInvoiceItems',
+				'serviceInvoiceItems.serviceItem',
 				'serviceInvoiceItems.taxes',
 				'serviceItemSubCategory',
 			])->find($id);
 			if (!$service_invoice) {
 				return response()->json(['success' => false, 'error' => 'Service Invoice not found']);
 			}
+
+			$gst_total = 0;
+			if (count($service_invoice->serviceInvoiceItems) > 0) {
+				foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
+					if (count($serviceInvoiceItem->taxes) > 0) {
+						foreach ($serviceInvoiceItem->taxes as $key => $value) {
+							$gst_total += intval($value->pivot->amount);
+							$serviceInvoiceItem[$value->name] = [
+								'amount' => intval($value->pivot->amount),
+								'percentage' => intval($value->pivot->percentage),
+							];
+						}
+					}
+					$serviceInvoiceItem->total = intval($serviceInvoiceItem->sub_total) + intval($gst_total);
+					$serviceInvoiceItem->code = $serviceInvoiceItem->serviceItem->code;
+					$serviceInvoiceItem->name = $serviceInvoiceItem->serviceItem->name;
+				}
+			}
+
 			$this->data['action'] = 'Edit';
 		}
 
@@ -137,28 +162,98 @@ class ServiceInvoiceController extends Controller {
 		if (!$service_item) {
 			return response()->json(['success' => false, 'error' => 'Service Item not found']);
 		}
-		// dump($service_item->fieldGroups);
-		// dump($service_item->fieldGroups);
-		// dd($service_item->fieldGroups()->pluck('id')->toArray());
-		return response()->json([
-			'success' => true,
-			'service_item' => $service_item,
-		]);
+		return response()->json(['success' => true, 'service_item' => $service_item]);
 	}
 
-	public function saveFieldGroup(Request $request) {
+	public function getServiceItem(Request $request) {
+		// dump($request->all());
+		$service_item = ServiceItem::with([
+			'coaCode',
+			'taxCode',
+			'taxCode.taxes',
+		])
+			->find($request->service_item_id);
+		if (!$service_item) {
+			return response()->json(['success' => false, 'error' => 'Service Item not found']);
+		}
+
+		$gst_total = 0;
+		if (count($service_item->taxCode->taxes) > 0) {
+			foreach ($service_item->taxCode->taxes as $key => $value) {
+				$gst_total += intval(($value->pivot->percentage / 100) * ($request->qty * $request->amount));
+				$service_item[$value->name] = [
+					'amount' => intval(($value->pivot->percentage / 100) * ($request->qty * $request->amount)),
+					'percentage' => intval($value->pivot->percentage),
+				];
+			}
+		}
+
+		$service_item->service_item_id = $service_item->id;
+		$service_item->id = null;
+		$service_item->description = $request->description;
+		$service_item->qty = $request->qty;
+		$service_item->rate = $request->amount;
+		$service_item->sub_total = intval($request->qty * $request->amount);
+		$service_item->total = intval($request->qty * $request->amount) + $gst_total;
+
+		if ($request->action == 'add') {
+			$add = true;
+			$message = 'Service item added successfully';
+		} else {
+			$add = false;
+			$message = 'Service item updated successfully';
+		}
+		$add = ($request->action == 'add') ? true : false;
+		return response()->json(['success' => true, 'service_item' => $service_item, 'add' => $add, 'message' => $message]);
+
+	}
+
+	public function saveServiceInvoice(Request $request) {
 		// dd($request->all());
 		DB::beginTransaction();
 		try {
 
 			$error_messages = [
-				'name.required' => 'Field group name is required',
-				'name.unique' => 'Field group name has already been taken',
+				'branch_id.required' => 'Branch is required',
+				'sbu_id.required' => 'Sbu is required',
+				'category_id.required' => 'Category is required',
+				'sub_category_id.required' => 'Sub Category is required',
+				'invoice_date.required' => 'Invoice date is required',
+				'document_date.required' => 'Document date is required',
+				'customer_id.required' => 'Customer is required',
+				'proposal_attachments.*.required' => 'Please upload an image',
+				'proposal_attachments.*.mimes' => 'Only jpeg,png and bmp images are allowed',
+				'number.unique' => 'Service invoice number has already been taken',
 			];
 
 			$validator = Validator::make($request->all(), [
-				'name' => [
-					'unique:field_groups,name,' . $request->id . ',id,company_id,' . Auth::user()->company_id . ',category_id,' . $request->category_id,
+				'branch_id' => [
+					'required:true',
+				],
+				'sbu_id' => [
+					'required:true',
+				],
+				'category_id' => [
+					'required:true',
+				],
+				'sub_category_id' => [
+					'required:true',
+				],
+				'invoice_date' => [
+					'required:true',
+				],
+				'document_date' => [
+					'required:true',
+				],
+				'customer_id' => [
+					'required:true',
+				],
+				'proposal_attachments.*' => [
+					'required:true',
+					'mimes:jpg,jpeg,png,bmp',
+				],
+				'number' => [
+					// 'unique:service_invoices,number,' . $request->id . ',id,company_id,' . Auth::user()->company_id,
 					'required:true',
 				],
 			], $error_messages);
@@ -167,49 +262,81 @@ class ServiceInvoiceController extends Controller {
 				return response()->json(['success' => false, 'errors' => $validator->errors()->all()]);
 			}
 
-			//VALIDATE FIELD-GROUP FIELD UNIQUE
-			if ($request->fields && !empty($request->fields)) {
-				$field_group_fields = collect($request->fields)->pluck('id')->toArray();
-				$field_group_fields_unique = array_unique($field_group_fields);
-				if (count($field_group_fields) != count($field_group_fields_unique)) {
-					return response()->json(['success' => false, 'errors' => ['Field has already been taken']]);
-				}
-			}
-
 			if ($request->id) {
-				$field_group = FieldGroup::withTrashed()->find($request->id);
-				$field_group->updated_at = date("Y-m-d H:i:s");
-				$field_group->updated_by_id = Auth()->user()->id;
+				$service_invoice = ServiceInvoice::find($request->id);
+				$service_invoice->updated_at = date("Y-m-d H:i:s");
+				$service_invoice->updated_by_id = Auth()->user()->id;
 			} else {
-				$field_group = new FieldGroup();
-				$field_group->created_at = date("Y-m-d H:i:s");
-				$field_group->created_by_id = Auth()->user()->id;
+				$service_invoice = new ServiceInvoice();
+				$service_invoice->created_at = date("Y-m-d H:i:s");
+				$service_invoice->created_by_id = Auth()->user()->id;
 			}
 
-			if ($request->status == 'Inactive') {
-				$field_group->deleted_at = date("Y-m-d H:i:s");
-				$field_group->deleted_by_id = Auth()->user()->id;
-			} else {
-				$field_group->deleted_at = NULL;
-				$field_group->deleted_by_id = NULL;
-			}
-			$field_group->fill($request->all());
-			$field_group->company_id = Auth::user()->company_id;
-			$field_group->save();
+			$service_invoice->fill($request->all());
+			$service_invoice->company_id = Auth::user()->company_id;
+			$service_invoice->save();
 
-			//SAVE FIELD-GROUP FIELD
-			$field_group->fields()->sync([]);
-			if ($request->fields) {
-				if (!empty($request->fields)) {
-					foreach ($request->fields as $key => $field) {
-						$is_required = $field['is_required'] == 'Yes' ? 1 : 0;
-						$field_group->fields()->attach($field['id'], ['is_required' => $is_required]);
+			//REMOVE SERVICE INVOICE ITEMS
+			if (!empty($request->service_invoice_item_removal_ids)) {
+				$service_invoice_item_removal_ids = json_decode($request->service_invoice_item_removal_ids, true);
+				ServiceInvoiceItem::whereIn('id', $service_invoice_item_removal_ids)->delete();
+			}
+
+			//SAVE SERVICE INVOICE ITEMS
+			if ($request->service_invoice_items) {
+				if (!empty($request->service_invoice_items)) {
+					//VALIDATE UNIQUE
+					$service_invoice_items = collect($request->service_invoice_items)->pluck('service_item_id')->toArray();
+					$service_invoice_items_unique = array_unique($service_invoice_items);
+					if (count($service_invoice_items) != count($service_invoice_items_unique)) {
+						return response()->json(['success' => false, 'errors' => ['Service invoice items has already been taken']]);
+					}
+					foreach ($request->service_invoice_items as $key => $val) {
+						$service_invoice_item = ServiceInvoiceItem::firstOrNew([
+							'id' => $val['id'],
+						]);
+						$service_invoice_item->fill($val);
+						$service_invoice_item->service_invoice_id = $service_invoice->id;
+						$service_invoice_item->save();
+
+						//SAVE SERVICE INVOICE ITEM TAX
+						if (!empty($val['taxes'])) {
+							//VALIDATE UNIQUE
+							$service_invoice_item_taxes = collect($val['taxes'])->pluck('tax_id')->toArray();
+							$service_invoice_item_taxes_unique = array_unique($service_invoice_item_taxes);
+							if (count($service_invoice_item_taxes) != count($service_invoice_item_taxes_unique)) {
+								return response()->json(['success' => false, 'errors' => ['Service invoice item taxes has already been taken']]);
+							}
+							$service_invoice_item->taxes()->sync([]);
+							foreach ($val['taxes'] as $tax_key => $tax_val) {
+								$service_invoice_item->taxes()->attach($tax_val['tax_id'], ['percentage' => $tax_val['percentage'], 'amount' => $tax_val['amount']]);
+							}
+						}
 					}
 				}
 			}
 
+			//SAVE ATTACHMENTS
+			$attachement_path = storage_path('app/public/service-invoice/attachments/');
+			Storage::makeDirectory($attachement_path, 0777);
+			if (!empty($request->proposal_attachments)) {
+				foreach ($request->proposal_attachments as $key => $proposal_attachment) {
+					$value = rand(1, 100);
+					$image = $proposal_attachment;
+					$extension = $image->getClientOriginalExtension();
+					$name = $service_invoice->id . 'service_invoice_attachment' . $value . '.' . $extension;
+					$proposal_attachment->move(storage_path('app/public/service-invoice/attachments/'), $name);
+					$attachement = new Attachment;
+					$attachement->attachment_of_id = 221;
+					$attachement->attachment_type_id = 241;
+					$attachement->entity_id = $service_invoice->id;
+					$attachement->name = $name;
+					$attachement->save();
+				}
+			}
+
 			DB::commit();
-			return response()->json(['success' => true, 'message' => 'Field group saved successfully']);
+			return response()->json(['success' => true, 'message' => 'Service invoice saved successfully']);
 		} catch (Exception $e) {
 			DB::rollBack();
 			// dd($e->getMessage());
