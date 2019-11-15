@@ -63,7 +63,7 @@ class ServiceInvoice extends Model {
 	}
 
 	public function attachments() {
-		return $this->hasMany('App\Attachment', 'entity_id', 'id');
+		return $this->hasMany('App\Attachment', 'entity_id', 'id')->where('attachment_of_id', 221)->where('attachment_type_id', 241);
 	}
 
 	public static function createFromCollection($records) {
