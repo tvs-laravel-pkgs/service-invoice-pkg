@@ -1,11 +1,11 @@
-app.component('serviceItemCategoryList', {
-    templateUrl: service_item_category_list_template_url,
+app.component('serviceItemList', {
+    templateUrl: service_item_list_template_url,
     controller: function($http, $location, HelperService, $scope, $routeParams, $rootScope, $element) {
         var self = this;
         self.hasPermission = HelperService.hasPermission;
         var table_scroll;
         table_scroll = $('.page-main-content').height() - 37;
-        var dataTable = $('#service-item-category-table').dataTable({
+        var dataTable = $('#service-item-table').dataTable({
             "dom": cndn_dom_structure,
             "language": {
                 // "search": "",
@@ -36,7 +36,7 @@ app.component('serviceItemCategoryList', {
             scrollCollapse: true,
 
             ajax: {
-                url: laravel_routes['getServiceItemCategoryList'],
+                url: laravel_routes['getServiceItemList'],
                 type: "GET",
                 dataType: "json",
                 data: function(d) {}
@@ -44,8 +44,11 @@ app.component('serviceItemCategoryList', {
 
             columns: [
                 { data: 'action', searchable: false, class: 'action' },
-                { data: 'name', name: 'service_item_categories.name', searchable: true },
+                { data: 'code', name: 'service_items.code', searchable: true },
+                { data: 'name', name: 'service_items.name', searchable: true },
                 { data: 'sub_category', searchable: false },
+                { data: 'coa_code', searchable: false },
+                { data: 'sac_code', searchable: false },
             ],
             rowCallback: function(row, data) {
                 $(row).addClass('highlight-row');
@@ -62,16 +65,16 @@ app.component('serviceItemCategoryList', {
 
         $(".search_clear").on("click", function() {
             $('#search_box').val('');
-            $('#service-item-category-table').DataTable().search('').draw();
+            $('#service-item-table').DataTable().search('').draw();
         });
-        $scope.deleteServiceItemCategory = function(id) {
-            $('#service_item_category_id').val(id);
+        $scope.deleteServiceItem = function(id) {
+            $('#service_item_id').val(id);
         }
-        $scope.deleteConfirmServiceItemCategory = function() {
-            $id = $('#service_item_category_id').val();
+        $scope.deleteConfirmServiceItem = function() {
+            $id = $('#service_item_id').val();
             //alert($id);
             $http.get(
-                service_item_category_delete_data_url + '/' + $id,
+                service_item_delete_data_url + '/' + $id,
             ).then(function(response) {
                 if (response.data.success) {
                     $noty = new Noty({
@@ -82,8 +85,8 @@ app.component('serviceItemCategoryList', {
                     setTimeout(function() {
                         $noty.close();
                     }, 3000);
-                    $('#service-item-category-table').DataTable().ajax.reload(function(json) {});
-                    $location.path('/service-invoice-pkg/service-item-category/list');
+                    $('#service-item-table').DataTable().ajax.reload(function(json) {});
+                    $location.path('/service-invoice-pkg/service-item/list');
                 }
             });
         }
@@ -96,10 +99,10 @@ app.component('serviceItemCategoryList', {
 //------------------------------------------------------------------------------------------------------------------------
 
 
-app.component('serviceItemCategoryForm', {
-    templateUrl: service_item_category_form_template_url,
+app.component('serviceItemForm', {
+    templateUrl: service_item_form_template_url,
     controller: function($http, $location, $location, HelperService, $routeParams, $rootScope, $scope) {
-        $form_data_url = typeof($routeParams.id) == 'undefined' ? service_item_category_get_form_data_url : service_item_category_get_form_data_url + '/' + $routeParams.id;
+        $form_data_url = typeof($routeParams.id) == 'undefined' ? service_item_get_form_data_url : service_item_get_form_data_url + '/' + $routeParams.id;
         var self = this;
         self.hasPermission = HelperService.hasPermission;
         self.angular_routes = angular_routes;
@@ -116,15 +119,20 @@ app.component('serviceItemCategoryForm', {
                  $location.path('/service-invoice-pkg/service-invoice/list')
                  $scope.$apply()
              }*/
+            console.log(response.data.service_item.field_group_ids);
             self.action = response.data.action;
             self.list_url = service_invoice_list_url;
-            self.service_item_category = response.data.service_item_category;
+            self.extras = response.data.extras;
+            self.sub_category_list = response.data.sub_category_list;
+            self.service_item = response.data.service_item;
+            self.field_group_ids = response.data.service_item.field_group_ids;
+            self.all_field_group_ids = response.data.service_item.all_field_group_ids;
+            console.log(self.field_group_ids);
             if (self.action == 'Add') {
-                self.service_item_category.sub_category = [];
+                //self.service_item.sub_category = [];
             }
             //self.service_item_category.sub_category = [];
-            console.log(self.service_item_category);
-            if (self.service_item_category.deleted_at) {
+            if (self.service_item.deleted_at) {
                 self.switch_value = 'Inactive';
             } else {
                 self.switch_value = 'Active';
@@ -146,24 +154,25 @@ app.component('serviceItemCategoryForm', {
         /* Image Uploadify Funtion */
         $('.image_uploadify').imageuploadify();
 
-        // FIELDS
-        $scope.addNewSubCategory = function() {
-            self.service_item_category.sub_category.push({
-                name: '',
-                switch_value: 'Active',
+        $scope.onSelectedCategory = function($id) {
+            //alert($id);
+            $http.get(
+                get_sub_category_based_category_url + '/' + $id
+            ).then(function(response) {
+                console.log(response.data.sub_category_list);
+                self.sub_category_list = response.data.sub_category_list;
             });
         }
-        self.sub_category_removal_id = [];
-        //REMOVE FIELD
-        $scope.removeSubCategory = function(index, sub_category_id) {
-            //alert(sub_category_id);
-            if (sub_category_id) {
-                self.sub_category_removal_id.push(sub_category_id);
-                $('#sub_category_removal_id').val(JSON.stringify(self.sub_category_removal_id));
-            }
 
-            self.service_item_category.sub_category.splice(index, 1);
-        }
+
+        self.field_group_ids = [];
+        $scope.selectAllFieldGroups = function() {
+            self.field_group_ids = self.all_field_group_ids;
+        };
+
+        $scope.deselectAllFieldGroups = function() {
+            self.field_group_ids = [];
+        };
 
         var form_id = '#form';
         var v = jQuery(form_id).validate({
@@ -185,9 +194,28 @@ app.component('serviceItemCategoryForm', {
             },
             ignore: '',
             rules: {
+                'code': {
+                    required: true,
+                    maxlength: 191,
+                },
                 'name': {
                     required: true,
                     maxlength: 191,
+                },
+                'main_category_id': {
+                    required: true,
+                },
+                'sub_category_id': {
+                    required: true,
+                },
+                'coa_code_id': {
+                    required: true,
+                },
+                'sac_code_id': {
+                    required: true,
+                },
+                'field_group_id': {
+                    required: true,
                 },
             },
             submitHandler: function(form) {
@@ -195,7 +223,7 @@ app.component('serviceItemCategoryForm', {
                 let formData = new FormData($(form_id)[0]);
                 $('#submit').button('loading');
                 $.ajax({
-                        url: laravel_routes['saveServiceItemCategory'],
+                        url: laravel_routes['saveServiceItem'],
                         method: "POST",
                         data: formData,
                         processData: false,
@@ -232,7 +260,7 @@ app.component('serviceItemCategoryForm', {
                             setTimeout(function() {
                                 $noty.close();
                             }, 5000);
-                            $location.path('/service-invoice-pkg/service-item-category/list');
+                            $location.path('/service-invoice-pkg/service-item/list');
                             $scope.$apply()
                         }
                     })
