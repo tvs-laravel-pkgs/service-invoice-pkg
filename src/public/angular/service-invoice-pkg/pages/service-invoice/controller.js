@@ -79,11 +79,12 @@ app.component('serviceInvoiceList', {
 
 app.component('serviceInvoiceForm', {
     templateUrl: service_invoice_form_template_url,
-    controller: function($http, $location, $location, HelperService, $routeParams, $rootScope, $scope) {
+    controller: function($http, $location, $location, HelperService, $routeParams, $rootScope, $scope, $timeout) {
         $form_data_url = typeof($routeParams.id) == 'undefined' ? service_invoice_get_form_data_url : service_invoice_get_form_data_url + '/' + $routeParams.id;
         var self = this;
         self.hasPermission = HelperService.hasPermission;
         self.angular_routes = angular_routes;
+        var attachment_removal_ids = [];
 
         $http.get(
             $form_data_url
@@ -104,8 +105,26 @@ app.component('serviceInvoiceForm', {
             self.action = response.data.action;
 
             if (self.action == 'Edit') {
-                $scope.getServiceItemSubCategoryByServiceItemCategory(self.service_invoice.service_item_sub_category.category_id);
-                $scope.serviceInvoiceItemCalc();
+                $timeout(function() {
+                    $scope.getServiceItemSubCategoryByServiceItemCategory(self.service_invoice.service_item_sub_category.category_id);
+                }, 1000);
+                $timeout(function() {
+                    $scope.serviceInvoiceItemCalc();
+                }, 1500);
+
+                console.log(self.service_invoice.attachments.length);
+                //ATTACHMENTS
+                if (self.service_invoice.attachments.length) {
+                    $(self.service_invoice.attachments).each(function(key, attachment) {
+                        var design = '<div class="imageuploadify-container" data-attachment_id="' + attachment.id + '" style="margin-left: 0px; margin-right: 0px;">' +
+                            '<div class="imageuploadify-btn-remove"><button type="button" class="btn btn-danger glyphicon glyphicon-remove"></button></div>' +
+                            '<div class="imageuploadify-details"><div class="imageuploadify-file-icon"></div><span class="imageuploadify-file-name">' + attachment.name + '' +
+                            '</span><span class="imageuploadify-file-type">image/jpeg</span>' +
+                            '<span class="imageuploadify-file-size">369960</span></div>' +
+                            '</div>';
+                        $('.imageuploadify-images-list').append(design);
+                    });
+                }
             }
             $rootScope.loading = false;
         });
@@ -126,6 +145,14 @@ app.component('serviceInvoiceForm', {
         $('.docDatePicker').bootstrapDP({
             endDate: 'today',
             todayHighlight: true
+        });
+
+        //ATTACHMENT REMOVE
+        $(document).on('click', ".main-wrap .imageuploadify-container .imageuploadify-btn-remove button", function() {
+            var attachment_id = $(this).parent().parent().data('attachment_id');
+            attachment_removal_ids.push(attachment_id);
+            $('#attachment_removal_ids').val(JSON.stringify(attachment_removal_ids));
+            $(this).parent().parent().remove();
         });
 
         //OBJECT EMPTY CHECK
@@ -336,13 +363,16 @@ app.component('serviceInvoiceForm', {
         }
 
         //REMOVE SERVICE INVOICE ITEM
-        self.removeServiceItem = function(service_invoice_item_id, index) {
+        $scope.removeServiceItem = function(service_invoice_item_id, index) {
             self.service_invoice_item_removal_id = [];
             if (service_invoice_item_id) {
                 self.service_invoice_item_removal_id.push(service_invoice_item_id);
                 $('#service_invoice_item_removal_ids').val(JSON.stringify(self.service_invoice_item_removal_id));
             }
             self.service_invoice.service_invoice_items.splice(index, 1);
+
+            //SERVICE INVOICE ITEMS TABLE CALC
+            $scope.serviceInvoiceItemCalc();
         }
 
         //ITEM TO INVOICE TOTAL AMOUNT CALC
@@ -507,7 +537,7 @@ app.component('serviceInvoiceForm', {
                     required: true,
                 },
                 'proposal_attachments[]': {
-                    required: true,
+                    // required: true,
                 },
             },
             submitHandler: function(form) {

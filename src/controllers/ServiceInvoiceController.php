@@ -1,6 +1,7 @@
 <?php
 
 namespace Abs\ServiceInvoicePkg;
+use Abs\SerialNumberPkg\SerialNumberGroup;
 use Abs\ServiceInvoicePkg\ServiceInvoice;
 use Abs\ServiceInvoicePkg\ServiceInvoiceItem;
 use Abs\ServiceInvoicePkg\ServiceItem;
@@ -9,6 +10,7 @@ use Abs\ServiceInvoicePkg\ServiceItemSubCategory;
 use Abs\TaxPkg\Tax;
 use App\Attachment;
 use App\Customer;
+use App\FinancialYear;
 use App\Http\Controllers\Controller;
 use App\Outlet;
 use App\Sbu;
@@ -160,7 +162,7 @@ class ServiceInvoiceController extends Controller {
 			'taxCode.taxes',
 		])
 			->find($request->service_item_id);
-			//dd($service_item);
+		//dd($service_item);
 		if (!$service_item) {
 			return response()->json(['success' => false, 'error' => 'Service Item not found']);
 		}
@@ -197,10 +199,7 @@ class ServiceInvoiceController extends Controller {
 		$service_item->rate = $request->amount;
 		$service_item->sub_total = intval($request->qty * $request->amount);
 		$service_item->total = intval($request->qty * $request->amount) + $gst_total;
-		/*foreach($request->fields as $key => $field){
 
-		}*/
-/*$service_item->total =*/
 		if ($request->action == 'add') {
 			$add = true;
 			$message = 'Service item added successfully';
@@ -217,6 +216,43 @@ class ServiceInvoiceController extends Controller {
 		// dd($request->all());
 		DB::beginTransaction();
 		try {
+
+			//SERIAL NUMBER GENERATION & VALIDATION
+			if (!$request->id) {
+				//GET FINANCIAL YEAR ID BY DOCUMENT DATE
+				$document_date_year = date('Y', strtotime($request->document_date));
+				$financial_year = FinancialYear::where('from', $document_date_year)
+					->first();
+				if (!$financial_year) {
+					return response()->json(['success' => false, 'errors' => ['No Serial number found']]);
+				}
+				$branch = Outlet::where('id', $request->branch_id)->first();
+
+				//GENERATE SERVICE INVOICE NUMBER
+				$generateNumber = SerialNumberGroup::generateNumber(1, $financial_year->id, $branch->state_id, $branch->id);
+				if (!$generateNumber['success']) {
+					return response()->json(['success' => false, 'errors' => ['No Serial number found']]);
+				}
+
+				$generateNumber['service_invoice_id'] = $request->id;
+
+				$error_messages_1 = [
+					'number.required' => 'Serial number is required',
+					'number.unique' => 'Serial number is already taken',
+				];
+
+				$validator_1 = Validator::make($generateNumber, [
+					'number' => [
+						'required',
+						'unique:service_invoices,number,' . $request->id . ',id,company_id,' . Auth::user()->company_id,
+					],
+				], $error_messages_1);
+
+				if ($validator_1->fails()) {
+					return response()->json(['success' => false, 'errors' => $validator_1->errors()->all()]);
+				}
+
+			}
 
 			$error_messages = [
 				'branch_id.required' => 'Branch is required',
@@ -257,14 +293,15 @@ class ServiceInvoiceController extends Controller {
 					'required:true',
 					'mimes:jpg,jpeg,png,bmp',
 				],
-				'number' => [
-					// 'unique:service_invoices,number,' . $request->id . ',id,company_id,' . Auth::user()->company_id,
-					'required:true',
-				],
 			], $error_messages);
 
 			if ($validator->fails()) {
 				return response()->json(['success' => false, 'errors' => $validator->errors()->all()]);
+			}
+
+			//VALIDATE SERVICE INVOICE ITEMS
+			if (!$request->service_invoice_items) {
+				return response()->json(['success' => false, 'errors' => ['Service invoice item is required']]);
 			}
 
 			if ($request->id) {
@@ -275,6 +312,7 @@ class ServiceInvoiceController extends Controller {
 				$service_invoice = new ServiceInvoice();
 				$service_invoice->created_at = date("Y-m-d H:i:s");
 				$service_invoice->created_by_id = Auth()->user()->id;
+				$service_invoice->number = $generateNumber['number'];
 			}
 
 			$service_invoice->fill($request->all());
@@ -319,6 +357,12 @@ class ServiceInvoiceController extends Controller {
 						}
 					}
 				}
+			}
+
+			//ATTACHMENT REMOVAL
+			$attachment_removal_ids = json_decode($request->attachment_removal_ids);
+			if (!empty($attachment_removal_ids)) {
+				Attachment::whereIn('id', $attachment_removal_ids)->forceDelete();
 			}
 
 			//SAVE ATTACHMENTS

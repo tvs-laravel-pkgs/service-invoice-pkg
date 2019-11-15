@@ -15,6 +15,19 @@ class ServiceItemCategory extends Model {
 		'deleted_by_id',
 	];
 
+	public static function createFromCollection($records) {
+		foreach ($records as $key => $record_data) {
+			try {
+				if (!$record_data->company) {
+					continue;
+				}
+				$record = self::createFromObject($record_data);
+			} catch (Exception $e) {
+				dd($e);
+			}
+		}
+	}
+
 	public static function createFromObject($record_data) {
 		$company = Company::where('code', $record_data->company)->first();
 		$admin = $company->admin();
@@ -38,21 +51,8 @@ class ServiceItemCategory extends Model {
 		return $record;
 	}
 
-	public static function createFromCollection($records) {
-		foreach ($records as $key => $record_data) {
-			try {
-				if (!$record_data->company) {
-					continue;
-				}
-				$record = self::createFromObject($record_data);
-			} catch (Exception $e) {
-				dd($e);
-			}
-		}
-	}
-
 	public function subCategory() {
-		return $this->hasMany('Abs\ServiceInvoicePkg\ServiceItemSubCategory','category_id')->withTrashed();
+		return $this->hasMany('Abs\ServiceInvoicePkg\ServiceItemSubCategory', 'category_id')->withTrashed();
 	}
 
 }
