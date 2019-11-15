@@ -171,9 +171,13 @@ class ServiceItemCategoryController extends Controller {
                 $sub_category_removal_id = json_decode($request->sub_category_removal_id, true);
                 ServiceItemSubCategory::whereIn('id', $sub_category_removal_id)->forceDelete();
             }
-
+            if($request->id){
+				$message='Service item category updated successfully';
+            }else{
+            	$message='Service item category saved successfully';
+            }
 			DB::commit();
-			return response()->json(['success' => true, 'message' => 'Service item category saved successfully']);
+			return response()->json(['success' => true, 'message' => $message]);
 		} catch (Exception $e) {
 			DB::rollBack();
 			// dd($e->getMessage());
