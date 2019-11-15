@@ -141,7 +141,8 @@ class ServiceInvoiceController extends Controller {
 		if (!$customer) {
 			return response()->json(['success' => false, 'error' => 'Customer not found']);
 		}
-		$customer->formatted_address = $customer->getFormattedAddress();
+		// $customer->formatted_address = $customer->getFormattedAddress();
+		$customer->formatted_address = $customer->primaryAddress ? $customer->primaryAddress->getFormattedAddress() : 'NA';
 		return response()->json([
 			'success' => true,
 			'customer' => $customer,
