@@ -154,11 +154,13 @@ class ServiceInvoiceController extends Controller {
 		$service_item = ServiceItem::with([
 			'fieldGroups',
 			'fieldGroups.fields',
+			'fieldGroups.fields.fieldType',
 			'coaCode',
 			'taxCode',
 			'taxCode.taxes',
 		])
 			->find($request->service_item_id);
+			//dd($service_item);
 		if (!$service_item) {
 			return response()->json(['success' => false, 'error' => 'Service Item not found']);
 		}
@@ -166,7 +168,7 @@ class ServiceInvoiceController extends Controller {
 	}
 
 	public function getServiceItem(Request $request) {
-		// dump($request->all());
+		dd($request->all());
 		$service_item = ServiceItem::with([
 			'coaCode',
 			'taxCode',
@@ -195,7 +197,10 @@ class ServiceInvoiceController extends Controller {
 		$service_item->rate = $request->amount;
 		$service_item->sub_total = intval($request->qty * $request->amount);
 		$service_item->total = intval($request->qty * $request->amount) + $gst_total;
+		foreach($request->fields as $key => $field){
 
+		}
+$service_item->total =
 		if ($request->action == 'add') {
 			$add = true;
 			$message = 'Service item added successfully';

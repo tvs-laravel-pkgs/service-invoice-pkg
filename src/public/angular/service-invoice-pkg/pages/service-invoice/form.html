@@ -346,6 +346,13 @@
                             <h6>{{field_group.name}}</h6>
                             <ul class="table-form-list">
                                 <li ng-repeat="(field_index, field) in field_group.fields">
+                                    
+                                    <div class="table-form-list-wrap">
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory">*</span></label>
+                                        <div class="table-form-list-control" ng-show="field.field_type.name ='Free Text Box'">
+                                            <input name="fields[{{field_group.name}}][{{field.name}}]" ng-model="$ctrl.rate1" type="text" class="form-control type-sm required" placeholder="Enter {{field.name}}"/>
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
                                 </li>
                             </ul>
                         </div>

@@ -221,7 +221,7 @@ app.component('serviceInvoiceForm', {
             ).then(function(response) {
                 if (response.data.success) {
                     self.service_item_detail = response.data.service_item;
-
+                    console.log(response.data.service_item);
                     //AMOUNT CALCULATION
                     $scope.totalAmountCalc();
                 } else {
@@ -432,6 +432,7 @@ app.component('serviceInvoiceForm', {
                                 $noty.close();
                             }, 5000);
                         } else {
+                            console.log(res.service_item);
                             if (!self.service_invoice.service_invoice_items) {
                                 self.service_invoice.service_invoice_items = [];
                             }
