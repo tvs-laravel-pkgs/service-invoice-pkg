@@ -168,7 +168,7 @@ class ServiceInvoiceController extends Controller {
 	}
 
 	public function getServiceItem(Request $request) {
-		dd($request->all());
+		//dd($request->all());
 		$service_item = ServiceItem::with([
 			'coaCode',
 			'taxCode',
@@ -197,10 +197,10 @@ class ServiceInvoiceController extends Controller {
 		$service_item->rate = $request->amount;
 		$service_item->sub_total = intval($request->qty * $request->amount);
 		$service_item->total = intval($request->qty * $request->amount) + $gst_total;
-		foreach($request->fields as $key => $field){
+		/*foreach($request->fields as $key => $field){
 
-		}
-$service_item->total =
+		}*/
+/*$service_item->total =*/
 		if ($request->action == 'add') {
 			$add = true;
 			$message = 'Service item added successfully';
