@@ -55,4 +55,16 @@ class ServiceInvoice extends Model {
 		return $this->hasMany('App\Attachment', 'entity_id', 'id');
 	}
 
+	public function outlets() {
+		return $this->belongsTo('App\Outlet', 'branch_id', 'id');
+	}
+
+	public function sbus() {
+		return $this->belongsTo('App\Sbu', 'sbu_id', 'id');
+	}
+
+	public function company() {
+		return $this->belongsTo('App\Company', 'company_id', 'id');
+	}
+
 }
