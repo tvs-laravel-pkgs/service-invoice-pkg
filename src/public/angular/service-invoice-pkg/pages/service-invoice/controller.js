@@ -370,6 +370,9 @@ app.component('serviceInvoiceForm', {
                 $('#service_invoice_item_removal_ids').val(JSON.stringify(self.service_invoice_item_removal_id));
             }
             self.service_invoice.service_invoice_items.splice(index, 1);
+
+            //SERVICE INVOICE ITEMS TABLE CALC
+            $scope.serviceInvoiceItemCalc();
         }
 
         //ITEM TO INVOICE TOTAL AMOUNT CALC

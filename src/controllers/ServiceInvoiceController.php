@@ -299,6 +299,11 @@ class ServiceInvoiceController extends Controller {
 				return response()->json(['success' => false, 'errors' => $validator->errors()->all()]);
 			}
 
+			//VALIDATE SERVICE INVOICE ITEMS
+			if (!$request->service_invoice_items) {
+				return response()->json(['success' => false, 'errors' => ['Service invoice item is required']]);
+			}
+
 			if ($request->id) {
 				$service_invoice = ServiceInvoice::find($request->id);
 				$service_invoice->updated_at = date("Y-m-d H:i:s");
