@@ -79,6 +79,18 @@ class ServiceInvoice extends Model {
 		}
 	}
 
+	public function outlets() {
+		return $this->belongsTo('App\Outlet', 'branch_id', 'id');
+	}
+
+	public function sbus() {
+		return $this->belongsTo('App\Sbu', 'sbu_id', 'id');
+	}
+
+	public function company() {
+		return $this->belongsTo('App\Company', 'company_id', 'id');
+	}
+
 	public static function createFromObject($record_data) {
 		$company = Company::where('code', $record_data->company)->first();
 		$admin = $company->admin();
@@ -132,4 +144,5 @@ class ServiceInvoice extends Model {
 		$record->save();
 		return $record;
 	}
+
 }
