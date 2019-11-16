@@ -309,11 +309,13 @@ class ServiceInvoiceController extends Controller {
 				$service_invoice = ServiceInvoice::find($request->id);
 				$service_invoice->updated_at = date("Y-m-d H:i:s");
 				$service_invoice->updated_by_id = Auth()->user()->id;
+				$message = 'Service invoice updated successfully';
 			} else {
 				$service_invoice = new ServiceInvoice();
 				$service_invoice->created_at = date("Y-m-d H:i:s");
 				$service_invoice->created_by_id = Auth()->user()->id;
 				$service_invoice->number = $generateNumber['number'];
+				$message = 'Service invoice added successfully';
 			}
 
 			$service_invoice->fill($request->all());
@@ -386,7 +388,7 @@ class ServiceInvoiceController extends Controller {
 			}
 
 			DB::commit();
-			return response()->json(['success' => true, 'message' => 'Service invoice saved successfully']);
+			return response()->json(['success' => true, 'message' => $message]);
 		} catch (Exception $e) {
 			DB::rollBack();
 			// dd($e->getMessage());
