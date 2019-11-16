@@ -337,7 +337,7 @@ app.component('serviceInvoiceForm', {
                         self.service_item_detail = response.data.service_item;
                         self.service_item = response.data.service_item;
                         self.description = description;
-                        self.qty = qty;
+                        self.qty = parseInt(qty);
                         self.rate = rate;
 
                         //AMOUNT CALCULATION
