@@ -30,7 +30,7 @@
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Branch <span class="mandatory">*</span></label>
                                                     <div class="table-form-list-control">
-                                                        <md-select class="type-sm" ng-model="$ctrl.service_invoice.branch_id" placeholder="Select Branch" md-on-close="clearSearchBranch()" data-md-container-class="selectdemoSelectHeader">
+                                                        <md-select class="type-sm" ng-model="$ctrl.service_invoice.branch_id" placeholder="Select Branch" md-on-close="clearSearchBranch()" data-md-container-class="selectdemoSelectHeader" ng-change="getSbuByBranch($ctrl.service_invoice.branch_id)">
                                                             <md-select-header class="demo-select-header">
                                                                 <input ng-model="searchBranch" type="search" placeholder="Search for a branch.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
                                                             </md-select-header>

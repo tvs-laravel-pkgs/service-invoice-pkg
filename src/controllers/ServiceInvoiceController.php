@@ -118,7 +118,8 @@ class ServiceInvoiceController extends Controller {
 
 		$this->data['extras'] = [
 			'branch_list' => collect(Outlet::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Branch']),
-			'sbu_list' => collect(Sbu::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Sbu']),
+			// 'sbu_list' => collect(Sbu::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Sbu']),
+			'sbu_list' => [],
 			'tax_list' => Tax::select('name', 'id')->where('company_id', Auth::user()->company_id)->get(),
 			'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
 			'sub_category_list' => [],
@@ -130,6 +131,10 @@ class ServiceInvoiceController extends Controller {
 
 	public function getServiceItemSubCategories($service_item_category_id) {
 		return ServiceItemSubCategory::getServiceItemSubCategories($service_item_category_id);
+	}
+
+	public function getSbus($outlet_id) {
+		return Sbu::getSbus($outlet_id);
 	}
 
 	public function searchCustomer(Request $r) {

@@ -3,6 +3,9 @@ app.component('serviceInvoiceList', {
     controller: function($http, $location, HelperService, $scope, $routeParams, $rootScope, $element) {
         var self = this;
         self.hasPermission = HelperService.hasPermission;
+        var table_scroll;
+        table_scroll = $('.page-main-content').height() - 37;
+
         var dataTable = $('#service-invoice-table').dataTable({
             "dom": cndn_dom_structure,
             "language": {
@@ -14,6 +17,8 @@ app.component('serviceInvoiceList', {
                     "previous": '<i class="icon ion-ios-arrow-back"></i>'
                 },
             },
+            scrollY: table_scroll + "px",
+            scrollCollapse: true,
             stateSave: true,
             stateSaveCallback: function(settings, data) {
                 localStorage.setItem('SIDataTables_' + settings.sInstance, JSON.stringify(data));
@@ -109,10 +114,12 @@ app.component('serviceInvoiceForm', {
                     $scope.getServiceItemSubCategoryByServiceItemCategory(self.service_invoice.service_item_sub_category.category_id);
                 }, 1000);
                 $timeout(function() {
+                    $scope.getSbuByBranch(self.service_invoice.branch_id);
+                }, 1200);
+                $timeout(function() {
                     $scope.serviceInvoiceItemCalc();
                 }, 1500);
 
-                console.log(self.service_invoice.attachments.length);
                 //ATTACHMENTS
                 if (self.service_invoice.attachments.length) {
                     $(self.service_invoice.attachments).each(function(key, attachment) {
@@ -271,6 +278,32 @@ app.component('serviceInvoiceForm', {
             self.service_item_detail = {};
         }
 
+
+        //GET SBU BY BRANCH
+        $scope.getSbuByBranch = function(branch_id) {
+            self.extras.sbu_list = [];
+            if (branch_id) {
+                $.ajax({
+                        url: get_sbu_url + '/' + branch_id,
+                        method: "GET",
+                    })
+                    .done(function(res) {
+                        if (!res.success) {
+                            new Noty({
+                                type: 'error',
+                                layout: 'topRight',
+                                text: res.error
+                            }).show();
+                        } else {
+                            self.extras.sbu_list = res.sbu_list;
+                            $scope.$apply()
+                        }
+                    })
+                    .fail(function(xhr) {
+                        console.log(xhr);
+                    });
+            }
+        }
 
         //GET SERVICE ITEM SUB CATEGORY BY CATEGORY
         $scope.getServiceItemSubCategoryByServiceItemCategory = function(category_id) {
