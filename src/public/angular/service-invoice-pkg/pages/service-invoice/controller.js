@@ -236,8 +236,8 @@ app.component('serviceInvoiceForm', {
 
         //GET SERVICE ITEM DETAILS
         self.getServiceItemDetails = function() {
-            console.log(' == md change ==');
-            console.log(self.service_item);
+            // console.log(' == md change ==');
+            // console.log(self.service_item);
             if (!self.service_item) {
                 return
             }
@@ -462,7 +462,8 @@ app.component('serviceInvoiceForm', {
                                 $noty.close();
                             }, 5000);
                         } else {
-                            console.log(res.service_item);
+                            // console.log(res.service_item);
+                            $('#modal-cn-addnew').modal('toggle');
                             if (!self.service_invoice.service_invoice_items) {
                                 self.service_invoice.service_invoice_items = [];
                             }
@@ -479,7 +480,6 @@ app.component('serviceInvoiceForm', {
 
                             $scope.$apply()
                             $('#addServiceItem').button('reset');
-                            $('#modal-cn-addnew').modal('toggle');
 
                             $noty = new Noty({
                                 type: 'success',
