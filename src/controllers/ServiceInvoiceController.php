@@ -9,6 +9,7 @@ use Abs\ServiceInvoicePkg\ServiceItemCategory;
 use Abs\ServiceInvoicePkg\ServiceItemSubCategory;
 use Abs\TaxPkg\Tax;
 use App\Attachment;
+use App\Company;
 use App\Customer;
 use App\FinancialYear;
 use App\Http\Controllers\Controller;
@@ -68,7 +69,7 @@ class ServiceInvoiceController extends Controller {
                         <a href="#!/service-invoice-pkg/service-invoice/edit/' . $service_invoice_list->id . '" class="">
                         <img class="img-responsive" src="' . $img_edit . '" alt="Edit" />
                     	</a>
-						<a href="#!" class="">
+						<a href="' . route("downloadPdf", ["id" => $service_invoice_list->id]) . '" class="">
                                         <img class="img-responsive" src="' . $img_download . '" alt="Download" />
                                     </a>';
 			})
@@ -392,6 +393,35 @@ class ServiceInvoiceController extends Controller {
 			// dd($e->getMessage());
 			return response()->json(['success' => false, 'errors' => ['Exception Error' => $e->getMessage()]]);
 		}
+	}
+
+	public function downloadPdf($service_invoice_pdf_id) {
+
+		$service_invoice_pdf = ServiceInvoice::with([
+			'company',
+			'customer',
+			'outlets',
+			'sbus',
+			'serviceInvoiceItems',
+			'serviceInvoiceItems.serviceItem',
+			'serviceInvoiceItems.serviceItem.taxCode',
+			'serviceInvoiceItems.taxes',
+		])->find($service_invoice_pdf_id);
+
+		$service_invoice_pdf->company->formatted_address = $service_invoice_pdf->company->primaryAddress ? $service_invoice_pdf->company->primaryAddress->getFormattedAddress() : 'NA';
+		$service_invoice_pdf->outlets->formatted_address = $service_invoice_pdf->outlets->primaryAddress ? $service_invoice_pdf->outlets->primaryAddress->getFormattedAddress() : 'NA';
+		$service_invoice_pdf->customer->formatted_address = $service_invoice_pdf->customer->primaryAddress ? $service_invoice_pdf->customer->primaryAddress->getFormattedAddress() : 'NA';
+
+		$this->data['service_invoice_pdf'] = $service_invoice_pdf;
+		dd($this->data['service_invoice_pdf']);
+
+		$headers = array(
+			'Content-Type: application/pdf',
+		);
+		$pdf = PDF::loadView('service-invoice/index', $this->data);
+		$po_file_name = 'Invoice-' . $service_invoice_pdf->number . '.pdf';
+
+		return $pdf->download($po_file_name, $headers);
 	}
 
 }
