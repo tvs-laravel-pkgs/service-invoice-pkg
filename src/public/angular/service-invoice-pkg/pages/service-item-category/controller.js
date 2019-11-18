@@ -144,7 +144,7 @@ app.component('serviceItemCategoryForm', {
         });
 
         /* Image Uploadify Funtion */
-        $('.image_uploadify').imageuploadify();
+        //$('.image_uploadify').imageuploadify();
 
         // FIELDS
         $scope.addNewSubCategory = function() {
