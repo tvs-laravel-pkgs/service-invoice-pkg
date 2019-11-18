@@ -82,7 +82,7 @@
                                                         <tr ng-repeat="(index, sub_category) in $ctrl.service_item_category.sub_category">
                                                             <input type="hidden" ng-model="sub_category.id" name="sub_category[{{index}}][id]" value="{{sub_category.id}}">
                                                             <td>
-                                                                <input type="text" class="form-control type-sm required" ng-model="sub_category.name" name="sub_category[{{index}}][name]" placeholder="Enter Sub Category Name" />
+                                                                <input type="text" class="form-control type-sm required" ng-model="sub_category.name" name="sub_category[{{index}}][name]" placeholder="Enter Sub Category Name" minlength="3" maxlength="191" autocomplete="off" />
                                                             </td>
                                                             <td>
                                                                 <div class="tab-switch">

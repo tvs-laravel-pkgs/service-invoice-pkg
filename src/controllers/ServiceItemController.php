@@ -170,10 +170,14 @@ class ServiceItemController extends Controller {
 				$field_groups=json_decode($request->field_group_id);
 				$service_item->fieldGroups()->sync($field_groups);
 			}
-			
+			if($request->id){
+				$message='Service item updated successfully';
+            }else{
+            	$message='Service item saved successfully';
+            }
 
 			DB::commit();
-			return response()->json(['success' => true, 'message' => 'Service item saved successfully']);
+			return response()->json(['success' => true, 'message' => $message]);
 		} catch (Exception $e) {
 			DB::rollBack();
 			// dd($e->getMessage());
