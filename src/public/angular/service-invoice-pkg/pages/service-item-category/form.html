@@ -41,6 +41,7 @@
                                             <div class="input-text form-group">
                                                 <label>Category name <sup class="mandatory">*</sup></label>
                                                 <input name="name" class="form-control" placeholder="Enter Category" autocomplete="off" ng-model="$ctrl.service_item_category.name" value="{{$ctrl.service_item_category.name}}" />
+                                                <div class="category_name_error"></div>
                                             </div><!-- Feild -->
                                         </div><!-- Column -->
                                         <div class="col-md-3">
@@ -73,7 +74,7 @@
                                                 <table class="table table-form">
                                                     <thead>
                                                         <tr>
-                                                            <th>Sub Category Name</th>
+                                                            <th>Sub Category Name<sup class="mandatory">*</sup></th>
                                                             <th>Active Status</th>
                                                             <th></th>
                                                         </tr>
@@ -82,7 +83,7 @@
                                                         <tr ng-repeat="(index, sub_category) in $ctrl.service_item_category.sub_category">
                                                             <input type="hidden" ng-model="sub_category.id" name="sub_category[{{index}}][id]" value="{{sub_category.id}}">
                                                             <td>
-                                                                <input type="text" class="form-control type-sm required" ng-model="sub_category.name" name="sub_category[{{index}}][name]" placeholder="Enter Sub Category Name" />
+                                                                <input type="text" class="form-control type-sm sub_category_name required" ng-model="sub_category.name" name="sub_category[{{index}}][name]" placeholder="Enter Sub Category Name" maxlength="191" autocomplete="off" />
                                                             </td>
                                                             <td>
                                                                 <div class="tab-switch">
