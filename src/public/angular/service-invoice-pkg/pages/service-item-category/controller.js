@@ -181,7 +181,9 @@ app.component('serviceItemCategoryForm', {
                 }, 5000);
             },
             errorPlacement: function(error, element) {
-                error.insertAfter(element)
+                if (element.attr('name') == 'name') {
+                    error.appendTo($('.category_name_error'));
+                }
             },
             ignore: '',
             rules: {
@@ -190,6 +192,11 @@ app.component('serviceItemCategoryForm', {
                     minlength: 3,
                     maxlength: 191,
                 },
+            },
+            messages: {
+                'name': {
+                    minlength: 'Minimum of 3 charaters',
+                }
             },
             submitHandler: function(form) {
 

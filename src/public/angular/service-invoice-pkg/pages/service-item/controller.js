@@ -190,8 +190,15 @@ app.component('serviceItemForm', {
                  }, 5000);
              },*/
             errorPlacement: function(error, element) {
-                error.insertAfter(element)
+                if (element.attr('name') == 'code') {
+                    error.appendTo($('.item_code_error'));
+                } else if (element.attr('name') == 'name') {
+                    error.appendTo($('.item_name_error'));
+                } else {
+                    error.insertAfter(element)
+                }
             },
+
             ignore: '',
             rules: {
                 'code': {
@@ -219,6 +226,14 @@ app.component('serviceItemForm', {
                 'field_group_id': {
                     required: true,
                 },
+            },
+            messages: {
+                'code': {
+                    minlength: 'Minimum of 3 charaters',
+                },
+                'name': {
+                    minlength: 'Minimum of 3 charaters',
+                }
             },
             submitHandler: function(form) {
 
