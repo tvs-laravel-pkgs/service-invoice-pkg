@@ -187,6 +187,7 @@ app.component('serviceItemCategoryForm', {
             rules: {
                 'name': {
                     required: true,
+                    minlength: 3,
                     maxlength: 191,
                 },
             },

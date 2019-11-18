@@ -176,19 +176,19 @@ app.component('serviceItemForm', {
 
         var form_id = '#form';
         var v = jQuery(form_id).validate({
-            invalidHandler: function(event, validator) {
-                $noty = new Noty({
-                    type: 'error',
-                    layout: 'topRight',
-                    text: 'Kindly check in each tab to fix errors',
-                    animation: {
-                        speed: 500 // unavailable - no need
-                    },
-                }).show();
-                setTimeout(function() {
-                    $noty.close();
-                }, 5000);
-            },
+            /* invalidHandler: function(event, validator) {
+                 $noty = new Noty({
+                     type: 'error',
+                     layout: 'topRight',
+                     text: 'Kindly check in each tab to fix errors',
+                     animation: {
+                         speed: 500 // unavailable - no need
+                     },
+                 }).show();
+                 setTimeout(function() {
+                     $noty.close();
+                 }, 5000);
+             },*/
             errorPlacement: function(error, element) {
                 error.insertAfter(element)
             },
@@ -196,10 +196,12 @@ app.component('serviceItemForm', {
             rules: {
                 'code': {
                     required: true,
+                    minlength: 3,
                     maxlength: 191,
                 },
                 'name': {
                     required: true,
+                    minlength: 3,
                     maxlength: 191,
                 },
                 'main_category_id': {
