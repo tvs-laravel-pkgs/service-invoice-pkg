@@ -164,7 +164,11 @@ app.component('serviceItemCategoryForm', {
 
             self.service_item_category.sub_category.splice(index, 1);
         }
-
+        $.validator.messages.minlength = 'Minimum of 3 charaters';
+        jQuery.validator.addClassRules("sub_category_name", {
+            required: true,
+            minlength: 3
+        });
         var form_id = '#form';
         var v = jQuery(form_id).validate({
             invalidHandler: function(event, validator) {
@@ -180,11 +184,11 @@ app.component('serviceItemCategoryForm', {
                     $noty.close();
                 }, 5000);
             },
-            errorPlacement: function(error, element) {
+            /*errorPlacement: function(error, element) {
                 if (element.attr('name') == 'name') {
                     error.appendTo($('.category_name_error'));
                 }
-            },
+            },*/
             ignore: '',
             rules: {
                 'name': {

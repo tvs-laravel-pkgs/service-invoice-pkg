@@ -152,7 +152,7 @@ app.component('serviceItemForm', {
         });
 
         /* Image Uploadify Funtion */
-        //$('.image_uploadify').imageuploadify();
+        /*$('.image_uploadify').imageuploadify();*/
 
         $scope.onSelectedCategory = function($id) {
             //alert($id);
