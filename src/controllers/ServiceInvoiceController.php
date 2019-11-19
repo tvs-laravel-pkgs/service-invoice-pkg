@@ -1,6 +1,9 @@
 <?php
 
 namespace Abs\ServiceInvoicePkg;
+use Abs\AttributePkg\Field;
+use Abs\AttributePkg\FieldGroup;
+use Abs\AttributePkg\FieldSourceTable;
 use Abs\SerialNumberPkg\SerialNumberGroup;
 use Abs\ServiceInvoicePkg\ServiceInvoice;
 use Abs\ServiceInvoicePkg\ServiceInvoiceItem;
@@ -89,6 +92,8 @@ class ServiceInvoiceController extends Controller {
 				'customer',
 				'serviceInvoiceItems',
 				'serviceInvoiceItems.serviceItem',
+				'serviceInvoiceItems.eavVarchars',
+				'serviceInvoiceItems.eavInts',
 				'serviceInvoiceItems.taxes',
 				'serviceItemSubCategory',
 			])->find($id);
@@ -96,9 +101,40 @@ class ServiceInvoiceController extends Controller {
 				return response()->json(['success' => false, 'error' => 'Service Invoice not found']);
 			}
 
-			$gst_total = 0;
 			if (count($service_invoice->serviceInvoiceItems) > 0) {
+				$gst_total = 0;
 				foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
+					//FIELD GROUPS AND FIELDS INTEGRATION
+					if (count($serviceInvoiceItem->eavVarchars) > 0) {
+						$eav_varchar_field_group_ids = $serviceInvoiceItem->eavVarchars()->pluck('field_group_id')->toArray();
+					} else {
+						$eav_varchar_field_group_ids = [];
+					}
+					if (count($serviceInvoiceItem->eavInts) > 0) {
+						$eav_int_field_group_ids = $serviceInvoiceItem->eavInts()->pluck('field_group_id')->toArray();
+					} else {
+						$eav_int_field_group_ids = [];
+					}
+					$field_group_ids = array_unique(array_merge($eav_varchar_field_group_ids, $eav_int_field_group_ids));
+
+					if (!empty($field_group_ids)) {
+						foreach ($field_group_ids as $fg_key => $fg_id) {
+							$fd_varchar_array = [];
+							$fd_int_array = [];
+							$fd_main_varchar_array = [];
+							$fd_varchar_array = DB::table('eav_varchar')->where('entity_type_id', 1040)->where('entity_id', $serviceInvoiceItem->id)->where('field_group_id', $fg_id)->select('field_id as id', 'value')->get()->toArray();
+							$fd_int_array = DB::table('eav_int')->where('entity_type_id', 1040)->where('entity_id', $serviceInvoiceItem->id)->where('field_group_id', $fg_id)->select('field_id as id', 'value')->get()->toArray();
+							$fd_main_varchar_array = array_merge($fd_varchar_array, $fd_int_array);
+							$serviceInvoiceItem->field_groups = [
+								$fg_key => [
+									'id' => $fg_id,
+									'fields' => $fd_main_varchar_array,
+								],
+							];
+						}
+					}
+
+					//TAX CALC
 					if (count($serviceInvoiceItem->taxes) > 0) {
 						foreach ($serviceInvoiceItem->taxes as $key => $value) {
 							$gst_total += intval($value->pivot->amount);
@@ -142,17 +178,12 @@ class ServiceInvoiceController extends Controller {
 		return Customer::searchCustomer($r);
 	}
 
+	public function searchField(Request $r) {
+		return Field::searchField($r);
+	}
+
 	public function getCustomerDetails(Request $request) {
-		$customer = Customer::find($request->customer_id);
-		if (!$customer) {
-			return response()->json(['success' => false, 'error' => 'Customer not found']);
-		}
-		// $customer->formatted_address = $customer->getFormattedAddress();
-		$customer->formatted_address = $customer->primaryAddress ? $customer->primaryAddress->getFormattedAddress() : 'NA';
-		return response()->json([
-			'success' => true,
-			'customer' => $customer,
-		]);
+		return Customer::getDetails($request);
 	}
 
 	public function searchServiceItem(Request $r) {
@@ -160,34 +191,146 @@ class ServiceInvoiceController extends Controller {
 	}
 
 	public function getServiceItemDetails(Request $request) {
-		$service_item = ServiceItem::with([
-			'fieldGroups',
-			'fieldGroups.fields',
-			'fieldGroups.fields.fieldType',
-			'coaCode',
-			'taxCode',
-			'taxCode.taxes',
-		])
-			->find($request->service_item_id);
-		//dd($service_item);
-		if (!$service_item) {
-			return response()->json(['success' => false, 'error' => 'Service Item not found']);
+		if ($request->btn_action == 'add') {
+			$service_item = ServiceItem::with([
+				'fieldGroups',
+				'fieldGroups.fields',
+				'fieldGroups.fields.fieldType',
+				'coaCode',
+				'taxCode',
+				'taxCode.taxes',
+			])
+				->find($request->service_item_id);
+			if (!$service_item) {
+				return response()->json(['success' => false, 'error' => 'Service Item not found']);
+			}
+
+			if (count($service_item->fieldGroups) > 0) {
+				foreach ($service_item->fieldGroups as $key => $fieldGroup) {
+					if (count($fieldGroup->fields) > 0) {
+						foreach ($fieldGroup->fields as $key => $field) {
+							if ($field->type_id == 1) {
+								if ($field->list_source_id == 1180) {
+									$source_table = FieldSourceTable::find($field->source_table_id);
+									if (!$source_table) {
+										$field->get_list = [];
+									} else {
+										$nameSpace = '\\App\\';
+										$entity = $source_table->model;
+										$model = $nameSpace . $entity;
+										$placeholder = 'Select ' . $entity;
+										$field->get_list = collect($model::select('name', 'id')->get())->prepend(['id' => '', 'name' => $placeholder]);
+									}
+								} else {
+									$field->get_list = [];
+								}
+							}
+						}
+					}
+				}
+			}
+		} else {
+			$service_item = ServiceItem::with([
+				'coaCode',
+				'taxCode',
+				'taxCode.taxes',
+			])
+				->find($request->service_item_id);
+			if (!$service_item) {
+				return response()->json(['success' => false, 'error' => 'Service Item not found']);
+			}
+			if (count($request->field_groups) > 0) {
+				//FIELDGROUPS
+				foreach ($request->field_groups as $fg_key => $fg) {
+					$fg_v = FieldGroup::find($fg['id']);
+
+					//FIELDS
+					if (count($fg['fields']) > 0) {
+						foreach ($fg['fields'] as $fd_key => $fd) {
+							$field = Field::find($fd['id']);
+							$fg_v->fields[$fd_key] = Field::find($fd['id']);
+							if ($field->type_id == 1) {
+								if ($field->list_source_id == 1180) {
+									$source_table = FieldSourceTable::find($field->source_table_id);
+									if (!$source_table) {
+										$fg_v->fields[$fd_key]->get_list = [];
+										$fg_v->fields[$fd_key]->value = $fd['value'];
+									} else {
+										$nameSpace = '\\App\\';
+										$entity = $source_table->model;
+										$model = $nameSpace . $entity;
+										$placeholder = 'Select ' . $entity;
+										$fg_v->fields[$fd_key]->get_list = collect($model::select('name', 'id')->get())->prepend(['id' => '', 'name' => $placeholder]);
+										$fg_v->fields[$fd_key]->value = $fd['value'];
+									}
+								} else {
+									$fg_v->fields[$fd_key]->get_list = [];
+									$fg_v->fields[$fd_key]->value = $fd['value'];
+								}
+							} elseif ($field->type_id == 3 || $field->type_id == 4) {
+								$fg_v->fields[$fd_key]->value = $fd['value'];
+							} elseif ($field->type_id == 10) {
+								if ($field->list_source_id == 1180) {
+									$source_table = FieldSourceTable::find($field->source_table_id);
+									if (!$source_table) {
+										$fg_v->fields[$fd_key]->autoval = [];
+									} else {
+										$nameSpace = '\\App\\';
+										$entity = $source_table->model;
+										$model = $nameSpace . $entity;
+										$fg_v->fields[$fd_key]->autoval = $model::where('id', $fd['value'])
+											->select(
+												'id',
+												'name',
+												'code'
+											)
+											->first();
+									}
+								} else {
+									$fg_v->fields[$fd_key]->autoval = [];
+								}
+							}
+							$is_required = DB::table('field_group_field')->where('field_group_id', $fg['id'])->where('field_id', $fd['id'])->first();
+							$fg_v->fields[$fd_key]->pivot = [];
+							if ($is_required) {
+								$fg_v->fields[$fd_key]->pivot = [
+									'is_required' => $is_required->is_required,
+								];
+							} else {
+								$fg_v->fields[$fd_key]->pivot = [
+									'is_required' => 0,
+								];
+							}
+
+						}
+					}
+					//FIELDGROUPS FIELD PUSH
+					$service_item->field_groups = [
+						$fg_key => $fg_v,
+					];
+				}
+			}
 		}
+
 		return response()->json(['success' => true, 'service_item' => $service_item]);
 	}
 
 	public function getServiceItem(Request $request) {
-		//dd($request->all());
+		// dd($request->all());
 		$service_item = ServiceItem::with([
 			'coaCode',
 			'taxCode',
 			'taxCode.taxes',
+			// 'fieldGroups',
+			// 'fieldGroups.fields',
+			// 'fieldGroups.fields.fieldType',
 		])
 			->find($request->service_item_id);
 		if (!$service_item) {
 			return response()->json(['success' => false, 'error' => 'Service Item not found']);
 		}
 
+		//TAX CALC AND PUSH
 		$gst_total = 0;
 		if (count($service_item->taxCode->taxes) > 0) {
 			foreach ($service_item->taxCode->taxes as $key => $value) {
@@ -196,6 +339,13 @@ class ServiceInvoiceController extends Controller {
 					'amount' => intval(($value->pivot->percentage / 100) * ($request->qty * $request->amount)),
 					'percentage' => intval($value->pivot->percentage),
 				];
+			}
+		}
+
+		//FIELD GROUPS PUSH
+		if (isset($request->field_groups)) {
+			if (!empty($request->field_groups)) {
+				$service_item->field_groups = $request->field_groups;
 			}
 		}
 
@@ -220,6 +370,7 @@ class ServiceInvoiceController extends Controller {
 	}
 
 	public function saveServiceInvoice(Request $request) {
+		// dump(Field::get()->keyBy('id'));
 		// dd($request->all());
 		DB::beginTransaction();
 		try {
@@ -351,6 +502,27 @@ class ServiceInvoiceController extends Controller {
 						$service_invoice_item->service_invoice_id = $service_invoice->id;
 						$service_invoice_item->save();
 
+						//SAVE SERVICE INVOICE ITEMS FIELD GROUPS AND RESPECTIVE FIELDS
+						$fields = Field::get()->keyBy('id');
+						$service_invoice_item->eavVarchars()->sync([]);
+						$service_invoice_item->eavInts()->sync([]);
+						if (isset($val['field_groups']) && !empty($val['field_groups'])) {
+							foreach ($val['field_groups'] as $fg_key => $fg_value) {
+								if (isset($fg_value['fields']) && !empty($fg_value['fields'])) {
+									foreach ($fg_value['fields'] as $f_key => $f_value) {
+										//SAVE FREE TEXT | NUMERIC TEXT FIELDS
+										if ($fields[$f_value['id']]->type_id == 3) {
+											$service_invoice_item->eavVarchars()->attach(1040, ['field_group_id' => $fg_value['id'], 'field_id' => $f_value['id'], 'value' => $f_value['value']]);
+
+										} elseif ($fields[$f_value['id']]->type_id == 1 || $fields[$f_value['id']]->type_id == 10) {
+											//SAVE SSDD | MSDD
+											$service_invoice_item->eavInts()->attach(1040, ['field_group_id' => $fg_value['id'], 'field_id' => $f_value['id'], 'value' => $f_value['value']]);
+										}
+									}
+								}
+							}
+						}
+
 						//SAVE SERVICE INVOICE ITEM TAX
 						if (!empty($val['taxes'])) {
 							//VALIDATE UNIQUE
@@ -367,7 +539,7 @@ class ServiceInvoiceController extends Controller {
 					}
 				}
 			}
-
+			// dd(' == exist ==');
 			//ATTACHMENT REMOVAL
 			$attachment_removal_ids = json_decode($request->attachment_removal_ids);
 			if (!empty($attachment_removal_ids)) {
