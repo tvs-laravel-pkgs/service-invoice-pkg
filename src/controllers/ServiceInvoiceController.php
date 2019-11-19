@@ -22,6 +22,7 @@ use Auth;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use PDF;
 use Validator;
 use Yajra\Datatables\Datatables;
 
@@ -580,6 +581,7 @@ class ServiceInvoiceController extends Controller {
 			'company',
 			'customer',
 			'outlets',
+			'outlets.region',
 			'sbus',
 			'serviceInvoiceItems',
 			'serviceInvoiceItems.serviceItem',
@@ -591,13 +593,23 @@ class ServiceInvoiceController extends Controller {
 		$service_invoice_pdf->outlets->formatted_address = $service_invoice_pdf->outlets->primaryAddress ? $service_invoice_pdf->outlets->primaryAddress->getFormattedAddress() : 'NA';
 		$service_invoice_pdf->customer->formatted_address = $service_invoice_pdf->customer->primaryAddress ? $service_invoice_pdf->customer->primaryAddress->getFormattedAddress() : 'NA';
 
+		if (count($service_invoice_pdf->serviceInvoiceItems) > 0) {
+			$array_key_replace = [];
+			foreach ($service_invoice_pdf->serviceInvoiceItems as $key => $serviceInvoiceItem) {
+				$taxes = $serviceInvoiceItem->taxes;
+				foreach ($taxes as $array_key_replace => $tax) {
+					$serviceInvoiceItem[$tax->name] = $tax;
+				}
+			}
+		}
 		$this->data['service_invoice_pdf'] = $service_invoice_pdf;
-		dd($this->data['service_invoice_pdf']);
 
+		$tax_list = Tax::where('company_id', Auth::user()->company_id)->get();
+		$this->data['tax_list'] = $tax_list;
 		$headers = array(
 			'Content-Type: application/pdf',
 		);
-		$pdf = PDF::loadView('service-invoice/index', $this->data);
+		$pdf = PDF::loadView('service-invoices/pdf/index', $this->data);
 		$po_file_name = 'Invoice-' . $service_invoice_pdf->number . '.pdf';
 
 		return $pdf->download($po_file_name, $headers);
