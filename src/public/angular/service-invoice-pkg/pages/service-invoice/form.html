@@ -192,6 +192,16 @@
                                                 <input type="hidden" name="service_invoice_items[{{index}}][qty]" value="{{service_invoice_item.qty}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][rate]" value="{{service_invoice_item.rate}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][sub_total]" value="{{service_invoice_item.sub_total}}">
+                                                <!-- FIELD GROUPS -->
+                                                <td style="display: none;">
+                                                    <span ng-repeat="(index_fg, field_group) in service_invoice_item.field_groups">
+                                                        <input type="hidden" name="service_invoice_items[{{index}}][field_groups][{{index_fg}}][id]" value="{{field_group.id}}">
+                                                        <span ng-repeat="(index_fd, field) in field_group.fields">
+                                                            <input type="hidden" name="service_invoice_items[{{index}}][field_groups][{{index_fg}}][fields][{{index_fd}}][id]" value="{{field.id}}">
+                                                            <input type="hidden" name="service_invoice_items[{{index}}][field_groups][{{index_fg}}][fields][{{index_fd}}][value]" value="{{field.value}}">
+                                                        </span>
+                                                    </span>
+                                                </td>
                                                 <td class="action">
                                                     <a href="javascript:void(0)" ng-click="editServiceItem(service_invoice_item.service_item_id, service_invoice_item.description, service_invoice_item.qty, service_invoice_item.rate,index)">
                                                         <img class="img-responsive" src="./public/theme/img/table/cndn/edit.svg" alt="Edit" />
@@ -345,14 +355,93 @@
                     </div><!-- Row -->
                     <div class="row" ng-if="$ctrl.service_item_detail.field_groups.length > 0">
                         <div class="col-md-6" ng-repeat="(index, field_group) in $ctrl.service_item_detail.field_groups">
+                            <input type="hidden" name="field_groups[{{index}}][id]" value="{{field_group.id}}">
                             <h6>{{field_group.name}}</h6>
                             <ul class="table-form-list">
                                 <li ng-repeat="(field_index, field) in field_group.fields">
-                                    <div class="table-form-list-wrap">
-                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory">*</span></label>
-                                        <div class="table-form-list-control" ng-show="field.field_type.name ='Free Text Box'">
-                                            <input name="fields[{{field_group.name}}][{{field.name}}]" ng-model="$ctrl.rate1" type="text" class="form-control type-sm required" placeholder="Enter {{field.name}}" />
+                                    <!-- SINGLE SELECT DROPDOWN -->
+                                    <div class="table-form-list-wrap" ng-if="field.type_id == 1">
+                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <div class="table-form-list-control">
+                                            <md-select class="type-sm" ng-model="field.value" placeholder="Select {{field.name}}" md-on-close="clearSearch()" data-md-container-class="selectdemoSelectHeader">
+                                                <md-select-header class="demo-select-header">
+                                                    <input ng-model="search" type="search" placeholder="Search for a {{field.name}}.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                                </md-select-header>
+                                                <md-optgroup label="fd">
+                                                    <md-option ng-value="fd.id" ng-repeat="fd in field.get_list | filter:search">{{fd.name}}</md-option>
+                                                </md-optgroup>
+                                            </md-select>
+                                            <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][value]" id="field_groups[{{index}}][fields][{{field_index}}][value]" value="{{field.value}}" ng-class="{required: field.pivot.is_required == '1'}">
                                         </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                    <!-- MULTIPLE SELECT DROPDOWN -->
+                                    <div class="table-form-list-wrap" ng-if="field.type_id == 2">
+                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <div class="table-form-list-control">
+                                            <md-select class="type-sm" ng-model="field.value" placeholder="Select {{field.name}}" md-on-close="clearSearch()" data-md-container-class="selectdemoSelectHeader" multiple>
+                                                <md-select-header class="demo-select-header">
+                                                    <input ng-model="search" type="search" placeholder="Search for a sub category.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                                </md-select-header>
+                                                <md-optgroup label="fd">
+                                                    <md-option ng-value="fd" ng-repeat="fd in field.field_list | filter:search">{{fd.name}}</md-option>
+                                                </md-optgroup>
+                                            </md-select>
+                                            <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][value]" id="field_groups[{{index}}][fields][{{field_index}}][value]" value="{{field.value}}" ng-class="{required: field.pivot.is_required == '1'}">
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                    <!-- FREE TEXT BOX OR NUMERIC TEXT BOX -->
+                                    <div class="table-form-list-wrap" ng-if="field.type_id == 3 || field.type_id == 4">
+                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <div class="table-form-list-control">
+                                            <input name="field_groups[{{index}}][fields][{{field_index}}][value]" ng-model="field.value" type="text" class="form-control type-sm required" placeholder="Enter {{field.name}}" ng-class="{required: field.pivot.is_required == '1'}" />
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                    <!-- DATE PICKER -->
+                                    <div class="table-form-list-wrap" ng-if="field.type_id == 7">
+                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <div class="table-form-list-control">
+                                            <div class="input-group date type-sm docDatePicker" data-provide="datepicker">
+                                                <input name="field_groups[{{index}}][fields][{{field_index}}][value]" ng-model="field.value" type="text" class="form-control" placeholder="Select {{field.name}}" readonly ng-class="{required: field.pivot.is_required == '1'}" />
+                                                <div class="input-group-addon">
+                                                    <img class="img-responsive" src="public/theme/img/content/calender-gray-icon.svg" alt="Calendar Image" />
+                                                </div>
+                                            </div><!-- Input Group -->
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                    <!-- SWITCH -->
+                                    <div class="table-form-list-wrap" ng-if="field.type_id == 9">
+                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory">*</span></label>
+                                        <div class="table-form-list-control">
+                                            <div class="tab-switch">
+                                                <md-switch ng-model="field.value" aria-label="Switch 1" ng-true-value="'No'" ng-false-value="'Yes'" class="md-warn type-sm type-2">
+                                                    {{ field.value }}
+                                                </md-switch>
+                                                <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][value]" value="{{field.value}}">
+                                            </div>
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                    <!-- AUTOCOMPLETE -->
+                                    <div class="table-form-list-wrap" ng-if="field.type_id == 10">
+                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <div class="table-form-list-control">
+                                            <md-autocomplete class="type-sm" md-items="option in $ctrl.searchField($ctrl.searchText, field.id)" md-selected-item="field.autoval" md-search-text="$ctrl.searchText" md-item-text="option.code" md-min-length="3" placeholder="{{field.name}} code / name">
+                                                <md-item-template>
+                                                    <span>
+                                                        {{option.name}} - {{option.code}}
+                                                    </span>
+                                                </md-item-template>
+                                                <md-not-found>
+                                                    No {{field.name}} matching "{{$ctrl.searchText}}" were found.
+                                                </md-not-found>
+                                            </md-autocomplete>
+                                            <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][value]" value="{{field.autoval.id}}" ng-class="{required: field.pivot.is_required == '1'}">
+                                        </div>
                                     </div><!-- Table Form List Wrap -->
                                 </li>
                             </ul>
@@ -390,3 +479,4 @@
         </form>
     </div><!-- Modal Dialog -->
 </div><!-- Modal -->
+<script src="./public/theme/js/imageuploadify.min.js"></script>

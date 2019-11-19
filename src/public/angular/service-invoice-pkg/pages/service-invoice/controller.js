@@ -89,6 +89,7 @@ app.component('serviceInvoiceForm', {
         var self = this;
         self.hasPermission = HelperService.hasPermission;
         self.angular_routes = angular_routes;
+        self.enable_service_item_md_change = true;
         var attachment_removal_ids = [];
 
         $http.get(
@@ -146,6 +147,13 @@ app.component('serviceInvoiceForm', {
             tabPaneFooter();
         });
 
+        /* Modal Md Select Hide */
+        $('.modal').bind('click', function(event) {
+            if ($('.md-select-menu-container').hasClass('md-active')) {
+                $mdSelect.hide();
+            }
+        });
+
         /* Image Uploadify Funtion */
         $('.image_uploadify').imageuploadify();
 
@@ -168,6 +176,28 @@ app.component('serviceInvoiceForm', {
                 return Object.keys(objvar).length === 0;
             }
         }
+
+        //SEARCH FIELD
+        self.searchField = function(query, field_id) {
+            if (query && field_id) {
+                return new Promise(function(resolve, reject) {
+                    $http
+                        .post(
+                            search_field_url, {
+                                key: query,
+                                field_id: field_id,
+                            }
+                        )
+                        .then(function(response) {
+                            resolve(response.data);
+                        });
+                    //reject(response);
+                });
+            } else {
+                return [];
+            }
+        }
+
 
         //SEARCH CUSTOMER
         self.searchCustomer = function(query) {
@@ -233,6 +263,7 @@ app.component('serviceInvoiceForm', {
                         )
                         .then(function(response) {
                             resolve(response.data);
+                            self.enable_service_item_md_change = true;
                         });
                     //reject(response);
                 });
@@ -243,35 +274,36 @@ app.component('serviceInvoiceForm', {
 
         //GET SERVICE ITEM DETAILS
         self.getServiceItemDetails = function() {
-            // console.log(' == md change ==');
-            // console.log(self.service_item);
             if (!self.service_item) {
                 return
             }
-            $http.post(
-                get_service_item_info_url, {
-                    service_item_id: self.service_item.id,
-                }
-            ).then(function(response) {
-                if (response.data.success) {
-                    self.service_item_detail = response.data.service_item;
-                    console.log(response.data.service_item);
-                    //AMOUNT CALCULATION
-                    $scope.totalAmountCalc();
-                } else {
-                    $noty = new Noty({
-                        type: 'error',
-                        layout: 'topRight',
-                        text: response.data.error,
-                        animation: {
-                            speed: 500 // unavailable - no need
-                        },
-                    }).show();
-                    setTimeout(function() {
-                        $noty.close();
-                    }, 5000);
-                }
-            });
+            if (self.enable_service_item_md_change) {
+                $http.post(
+                    get_service_item_info_url, {
+                        service_item_id: self.service_item.id,
+                        btn_action: 'add',
+                    }
+                ).then(function(response) {
+                    if (response.data.success) {
+                        self.service_item_detail = response.data.service_item;
+                        // console.log(response.data.service_item);
+                        //AMOUNT CALCULATION
+                        $scope.totalAmountCalc();
+                    } else {
+                        $noty = new Noty({
+                            type: 'error',
+                            layout: 'topRight',
+                            text: response.data.error,
+                            animation: {
+                                speed: 500 // unavailable - no need
+                            },
+                        }).show();
+                        setTimeout(function() {
+                            $noty.close();
+                        }, 5000);
+                    }
+                });
+            }
         }
 
         self.serviceItemChanged = function() {
@@ -353,17 +385,22 @@ app.component('serviceInvoiceForm', {
             self.total = '';
             self.service_item = '';
             self.service_item_detail = '';
+            // console.log(' == add btn ==');
+            // console.log(self.service_item_detail);
         }
 
         //EDIT SERVICE INVOICE ITEM
         $scope.editServiceItem = function(service_invoice_item_id, description, qty, rate, index) {
             if (service_invoice_item_id) {
+                self.enable_service_item_md_change = false;
                 self.add_service_action = false;
                 self.action_title = 'Update';
                 self.update_item_key = index;
                 $http.post(
                     get_service_item_info_url, {
                         service_item_id: service_invoice_item_id,
+                        field_groups: self.service_invoice.service_invoice_items[index].field_groups,
+                        btn_action: 'edit',
                     }
                 ).then(function(response) {
                     if (response.data.success) {

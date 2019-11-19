@@ -12,6 +12,10 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 	//GET SERVICE ITEM SUB CATEGORIES
 	Route::get('/get-service-item-sub-category/{service_item_category_id?}', 'ServiceInvoiceController@getServiceItemSubCategories')->name('getServiceItemSubCategories');
 
+	// FIELD
+	Route::post('/field/search', 'ServiceInvoiceController@searchField')->name('searchField');
+	Route::post('/get-field-details', 'ServiceInvoiceController@getFieldDetails')->name('getFieldDetails');
+
 	// CUSTOMER
 	Route::post('/service-invoice/customer/search', 'ServiceInvoiceController@searchCustomer')->name('searchCustomer');
 	Route::post('/service-invoice/get-customer-details', 'ServiceInvoiceController@getCustomerDetails')->name('getCustomerDetails');
