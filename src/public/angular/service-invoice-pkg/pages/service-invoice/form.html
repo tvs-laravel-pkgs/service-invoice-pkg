@@ -412,6 +412,19 @@
                                             </div><!-- Input Group -->
                                         </div><!-- Table Form List Control -->
                                     </div><!-- Table Form List Wrap -->
+                                    <!-- DATE TIME PICKER -->
+                                    <div class="table-form-list-wrap" ng-if="field.type_id == 8">
+                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <div class="table-form-list-control dynamic_date_error">
+                                            <div class="input-group date" moment-picker="field.value" format="DD-MM-YYYY LT">
+                                                <input name="field_groups[{{index}}][fields][{{field_index}}][value]" ng-model="field.value" type="text" class="form-control" placeholder="Select {{field.name}}" readonly ng-class="{required: field.pivot.is_required == 1}">
+                                                <span class="input-group-addon">
+                                                    <img class="img-responsive" src="./public/theme/img/content/calender-gray-icon.svg" alt="Calendar Image" />
+                                                </span>
+                                            </div><!-- Input Group -->
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
                                     <!-- SWITCH -->
                                     <div class="table-form-list-wrap" ng-if="field.type_id == 9">
                                         <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">

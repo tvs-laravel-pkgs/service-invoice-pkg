@@ -322,93 +322,95 @@ class ServiceInvoiceController extends Controller {
 			if (!$service_item) {
 				return response()->json(['success' => false, 'error' => 'Service Item not found']);
 			}
-			if (count($request->field_groups) > 0) {
-				//FIELDGROUPS
-				$fd_gps_val = [];
-				foreach ($request->field_groups as $fg_key => $fg) {
-					//GET FIELD GROUP VALUE
-					$fg_val = FieldGroup::find($fg['id']);
+			if ($request->field_groups) {
+				if (count($request->field_groups) > 0) {
+					//FIELDGROUPS
+					$fd_gps_val = [];
+					foreach ($request->field_groups as $fg_key => $fg) {
+						//GET FIELD GROUP VALUE
+						$fg_val = FieldGroup::find($fg['id']);
 
-					//PUSH FIELD GROUP TO NEW ARRAY
-					$fg_v = [];
-					$fg_v = [
-						'id' => $fg_val->id,
-						'name' => $fg_val->name,
-					];
+						//PUSH FIELD GROUP TO NEW ARRAY
+						$fg_v = [];
+						$fg_v = [
+							'id' => $fg_val->id,
+							'name' => $fg_val->name,
+						];
 
-					//FIELDS
-					if (count($fg['fields']) > 0) {
-						foreach ($fg['fields'] as $fd_key => $fd) {
-							$field = Field::find($fd['id']);
-							//PUSH FIELDS TO FIELD GROUP CREATED ARRAY
-							$fg_v['fields'][$fd_key] = Field::withTrashed()->find($fd['id']);
-							//SINGLE SELECT DROPDOWN | MULTISELECT DROPDOWN
-							if ($field->type_id == 1 || $field->type_id == 2) {
-								if ($field->list_source_id == 1180) {
-									$source_table = FieldSourceTable::withTrashed()->find($field->source_table_id);
-									if (!$source_table) {
+						//FIELDS
+						if (count($fg['fields']) > 0) {
+							foreach ($fg['fields'] as $fd_key => $fd) {
+								$field = Field::find($fd['id']);
+								//PUSH FIELDS TO FIELD GROUP CREATED ARRAY
+								$fg_v['fields'][$fd_key] = Field::withTrashed()->find($fd['id']);
+								//SINGLE SELECT DROPDOWN | MULTISELECT DROPDOWN
+								if ($field->type_id == 1 || $field->type_id == 2) {
+									if ($field->list_source_id == 1180) {
+										$source_table = FieldSourceTable::withTrashed()->find($field->source_table_id);
+										if (!$source_table) {
+											$fg_v['fields'][$fd_key]->get_list = [];
+											$fg_v['fields'][$fd_key]->value = is_string($fd['value']) ? json_decode($fd['value']) : $fd['value'];
+										} else {
+											$nameSpace = '\\App\\';
+											$entity = $source_table->model;
+											$model = $nameSpace . $entity;
+											$placeholder = 'Select ' . $entity;
+											if ($field->type_id != 2) {
+												$fg_v['fields'][$fd_key]->get_list = collect($model::select('name', 'id')->get())->prepend(['id' => '', 'name' => $placeholder]);
+											} else {
+												$fg_v['fields'][$fd_key]->get_list = $model::select('name', 'id')->get();
+											}
+											$fg_v['fields'][$fd_key]->value = is_string($fd['value']) ? json_decode($fd['value']) : $fd['value'];
+										}
+									} else {
 										$fg_v['fields'][$fd_key]->get_list = [];
 										$fg_v['fields'][$fd_key]->value = is_string($fd['value']) ? json_decode($fd['value']) : $fd['value'];
-									} else {
-										$nameSpace = '\\App\\';
-										$entity = $source_table->model;
-										$model = $nameSpace . $entity;
-										$placeholder = 'Select ' . $entity;
-										if ($field->type_id != 2) {
-											$fg_v['fields'][$fd_key]->get_list = collect($model::select('name', 'id')->get())->prepend(['id' => '', 'name' => $placeholder]);
+									}
+								} elseif ($field->type_id == 7 || $field->type_id == 8 || $field->type_id == 3 || $field->type_id == 4 || $field->type_id == 9) {
+									//DATE PICKER | DATETIME PICKER | FREE TEXT BOX | NUMERIC TEXT BOX | SWITCH
+									$fg_v['fields'][$fd_key]->value = $fd['value'];
+								} elseif ($field->type_id == 10) {
+									//AUTOCOMPLETE
+									if ($field->list_source_id == 1180) {
+										$source_table = FieldSourceTable::withTrashed()->find($field->source_table_id);
+										if (!$source_table) {
+											$fg_v['fields'][$fd_key]->autoval = [];
 										} else {
-											$fg_v['fields'][$fd_key]->get_list = $model::select('name', 'id')->get();
+											$nameSpace = '\\App\\';
+											$entity = $source_table->model;
+											$model = $nameSpace . $entity;
+											$fg_v['fields'][$fd_key]->autoval = $model::where('id', $fd['value'])
+												->select(
+													'id',
+													'name',
+													'code'
+												)
+												->first();
 										}
-										$fg_v['fields'][$fd_key]->value = is_string($fd['value']) ? json_decode($fd['value']) : $fd['value'];
-									}
-								} else {
-									$fg_v['fields'][$fd_key]->get_list = [];
-									$fg_v['fields'][$fd_key]->value = is_string($fd['value']) ? json_decode($fd['value']) : $fd['value'];
-								}
-							} elseif ($field->type_id == 7 || $field->type_id == 8 || $field->type_id == 3 || $field->type_id == 4 || $field->type_id == 9) {
-								//DATE PICKER | DATETIME PICKER | FREE TEXT BOX | NUMERIC TEXT BOX | SWITCH
-								$fg_v['fields'][$fd_key]->value = $fd['value'];
-							} elseif ($field->type_id == 10) {
-								//AUTOCOMPLETE
-								if ($field->list_source_id == 1180) {
-									$source_table = FieldSourceTable::withTrashed()->find($field->source_table_id);
-									if (!$source_table) {
-										$fg_v['fields'][$fd_key]->autoval = [];
 									} else {
-										$nameSpace = '\\App\\';
-										$entity = $source_table->model;
-										$model = $nameSpace . $entity;
-										$fg_v['fields'][$fd_key]->autoval = $model::where('id', $fd['value'])
-											->select(
-												'id',
-												'name',
-												'code'
-											)
-											->first();
+										$fg_v['fields'][$fd_key]->autoval = [];
 									}
-								} else {
-									$fg_v['fields'][$fd_key]->autoval = [];
 								}
-							}
-							//FOR FIELD IS REQUIRED OR NOT
-							$is_required = DB::table('field_group_field')->where('field_group_id', $fg['id'])->where('field_id', $fd['id'])->first();
-							$fg_v['fields'][$fd_key]->pivot = [];
-							if ($is_required) {
-								$fg_v['fields'][$fd_key]->pivot = [
-									'is_required' => $is_required->is_required,
-								];
-							} else {
-								$fg_v['fields'][$fd_key]->pivot = [
-									'is_required' => 0,
-								];
+								//FOR FIELD IS REQUIRED OR NOT
+								$is_required = DB::table('field_group_field')->where('field_group_id', $fg['id'])->where('field_id', $fd['id'])->first();
+								$fg_v['fields'][$fd_key]->pivot = [];
+								if ($is_required) {
+									$fg_v['fields'][$fd_key]->pivot = [
+										'is_required' => $is_required->is_required,
+									];
+								} else {
+									$fg_v['fields'][$fd_key]->pivot = [
+										'is_required' => 0,
+									];
+								}
 							}
 						}
+						//PUSH INDIVUDUAL FIELD GROUP TO MAIN ARRAY
+						$fd_gps_val[] = $fg_v;
 					}
-					//PUSH INDIVUDUAL FIELD GROUP TO MAIN ARRAY
-					$fd_gps_val[] = $fg_v;
+					//PUSH MAIN FIELD GROUPS TO VARIABLE
+					$service_item->field_groups = $fd_gps_val;
 				}
-				//PUSH MAIN FIELD GROUPS TO VARIABLE
-				$service_item->field_groups = $fd_gps_val;
 			}
 		}
 
