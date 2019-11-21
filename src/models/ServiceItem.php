@@ -50,23 +50,25 @@ class ServiceItem extends Model {
 		return response()->json($list);
 	}
 
-	public static function createFromCollection($records) {
+	public static function createFromCollection($records, $company = null) {
 		foreach ($records as $key => $record_data) {
 			try {
 				if (!$record_data->company) {
 					continue;
 				}
-				$record = self::createFromObject($record_data);
+				$record = self::createFromObject($record_data, $company);
 			} catch (Exception $e) {
 				dd($e);
 			}
 		}
 	}
 
-	public static function createFromObject($record_data) {
+	public static function createFromObject($record_data, $company = null) {
 
 		$errors = [];
-		$company = Company::where('code', $record_data->company)->first();
+		if (!$company) {
+			$company = Company::where('code', $record_data->company)->first();
+		}
 		if (!$company) {
 			dump('Invalid Company : ' . $record_data->company);
 			return;
@@ -111,10 +113,24 @@ class ServiceItem extends Model {
 		return $record;
 	}
 
-	public static function mapFieldGroup($record_data) {
+	public static function mapFieldGroups($records, $company = null) {
+		foreach ($records as $key => $record_data) {
+			try {
+				if (!$record_data->company) {
+					continue;
+				}
+				$record = self::mapFieldGroup($record_data, $company);
+			} catch (Exception $e) {
+				dd($e);
+			}
+		}
+	}
+	public static function mapFieldGroup($record_data, $company = null) {
 
 		$errors = [];
-		$company = Company::where('code', $record_data->company)->first();
+		if (!$company) {
+			$company = Company::where('code', $record_data->company)->first();
+		}
 		if (!$company) {
 			dump('Invalid Company : ' . $record_data->company);
 			return;
@@ -143,19 +159,6 @@ class ServiceItem extends Model {
 
 		$record->fieldGroups()->syncWithoutDetaching([$field_group->id]);
 		return $record;
-	}
-
-	public static function mapFieldGroups($records) {
-		foreach ($records as $key => $record_data) {
-			try {
-				if (!$record_data->company) {
-					continue;
-				}
-				$record = self::mapFieldGroup($record_data);
-			} catch (Exception $e) {
-				dd($e);
-			}
-		}
 	}
 
 }
