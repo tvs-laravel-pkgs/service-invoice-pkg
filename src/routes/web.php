@@ -6,7 +6,15 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 	Route::post('/service-invoice/save', 'ServiceInvoiceController@saveServiceInvoice')->name('saveServiceInvoice');
 	Route::get('/service-invoice/download-pdf/{id?}', 'ServiceInvoiceController@downloadPdf')->name('downloadPdf');
 
+	//GET SBUs
+	Route::get('/get-sbu/{outlet_id?}', 'ServiceInvoiceController@getSbus')->name('getSbus');
+
+	//GET SERVICE ITEM SUB CATEGORIES
 	Route::get('/get-service-item-sub-category/{service_item_category_id?}', 'ServiceInvoiceController@getServiceItemSubCategories')->name('getServiceItemSubCategories');
+
+	// FIELD
+	Route::post('/field/search', 'ServiceInvoiceController@searchField')->name('searchField');
+	Route::post('/get-field-details', 'ServiceInvoiceController@getFieldDetails')->name('getFieldDetails');
 
 	// CUSTOMER
 	Route::post('/service-invoice/customer/search', 'ServiceInvoiceController@searchCustomer')->name('searchCustomer');

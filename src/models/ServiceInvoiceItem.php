@@ -21,6 +21,18 @@ class ServiceInvoiceItem extends Model {
 		return $this->belongsTo('Abs\ServiceInvoicePkg\ServiceInvoice', 'service_invoice_id', 'id');
 	}
 
+	public function eavVarchars() {
+		return $this->belongsToMany('App\Config', 'eav_varchar', 'entity_id', 'entity_type_id')->withPivot(['field_group_id', 'field_id', 'value']);
+	}
+
+	public function eavInts() {
+		return $this->belongsToMany('App\Config', 'eav_int', 'entity_id', 'entity_type_id')->withPivot(['field_group_id', 'field_id', 'value']);
+	}
+
+	public function eavDatetimes() {
+		return $this->belongsToMany('App\Config', 'eav_datetime', 'entity_id', 'entity_type_id')->withPivot(['field_group_id', 'field_id', 'value']);
+	}
+
 	public function serviceItem() {
 		return $this->belongsTo('Abs\ServiceInvoicePkg\ServiceItem', 'service_item_id', 'id');
 	}
