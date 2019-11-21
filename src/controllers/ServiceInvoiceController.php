@@ -95,13 +95,14 @@ class ServiceInvoiceController extends Controller {
 				'serviceInvoiceItems.serviceItem',
 				'serviceInvoiceItems.eavVarchars',
 				'serviceInvoiceItems.eavInts',
+				'serviceInvoiceItems.eavDatetimes',
 				'serviceInvoiceItems.taxes',
 				'serviceItemSubCategory',
 			])->find($id);
 			if (!$service_invoice) {
 				return response()->json(['success' => false, 'error' => 'Service Invoice not found']);
 			}
-
+			$fields = Field::withTrashed()->get()->keyBy('id');
 			if (count($service_invoice->serviceInvoiceItems) > 0) {
 				$gst_total = 0;
 				foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
@@ -116,16 +117,80 @@ class ServiceInvoiceController extends Controller {
 					} else {
 						$eav_int_field_group_ids = [];
 					}
-					$field_group_ids = array_unique(array_merge($eav_varchar_field_group_ids, $eav_int_field_group_ids));
+					if (count($serviceInvoiceItem->eavDatetimes) > 0) {
+						$eav_datetime_field_group_ids = $serviceInvoiceItem->eavDatetimes()->pluck('field_group_id')->toArray();
+					} else {
+						$eav_datetime_field_group_ids = [];
+					}
+					$field_group_ids = array_unique(array_merge($eav_varchar_field_group_ids, $eav_int_field_group_ids, $eav_datetime_field_group_ids));
 
 					if (!empty($field_group_ids)) {
 						foreach ($field_group_ids as $fg_key => $fg_id) {
 							$fd_varchar_array = [];
 							$fd_int_array = [];
 							$fd_main_varchar_array = [];
-							$fd_varchar_array = DB::table('eav_varchar')->where('entity_type_id', 1040)->where('entity_id', $serviceInvoiceItem->id)->where('field_group_id', $fg_id)->select('field_id as id', 'value')->get()->toArray();
-							$fd_int_array = DB::table('eav_int')->where('entity_type_id', 1040)->where('entity_id', $serviceInvoiceItem->id)->where('field_group_id', $fg_id)->select('field_id as id', 'value')->get()->toArray();
-							$fd_main_varchar_array = array_merge($fd_varchar_array, $fd_int_array);
+							$fd_varchar_array = DB::table('eav_varchar')
+								->where('entity_type_id', 1040)
+								->where('entity_id', $serviceInvoiceItem->id)
+								->where('field_group_id', $fg_id)
+								->select('field_id as id', 'value')
+								->get()
+								->toArray();
+							$fd_datetimes = DB::table('eav_datetime')
+								->where('entity_type_id', 1040)
+								->where('entity_id', $serviceInvoiceItem->id)
+								->where('field_group_id', $fg_id)
+								->select('field_id as id', 'value')
+								->get()
+								->toArray();
+							$fd_datetime_array = [];
+							if (!empty($fd_datetimes)) {
+								foreach ($fd_datetimes as $fd_datetime_key => $fd_datetime_value) {
+									//DATEPICKER
+									if ($fields[$fd_datetime_value->id]->type_id == 7) {
+										$fd_datetime_array[] = [
+											'id' => $fd_datetime_value->id,
+											'value' => date('d-m-Y', strtotime($fd_datetime_value->value)),
+										];
+									} elseif ($fields[$fd_datetime_value->id]->type_id == 8) {
+										//DATETIMEPICKER
+										$fd_datetime_array[] = [
+											'id' => $fd_datetime_value->id,
+											'value' => date('d-m-Y H:i:s', strtotime($fd_datetime_value->value)),
+										];
+									}
+								}
+							}
+							$fd_ints = DB::table('eav_int')
+								->where('entity_type_id', 1040)
+								->where('entity_id', $serviceInvoiceItem->id)
+								->where('field_group_id', $fg_id)
+								->select(
+									'field_id as id',
+									DB::raw('GROUP_CONCAT(value) as value')
+								)
+								->groupBy('field_id')
+								->get()
+								->toArray();
+							$fd_int_array = [];
+							if (!empty($fd_ints)) {
+								foreach ($fd_ints as $fd_int_key => $fd_int_value) {
+									//MULTISELECT DROPDOWN
+									if ($fields[$fd_int_value->id]->type_id == 2) {
+										$fd_int_array[] = [
+											'id' => $fd_int_value->id,
+											'value' => explode(',', $fd_int_value->value),
+										];
+									} else {
+										//OTHERS
+										$fd_int_array[] = [
+											'id' => $fd_int_value->id,
+											'value' => $fd_int_value->value,
+										];
+									}
+								}
+							}
+							$fd_main_varchar_array = array_merge($fd_varchar_array, $fd_int_array, $fd_datetime_array);
 							$serviceInvoiceItem->field_groups = [
 								$fg_key => [
 									'id' => $fg_id,
@@ -210,9 +275,9 @@ class ServiceInvoiceController extends Controller {
 				foreach ($service_item->fieldGroups as $key => $fieldGroup) {
 					if (count($fieldGroup->fields) > 0) {
 						foreach ($fieldGroup->fields as $key => $field) {
-							if ($field->type_id == 1) {
+							if ($field->type_id == 1 || $field->type_id == 2) {
 								if ($field->list_source_id == 1180) {
-									$source_table = FieldSourceTable::find($field->source_table_id);
+									$source_table = FieldSourceTable::withTrashed()->find($field->source_table_id);
 									if (!$source_table) {
 										$field->get_list = [];
 									} else {
@@ -220,7 +285,11 @@ class ServiceInvoiceController extends Controller {
 										$entity = $source_table->model;
 										$model = $nameSpace . $entity;
 										$placeholder = 'Select ' . $entity;
-										$field->get_list = collect($model::select('name', 'id')->get())->prepend(['id' => '', 'name' => $placeholder]);
+										if ($field->type_id != 2) {
+											$field->get_list = collect($model::select('name', 'id')->get())->prepend(['id' => '', 'name' => $placeholder]);
+										} else {
+											$field->get_list = $model::select('name', 'id')->get();
+										}
 									}
 								} else {
 									$field->get_list = [];
@@ -249,30 +318,36 @@ class ServiceInvoiceController extends Controller {
 					if (count($fg['fields']) > 0) {
 						foreach ($fg['fields'] as $fd_key => $fd) {
 							$field = Field::find($fd['id']);
-							$fg_v->fields[$fd_key] = Field::find($fd['id']);
-							if ($field->type_id == 1) {
+							$fg_v->fields[$fd_key] = Field::withTrashed()->find($fd['id']);
+							if ($field->type_id == 1 || $field->type_id == 2) {
 								if ($field->list_source_id == 1180) {
-									$source_table = FieldSourceTable::find($field->source_table_id);
+									$source_table = FieldSourceTable::withTrashed()->find($field->source_table_id);
 									if (!$source_table) {
 										$fg_v->fields[$fd_key]->get_list = [];
-										$fg_v->fields[$fd_key]->value = $fd['value'];
+										$fg_v->fields[$fd_key]->value = is_string($fd['value']) ? json_decode($fd['value']) : $fd['value'];
 									} else {
 										$nameSpace = '\\App\\';
 										$entity = $source_table->model;
 										$model = $nameSpace . $entity;
 										$placeholder = 'Select ' . $entity;
-										$fg_v->fields[$fd_key]->get_list = collect($model::select('name', 'id')->get())->prepend(['id' => '', 'name' => $placeholder]);
-										$fg_v->fields[$fd_key]->value = $fd['value'];
+										if ($field->type_id != 2) {
+											$fg_v->fields[$fd_key]->get_list = collect($model::select('name', 'id')->get())->prepend(['id' => '', 'name' => $placeholder]);
+										} else {
+											$fg_v->fields[$fd_key]->get_list = $model::select('name', 'id')->get();
+										}
+										$fg_v->fields[$fd_key]->value = is_string($fd['value']) ? json_decode($fd['value']) : $fd['value'];
 									}
 								} else {
 									$fg_v->fields[$fd_key]->get_list = [];
-									$fg_v->fields[$fd_key]->value = $fd['value'];
+									$fg_v->fields[$fd_key]->value = is_string($fd['value']) ? json_decode($fd['value']) : $fd['value'];
 								}
+							} elseif ($field->type_id == 7 || $field->type_id == 8) {
+								$fg_v->fields[$fd_key]->value = $fd['value'];
 							} elseif ($field->type_id == 3 || $field->type_id == 4) {
 								$fg_v->fields[$fd_key]->value = $fd['value'];
 							} elseif ($field->type_id == 10) {
 								if ($field->list_source_id == 1180) {
-									$source_table = FieldSourceTable::find($field->source_table_id);
+									$source_table = FieldSourceTable::withTrashed()->find($field->source_table_id);
 									if (!$source_table) {
 										$fg_v->fields[$fd_key]->autoval = [];
 									} else {
@@ -371,7 +446,6 @@ class ServiceInvoiceController extends Controller {
 	}
 
 	public function saveServiceInvoice(Request $request) {
-		// dump(Field::get()->keyBy('id'));
 		// dd($request->all());
 		DB::beginTransaction();
 		try {
@@ -507,16 +581,30 @@ class ServiceInvoiceController extends Controller {
 						$fields = Field::get()->keyBy('id');
 						$service_invoice_item->eavVarchars()->sync([]);
 						$service_invoice_item->eavInts()->sync([]);
+						$service_invoice_item->eavDatetimes()->sync([]);
 						if (isset($val['field_groups']) && !empty($val['field_groups'])) {
 							foreach ($val['field_groups'] as $fg_key => $fg_value) {
 								if (isset($fg_value['fields']) && !empty($fg_value['fields'])) {
 									foreach ($fg_value['fields'] as $f_key => $f_value) {
 										//SAVE FREE TEXT | NUMERIC TEXT FIELDS
-										if ($fields[$f_value['id']]->type_id == 3) {
+										if ($fields[$f_value['id']]->type_id == 3 || $fields[$f_value['id']]->type_id == 4) {
 											$service_invoice_item->eavVarchars()->attach(1040, ['field_group_id' => $fg_value['id'], 'field_id' => $f_value['id'], 'value' => $f_value['value']]);
 
+										} elseif ($fields[$f_value['id']]->type_id == 2) {
+											//SAVE MSDD
+											$msdd_fd_value = json_decode($f_value['value']);
+											if (!empty($msdd_fd_value)) {
+												foreach ($msdd_fd_value as $msdd_key => $msdd_val) {
+													$service_invoice_item->eavInts()->attach(1040, ['field_group_id' => $fg_value['id'], 'field_id' => $f_value['id'], 'value' => $msdd_val]);
+												}
+											}
+										} elseif ($fields[$f_value['id']]->type_id == 7 || $fields[$f_value['id']]->type_id == 8) {
+											//SAVE DATEPICKER | DATETIMEPICKER
+											$dp_dtp_fd_value = date('Y-m-d H:i:s', strtotime($f_value['value']));
+											$service_invoice_item->eavDatetimes()->attach(1040, ['field_group_id' => $fg_value['id'], 'field_id' => $f_value['id'], 'value' => $dp_dtp_fd_value]);
+
 										} elseif ($fields[$f_value['id']]->type_id == 1 || $fields[$f_value['id']]->type_id == 10) {
-											//SAVE SSDD | MSDD
+											//SAVE SSDD | AC
 											$service_invoice_item->eavInts()->attach(1040, ['field_group_id' => $fg_value['id'], 'field_id' => $f_value['id'], 'value' => $f_value['value']]);
 										}
 									}
@@ -540,7 +628,6 @@ class ServiceInvoiceController extends Controller {
 					}
 				}
 			}
-			// dd(' == exist ==');
 			//ATTACHMENT REMOVAL
 			$attachment_removal_ids = json_decode($request->attachment_removal_ids);
 			if (!empty($attachment_removal_ids)) {

@@ -29,6 +29,10 @@ class ServiceInvoiceItem extends Model {
 		return $this->belongsToMany('App\Config', 'eav_int', 'entity_id', 'entity_type_id')->withPivot(['field_group_id', 'field_id', 'value']);
 	}
 
+	public function eavDatetimes() {
+		return $this->belongsToMany('App\Config', 'eav_datetime', 'entity_id', 'entity_type_id')->withPivot(['field_group_id', 'field_id', 'value']);
+	}
+
 	public function serviceItem() {
 		return $this->belongsTo('Abs\ServiceInvoicePkg\ServiceItem', 'service_item_id', 'id');
 	}

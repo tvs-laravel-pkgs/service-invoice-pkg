@@ -84,7 +84,7 @@ app.component('serviceInvoiceList', {
 
 app.component('serviceInvoiceForm', {
     templateUrl: service_invoice_form_template_url,
-    controller: function($http, $location, $location, HelperService, $routeParams, $rootScope, $scope, $timeout) {
+    controller: function($http, $location, $location, HelperService, $routeParams, $rootScope, $scope, $timeout, $mdSelect, $window) {
         $form_data_url = typeof($routeParams.id) == 'undefined' ? service_invoice_get_form_data_url : service_invoice_get_form_data_url + '/' + $routeParams.id;
         var self = this;
         self.hasPermission = HelperService.hasPermission;
@@ -154,7 +154,12 @@ app.component('serviceInvoiceForm', {
             }
         });
 
+        // $(document).bind('click', function(event) {
+        //     $mdSelect.hide();// });
+        // $window.addEventListener('click', function(e) {
+        //     $mdSelect.hide();// })
         /* Image Uploadify Funtion */
+        // $("input[name='proposal_attachments[]']").imageuploadify();
         $('.image_uploadify').imageuploadify();
 
         $('.docDatePicker').bootstrapDP({
