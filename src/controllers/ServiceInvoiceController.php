@@ -203,14 +203,14 @@ class ServiceInvoiceController extends Controller {
 					//TAX CALC
 					if (count($serviceInvoiceItem->taxes) > 0) {
 						foreach ($serviceInvoiceItem->taxes as $key => $value) {
-							$gst_total += intval($value->pivot->amount);
+							$gst_total += round($value->pivot->amount);
 							$serviceInvoiceItem[$value->name] = [
-								'amount' => intval($value->pivot->amount),
-								'percentage' => intval($value->pivot->percentage),
+								'amount' => round($value->pivot->amount),
+								'percentage' => round($value->pivot->percentage),
 							];
 						}
 					}
-					$serviceInvoiceItem->total = intval($serviceInvoiceItem->sub_total) + intval($gst_total);
+					$serviceInvoiceItem->total = round($serviceInvoiceItem->sub_total) + round($gst_total);
 					$serviceInvoiceItem->code = $serviceInvoiceItem->serviceItem->code;
 					$serviceInvoiceItem->name = $serviceInvoiceItem->serviceItem->name;
 				}
@@ -410,10 +410,10 @@ class ServiceInvoiceController extends Controller {
 		$gst_total = 0;
 		if (count($service_item->taxCode->taxes) > 0) {
 			foreach ($service_item->taxCode->taxes as $key => $value) {
-				$gst_total += intval(($value->pivot->percentage / 100) * ($request->qty * $request->amount));
+				$gst_total += round(($value->pivot->percentage / 100) * ($request->qty * $request->amount));
 				$service_item[$value->name] = [
-					'amount' => intval(($value->pivot->percentage / 100) * ($request->qty * $request->amount)),
-					'percentage' => intval($value->pivot->percentage),
+					'amount' => round(($value->pivot->percentage / 100) * ($request->qty * $request->amount)),
+					'percentage' => round($value->pivot->percentage),
 				];
 			}
 		}
@@ -430,8 +430,8 @@ class ServiceInvoiceController extends Controller {
 		$service_item->description = $request->description;
 		$service_item->qty = $request->qty;
 		$service_item->rate = $request->amount;
-		$service_item->sub_total = intval($request->qty * $request->amount);
-		$service_item->total = intval($request->qty * $request->amount) + $gst_total;
+		$service_item->sub_total = round($request->qty * $request->amount);
+		$service_item->total = round($request->qty * $request->amount) + $gst_total;
 
 		if ($request->action == 'add') {
 			$add = true;

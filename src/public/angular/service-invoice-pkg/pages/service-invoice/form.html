@@ -110,9 +110,9 @@
                                             <li>
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Doc. Date <span class="mandatory">*</span></label>
-                                                    <div class="table-form-list-control">
+                                                    <div class="table-form-list-control doc_date_error">
                                                         <div class="input-group date type-sm docDatePicker" data-provide="datepicker">
-                                                            <input name="document_date" ng-model="$ctrl.service_invoice.document_date" type="text" class="form-control" placeholder="Select Doc Date" readonly />
+                                                            <input name="document_date" ng-model="$ctrl.service_invoice.document_date" type="text" class="form-control doc_date" placeholder="Select Doc Date" readonly />
                                                             <div class="input-group-addon">
                                                                 <img class="img-responsive" src="public/theme/img/content/calender-gray-icon.svg" alt="Calendar Image" />
                                                             </div>
@@ -372,7 +372,7 @@
                                                     <md-option ng-value="fd.id" ng-repeat="fd in field.get_list | filter:search">{{fd.name}}</md-option>
                                                 </md-optgroup>
                                             </md-select>
-                                            <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][value]" id="field_groups[{{index}}][fields][{{field_index}}][value]" value="{{field.value}}" ng-class="{required: field.pivot.is_required == '1'}">
+                                            <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][value]" id="field_groups[{{index}}][fields][{{field_index}}][value]" value="{{field.value}}" ng-class="{required: field.pivot.is_required == 1}">
                                         </div><!-- Table Form List Control -->
                                     </div><!-- Table Form List Wrap -->
                                     <!-- MULTIPLE SELECT DROPDOWN -->
@@ -388,7 +388,7 @@
                                                     <md-option ng-value="fd.id" ng-repeat="fd in field.get_list | filter:search">{{fd.name}}</md-option>
                                                 </md-optgroup>
                                             </md-select>
-                                            <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][value]" id="field_groups[{{index}}][fields][{{field_index}}][value]" value="{{field.value}}" ng-class="{required: field.pivot.is_required == '1'}">
+                                            <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][value]" id="field_groups[{{index}}][fields][{{field_index}}][value]" value="{{field.value}}" ng-class="{multiselect_required: field.pivot.is_required == 1}">
                                         </div><!-- Table Form List Control -->
                                     </div><!-- Table Form List Wrap -->
                                     <!-- FREE TEXT BOX OR NUMERIC TEXT BOX -->
@@ -403,9 +403,9 @@
                                     <div class="table-form-list-wrap" ng-if="field.type_id == 7">
                                         <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
                                         <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
-                                        <div class="table-form-list-control">
+                                        <div class="table-form-list-control dynamic_date_error">
                                             <div class="input-group date type-sm dynamicDatePicker" data-provide="datepicker">
-                                                <input name="field_groups[{{index}}][fields][{{field_index}}][value]" ng-model="field.value" type="text" class="form-control" placeholder="Select {{field.name}}" readonly ng-class="{required: field.pivot.is_required == '1'}" />
+                                                <input name="field_groups[{{index}}][fields][{{field_index}}][value]" ng-model="field.value" type="text" class="form-control dynamic_date" placeholder="Select {{field.name}}" readonly ng-class="{required: field.pivot.is_required == 1}" />
                                                 <div class="input-group-addon">
                                                     <img class="img-responsive" src="public/theme/img/content/calender-gray-icon.svg" alt="Calendar Image" />
                                                 </div>
@@ -440,7 +440,7 @@
                                                     No {{field.name}} matching "{{$ctrl.searchText}}" were found.
                                                 </md-not-found>
                                             </md-autocomplete>
-                                            <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][value]" value="{{field.autoval.id}}" ng-class="{required: field.pivot.is_required == '1'}">
+                                            <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][value]" value="{{field.autoval.id}}" ng-class="{required: field.pivot.is_required == 1}">
                                         </div>
                                     </div><!-- Table Form List Wrap -->
                                 </li>

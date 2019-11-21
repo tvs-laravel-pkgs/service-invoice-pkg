@@ -459,8 +459,8 @@ app.component('serviceInvoiceForm', {
                 self.sub_total = self.qty * self.rate;
                 if (self.service_item_detail.tax_code.taxes.length > 0) {
                     $(self.service_item_detail.tax_code.taxes).each(function(key, tax) {
-                        tax.pivot.amount = parseInt($scope.percentage(self.sub_total, parseInt(tax.pivot.percentage)));
-                        self.gst_total += parseInt($scope.percentage(self.sub_total, parseInt(tax.pivot.percentage)));
+                        tax.pivot.amount = Math.round($scope.percentage(self.sub_total, tax.pivot.percentage));
+                        self.gst_total += Math.round($scope.percentage(self.sub_total, tax.pivot.percentage));
                     });
                 }
                 self.total = self.sub_total + self.gst_total;
@@ -480,21 +480,38 @@ app.component('serviceInvoiceForm', {
 
             $(self.service_invoice.service_invoice_items).each(function(key, service_invoice_item) {
                 self.table_qty += parseInt(service_invoice_item.qty);
-                self.table_rate += parseInt(service_invoice_item.rate);
-                self.table_sub_total += parseInt(service_invoice_item.sub_total);
+                self.table_rate += Math.round(service_invoice_item.rate);
+                self.table_sub_total += Math.round(service_invoice_item.sub_total);
                 $(self.extras.tax_list).each(function(key, tax) {
-                    self.table_gst_total += parseInt(service_invoice_item[tax.name].amount);
-                    self[tax.name + '_amount'] += parseInt(service_invoice_item[tax.name].amount);
+                    self.table_gst_total += Math.round(service_invoice_item[tax.name].amount);
+                    self[tax.name + '_amount'] += Math.round(service_invoice_item[tax.name].amount);
                 });
             });
             self.table_total = self.table_sub_total + self.table_gst_total;
             $scope.$apply()
         }
 
+        jQuery.validator.addMethod("mdselect_multiselect_required", function(value, element) {
+            if ($(element).val() == '') {
+                return false;
+            } else if (JSON.parse($(element).val()).length == '0') {
+                return false;
+            }
+            return true;
+        }, 'This field is required');
+
+        jQuery.validator.addClassRules("multiselect_required", {
+            mdselect_multiselect_required: true,
+        });
+
         var service_item_form_id = '#service-invoice-item-form';
         var service_v = jQuery(service_item_form_id).validate({
             errorPlacement: function(error, element) {
-                error.insertAfter(element)
+                if (element.hasClass("dynamic_date")) {
+                    error.appendTo('.dynamic_date_error');
+                } else {
+                    error.insertAfter(element);
+                }
             },
             ignore: '',
             rules: {
@@ -503,6 +520,7 @@ app.component('serviceInvoiceForm', {
                 },
                 'qty': {
                     required: true,
+                    digits: true,
                 },
                 'amount': {
                     required: true,
@@ -604,7 +622,11 @@ app.component('serviceInvoiceForm', {
                 }, 5000);
             },
             errorPlacement: function(error, element) {
-                error.insertAfter(element)
+                if (element.hasClass("doc_date")) {
+                    error.appendTo('.doc_date_error');
+                } else {
+                    error.insertAfter(element);
+                }
             },
             ignore: '',
             rules: {
