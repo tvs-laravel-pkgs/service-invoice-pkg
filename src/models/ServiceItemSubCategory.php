@@ -18,9 +18,9 @@ class ServiceItemSubCategory extends Model {
 	];
 
 	protected $appends = ['switch_value'];
-   	public function getSwitchValueAttribute() {
-        return !empty($this->attributes['deleted_at']) ? 'Inactive' : 'Active';
-    }
+	public function getSwitchValueAttribute() {
+		return !empty($this->attributes['deleted_at']) ? 'Inactive' : 'Active';
+	}
 
 	public function serviceItemCategory() {
 		return $this->belongsTo('Abs\AttributePkg\ServiceItemCategory', 'category_id', 'id');
@@ -35,10 +35,24 @@ class ServiceItemSubCategory extends Model {
 		return response()->json(['success' => true, 'sub_category_list' => $list]);
 	}
 
-	public static function createFromObject($record_data) {
+	public static function createFromCollection($records, $company = null) {
+		foreach ($records as $key => $record_data) {
+			try {
+				if (!$record_data->company) {
+					continue;
+				}
+				$record = self::createFromObject($record_data, $company);
+			} catch (Exception $e) {
+				dd($e);
+			}
+		}
+	}
+	public static function createFromObject($record_data, $company = null) {
 
 		$errors = [];
-		$company = Company::where('code', $record_data->company)->first();
+		if (!$company) {
+			$company = Company::where('code', $record_data->company)->first();
+		}
 		if (!$company) {
 			dump('Invalid Company : ' . $record_data->company);
 			return;
@@ -70,16 +84,4 @@ class ServiceItemSubCategory extends Model {
 		return $record;
 	}
 
-	public static function createFromCollection($records) {
-		foreach ($records as $key => $record_data) {
-			try {
-				if (!$record_data->company) {
-					continue;
-				}
-				$record = self::createFromObject($record_data);
-			} catch (Exception $e) {
-				dd($e);
-			}
-		}
-	}
 }
