@@ -328,7 +328,10 @@ class ServiceInvoiceController extends Controller {
 					$fd_gps_val = [];
 					foreach ($request->field_groups as $fg_key => $fg) {
 						//GET FIELD GROUP VALUE
-						$fg_val = FieldGroup::find($fg['id']);
+						$fg_val = FieldGroup::withTrashed()->find($fg['id']);
+						if (!$fg_val) {
+							return response()->json(['success' => false, 'error' => 'FieldGroup not found']);
+						}
 
 						//PUSH FIELD GROUP TO NEW ARRAY
 						$fg_v = [];
@@ -343,6 +346,9 @@ class ServiceInvoiceController extends Controller {
 								$field = Field::find($fd['id']);
 								//PUSH FIELDS TO FIELD GROUP CREATED ARRAY
 								$fg_v['fields'][$fd_key] = Field::withTrashed()->find($fd['id']);
+								if (!$fg_v['fields'][$fd_key]) {
+									return response()->json(['success' => false, 'error' => 'Field not found']);
+								}
 								//SINGLE SELECT DROPDOWN | MULTISELECT DROPDOWN
 								if ($field->type_id == 1 || $field->type_id == 2) {
 									if ($field->list_source_id == 1180) {
