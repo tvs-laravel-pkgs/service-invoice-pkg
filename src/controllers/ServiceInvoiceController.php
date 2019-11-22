@@ -2,6 +2,7 @@
 
 namespace Abs\ServiceInvoicePkg;
 use Abs\AttributePkg\Field;
+use Abs\AttributePkg\FieldConfigSource;
 use Abs\AttributePkg\FieldGroup;
 use Abs\AttributePkg\FieldSourceTable;
 use Abs\SerialNumberPkg\SerialNumberGroup;
@@ -286,6 +287,7 @@ class ServiceInvoiceController extends Controller {
 						foreach ($fieldGroup->fields as $key => $field) {
 							//SINGLE SELECT DROPDOWN | MULTISELECT DROPDOWN
 							if ($field->type_id == 1 || $field->type_id == 2) {
+								// LIST SOURCE - TABLE
 								if ($field->list_source_id == 1180) {
 									$source_table = FieldSourceTable::withTrashed()->find($field->source_table_id);
 									if (!$source_table) {
@@ -295,10 +297,28 @@ class ServiceInvoiceController extends Controller {
 										$entity = $source_table->model;
 										$model = $nameSpace . $entity;
 										$placeholder = 'Select ' . $entity;
+										//OTHER THAN MULTISELECT
 										if ($field->type_id != 2) {
 											$field->get_list = collect($model::select('name', 'id')->get())->prepend(['id' => '', 'name' => $placeholder]);
 										} else {
 											$field->get_list = $model::select('name', 'id')->get();
+										}
+									}
+								} elseif ($field->list_source_id == 1181) {
+									// LIST SOURCE - CONFIG
+									$source_table = FieldConfigSource::withTrashed()->find($field->source_table_id);
+									if (!$source_table) {
+										$field->get_list = [];
+									} else {
+										$nameSpace = '\\App\\';
+										$entity = $source_table->name;
+										$model = $nameSpace . 'Config';
+										$placeholder = 'Select ' . $entity;
+										//OTHER THAN MULTISELECT
+										if ($field->type_id != 2) {
+											$field->get_list = collect($model::select('name', 'id')->where('config_type_id', $source_table->id)->get())->prepend(['id' => '', 'name' => $placeholder]);
+										} else {
+											$field->get_list = $model::select('name', 'id')->where('config_type_id', $source_table->id)->get();
 										}
 									}
 								} else {
@@ -351,6 +371,7 @@ class ServiceInvoiceController extends Controller {
 								}
 								//SINGLE SELECT DROPDOWN | MULTISELECT DROPDOWN
 								if ($field->type_id == 1 || $field->type_id == 2) {
+									// LIST SOURCE - TABLE
 									if ($field->list_source_id == 1180) {
 										$source_table = FieldSourceTable::withTrashed()->find($field->source_table_id);
 										if (!$source_table) {
@@ -361,10 +382,30 @@ class ServiceInvoiceController extends Controller {
 											$entity = $source_table->model;
 											$model = $nameSpace . $entity;
 											$placeholder = 'Select ' . $entity;
+											//OTHER THAN MULTISELECT
 											if ($field->type_id != 2) {
 												$fg_v['fields'][$fd_key]->get_list = collect($model::select('name', 'id')->get())->prepend(['id' => '', 'name' => $placeholder]);
 											} else {
 												$fg_v['fields'][$fd_key]->get_list = $model::select('name', 'id')->get();
+											}
+											$fg_v['fields'][$fd_key]->value = is_string($fd['value']) ? json_decode($fd['value']) : $fd['value'];
+										}
+									} elseif ($field->list_source_id == 1181) {
+										// LIST SOURCE - CONFIG
+										$source_table = FieldConfigSource::withTrashed()->find($field->source_table_id);
+										if (!$source_table) {
+											$fg_v['fields'][$fd_key]->get_list = [];
+											$fg_v['fields'][$fd_key]->value = is_string($fd['value']) ? json_decode($fd['value']) : $fd['value'];
+										} else {
+											$nameSpace = '\\App\\';
+											$entity = $source_table->name;
+											$model = $nameSpace . 'Config';
+											$placeholder = 'Select ' . $entity;
+											//OTHER THAN MULTISELECT
+											if ($field->type_id != 2) {
+												$fg_v['fields'][$fd_key]->get_list = collect($model::select('name', 'id')->where('config_type_id', $source_table->id)->get())->prepend(['id' => '', 'name' => $placeholder]);
+											} else {
+												$fg_v['fields'][$fd_key]->get_list = $model::select('name', 'id')->where('config_type_id', $source_table->id)->get();
 											}
 											$fg_v['fields'][$fd_key]->value = is_string($fd['value']) ? json_decode($fd['value']) : $fd['value'];
 										}
@@ -377,6 +418,7 @@ class ServiceInvoiceController extends Controller {
 									$fg_v['fields'][$fd_key]->value = $fd['value'];
 								} elseif ($field->type_id == 10) {
 									//AUTOCOMPLETE
+									// LIST SOURCE - TABLE
 									if ($field->list_source_id == 1180) {
 										$source_table = FieldSourceTable::withTrashed()->find($field->source_table_id);
 										if (!$source_table) {
@@ -391,6 +433,24 @@ class ServiceInvoiceController extends Controller {
 													'name',
 													'code'
 												)
+												->first();
+										}
+									} elseif ($field->list_source_id == 1181) {
+										// LIST SOURCE - CONFIG
+										$source_table = FieldConfigSource::withTrashed()->find($field->source_table_id);
+										if (!$source_table) {
+											$fg_v['fields'][$fd_key]->autoval = [];
+										} else {
+											$nameSpace = '\\App\\';
+											$entity = $source_table->name;
+											$model = $nameSpace . 'Config';
+											$fg_v['fields'][$fd_key]->autoval = $model::where('id', $fd['value'])
+												->select(
+													'id',
+													'name',
+													'code'
+												)
+												->where('config_type_id', $source_table->id)
 												->first();
 										}
 									} else {
