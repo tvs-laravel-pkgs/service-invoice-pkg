@@ -30,17 +30,15 @@
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Branch <span class="mandatory">*</span></label>
                                                     <div class="table-form-list-control">
-                                                        <md-autocomplete class="type-sm" md-items="option in $ctrl.searchBranch($ctrl.branchSearchText)" md-selected-item="$ctrl.service_invoice.branch" md-search-text="$ctrl.branchSearchText" md-item-text="option.code" md-min-length="3" placeholder="Branch code / name" md-selected-item-change="$ctrl.getBranchDetails()" md-search-text-change="$ctrl.branchChanged()">
-                                                            <md-item-template>
-                                                                <span>
-                                                                    {{option.name}} - {{option.code}}
-                                                                </span>
-                                                            </md-item-template>
-                                                            <md-not-found>
-                                                                No Branch matching "{{$ctrl.branchSearchText}}" were found.
-                                                            </md-not-found>
-                                                        </md-autocomplete>
-                                                        <input type="hidden" name="branch_id" value="{{$ctrl.service_invoice.branch.id}}" class="required">
+                                                        <md-select class="type-sm" ng-model="$ctrl.service_invoice.branch_id" placeholder="Select Branch" md-on-close="clearSearchBranch()" data-md-container-class="selectdemoSelectHeader" ng-change="getSbuByBranch($ctrl.service_invoice.branch_id)">
+                                                            <md-select-header class="demo-select-header">
+                                                                <input ng-model="searchBranch" type="search" placeholder="Search for a branch.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                                            </md-select-header>
+                                                            <md-optgroup label="branch">
+                                                                <md-option ng-value="branch.id" ng-repeat="branch in $ctrl.extras.branch_list | filter:searchBranch">{{branch.name}}</md-option>
+                                                            </md-optgroup>
+                                                        </md-select>
+                                                        <input type="hidden" name="branch_id" id="branch_id" value="{{$ctrl.service_invoice.branch_id}}" class="required">
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
@@ -401,6 +399,16 @@
                                             <input name="field_groups[{{index}}][fields][{{field_index}}][value]" ng-model="field.value" type="text" class="form-control type-sm" placeholder="Enter {{field.name}}" ng-class="{required: field.pivot.is_required == 1}" />
                                         </div><!-- Table Form List Control -->
                                     </div><!-- Table Form List Wrap -->
+                                    <!-- CHECK BOX -->
+                                    <div class="table-form-list-wrap" ng-if="field.type_id == 5">
+                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                                        <label for="field_groups[{{index}}][fields][{{field_index}}][value]" class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <div class="table-form-list-control">
+                                            <div class="common-checkbox">
+                                                <input name="field_groups[{{index}}][fields][{{field_index}}][value]" id="field_groups[{{index}}][fields][{{field_index}}][value]" ng-model="field.value" type="checkbox" class="form-control type-sm" ng-class="{required: field.pivot.is_required == 1}" />
+                                            </div>
+                                        </div>
+                                    </div><!-- Table Form List Control -->
                         </div><!-- Table Form List Wrap -->
                         <!-- DATE PICKER -->
                         <div class="table-form-list-wrap" ng-if="field.type_id == 7">

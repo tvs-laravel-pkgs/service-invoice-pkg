@@ -16,6 +16,10 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 	Route::post('/field/search', 'ServiceInvoiceController@searchField')->name('searchField');
 	Route::post('/get-field-details', 'ServiceInvoiceController@getFieldDetails')->name('getFieldDetails');
 
+	// BRANCH
+	Route::post('/branch/search', 'ServiceInvoiceController@searchBranch')->name('searchBranch');
+	Route::post('/get-branch-details', 'ServiceInvoiceController@getBranchDetails')->name('getBranchDetails');
+
 	// CUSTOMER
 	Route::post('/service-invoice/customer/search', 'ServiceInvoiceController@searchCustomer')->name('searchCustomer');
 	Route::post('/service-invoice/get-customer-details', 'ServiceInvoiceController@getCustomerDetails')->name('getCustomerDetails');

@@ -92,6 +92,7 @@ class ServiceInvoiceController extends Controller {
 			$service_invoice = ServiceInvoice::with([
 				'attachments',
 				'customer',
+				'branch',
 				'serviceInvoiceItems',
 				'serviceInvoiceItems.serviceItem',
 				'serviceInvoiceItems.eavVarchars',
@@ -230,7 +231,7 @@ class ServiceInvoiceController extends Controller {
 		}
 
 		$this->data['extras'] = [
-			'branch_list' => collect(Outlet::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Branch']),
+			// 'branch_list' => collect(Outlet::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Branch']),
 			// 'sbu_list' => collect(Sbu::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Sbu']),
 			'sbu_list' => [],
 			'tax_list' => Tax::select('name', 'id')->where('company_id', Auth::user()->company_id)->get(),
@@ -260,6 +261,14 @@ class ServiceInvoiceController extends Controller {
 
 	public function getCustomerDetails(Request $request) {
 		return Customer::getDetails($request);
+	}
+
+	public function searchBranch(Request $r) {
+		return Outlet::search($r);
+	}
+
+	public function getBranchDetails(Request $request) {
+		return Outlet::getDetails($request);
 	}
 
 	public function searchServiceItem(Request $r) {

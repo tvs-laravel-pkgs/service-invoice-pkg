@@ -204,6 +204,41 @@ app.component('serviceInvoiceForm', {
         }
 
 
+        //SEARCH BRANCH
+        self.searchBranch = function(query) {
+            if (query) {
+                return new Promise(function(resolve, reject) {
+                    $http
+                        .post(
+                            search_branch_url, {
+                                key: query,
+                            }
+                        )
+                        .then(function(response) {
+                            resolve(response.data);
+                        });
+                    //reject(response);
+                });
+            } else {
+                return [];
+            }
+        }
+
+        //GET BRANCH DETAILS
+        self.getBranchDetails = function() {
+            if (self.service_invoice.branch == null) {
+                return
+            }
+            $scope.getSbuByBranch(self.service_invoice.branch.id);
+        }
+
+        //BRANCH CHANGED
+        self.branchChanged = function() {
+            self.service_invoice.sbu_id = '';
+            self.extras.sbu_list = [];
+        }
+
+
         //SEARCH CUSTOMER
         self.searchCustomer = function(query) {
             if (query) {
@@ -223,6 +258,7 @@ app.component('serviceInvoiceForm', {
                 return [];
             }
         }
+
 
         //GET CUSTOMER DETAILS
         self.getCustomerDetails = function() {
