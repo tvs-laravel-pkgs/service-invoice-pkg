@@ -519,8 +519,8 @@ app.component('serviceInvoiceForm', {
                 self.table_rate += Math.round(service_invoice_item.rate);
                 self.table_sub_total += Math.round(service_invoice_item.sub_total);
                 $(self.extras.tax_list).each(function(key, tax) {
-                    self.table_gst_total += Math.round(service_invoice_item[tax.name].amount);
-                    self[tax.name + '_amount'] += Math.round(service_invoice_item[tax.name].amount);
+                    self.table_gst_total += (service_invoice_item[tax.name] ? Math.round(service_invoice_item[tax.name].amount) : 0);
+                    self[tax.name + '_amount'] += (service_invoice_item[tax.name] ? Math.round(service_invoice_item[tax.name].amount) : 0);
                 });
             });
             self.table_total = self.table_sub_total + self.table_gst_total;
@@ -544,7 +544,7 @@ app.component('serviceInvoiceForm', {
         var service_v = jQuery(service_item_form_id).validate({
             errorPlacement: function(error, element) {
                 if (element.hasClass("dynamic_date")) {
-                    error.appendTo('.dynamic_date_error');
+                    error.insertAfter(element.parent("div"));
                 } else {
                     error.insertAfter(element);
                 }
