@@ -399,97 +399,108 @@
                                             <input name="field_groups[{{index}}][fields][{{field_index}}][value]" ng-model="field.value" type="text" class="form-control type-sm" placeholder="Enter {{field.name}}" ng-class="{required: field.pivot.is_required == 1}" />
                                         </div><!-- Table Form List Control -->
                                     </div><!-- Table Form List Wrap -->
-                                    <!-- DATE PICKER -->
-                                    <div class="table-form-list-wrap" ng-if="field.type_id == 7">
+                                    <!-- CHECK BOX -->
+                                    <div class="table-form-list-wrap" ng-if="field.type_id == 5">
                                         <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
-                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
-                                        <div class="table-form-list-control dynamic_date_error">
-                                            <div class="input-group date type-sm dynamicDatePicker" data-provide="datepicker">
-                                                <input name="field_groups[{{index}}][fields][{{field_index}}][value]" ng-model="field.value" type="text" class="form-control dynamic_date" placeholder="Select {{field.name}}" readonly ng-class="{required: field.pivot.is_required == 1}" />
-                                                <div class="input-group-addon">
-                                                    <img class="img-responsive" src="public/theme/img/content/calender-gray-icon.svg" alt="Calendar Image" />
-                                                </div>
-                                            </div><!-- Input Group -->
-                                        </div><!-- Table Form List Control -->
-                                    </div><!-- Table Form List Wrap -->
-                                    <!-- DATE TIME PICKER -->
-                                    <div class="table-form-list-wrap" ng-if="field.type_id == 8">
-                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
-                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
-                                        <div class="table-form-list-control dynamic_date_error">
-                                            <div class="input-group date" moment-picker="field.value" format="DD-MM-YYYY LT">
-                                                <input name="field_groups[{{index}}][fields][{{field_index}}][value]" ng-model="field.value" type="text" class="form-control" placeholder="Select {{field.name}}" readonly ng-class="{required: field.pivot.is_required == 1}">
-                                                <span class="input-group-addon">
-                                                    <img class="img-responsive" src="./public/theme/img/content/calender-gray-icon.svg" alt="Calendar Image" />
-                                                </span>
-                                            </div><!-- Input Group -->
-                                        </div><!-- Table Form List Control -->
-                                    </div><!-- Table Form List Wrap -->
-                                    <!-- SWITCH -->
-                                    <div class="table-form-list-wrap" ng-if="field.type_id == 9">
-                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
-                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory">*</span></label>
+                                        <label for="field_groups[{{index}}][fields][{{field_index}}][value]" class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
                                         <div class="table-form-list-control">
-                                            <div class="tab-switch">
-                                                <md-switch ng-model="field.value" aria-label="Switch 1" ng-true-value="'No'" ng-false-value="'Yes'" class="md-warn type-sm type-2">
-                                                    {{ field.value }}
-                                                </md-switch>
-                                                <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][value]" value="{{field.value}}">
+                                            <div class="common-checkbox">
+                                                <input name="field_groups[{{index}}][fields][{{field_index}}][value]" id="field_groups[{{index}}][fields][{{field_index}}][value]" ng-model="field.value" type="checkbox" class="form-control type-sm" ng-class="{required: field.pivot.is_required == 1}" />
                                             </div>
-                                        </div><!-- Table Form List Control -->
-                                    </div><!-- Table Form List Wrap -->
-                                    <!-- AUTOCOMPLETE -->
-                                    <div class="table-form-list-wrap" ng-if="field.type_id == 10">
-                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
-                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
-                                        <div class="table-form-list-control">
-                                            <md-autocomplete class="type-sm" md-items="option in $ctrl.searchField($ctrl.searchText, field.id)" md-selected-item="field.autoval" md-search-text="$ctrl.searchText" md-item-text="option.code" md-min-length="3" placeholder="{{field.name}} code / name">
-                                                <md-item-template>
-                                                    <span>
-                                                        {{option.name}} - {{option.code}}
-                                                    </span>
-                                                </md-item-template>
-                                                <md-not-found>
-                                                    No {{field.name}} matching "{{$ctrl.searchText}}" were found.
-                                                </md-not-found>
-                                            </md-autocomplete>
-                                            <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][value]" value="{{field.autoval.id}}" ng-class="{required: field.pivot.is_required == 1}">
                                         </div>
-                                    </div><!-- Table Form List Wrap -->
+                                    </div><!-- Table Form List Control -->
+                        </div><!-- Table Form List Wrap -->
+                        <!-- DATE PICKER -->
+                        <div class="table-form-list-wrap" ng-if="field.type_id == 7">
+                            <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                            <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                            <div class="table-form-list-control dynamic_date_error">
+                                <div class="input-group date type-sm dynamicDatePicker" data-provide="datepicker">
+                                    <input name="field_groups[{{index}}][fields][{{field_index}}][value]" ng-model="field.value" type="text" class="form-control dynamic_date" placeholder="Select {{field.name}}" readonly ng-class="{required: field.pivot.is_required == 1}" />
+                                    <div class="input-group-addon">
+                                        <img class="img-responsive" src="public/theme/img/content/calender-gray-icon.svg" alt="Calendar Image" />
+                                    </div>
+                                </div><!-- Input Group -->
+                            </div><!-- Table Form List Control -->
+                        </div><!-- Table Form List Wrap -->
+                        <!-- DATE TIME PICKER -->
+                        <div class="table-form-list-wrap" ng-if="field.type_id == 8">
+                            <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                            <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                            <div class="table-form-list-control dynamic_date_error">
+                                <div class="input-group date" moment-picker="field.value" format="DD-MM-YYYY LT">
+                                    <input name="field_groups[{{index}}][fields][{{field_index}}][value]" ng-model="field.value" type="text" class="form-control" placeholder="Select {{field.name}}" readonly ng-class="{required: field.pivot.is_required == 1}">
+                                    <span class="input-group-addon">
+                                        <img class="img-responsive" src="./public/theme/img/content/calender-gray-icon.svg" alt="Calendar Image" />
+                                    </span>
+                                </div><!-- Input Group -->
+                            </div><!-- Table Form List Control -->
+                        </div><!-- Table Form List Wrap -->
+                        <!-- SWITCH -->
+                        <div class="table-form-list-wrap" ng-if="field.type_id == 9">
+                            <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                            <label class="table-form-list-label">{{field.name}}<span class="mandatory">*</span></label>
+                            <div class="table-form-list-control">
+                                <div class="tab-switch">
+                                    <md-switch ng-model="field.value" aria-label="Switch 1" ng-true-value="'No'" ng-false-value="'Yes'" class="md-warn type-sm type-2">
+                                        {{ field.value }}
+                                    </md-switch>
+                                    <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][value]" value="{{field.value}}">
+                                </div>
+                            </div><!-- Table Form List Control -->
+                        </div><!-- Table Form List Wrap -->
+                        <!-- AUTOCOMPLETE -->
+                        <div class="table-form-list-wrap" ng-if="field.type_id == 10">
+                            <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                            <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                            <div class="table-form-list-control">
+                                <md-autocomplete class="type-sm" md-items="option in $ctrl.searchField($ctrl.searchText, field.id)" md-selected-item="field.autoval" md-search-text="$ctrl.searchText" md-item-text="option.code" md-min-length="3" placeholder="{{field.name}} code / name">
+                                    <md-item-template>
+                                        <span>
+                                            {{option.name}} - {{option.code}}
+                                        </span>
+                                    </md-item-template>
+                                    <md-not-found>
+                                        No {{field.name}} matching "{{$ctrl.searchText}}" were found.
+                                    </md-not-found>
+                                </md-autocomplete>
+                                <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][value]" value="{{field.autoval.id}}" ng-class="{required: field.pivot.is_required == 1}">
+                            </div>
+                        </div><!-- Table Form List Wrap -->
+                        </li>
+                        </ul>
+                    </div>
+                </div>
+            </div><!-- Modal Body -->
+            <input type="hidden" name="action" value="{{$ctrl.add_service_action}}">
+            <div class="modal-footer">
+                <div class="row">
+                    <div class="col-md-8 text-left">
+                        <div class="modal-footer-list-wrap">
+                            <ul class="modal-footer-list">
+                                <li>
+                                    <span class="modal-footer-list-label">Amount</span>
+                                    <span class="modal-footer-list-value">{{($ctrl.sub_total ? $ctrl.sub_total : 0) | number : 2}}</span>
+                                </li>
+                                <li ng-repeat="(index, tax) in $ctrl.service_item_detail.tax_code.taxes">
+                                    <span class="modal-footer-list-label">{{tax.name}} ({{$ctrl.parseInt(tax.pivot.percentage)}}%)</span>
+                                    <span class="modal-footer-list-value">{{(tax.pivot.amount ? tax.pivot.amount : 0) | number : 2}}</span>
+                                </li>
+                                <li class="color-red">
+                                    <span class="modal-footer-list-label">Total</span>
+                                    <span class="modal-footer-list-value">{{($ctrl.total ? $ctrl.total : 0) | number : 2}}</span>
                                 </li>
                             </ul>
-                        </div>
-                    </div>
-                </div><!-- Modal Body -->
-                <input type="hidden" name="action" value="{{$ctrl.add_service_action}}">
-                <div class="modal-footer">
-                    <div class="row">
-                        <div class="col-md-8 text-left">
-                            <div class="modal-footer-list-wrap">
-                                <ul class="modal-footer-list">
-                                    <li>
-                                        <span class="modal-footer-list-label">Amount</span>
-                                        <span class="modal-footer-list-value">{{($ctrl.sub_total ? $ctrl.sub_total : 0) | number : 2}}</span>
-                                    </li>
-                                    <li ng-repeat="(index, tax) in $ctrl.service_item_detail.tax_code.taxes">
-                                        <span class="modal-footer-list-label">{{tax.name}} ({{$ctrl.parseInt(tax.pivot.percentage)}}%)</span>
-                                        <span class="modal-footer-list-value">{{(tax.pivot.amount ? tax.pivot.amount : 0) | number : 2}}</span>
-                                    </li>
-                                    <li class="color-red">
-                                        <span class="modal-footer-list-label">Total</span>
-                                        <span class="modal-footer-list-value">{{($ctrl.total ? $ctrl.total : 0) | number : 2}}</span>
-                                    </li>
-                                </ul>
-                            </div><!-- Modal Footer List Wrap -->
-                        </div><!-- Column -->
-                        <div class="col-md-4">
-                            <button type="button" class="btn btn-white" data-dismiss="modal">Cancel</button>
-                            <button id="addServiceItem" type="submit" class="btn btn-default">Save</button>
-                        </div><!-- Column -->
-                    </div><!-- Row -->
-                </div><!-- Modal Footer -->
-            </div><!-- Modal Content -->
-        </form>
-    </div><!-- Modal Dialog -->
+                        </div><!-- Modal Footer List Wrap -->
+                    </div><!-- Column -->
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-white" data-dismiss="modal">Cancel</button>
+                        <button id="addServiceItem" type="submit" class="btn btn-default">Save</button>
+                    </div><!-- Column -->
+                </div><!-- Row -->
+            </div><!-- Modal Footer -->
+    </div><!-- Modal Content -->
+    </form>
+</div><!-- Modal Dialog -->
 </div><!-- Modal -->
 <script src="./public/theme/js/imageuploadify.min.js"></script>
