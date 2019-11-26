@@ -276,6 +276,13 @@ class ServiceInvoiceController extends Controller {
 	}
 
 	public function getServiceItemDetails(Request $request) {
+
+		//GET TAXES BY CONDITIONS
+		$taxes = Tax::getTaxes($request->service_item_id, $request->branch_id, $request->customer_id);
+		if (!$taxes['success']) {
+			return response()->json(['success' => false, 'error' => $taxes['error']]);
+		}
+
 		if ($request->btn_action == 'add') {
 			$service_item = ServiceItem::with([
 				'fieldGroups',
@@ -283,7 +290,9 @@ class ServiceInvoiceController extends Controller {
 				'fieldGroups.fields.fieldType',
 				'coaCode',
 				'taxCode',
-				'taxCode.taxes',
+				'taxCode.taxes' => function ($query) use ($taxes) {
+					$query->whereIn('tax_id', $taxes['tax_ids']);
+				},
 			])
 				->find($request->service_item_id);
 			if (!$service_item) {
@@ -345,7 +354,9 @@ class ServiceInvoiceController extends Controller {
 			$service_item = ServiceItem::with([
 				'coaCode',
 				'taxCode',
-				'taxCode.taxes',
+				'taxCode.taxes' => function ($query) use ($taxes) {
+					$query->whereIn('tax_id', $taxes['tax_ids']);
+				},
 			])
 				->find($request->service_item_id);
 			if (!$service_item) {
@@ -493,10 +504,19 @@ class ServiceInvoiceController extends Controller {
 	}
 
 	public function getServiceItem(Request $request) {
+
+		//GET TAXES BY CONDITIONS
+		$taxes = Tax::getTaxes($request->service_item_id, $request->branch_id, $request->customer_id);
+		if (!$taxes['success']) {
+			return response()->json(['success' => false, 'error' => $taxes['error']]);
+		}
+
 		$service_item = ServiceItem::with([
 			'coaCode',
 			'taxCode',
-			'taxCode.taxes',
+			'taxCode.taxes' => function ($query) use ($taxes) {
+				$query->whereIn('tax_id', $taxes['tax_ids']);
+			},
 		])
 			->find($request->service_item_id);
 		if (!$service_item) {

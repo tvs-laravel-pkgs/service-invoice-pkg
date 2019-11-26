@@ -236,6 +236,12 @@ app.component('serviceInvoiceForm', {
         self.branchChanged = function() {
             self.service_invoice.sbu_id = '';
             self.extras.sbu_list = [];
+
+            self.service_invoice.service_invoice_items = [];
+            //SERVICE INVOICE ITEMS TABLE CALC
+            $timeout(function() {
+                $scope.serviceInvoiceItemCalc();
+            }, 1000);
         }
 
 
@@ -290,6 +296,11 @@ app.component('serviceInvoiceForm', {
 
         self.customerChanged = function() {
             self.customer = {};
+            self.service_invoice.service_invoice_items = [];
+            //SERVICE INVOICE ITEMS TABLE CALC
+            $timeout(function() {
+                $scope.serviceInvoiceItemCalc();
+            }, 1000);
         }
 
         //SEARCH SERVICE ITEM
@@ -323,6 +334,8 @@ app.component('serviceInvoiceForm', {
                     get_service_item_info_url, {
                         service_item_id: self.service_item.id,
                         btn_action: 'add',
+                        branch_id: self.service_invoice.branch.id,
+                        customer_id: self.service_invoice.customer.id,
                     }
                 ).then(function(response) {
                     if (response.data.success) {
@@ -442,6 +455,8 @@ app.component('serviceInvoiceForm', {
                         service_item_id: service_invoice_item_id,
                         field_groups: self.service_invoice.service_invoice_items[index].field_groups,
                         btn_action: 'edit',
+                        branch_id: self.service_invoice.branch.id,
+                        customer_id: self.service_invoice.customer.id,
                     }
                 ).then(function(response) {
                     if (response.data.success) {

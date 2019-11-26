@@ -464,6 +464,8 @@
                     </div>
                 </div><!-- Modal Body -->
                 <input type="hidden" name="action" value="{{$ctrl.add_service_action}}">
+                <input type="hidden" name="customer_id" value="{{$ctrl.service_invoice.customer.id}}">
+                <input type="hidden" name="branch_id" value="{{$ctrl.service_invoice.branch.id}}">
                 <div class="modal-footer">
                     <div class="row">
                         <div class="col-md-8 text-left">
