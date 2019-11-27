@@ -178,12 +178,12 @@
                                                 <th class="action">Action</th>
                                                 <th>Item Code</th>
                                                 <th>Item Name</th>
-                                                <th>Description</th>
+                                                <th>Reference</th>
                                                 <th>Quantity</th>
-                                                <th>Rate</th>
-                                                <th>Amount</th>
-                                                <th ng-repeat="(index, tax) in $ctrl.extras.tax_list">{{tax.name}}</th>
-                                                <th>Total Amount</th>
+                                                <th class="text-right">Rate</th>
+                                                <th class="text-right">Amount</th>
+                                                <th class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list">{{tax.name}}</th>
+                                                <th class="text-right">Total Amount</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -216,15 +216,15 @@
                                                 <td>{{service_invoice_item.name}}</td>
                                                 <td>{{service_invoice_item.description}}</td>
                                                 <td>{{$ctrl.parseInt(service_invoice_item.qty)}}</td>
-                                                <td>{{service_invoice_item.rate | number : 2}}</td>
-                                                <td>{{service_invoice_item.sub_total | number : 2}}</td>
-                                                <td ng-repeat="(tax_index, tax) in $ctrl.extras.tax_list">
+                                                <td class="text-right">{{service_invoice_item.rate | number : 2}}</td>
+                                                <td class="text-right">{{service_invoice_item.sub_total | number : 2}}</td>
+                                                <td class="text-right" ng-repeat="(tax_index, tax) in $ctrl.extras.tax_list">
                                                     {{(service_invoice_item[tax.name] ? (service_invoice_item[tax.name].amount | number : 2) : 0.00)}}({{(service_invoice_item[tax.name] ? (service_invoice_item[tax.name].percentage) : 0)}}%)
                                                     <input type="hidden" name="service_invoice_items[{{index}}][taxes][{{tax_index}}][tax_id]" value="{{tax.id}}">
                                                     <input type="hidden" name="service_invoice_items[{{index}}][taxes][{{tax_index}}][percentage]" value="{{(service_invoice_item[tax.name] ? service_invoice_item[tax.name].percentage : 0)}}">
                                                     <input type="hidden" name="service_invoice_items[{{index}}][taxes][{{tax_index}}][amount]" value="{{(service_invoice_item[tax.name] ? service_invoice_item[tax.name].amount : 0)}}">
                                                 </td>
-                                                <td>{{service_invoice_item.total | number : 2}}</td>
+                                                <td class="text-right">{{service_invoice_item.total | number : 2}}</td>
                                             </tr>
                                         </tbody>
                                         <tfoot>
@@ -330,9 +330,9 @@
                             <ul class="table-form-list">
                                 <li>
                                     <div class="table-form-list-wrap">
-                                        <label class="table-form-list-label">Description <span class="mandatory">*</span></label>
+                                        <label class="table-form-list-label">Reference <span class="mandatory">*</span></label>
                                         <div class="table-form-list-control">
-                                            <textarea name="description" ng-model="$ctrl.description" class="form-control type-sm required" rows="3" placeholder="Enter Description"></textarea>
+                                            <textarea name="description" ng-model="$ctrl.description" class="form-control type-sm required" rows="3" placeholder="Enter Reference"></textarea>
                                         </div><!-- Table Form List Control -->
                                     </div><!-- Table Form List Wrap -->
                                 </li>
