@@ -68,10 +68,7 @@ class ServiceInvoiceController extends Controller {
 				$img_download = asset('public/theme/img/table/cndn/download.svg');
 				$img_delete = asset('public/theme/img/table/cndn/delete.svg');
 
-				return '<a href="#!" class="">
-                                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
-                                    </a>
-                        <a href="#!/service-invoice-pkg/service-invoice/edit/' . $service_invoice_list->id . '" class="">
+				return '<a href="#!/service-invoice-pkg/service-invoice/edit/' . $service_invoice_list->id . '" class="">
                         <img class="img-responsive" src="' . $img_edit . '" alt="Edit" />
                     	</a>
 						<a href="' . route("downloadPdf", ["id" => $service_invoice_list->id]) . '" class="">
