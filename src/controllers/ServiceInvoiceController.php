@@ -576,7 +576,7 @@ class ServiceInvoiceController extends Controller {
 				$branch = Outlet::where('id', $request->branch_id)->first();
 
 				//GENERATE SERVICE INVOICE NUMBER
-				$generateNumber = SerialNumberGroup::generateNumber(1, $financial_year->id, $branch->state_id, $branch->id);
+				$generateNumber = SerialNumberGroup::generateNumber(5, $financial_year->id, $branch->state_id, $branch->id);
 				if (!$generateNumber['success']) {
 					return response()->json(['success' => false, 'errors' => ['No Serial number found']]);
 				}
