@@ -4,15 +4,29 @@ app.config(['$routeProvider', function($routeProvider) {
     //SERVICE INVOICE
     when('/service-invoice-pkg/service-invoice/list', {
         template: '<service-invoice-list></service-invoice-list>',
-        title: 'Service Invoices',
+        title: 'CN/DNs',
     }).
     when('/service-invoice-pkg/service-invoice/add', {
         template: '<service-invoice-form></service-invoice-form>',
-        title: 'Add Service Invoice',
+        title: 'Add CN/DN',
     }).
     when('/service-invoice-pkg/service-invoice/edit/:id', {
         template: '<service-invoice-form></service-invoice-form>',
-        title: 'Edit Service Invoice',
+        title: 'Edit CN/DN',
+    }).
+    when('/service-invoice-pkg/service-invoice/view/:id', {
+        template: '<service-invoice-view></service-invoice-view>',
+        title: 'View CN/DN',
+    }).
+
+    //SERVICE INVOICE APPROVALS
+    when('/service-invoice-pkg/service-invoice/approval/approval-level/:approval_level_id/list/', {
+        template: '<service-invoice-approval-list></service-invoice-approval-list>',
+        title: 'CN/DN Approval List',
+    }).
+    when('/service-invoice-pkg/service-invoice/approval/approval-level/:approval_level_id/view/:service_invoice_id', {
+        template: '<service-invoice-approval-view></service-invoice-approval-view>',
+        title: 'CN/DN Approval View',
     }).
 
     //SERVICE ITEM CATEGORIES
@@ -42,5 +56,6 @@ app.config(['$routeProvider', function($routeProvider) {
         template: '<service-item-form></service-item-form>',
         title: 'Edit Service Item',
     });
+
 
 }]);
