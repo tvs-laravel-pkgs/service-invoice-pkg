@@ -115,8 +115,8 @@
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Doc. Date <span class="mandatory">*</span></label>
                                                     <div class="table-form-list-control doc_date_error">
-                                                        <div class="input-group date type-sm docDatePicker" data-provide="datepicker">
-                                                            <input name="document_date" ng-model="$ctrl.service_invoice.document_date" type="text" class="form-control doc_date" placeholder="Select Doc Date" readonly />
+                                                        <div class="input-group date type-sm docDatePicker">
+                                                            <input name="document_date" ng-model="$ctrl.service_invoice.document_date" type="text" class="form-control doc_date" placeholder="Select Doc Date" value="{{$ctrl.service_invoice.document_date}}" readonly />
                                                             <div class="input-group-addon">
                                                                 <img class="img-responsive" src="public/theme/img/content/calender-gray-icon.svg" alt="Calendar Image" />
                                                             </div>
