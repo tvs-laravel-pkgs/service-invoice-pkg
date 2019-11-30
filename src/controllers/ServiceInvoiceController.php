@@ -15,6 +15,7 @@ use Abs\TaxPkg\Tax;
 use App\Attachment;
 use App\Company;
 use App\Customer;
+use App\Entity;
 use App\FinancialYear;
 use App\Http\Controllers\Controller;
 use App\Outlet;
@@ -235,6 +236,7 @@ class ServiceInvoiceController extends Controller {
 			'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
 			'sub_category_list' => [],
 		];
+		$this->data['config_values'] = Entity::where('company_id', Auth::user()->company_id)->whereIn('entity_type_id', [15, 16])->get();
 		$this->data['service_invoice'] = $service_invoice;
 		$this->data['success'] = true;
 		return response()->json($this->data);
@@ -663,9 +665,17 @@ class ServiceInvoiceController extends Controller {
 				$service_invoice->number = $generateNumber['number'];
 				$message = 'Service invoice added successfully';
 			}
+			$approval_status = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 17)->first();
 
 			$service_invoice->fill($request->all());
 			$service_invoice->company_id = Auth::user()->company_id;
+			if ($approval_status != '' && $approval_status->name == '1') {
+				$service_invoice->status_id = 2;
+			} elseif ($approval_status != '' && $approval_status->name == '0') {
+				$service_invoice->status_id = 4;
+			} else {
+				$service_invoice->status_id = 4;
+			}
 			$service_invoice->save();
 
 			//REMOVE SERVICE INVOICE ITEMS

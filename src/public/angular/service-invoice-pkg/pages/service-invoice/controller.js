@@ -108,8 +108,9 @@ app.component('serviceInvoiceForm', {
             self.service_invoice = response.data.service_invoice;
             self.customer = {};
             self.extras = response.data.extras;
+            self.config_values = response.data.config_values;
             self.action = response.data.action;
-
+// console.log(self.service_invoice);
             if (self.action == 'Edit') {
                 $timeout(function() {
                     $scope.getServiceItemSubCategoryByServiceItemCategory(self.service_invoice.service_item_sub_category.category_id);
@@ -160,13 +161,37 @@ app.component('serviceInvoiceForm', {
         //     $mdSelect.hide();// })
         /* Image Uploadify Funtion */
         // $("input[name='proposal_attachments[]']").imageuploadify();
+        // console.log(self.config_values);
         $('.image_uploadify').imageuploadify();
 
-        $('.docDatePicker').bootstrapDP({
-            endDate: 'today',
-            todayHighlight: true
-        });
-
+        var min_offset = '';
+        var max_offset = '';
+        setTimeout(function(){
+            if (self.config_values != '') {
+                $.each(self.config_values, function(index, value) {
+                    if(value.entity_type_id == '15' && value.name != '') {
+                        min_offset = '-'+ value.name +'d';  
+                    } else if(value.entity_type_id == '15' && value.name == '') {
+                        min_offset = '';
+                    } else if(value.entity_type_id == '16' && value.name != '') {
+                        max_offset = '+'+ value.name +'d';
+                    } else if(value.entity_type_id == '16' && value.name == ''){
+                        max_offset = 'today';
+                    }
+                });
+            } else {
+                min_offset = '';
+                max_offset = 'today';
+            }
+            $('.docDatePicker').bootstrapDP({
+                format: "dd-mm-yyyy",
+                autoclose: "true",
+                todayHighlight: true,
+                startDate: min_offset,
+                endDate: max_offset
+            });
+        },1000);
+        
         //ATTACHMENT REMOVE
         $(document).on('click', ".main-wrap .imageuploadify-container .imageuploadify-btn-remove button", function() {
             var attachment_id = $(this).parent().parent().data('attachment_id');
