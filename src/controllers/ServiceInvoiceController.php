@@ -41,6 +41,7 @@ class ServiceInvoiceController extends Controller {
 				'service_invoices.invoice_date',
 				'service_invoices.total as invoice_amount',
 				'service_invoices.is_cn_created',
+				'service_invoices.status_id',
 				'outlets.code as branch',
 				'sbus.name as sbu',
 				'service_item_categories.name as category',
@@ -73,12 +74,23 @@ class ServiceInvoiceController extends Controller {
 				$img_download = asset('public/theme/img/table/cndn/download.svg');
 				$img_delete = asset('public/theme/img/table/cndn/delete.svg');
 
-				return '<a href="#!/service-invoice-pkg/service-invoice/edit/' . $type_id . '/' . $service_invoice_list->id . '" class="">
-                        <img class="img-responsive" src="' . $img_edit . '" alt="Edit" />
-                    	</a>
-						<a href="' . route("downloadPdf", ["id" => $service_invoice_list->id]) . '" class=""><img class="img-responsive" src="' . $img_download . '" alt="Download" />
-                        </a>';
-
+				if ($service_invoice_list->status_id == '4') {
+					return '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
+	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
+	                    	</a>
+							<a href="#!/service-invoice-pkg/service-invoice/edit/' . $type_id . '/' . $service_invoice_list->id . '" class="">
+	                        <img class="img-responsive" src="' . $img_edit . '" alt="Edit" />
+	                    	</a>
+							<a href="' . route("downloadPdf", ["id" => $service_invoice_list->id]) . '" class=""><img class="img-responsive" src="' . $img_download . '" alt="Download" />
+	                        </a>';
+				} elseif ($service_invoice_list->status_id == '2') {
+					return '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
+	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
+	                    	</a>
+							<a href="#!/service-invoice-pkg/service-invoice/edit/' . $type_id . '/' . $service_invoice_list->id . '" class="">
+	                        <img class="img-responsive" src="' . $img_edit . '" alt="Edit" />
+	                    	</a>';
+				}
 			})
 			->rawColumns(['child_checkbox', 'action'])
 			->make(true);
@@ -839,6 +851,159 @@ class ServiceInvoiceController extends Controller {
 		$po_file_name = 'Invoice-' . $service_invoice_pdf->number . '.pdf';
 
 		return $pdf->download($po_file_name, $headers);
+	}
+
+	public function viewServiceInvoice($type_id, $id) {
+		$service_invoice = ServiceInvoice::with([
+			'attachments',
+			'customer',
+			'branch',
+			'serviceInvoiceItems',
+			'serviceInvoiceItems.serviceItem',
+			'serviceInvoiceItems.eavVarchars',
+			'serviceInvoiceItems.eavInts',
+			'serviceInvoiceItems.eavDatetimes',
+			'serviceInvoiceItems.taxes',
+			'serviceItemSubCategory',
+		])->find($id);
+		if (!$service_invoice) {
+			return response()->json(['success' => false, 'error' => 'Service Invoice not found']);
+		}
+		$fields = Field::withTrashed()->get()->keyBy('id');
+		if (count($service_invoice->serviceInvoiceItems) > 0) {
+			$gst_total = 0;
+			foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
+				//FIELD GROUPS AND FIELDS INTEGRATION
+				if (count($serviceInvoiceItem->eavVarchars) > 0) {
+					$eav_varchar_field_group_ids = $serviceInvoiceItem->eavVarchars()->pluck('field_group_id')->toArray();
+				} else {
+					$eav_varchar_field_group_ids = [];
+				}
+				if (count($serviceInvoiceItem->eavInts) > 0) {
+					$eav_int_field_group_ids = $serviceInvoiceItem->eavInts()->pluck('field_group_id')->toArray();
+				} else {
+					$eav_int_field_group_ids = [];
+				}
+				if (count($serviceInvoiceItem->eavDatetimes) > 0) {
+					$eav_datetime_field_group_ids = $serviceInvoiceItem->eavDatetimes()->pluck('field_group_id')->toArray();
+				} else {
+					$eav_datetime_field_group_ids = [];
+				}
+				//GET UNIQUE FIELDGROUP IDs
+				$field_group_ids = array_unique(array_merge($eav_varchar_field_group_ids, $eav_int_field_group_ids, $eav_datetime_field_group_ids));
+				$field_group_val = [];
+				if (!empty($field_group_ids)) {
+					foreach ($field_group_ids as $fg_key => $fg_id) {
+						// dump($fg_id);
+						$fd_varchar_array = [];
+						$fd_int_array = [];
+						$fd_main_varchar_array = [];
+						$fd_varchar_array = DB::table('eav_varchar')
+							->where('entity_type_id', 1040)
+							->where('entity_id', $serviceInvoiceItem->id)
+							->where('field_group_id', $fg_id)
+							->select('field_id as id', 'value')
+							->get()
+							->toArray();
+						$fd_datetimes = DB::table('eav_datetime')
+							->where('entity_type_id', 1040)
+							->where('entity_id', $serviceInvoiceItem->id)
+							->where('field_group_id', $fg_id)
+							->select('field_id as id', 'value')
+							->get()
+							->toArray();
+						$fd_datetime_array = [];
+						if (!empty($fd_datetimes)) {
+							foreach ($fd_datetimes as $fd_datetime_key => $fd_datetime_value) {
+								//DATEPICKER
+								if ($fields[$fd_datetime_value->id]->type_id == 7) {
+									$fd_datetime_array[] = [
+										'id' => $fd_datetime_value->id,
+										'value' => date('d-m-Y', strtotime($fd_datetime_value->value)),
+									];
+								} elseif ($fields[$fd_datetime_value->id]->type_id == 8) {
+									//DATETIMEPICKER
+									$fd_datetime_array[] = [
+										'id' => $fd_datetime_value->id,
+										'value' => date('d-m-Y H:i:s', strtotime($fd_datetime_value->value)),
+									];
+								}
+							}
+						}
+						$fd_ints = DB::table('eav_int')
+							->where('entity_type_id', 1040)
+							->where('entity_id', $serviceInvoiceItem->id)
+							->where('field_group_id', $fg_id)
+							->select(
+								'field_id as id',
+								DB::raw('GROUP_CONCAT(value) as value')
+							)
+							->groupBy('field_id')
+							->get()
+							->toArray();
+						$fd_int_array = [];
+						if (!empty($fd_ints)) {
+							foreach ($fd_ints as $fd_int_key => $fd_int_value) {
+								//MULTISELECT DROPDOWN
+								if ($fields[$fd_int_value->id]->type_id == 2) {
+									$fd_int_array[] = [
+										'id' => $fd_int_value->id,
+										'value' => explode(',', $fd_int_value->value),
+									];
+								} elseif ($fields[$fd_int_value->id]->type_id == 9) {
+									//SWITCH
+									$fd_int_array[] = [
+										'id' => $fd_int_value->id,
+										'value' => ($fd_int_value->value ? 'Yes' : 'No'),
+									];
+								} else {
+									//OTHERS
+									$fd_int_array[] = [
+										'id' => $fd_int_value->id,
+										'value' => $fd_int_value->value,
+									];
+								}
+							}
+						}
+						$fd_main_varchar_array = array_merge($fd_varchar_array, $fd_int_array, $fd_datetime_array);
+						//PUSH INDIVIDUAL FIELD GROUP TO ARRAY
+						$field_group_val[] = [
+							'id' => $fg_id,
+							'fields' => $fd_main_varchar_array,
+						];
+					}
+				}
+				//PUSH TOTAL FIELD GROUPS
+				$serviceInvoiceItem->field_groups = $field_group_val;
+
+				//TAX CALC
+				if (count($serviceInvoiceItem->taxes) > 0) {
+					foreach ($serviceInvoiceItem->taxes as $key => $value) {
+						$gst_total += round($value->pivot->amount);
+						$serviceInvoiceItem[$value->name] = [
+							'amount' => round($value->pivot->amount),
+							'percentage' => round($value->pivot->percentage),
+						];
+					}
+				}
+				$serviceInvoiceItem->total = round($serviceInvoiceItem->sub_total) + round($gst_total);
+				$serviceInvoiceItem->code = $serviceInvoiceItem->serviceItem->code;
+				$serviceInvoiceItem->name = $serviceInvoiceItem->serviceItem->name;
+			}
+		}
+		$this->data['extras'] = [
+			// 'branch_list' => collect(Outlet::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Branch']),
+			// 'sbu_list' => collect(Sbu::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Sbu']),
+			'sbu_list' => [],
+			'tax_list' => Tax::select('name', 'id')->where('company_id', Auth::user()->company_id)->get(),
+			'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
+			'sub_category_list' => [],
+		];
+
+		$this->data['action'] = 'View';
+		$this->data['success'] = true;
+		$this->data['service_invoice'] = $service_invoice;
+		return response()->json($this->data);
 	}
 
 }

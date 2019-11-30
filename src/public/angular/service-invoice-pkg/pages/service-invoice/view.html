@@ -1,0 +1,227 @@
+<!-- Content Wrap -->
+<div class="content-wrap cndn-wrap">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-inner">
+            <div class="page-header-content-left">
+                <div class="page-header-content button-block">
+                    <a href="{{$ctrl.list_url}}" type="button" class="btn-back btn-img"><img class="img-responsive" src="./public/theme/img/content/previous.svg" alt="Back" /></a>
+                </div><!-- Page Header Content -->
+                <div class="page-header-content title-block">
+                    <h1 class="title" ng-show="$ctrl.type_id == 1060"><b>{{$ctrl.action}} Credit Note</b></h1>
+                    <h1 class="title" ng-show="$ctrl.type_id == 1061"><b>{{$ctrl.action}} Debit Note</b></h1>
+                    <!-- <p class="subtitle">Service Item category List / Form</p> -->
+                </div><!-- Page Header Content -->
+            </div><!-- Page Header Content Left -->
+        </div><!-- Page Header Inner -->
+    </div><!-- Page Header -->
+    <!-- <form id="form" enctype="multipart-formdata" autocomplete="off"> -->
+        <input type="hidden" name="id" value="{{$ctrl.service_invoice.id}}">
+        <input type="hidden" name="type_id" value="{{$ctrl.type_id}}">
+        <!-- Page Main Content -->
+        <div class="page-main-content form-content type2">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="page-form pb-80">
+                            <div class="flex-wrap">
+                                <ul class="flex-list bordered">
+                                    <li class="flex-md-4">
+                                        <ul class="table-form-list">
+                                            <li>
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Branch <span class="mandatory">*</span></label>
+                                                    <div class="table-form-list-control">
+                                                        <input type="text" name="branch_id" value="{{$ctrl.service_invoice.branch.id}}" readonly>
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                            <li>
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">SBU <span class="mandatory">*</span></label>
+                                                    <div class="table-form-list-control">
+                                                        <input type="text" name="sbu_id" id="sbu_id" value="{{$ctrl.service_invoice.sbu_id}}" readonly>
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                            <li>
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Category <span class="mandatory">*</span></label>
+                                                    <div class="table-form-list-control">
+                                                        <input type="text" name="category_id" id="category_id" value="{{$ctrl.service_invoice.service_item_sub_category.category_id}}" readonly>
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                            <li>
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Sub Category <span class="mandatory">*</span></label>
+                                                    <div class="table-form-list-control">
+                                                        <input type="text" name="sub_category_id" id="sub_category_id" value="{{$ctrl.service_invoice.sub_category_id}}" readonly>
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                        </ul><!-- Table Form List -->
+                                    </li>
+                                    <li class="flex-md-4">
+                                        <ul class="table-form-list">
+                                            <li>
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Invoice Date <span class="mandatory">*</span></label>
+                                                    <div class="table-form-list-control">
+                                                        <div class="input-group date type-sm">
+                                                            <input name="invoice_date" type="text" class="form-control" placeholder="Select Invoice Date" ng-model="$ctrl.service_invoice.invoice_date" readonly />
+                                                        </div><!-- Input Group -->
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                            <li>
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Doc. Date <span class="mandatory">*</span></label>
+                                                    <div class="table-form-list-control doc_date_error">
+                                                        <div class="input-group date type-sm docDatePicker">
+                                                            <input name="document_date" ng-model="$ctrl.service_invoice.document_date" type="text" class="form-control doc_date" placeholder="Select Doc Date" value="{{$ctrl.service_invoice.document_date}}" readonly />
+                                                        </div><!-- Input Group -->
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                            <li>
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Customer Code <span class="mandatory">*</span></label>
+                                                    <div class="table-form-list-control">
+                                                        <input type="text" name="customer_id" value="{{$ctrl.service_invoice.customer.id}}" readonly>
+                                                    </div>
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                            <li>
+                                                <input type="file" class="image_uploadify" accept="image/*,application/pdf" name="proposal_attachments[]" multiple readonly>
+                                            </li>
+                                        </ul><!-- Table Form List -->
+                                    </li>
+                                    <li class="flex-md-4">
+                                        <div class="info-wrap">
+                                            <p class="info-content color-red right"><b>Invoice To</b></p>
+                                            <p class="info-title" ng-show="!isObjectEmpty($ctrl.customer)">{{$ctrl.customer.name}}</p>
+                                            <p class="info-content-small italic" ng-show="!isObjectEmpty($ctrl.customer)">Customer Code : {{$ctrl.customer.code}}</p>
+                                        </div><!-- Info Wrap -->
+                                        <div class="info-wrap" ng-show="!isObjectEmpty($ctrl.customer)">
+                                            <p class="info-content"><b>+ {{$ctrl.customer.mobile_no}}</b></p>
+                                            <p class="info-content">{{$ctrl.customer.formatted_address}}</p>
+                                            <div class="info-space"></div>
+                                            <p class="info-content">GST # 234284738374847</p>
+                                        </div><!-- Info Wrap -->
+                                    </li>
+                                </ul><!-- Flex List -->
+                            </div><!-- Flex Wrap -->
+                            <div class="table-wrap-header">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5 class="table-wrap-title">Invoice Details</h5>
+                                    </div><!-- Column -->
+                                </div><!-- Row -->
+                            </div><!-- Table Wrap Header -->
+                            <div class="table-wrap-body">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <!-- <th class="action">Action</th> -->
+                                                <th>Item Code</th>
+                                                <th>Item Name</th>
+                                                <th>Reference</th>
+                                                <th>Quantity</th>
+                                                <th class="text-right">Rate</th>
+                                                <th class="text-right">Amount</th>
+                                                <th class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list">{{tax.name}}</th>
+                                                <th class="text-right">Total Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="(index, service_invoice_item) in $ctrl.service_invoice.service_invoice_items">
+                                                <input type="hidden" name="service_invoice_items[{{index}}][id]" value="{{service_invoice_item.id}}">
+                                                <input type="hidden" name="service_invoice_items[{{index}}][service_item_id]" value="{{service_invoice_item.service_item_id}}">
+                                                <input type="hidden" name="service_invoice_items[{{index}}][description]" value="{{service_invoice_item.description}}">
+                                                <input type="hidden" name="service_invoice_items[{{index}}][qty]" value="{{service_invoice_item.qty}}">
+                                                <input type="hidden" name="service_invoice_items[{{index}}][rate]" value="{{service_invoice_item.rate}}">
+                                                <input type="hidden" name="service_invoice_items[{{index}}][sub_total]" value="{{service_invoice_item.sub_total}}">
+                                                <!-- FIELD GROUPS -->
+                                                <td style="display: none;">
+                                                    <span ng-repeat="(index_fg, field_group) in service_invoice_item.field_groups">
+                                                        <input type="hidden" name="service_invoice_items[{{index}}][field_groups][{{index_fg}}][id]" value="{{field_group.id}}">
+                                                        <span ng-repeat="(index_fd, field) in field_group.fields">
+                                                            <input type="hidden" name="service_invoice_items[{{index}}][field_groups][{{index_fg}}][fields][{{index_fd}}][id]" value="{{field.id}}">
+                                                            <input type="hidden" name="service_invoice_items[{{index}}][field_groups][{{index_fg}}][fields][{{index_fd}}][value]" value="{{field.value}}">
+                                                        </span>
+                                                    </span>
+                                                </td>
+                                                <!-- <td class="action">
+                                                    <a href="javascript:void(0)" ng-click="editServiceItem(service_invoice_item.service_item_id, service_invoice_item.description, service_invoice_item.qty, service_invoice_item.rate,index)">
+                                                        <img class="img-responsive" src="./public/theme/img/table/cndn/edit.svg" alt="Edit" />
+                                                    </a>
+                                                    <a href="javascript:void(0)" ng-click="removeServiceItem(service_invoice_item.id, index)">
+                                                        <img class="img-responsive" src="./public/theme/img/table/cndn/delete.svg" alt="Delete" />
+                                                    </a>
+                                                </td> -->
+                                                <td>{{service_invoice_item.code}}</td>
+                                                <td>{{service_invoice_item.name}}</td>
+                                                <td>{{service_invoice_item.description}}</td>
+                                                <td>{{$ctrl.parseInt(service_invoice_item.qty)}}</td>
+                                                <td class="text-right">{{service_invoice_item.rate | number : 2}}</td>
+                                                <td class="text-right">{{service_invoice_item.sub_total | number : 2}}</td>
+                                                <td class="text-right" ng-repeat="(tax_index, tax) in $ctrl.extras.tax_list">
+                                                    {{(service_invoice_item[tax.name] ? (service_invoice_item[tax.name].amount | number : 2) : 0.00)}}({{(service_invoice_item[tax.name] ? (service_invoice_item[tax.name].percentage) : 0)}}%)
+                                                    <input type="hidden" name="service_invoice_items[{{index}}][taxes][{{tax_index}}][tax_id]" value="{{tax.id}}">
+                                                    <input type="hidden" name="service_invoice_items[{{index}}][taxes][{{tax_index}}][percentage]" value="{{(service_invoice_item[tax.name] ? service_invoice_item[tax.name].percentage : 0)}}">
+                                                    <input type="hidden" name="service_invoice_items[{{index}}][taxes][{{tax_index}}][amount]" value="{{(service_invoice_item[tax.name] ? service_invoice_item[tax.name].amount : 0)}}">
+                                                </td>
+                                                <td class="text-right">{{service_invoice_item.total | number : 2}}</td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <th colspan="3"></th>
+                                                <th>Total</th>
+                                                <th>{{$ctrl.table_qty}}</th>
+                                                <th>{{$ctrl.table_rate | number : 2}}</th>
+                                                <th>{{$ctrl.table_sub_total | number : 2}}</th>
+                                                <th ng-repeat="(index, tax) in $ctrl.extras.tax_list">{{$ctrl[tax.name+'_amount'] | number : 2}}</th>
+                                                <th>{{$ctrl.table_total | number : 2}}</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div><!-- Table Wrap Body -->
+                            <input type="hidden" name="service_invoice_item_removal_ids" id="service_invoice_item_removal_ids" value="">
+                            <input type="hidden" name="items_count" value="{{$ctrl.service_invoice.service_invoice_items.length}}">
+                            <input type="hidden" name="amount_total" value="{{$ctrl.table_sub_total}}">
+                            <input type="hidden" name="tax_total" value="{{$ctrl.table_gst_total}}">
+                            <input type="hidden" name="sub_total" value="{{$ctrl.table_sub_total}}">
+                            <input type="hidden" name="total" value="{{$ctrl.table_total}}">
+                            <input type="hidden" name="attachment_removal_ids" id="attachment_removal_ids" value="">
+                            <div class="page-form-footer">
+                                <div class="row">
+                                    <div class="col-md-8 text-left">
+                                        <ul class="form-footer-list">
+                                            <li>
+                                                <span class="form-footer-label">Total Quantity</span>
+                                                <span class="form-footer-value" ng-if="$ctrl.table_qty">{{$ctrl.table_qty}}</span>
+                                            </li>
+                                            <li>
+                                                <span class="form-footer-label">Total Amount</span>
+                                                <span class="form-footer-value" ng-if="$ctrl.table_total">INR {{$ctrl.table_total | number : 2}} <small>({{$ctrl.table_sub_total | number : 2}} + {{$ctrl.table_gst_total | number : 2}} GST)</small></span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <a href="#!/service-invoice-pkg/service-invoice/list" class="btn btn-white">Back</a>
+                                        <a href="#!/service-invoice-pkg/service-invoice/edit/{{$ctrl.type_id}}/{{$ctrl.service_invoice.id}}" class="btn btn-primary">Edit</a>
+                                    </div>
+                                </div>
+                            </div><!-- Page Form Footer -->
+                        </div><!-- Page Form -->
+                    </div><!-- Column -->
+                </div><!-- Row -->
+            </div><!-- Container -->
+        </div><!-- Page Main Content -->
+    <!-- </form> -->
+</div><!-- Content Wrap -->
+<script src="./public/theme/js/imageuploadify.min.js"></script>
