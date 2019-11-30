@@ -39,22 +39,26 @@ class ServiceInvoiceController extends Controller {
 				'service_invoices.number',
 				'service_invoices.invoice_date',
 				'service_invoices.total as invoice_amount',
+				'service_invoices.is_cn_created',
 				'outlets.code as branch',
 				'sbus.name as sbu',
 				'service_item_categories.name as category',
 				'service_item_sub_categories.name as sub_category',
 				'customers.code as customer_code',
-				'customers.name as customer_name'
+				'customers.name as customer_name',
+				'configs.name as type_name',
+				'configs.id as si_type_id'
 			)
 			->join('outlets', 'outlets.id', 'service_invoices.branch_id')
 			->join('sbus', 'sbus.id', 'service_invoices.sbu_id')
 			->join('service_item_sub_categories', 'service_item_sub_categories.id', 'service_invoices.sub_category_id')
 			->join('service_item_categories', 'service_item_categories.id', 'service_item_sub_categories.category_id')
 			->join('customers', 'customers.id', 'service_invoices.customer_id')
+			->join('configs', 'configs.id', 'service_invoices.type_id')
 			->where('service_invoices.company_id', Auth::user()->company_id)
 			->groupBy('service_invoices.id')
 			->orderBy('service_invoices.id', 'Desc');
-
+		// dd($service_invoice_list);
 		return Datatables::of($service_invoice_list)
 			->addColumn('child_checkbox', function ($service_invoice_list) {
 				$checkbox = "<td><div class='table-checkbox'><input type='checkbox' id='child_" . $service_invoice_list->id . "' /><label for='child_" . $service_invoice_list->id . "'></label></div></td>";
@@ -62,25 +66,24 @@ class ServiceInvoiceController extends Controller {
 				return $checkbox;
 			})
 			->addColumn('action', function ($service_invoice_list) {
-
+				$type_id = $service_invoice_list->si_type_id == '1060' ? 1060 : 1061;
 				$img_edit = asset('public/theme/img/table/cndn/edit.svg');
 				$img_view = asset('public/theme/img/table/cndn/view.svg');
 				$img_download = asset('public/theme/img/table/cndn/download.svg');
 				$img_delete = asset('public/theme/img/table/cndn/delete.svg');
 
-				return '<a href="#!/service-invoice-pkg/service-invoice/edit/' . $service_invoice_list->id . '" class="">
+				return '<a href="#!/service-invoice-pkg/service-invoice/edit/' . $type_id . '/' . $service_invoice_list->id . '" class="">
                         <img class="img-responsive" src="' . $img_edit . '" alt="Edit" />
                     	</a>
-						<a href="' . route("downloadPdf", ["id" => $service_invoice_list->id]) . '" class="">
-                                        <img class="img-responsive" src="' . $img_download . '" alt="Download" />
-                                    </a>';
+						<a href="' . route("downloadPdf", ["id" => $service_invoice_list->id]) . '" class=""><img class="img-responsive" src="' . $img_download . '" alt="Download" />
+                        </a>';
+
 			})
 			->rawColumns(['child_checkbox', 'action'])
 			->make(true);
 	}
 
-	public function getFormData($id = NULL) {
-
+	public function getFormData($type_id = NULL, $id = NULL) {
 		if (!$id) {
 			$service_invoice = new ServiceInvoice;
 			$service_invoice->invoice_date = date('d-m-Y');
@@ -569,9 +572,10 @@ class ServiceInvoiceController extends Controller {
 				//GET FINANCIAL YEAR ID BY DOCUMENT DATE
 				$document_date_year = date('Y', strtotime($request->document_date));
 				$financial_year = FinancialYear::where('from', $document_date_year)
+					->where('company_id', Auth::user()->company_id)
 					->first();
 				if (!$financial_year) {
-					return response()->json(['success' => false, 'errors' => ['No Serial number found']]);
+					return response()->json(['success' => false, 'errors' => ['Fiancial Year Not Found']]);
 				}
 				$branch = Outlet::where('id', $request->branch_id)->first();
 
@@ -664,6 +668,13 @@ class ServiceInvoiceController extends Controller {
 				$message = 'Service invoice added successfully';
 			}
 
+			if ($request->type_id == 1061) {
+				$service_invoice->is_cn_created = 0;
+			} elseif ($request->type_id == 1060) {
+				$service_invoice->is_cn_created = 1;
+			}
+
+			$service_invoice->type_id = $request->type_id;
 			$service_invoice->fill($request->all());
 			$service_invoice->company_id = Auth::user()->company_id;
 			$service_invoice->save();

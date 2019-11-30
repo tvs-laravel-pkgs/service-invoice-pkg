@@ -6,15 +6,16 @@ app.config(['$routeProvider', function($routeProvider) {
         template: '<service-invoice-list></service-invoice-list>',
         title: 'CN/DNs',
     }).
-    when('/service-invoice-pkg/service-invoice/add', {
+    when('/service-invoice-pkg/service-invoice/add/:type_id', {
+        // template: '<serv-inv-form></serv-inv-form>',
         template: '<service-invoice-form></service-invoice-form>',
         title: 'Add CN/DN',
     }).
-    when('/service-invoice-pkg/service-invoice/edit/:id', {
+    when('/service-invoice-pkg/service-invoice/edit/:type_id/:id', {
         template: '<service-invoice-form></service-invoice-form>',
         title: 'Edit CN/DN',
     }).
-    when('/service-invoice-pkg/service-invoice/view/:id', {
+    when('/service-invoice-pkg/service-invoice/view/:type_id/:id', {
         template: '<service-invoice-view></service-invoice-view>',
         title: 'View CN/DN',
     }).

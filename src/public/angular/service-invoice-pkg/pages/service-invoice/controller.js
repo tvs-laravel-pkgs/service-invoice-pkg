@@ -5,7 +5,6 @@ app.component('serviceInvoiceList', {
         self.hasPermission = HelperService.hasPermission;
         var table_scroll;
         table_scroll = $('.page-main-content').height() - 37;
-
         var dataTable = $('#service-invoice-table').dataTable({
             "dom": cndn_dom_structure,
             "language": {
@@ -48,6 +47,7 @@ app.component('serviceInvoiceList', {
                 { data: 'action', searchable: false, class: 'action' },
                 { data: 'invoice_date', searchable: false },
                 { data: 'number', name: 'service_invoices.number', searchable: true },
+                { data: 'type_name', name: 'configs.name', searchable: true },
                 { data: 'branch', name: 'outlets.code', searchable: true },
                 { data: 'sbu', name: 'sbus.name', searchable: true },
                 { data: 'category', name: 'service_item_categories.name', searchable: true },
@@ -80,15 +80,18 @@ app.component('serviceInvoiceList', {
 
 //------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------
-
-
 app.component('serviceInvoiceForm', {
     templateUrl: service_invoice_form_template_url,
-    controller: function($http, $location, $location, HelperService, $routeParams, $rootScope, $scope, $timeout, $mdSelect, $window) {
-        $form_data_url = typeof($routeParams.id) == 'undefined' ? service_invoice_get_form_data_url : service_invoice_get_form_data_url + '/' + $routeParams.id;
+    controller: function($http, $location, HelperService, $routeParams, $rootScope, $scope, $timeout, $mdSelect, $window) {
+        if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061) {} else {
+            $location.path('/page-not-found')
+            return;
+        }
+        $form_data_url = typeof($routeParams.id) == 'undefined' ? service_invoice_get_form_data_url + '/' + $routeParams.type_id : service_invoice_get_form_data_url + '/' + $routeParams.type_id + '/' + $routeParams.id;
         var self = this;
         self.hasPermission = HelperService.hasPermission;
         self.angular_routes = angular_routes;
+        self.type_id = $routeParams.type_id;
         self.enable_service_item_md_change = true;
         var attachment_removal_ids = [];
 

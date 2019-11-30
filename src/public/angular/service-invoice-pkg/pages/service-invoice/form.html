@@ -8,7 +8,8 @@
                     <a href="{{$ctrl.list_url}}" type="button" class="btn-back btn-img"><img class="img-responsive" src="./public/theme/img/content/previous.svg" alt="Back" /></a>
                 </div><!-- Page Header Content -->
                 <div class="page-header-content title-block">
-                    <h1 class="title"><b>{{$ctrl.action}} Debit Note</b></h1>
+                    <h1 class="title" ng-show="$ctrl.type_id == 1060"><b>{{$ctrl.action}} Credit Note</b></h1>
+                    <h1 class="title" ng-show="$ctrl.type_id == 1061"><b>{{$ctrl.action}} Debit Note</b></h1>
                     <!-- <p class="subtitle">Service Item category List / Form</p> -->
                 </div><!-- Page Header Content -->
             </div><!-- Page Header Content Left -->
@@ -16,6 +17,7 @@
     </div><!-- Page Header -->
     <form id="form" enctype="multipart-formdata" autocomplete="off">
         <input type="hidden" name="id" value="{{$ctrl.service_invoice.id}}">
+        <input type="hidden" name="type_id" value="{{$ctrl.type_id}}">
         <!-- Page Main Content -->
         <div class="page-main-content form-content type2">
             <div class="container">
