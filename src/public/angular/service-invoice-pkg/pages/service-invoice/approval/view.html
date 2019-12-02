@@ -5,7 +5,7 @@
         <div class="page-header-inner">
             <div class="page-header-content-left">
                 <div class="page-header-content button-block">
-                    <a href="{{$ctrl.list_url}}" type="button" class="btn-back btn-img"><img class="img-responsive" src="./public/theme/img/content/previous.svg" alt="Back" /></a>
+                    <a href="#!/service-invoice-pkg/cn-dn/approval/approval-level/{{$ctrl.approval_type_id}}/list/" type="button" class="btn-back btn-img"><img class="img-responsive" src="./public/theme/img/content/previous.svg" alt="Back" /></a>
                 </div><!-- Page Header Content -->
                 <div class="page-header-content title-block">
                     <h1 class="title" ng-show="$ctrl.type_id == 1060"><b>{{$ctrl.action}} Credit Note</b></h1>
@@ -18,6 +18,7 @@
     <!-- <form id="form" enctype="multipart-formdata" autocomplete="off"> -->
         <input type="hidden" name="id" value="{{$ctrl.service_invoice.id}}">
         <input type="hidden" name="type_id" value="{{$ctrl.type_id}}">
+        <input type="hidden" name="approval_type_id" value="{{$ctrl.approval_type_id}}">
         <!-- Page Main Content -->
         <div class="page-main-content form-content type2">
             <div class="container">
@@ -210,8 +211,8 @@
                                         </ul>
                                     </div>
                                     <div class="col-md-4">
-                                        <a href="#!/service-invoice-pkg/service-invoice/list" class="btn btn-white">Back</a>
-                                        <a href="#!/service-invoice-pkg/service-invoice/edit/{{$ctrl.type_id}}/{{$ctrl.service_invoice.id}}" class="btn btn-primary">Edit</a>
+                                        <button class="btn btn-bordered" data-toggle="modal" data-target="#cancel_request-reject-modal">Reject</button>
+                                        <button type="submit" id="submit" class="btn btn-primary">Approve</button>
                                     </div>
                                 </div>
                             </div><!-- Page Form Footer -->
@@ -223,3 +224,27 @@
     <!-- </form> -->
 </div><!-- Content Wrap -->
 <script src="./public/theme/js/imageuploadify.min.js"></script>
+
+<!-- Modal -->
+<div class="modal fade filter" id="cancel_request-reject-modal" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close ripple" data-dismiss="modal" aria-label="Close"><i class="icon ion-md-close"></i></button>
+                <h5 class="modal-title" id="myModalLabel">Reject</h5>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <label>Rejection Remarks<span class="mandatory">*</span></label>
+                        <textarea rows="5" class="form-control rejection_remarks" placeholder="Enter Rejection Remarks" name="comments" value="" autocomplete="off"></textarea>
+                    </div><!-- Field -->
+                </div><!-- Column -->
+                <div class="col-md-12 text-right mb-15">
+                    <button type="button" data-dismiss="modal" class="btn btn-primary btn-bordered cancel_modal_btn">Cancel</button>
+                    <button type="submit" id="reject" class="btn btn-bordered btn-red reject_btn">Reject</button>
+                </div><!-- Column -->
+            </div><!-- Row -->
+        </div><!-- Modal Content -->
+    </div><!-- Modal Dialog -->
+</div><!-- Modal -->

@@ -21,11 +21,11 @@ app.config(['$routeProvider', function($routeProvider) {
     }).
 
     //SERVICE INVOICE APPROVALS
-    when('/service-invoice-pkg/service-invoice/approval/approval-level/:approval_level_id/list/', {
+    when('/service-invoice-pkg/cn-dn/approval/approval-level/:approval_level_id/list/', {
         template: '<service-invoice-approval-list></service-invoice-approval-list>',
         title: 'CN/DN Approval List',
     }).
-    when('/service-invoice-pkg/service-invoice/approval/approval-level/:approval_level_id/view/:service_invoice_id', {
+    when('/service-invoice-pkg/cn-dn/approval/approval-level/:approval_type_id/view/:type_id/:id', {
         template: '<service-invoice-approval-view></service-invoice-approval-view>',
         title: 'CN/DN Approval View',
     }).
