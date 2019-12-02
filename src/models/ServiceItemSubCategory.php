@@ -23,7 +23,7 @@ class ServiceItemSubCategory extends Model {
 	}
 
 	public function serviceItemCategory() {
-		return $this->belongsTo('Abs\AttributePkg\ServiceItemCategory', 'category_id', 'id');
+		return $this->belongsTo('Abs\ServiceInvoicePkg\ServiceItemCategory', 'category_id', 'id');
 	}
 
 	public static function getServiceItemSubCategories($service_item_category_id) {

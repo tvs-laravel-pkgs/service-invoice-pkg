@@ -858,6 +858,7 @@ class ServiceInvoiceController extends Controller {
 			'attachments',
 			'customer',
 			'branch',
+			'sbu',
 			'serviceInvoiceItems',
 			'serviceInvoiceItems.serviceItem',
 			'serviceInvoiceItems.eavVarchars',
@@ -865,10 +866,13 @@ class ServiceInvoiceController extends Controller {
 			'serviceInvoiceItems.eavDatetimes',
 			'serviceInvoiceItems.taxes',
 			'serviceItemSubCategory',
+			'serviceItemSubCategory.serviceItemCategory',
 		])->find($id);
 		if (!$service_invoice) {
 			return response()->json(['success' => false, 'error' => 'Service Invoice not found']);
 		}
+		$service_invoice->customer->formatted_address = $service_invoice->customer->primaryAddress ? $service_invoice->customer->primaryAddress->getFormattedAddress() : 'NA';
+
 		$fields = Field::withTrashed()->get()->keyBy('id');
 		if (count($service_invoice->serviceInvoiceItems) > 0) {
 			$gst_total = 0;

@@ -30,33 +30,33 @@
                                         <ul class="table-form-list">
                                             <li>
                                                 <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Branch <span class="mandatory">*</span></label>
+                                                    <label class="table-form-list-label">Branch</label>
                                                     <div class="table-form-list-control">
-                                                        <input type="text" name="branch_id" value="{{$ctrl.service_invoice.branch.id}}" readonly>
+                                                        <input type="text" name="branch_id" value="{{$ctrl.service_invoice.branch.code}}" readonly>
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
                                             <li>
                                                 <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">SBU <span class="mandatory">*</span></label>
+                                                    <label class="table-form-list-label">SBU</label>
                                                     <div class="table-form-list-control">
-                                                        <input type="text" name="sbu_id" id="sbu_id" value="{{$ctrl.service_invoice.sbu_id}}" readonly>
+                                                        <input type="text" name="sbu_id" id="sbu_id" value="{{$ctrl.service_invoice.sbu.name}}" readonly>
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
                                             <li>
                                                 <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Category <span class="mandatory">*</span></label>
+                                                    <label class="table-form-list-label">Category</label>
                                                     <div class="table-form-list-control">
-                                                        <input type="text" name="category_id" id="category_id" value="{{$ctrl.service_invoice.service_item_sub_category.category_id}}" readonly>
+                                                        <input type="text" name="category_id" id="category_id" value="{{$ctrl.service_invoice.service_item_sub_category.service_item_category.name}}" readonly>
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
                                             <li>
                                                 <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Sub Category <span class="mandatory">*</span></label>
+                                                    <label class="table-form-list-label">Sub Category</label>
                                                     <div class="table-form-list-control">
-                                                        <input type="text" name="sub_category_id" id="sub_category_id" value="{{$ctrl.service_invoice.sub_category_id}}" readonly>
+                                                        <input type="text" name="sub_category_id" id="sub_category_id" value="{{$ctrl.service_invoice.service_item_sub_category.name}}" readonly>
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
@@ -66,7 +66,7 @@
                                         <ul class="table-form-list">
                                             <li>
                                                 <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Invoice Date <span class="mandatory">*</span></label>
+                                                    <label class="table-form-list-label">Invoice Date</label>
                                                     <div class="table-form-list-control">
                                                         <div class="input-group date type-sm">
                                                             <input name="invoice_date" type="text" class="form-control" placeholder="Select Invoice Date" ng-model="$ctrl.service_invoice.invoice_date" readonly />
@@ -76,7 +76,7 @@
                                             </li>
                                             <li>
                                                 <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Doc. Date <span class="mandatory">*</span></label>
+                                                    <label class="table-form-list-label">Doc. Date</label>
                                                     <div class="table-form-list-control doc_date_error">
                                                         <div class="input-group date type-sm docDatePicker">
                                                             <input name="document_date" ng-model="$ctrl.service_invoice.document_date" type="text" class="form-control doc_date" placeholder="Select Doc Date" value="{{$ctrl.service_invoice.document_date}}" readonly />
@@ -86,9 +86,9 @@
                                             </li>
                                             <li>
                                                 <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Customer Code <span class="mandatory">*</span></label>
+                                                    <label class="table-form-list-label">Customer Code</label>
                                                     <div class="table-form-list-control">
-                                                        <input type="text" name="customer_id" value="{{$ctrl.service_invoice.customer.id}}" readonly>
+                                                        <input type="text" name="customer_id" value="{{$ctrl.service_invoice.customer.code}}" readonly>
                                                     </div>
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
@@ -100,12 +100,12 @@
                                     <li class="flex-md-4">
                                         <div class="info-wrap">
                                             <p class="info-content color-red right"><b>Invoice To</b></p>
-                                            <p class="info-title" ng-show="!isObjectEmpty($ctrl.customer)">{{$ctrl.customer.name}}</p>
-                                            <p class="info-content-small italic" ng-show="!isObjectEmpty($ctrl.customer)">Customer Code : {{$ctrl.customer.code}}</p>
+                                            <p class="info-title" >{{$ctrl.service_invoice.customer.name}}</p>
+                                            <p class="info-content-small italic">Customer Code : {{$ctrl.service_invoice.customer.code}}</p>
                                         </div><!-- Info Wrap -->
-                                        <div class="info-wrap" ng-show="!isObjectEmpty($ctrl.customer)">
-                                            <p class="info-content"><b>+ {{$ctrl.customer.mobile_no}}</b></p>
-                                            <p class="info-content">{{$ctrl.customer.formatted_address}}</p>
+                                        <div class="info-wrap">
+                                            <p class="info-content"><b>+ {{$ctrl.service_invoice.customer.mobile_no}}</b></p>
+                                            <p class="info-content">{{$ctrl.service_invoice.customer.formatted_address}}</p>
                                             <div class="info-space"></div>
                                             <p class="info-content">GST # 234284738374847</p>
                                         </div><!-- Info Wrap -->
@@ -124,7 +124,6 @@
                                     <table class="table">
                                         <thead>
                                             <tr>
-                                                <!-- <th class="action">Action</th> -->
                                                 <th>Item Code</th>
                                                 <th>Item Name</th>
                                                 <th>Reference</th>
@@ -153,14 +152,6 @@
                                                         </span>
                                                     </span>
                                                 </td>
-                                                <!-- <td class="action">
-                                                    <a href="javascript:void(0)" ng-click="editServiceItem(service_invoice_item.service_item_id, service_invoice_item.description, service_invoice_item.qty, service_invoice_item.rate,index)">
-                                                        <img class="img-responsive" src="./public/theme/img/table/cndn/edit.svg" alt="Edit" />
-                                                    </a>
-                                                    <a href="javascript:void(0)" ng-click="removeServiceItem(service_invoice_item.id, index)">
-                                                        <img class="img-responsive" src="./public/theme/img/table/cndn/delete.svg" alt="Delete" />
-                                                    </a>
-                                                </td> -->
                                                 <td>{{service_invoice_item.code}}</td>
                                                 <td>{{service_invoice_item.name}}</td>
                                                 <td>{{service_invoice_item.description}}</td>
@@ -178,7 +169,7 @@
                                         </tbody>
                                         <tfoot>
                                             <tr>
-                                                <th colspan="3"></th>
+                                                <th colspan="2"></th>
                                                 <th>Total</th>
                                                 <th>{{$ctrl.table_qty}}</th>
                                                 <th>{{$ctrl.table_rate | number : 2}}</th>
