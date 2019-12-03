@@ -1,4 +1,5 @@
 <!-- Content Wrap -->
+<form id="form" enctype="multipart-formdata" autocomplete="off">
 <div class="content-wrap cndn-wrap">
     <!-- Page Header -->
     <div class="page-header">
@@ -16,9 +17,10 @@
         </div><!-- Page Header Inner -->
     </div><!-- Page Header -->
     <!-- <form id="form" enctype="multipart-formdata" autocomplete="off"> -->
-        <input type="hidden" name="id" value="{{$ctrl.service_invoice.id}}">
+        <input type="hidden" name="id" id="id" value="{{$ctrl.service_invoice.id}}">
         <input type="hidden" name="type_id" value="{{$ctrl.type_id}}">
-        <input type="hidden" name="approval_type_id" value="{{$ctrl.approval_type_id}}">
+        <input type="hidden" name="approval_type_id" id="approval_type_id" value="{{$ctrl.approval_type_id}}">
+        <input type="hidden" name="current_status" id="current_status" value="{{$ctrl.service_invoice.status_id}}">
         <!-- Page Main Content -->
         <div class="page-main-content form-content type2">
             <div class="container">
@@ -211,8 +213,8 @@
                                         </ul>
                                     </div>
                                     <div class="col-md-4">
-                                        <button class="btn btn-bordered" data-toggle="modal" data-target="#cancel_request-reject-modal">Reject</button>
-                                        <button type="submit" id="submit" class="btn btn-primary">Approve</button>
+                                        <button type="button" class="btn btn-bordered" data-toggle="modal" data-target="#cancel_request_reject_modal">Reject</button>
+                                        <button type="submit" id="approve" class="btn btn-primary">Approve</button>
                                     </div>
                                 </div>
                             </div><!-- Page Form Footer -->
@@ -226,18 +228,18 @@
 <script src="./public/theme/js/imageuploadify.min.js"></script>
 
 <!-- Modal -->
-<div class="modal fade filter" id="cancel_request-reject-modal" role="dialog" aria-labelledby="myModalLabel">
+<div class="modal fade filter" id="cancel_request_reject_modal" role="dialog" aria-labelledby="myModalLabel">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close ripple" data-dismiss="modal" aria-label="Close"><i class="icon ion-md-close"></i></button>
+                <button type="button" class="close ripple reject_close" data-dismiss="modal" aria-label="Close"><i class="icon ion-md-close"></i></button>
                 <h5 class="modal-title" id="myModalLabel">Reject</h5>
             </div>
             <div class="row">
                 <div class="col-md-12">
                     <div class="form-group">
                         <label>Rejection Remarks<span class="mandatory">*</span></label>
-                        <textarea rows="5" class="form-control rejection_remarks" placeholder="Enter Rejection Remarks" name="comments" value="" autocomplete="off"></textarea>
+                        <textarea rows="5" class="form-control rejection_remarks" placeholder="Enter Rejection Remarks" name="comments" value="" id="comments" autocomplete="off" minlength="3" maxlength="191"></textarea>
                     </div><!-- Field -->
                 </div><!-- Column -->
                 <div class="col-md-12 text-right mb-15">
@@ -248,3 +250,4 @@
         </div><!-- Modal Content -->
     </div><!-- Modal Dialog -->
 </div><!-- Modal -->
+</form>

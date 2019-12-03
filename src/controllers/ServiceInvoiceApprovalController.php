@@ -20,7 +20,7 @@ class ServiceInvoiceApprovalController extends Controller {
 	}
 
 	public function approvalTypeValid() {
-		$approval_level = ApprovalLevel::where('approval_type_id', 1)->first();
+		$this->data['approval_level'] = $approval_level = ApprovalLevel::where('approval_type_id', 1)->first();
 		if (!$approval_level) {
 			return response()->json(['success' => false, 'error' => 'Approval Type ID not found']);
 		}
@@ -28,8 +28,13 @@ class ServiceInvoiceApprovalController extends Controller {
 		return response()->json($this->data);
 	}
 
-	public function getServiceInvoiceApprovalList() {
-
+	public function getServiceInvoiceApprovalList(Request $request) {
+		$approval_status_id = $request->approval_status_id;
+		if ($approval_status_id == 1 || $approval_status_id == '1') {
+			$approval_types = 2;
+		} else {
+			$approval_types = 3;
+		}
 		$cn_dn_approval_list = ServiceInvoice::withTrashed()
 			->select(
 				'service_invoices.id',
@@ -57,7 +62,7 @@ class ServiceInvoiceApprovalController extends Controller {
 			->join('approval_type_statuses', 'approval_type_statuses.id', 'service_invoices.status_id')
 			->leftjoin('approval_levels', 'approval_levels.current_status_id', 'approval_type_statuses.id')
 			->where('service_invoices.company_id', Auth::user()->company_id)
-			->where('service_invoices.status_id', 2)
+			->where('service_invoices.status_id', $approval_types)
 			->groupBy('service_invoices.id')
 			->orderBy('service_invoices.id', 'Desc');
 		// dd($cn_dn_approval_list);
@@ -233,10 +238,33 @@ class ServiceInvoiceApprovalController extends Controller {
 	}
 
 	public function updateApprovalStatus(Request $request) {
-
+		// dd($request->all());
 		DB::beginTransaction();
 		try {
-
+			$approval_status = ServiceInvoice::find($request->id);
+			if ($request->status_name == 'approve' && $request->approval_type_id == '1') {
+				//dd('approve-1');
+				$approval_status->status_id = 3;
+				$message = 'Approved';
+			} elseif ($request->status_name == 'reject' && $request->approval_type_id == '1') {
+				//dd('reject-1');
+				$approval_status->status_id = 5;
+				$approval_status->comments = $request->comments;
+				$message = 'Rejected';
+			} elseif ($request->status_name == 'approve' && $request->approval_type_id == '3') {
+				//dd('approve-3');
+				$approval_status->status_id = 4;
+				$message = 'Approved';
+			} elseif ($request->status_name == 'reject' && $request->approval_type_id == '3') {
+				//dd('reject-3');
+				$approval_status->status_id = 6;
+				$approval_status->comments = $request->comments;
+				$message = 'Rejected';
+			}
+			$approval_status->updated_by_id = Auth()->user()->id;
+			$approval_status->updated_at = date("Y-m-d H:i:s");
+			$approval_status->save();
+			//dd('stop');
 			DB::commit();
 			return response()->json(['success' => true, 'message' => $message]);
 		} catch (Exception $e) {

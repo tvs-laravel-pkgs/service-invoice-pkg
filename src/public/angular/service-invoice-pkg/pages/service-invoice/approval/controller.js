@@ -15,8 +15,11 @@ app.component('serviceInvoiceApprovalList', {
                 $location.path('/service-invoice-pkg/service-invoice/list')
                 $scope.$apply()
             }
+            self.approval_type_id = response.data.approval_level.approval_type_id;
             $rootScope.loading = false;
         });
+        setTimeout(function() {
+        // console.log(self.approval_type_id);
         var table_scroll;
         table_scroll = $('.page-main-content').height() - 37;
         var dataTable = $('#cn-dn-approval-table').dataTable({
@@ -53,7 +56,9 @@ app.component('serviceInvoiceApprovalList', {
                 url: laravel_routes['getServiceInvoiceApprovalList'],
                 type: "GET",
                 dataType: "json",
-                data: function(d) {}
+                data: function(d) {
+                    d.approval_status_id = self.approval_type_id;
+                }
             },
 
             columns: [
@@ -77,7 +82,8 @@ app.component('serviceInvoiceApprovalList', {
                 $('.foot_info').html('Showing ' + start + ' to ' + end + ' of ' + max + ' entries')
             },
         });
-        $('.dataTables_length select').select2();
+            $('.dataTables_length select').select2();
+        }, 1000);
         $("#search").keyup(function() { //alert(this.value);
             dataTable.fnFilter(this.value);
         });
@@ -118,7 +124,7 @@ app.component('serviceInvoiceApprovalView', {
                     layout: 'topRight',
                     text: response.data.error,
                 }).show();
-                $location.path('/service-invoice-pkg/cn-dn/approval/approval-level/{{$ctrl.approval_type_id}}/list/')
+                $location.path('/service-invoice-pkg/cn-dn/approval/approval-level/'+ $routeParams.approval_type_id +'/list/')
                 $scope.$apply()
             }
             // self.list_url = cn_dn_approval_list_url;
@@ -209,5 +215,107 @@ app.component('serviceInvoiceApprovalView', {
             self.table_total = self.table_sub_total + self.table_gst_total;
             $scope.$apply()
         }
+
+        var form_id = '#form';
+        var v = jQuery(form_id).validate({
+            ignore: '',
+            submitHandler: function(form) {
+                // var submitButtonValue =  $(this.submitButton).attr("data-id");
+                var submitButtonId =  $(this.submitButton).attr("id");
+                var comment_value = $('#comments').val();
+                if(submitButtonId == 'reject' && comment_value == '') {
+                    $(submitButtonId).button('reset');
+                    $noty = new Noty({
+                        type: 'error',
+                        layout: 'topRight',
+                        text: 'Comments field is required',
+                        animation: {
+                            speed: 500 // unavailable - no need
+                        },
+                    }).show();
+                    setTimeout(function() {
+                        $noty.close();
+                    }, 2000);
+                    return false;
+                }
+                $(submitButtonId).button('loading');
+                $.ajax({
+                        url: laravel_routes['updateApprovalStatus'],
+                        method: "POST",
+                        data: {
+                            id : $('#id').val(),
+                            approval_type_id : $('#approval_type_id').val(),
+                            // status_id : submitButtonValue,
+                            comments : $('#comments').val(),
+                            status_name : submitButtonId,
+                        },
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                    })
+                    .done(function(res) {
+                        // console.log(res.success);
+                        if (!res.success) {
+                            $(submitButtonId).button('reset');
+                            var errors = '';
+                            for (var i in res.errors) {
+                                errors += '<li>' + res.errors[i] + '</li>';
+                            }
+                            $noty = new Noty({
+                                type: 'success',
+                                layout: 'topRight',
+                                text: errors,
+                                animation: {
+                                    speed: 500 // unavailable - no need
+                                },
+                            }).show();
+                            setTimeout(function() {
+                                $noty.close();
+                            }, 3000);
+                        } else {
+                            if(res.message == 'Rejected') {
+                                $('#cancel_request_reject_modal').modal('hide');
+                                $noty = new Noty({
+                                    type: 'success',
+                                    layout: 'topRight',
+                                    text: 'CN/DN ' + res.message + ' Successfully',
+                                    animation: {
+                                        speed: 500 // unavailable - no need
+                                    },
+                                }).show();
+                            } else {
+                                $noty = new Noty({
+                                    type: 'success',
+                                    layout: 'topRight',
+                                    text: 'CN/DN ' + res.message + ' Successfully',
+                                    animation: {
+                                        speed: 500 // unavailable - no need
+                                    },
+                                }).show();
+                            }
+                            setTimeout(function() {
+                                $noty.close();
+                            }, 3000);
+                            $location.path('/service-invoice-pkg/cn-dn/approval/approval-level/'+ $routeParams.approval_type_id +'/list/');
+                            $scope.$apply()
+                        }
+                    })
+                    .fail(function(xhr) {
+                        $(submitButtonId).button('reset');
+                        $noty = new Noty({
+                            type: 'error',
+                            layout: 'topRight',
+                            text: 'Something went wrong at server',
+                            animation: {
+                                speed: 500 // unavailable - no need
+                            },
+                        }).show();
+                        setTimeout(function() {
+                            $noty.close();
+                        }, 3000);
+                    });
+                
+            },
+        });
     }
 });
