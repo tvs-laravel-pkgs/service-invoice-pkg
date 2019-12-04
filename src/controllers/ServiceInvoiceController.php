@@ -668,6 +668,7 @@ class ServiceInvoiceController extends Controller {
 			if (!$request->service_invoice_items) {
 				return response()->json(['success' => false, 'errors' => ['Service invoice item is required']]);
 			}
+			$approval_status = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 18)->first();
 
 			if ($request->id) {
 				$service_invoice = ServiceInvoice::find($request->id);
@@ -679,10 +680,13 @@ class ServiceInvoiceController extends Controller {
 				$service_invoice->created_at = date("Y-m-d H:i:s");
 				$service_invoice->created_by_id = Auth()->user()->id;
 				$service_invoice->number = $generateNumber['number'];
+				if ($approval_status != '') {
+					$service_invoice->status_id = $approval_status->name;
+				} else {
+					return response()->json(['success' => false, 'errors' => ['Default CN/DN Status has not mapped.!']]);
+				}
 				$message = 'Service invoice added successfully';
 			}
-			$approval_status = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 17)->first();
-
 			if ($request->type_id == 1061) {
 				$service_invoice->is_cn_created = 0;
 			} elseif ($request->type_id == 1060) {
@@ -692,13 +696,6 @@ class ServiceInvoiceController extends Controller {
 			$service_invoice->type_id = $request->type_id;
 			$service_invoice->fill($request->all());
 			$service_invoice->company_id = Auth::user()->company_id;
-			if ($approval_status != '' && $approval_status->name == '1') {
-				$service_invoice->status_id = 2;
-			} elseif ($approval_status != '' && $approval_status->name == '0') {
-				$service_invoice->status_id = 4;
-			} else {
-				$service_invoice->status_id = 4;
-			}
 			$service_invoice->save();
 
 			//REMOVE SERVICE INVOICE ITEMS
