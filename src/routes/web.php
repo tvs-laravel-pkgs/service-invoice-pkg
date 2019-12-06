@@ -6,6 +6,7 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 	Route::post('/service-invoice/save', 'ServiceInvoiceController@saveServiceInvoice')->name('saveServiceInvoice');
 	Route::get('/service-invoice/download-pdf/{id?}', 'ServiceInvoiceController@downloadPdf')->name('downloadPdf');
 	Route::get('/service-invoice/view/{type_id}/{id?}', 'ServiceInvoiceController@viewServiceInvoice')->name('viewServiceInvoice');
+	Route::post('/service-invoice/send-to-approval', 'ServiceInvoiceController@saveApprovalStatus')->name('saveApprovalStatus');
 	//SERVICE-INVOICE-APPROVAL
 	Route::get('/service-invoices/cn-dn-approvals/get-list', 'ServiceInvoiceApprovalController@getServiceInvoiceApprovalList')->name('getServiceInvoiceApprovalList');
 	Route::get('/service-invoice/cn-dn-approvals/approval/view/{approval_type_id?}/{type_id?}/{id?}', 'ServiceInvoiceApprovalController@viewServiceInvoiceApproval')->name('viewServiceInvoiceApproval');

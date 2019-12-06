@@ -15,7 +15,7 @@ app.component('serviceInvoiceApprovalList', {
                 $location.path('/service-invoice-pkg/service-invoice/list')
                 $scope.$apply()
             }
-            self.approval_type_id = response.data.approval_level.approval_type_id;
+            self.approval_type_id = response.data.approval_level.current_status_id;
             $rootScope.loading = false;
         });
         setTimeout(function() {
@@ -73,6 +73,7 @@ app.component('serviceInvoiceApprovalList', {
                 { data: 'customer_code', name: 'customers.code', searchable: true },
                 { data: 'customer_name', name: 'customers.name', searchable: true },
                 { data: 'invoice_amount', searchable: false },
+                { data: 'status', name: 'approval_type_statuses.status', searchable: false },
             ],
             rowCallback: function(row, data) {
                 $(row).addClass('highlight-row');
@@ -132,7 +133,7 @@ app.component('serviceInvoiceApprovalView', {
             self.customer = {};
             self.extras = response.data.extras;
             self.action = response.data.action;
-// console.log(self.service_invoice);
+console.log(self.service_invoice);
             if (self.action == 'View') {
                 $timeout(function() {
                     $scope.serviceInvoiceItemCalc();
@@ -245,7 +246,6 @@ app.component('serviceInvoiceApprovalView', {
                         data: {
                             id : $('#id').val(),
                             approval_type_id : $('#approval_type_id').val(),
-                            // status_id : submitButtonValue,
                             comments : $('#comments').val(),
                             status_name : submitButtonId,
                         },
@@ -283,6 +283,7 @@ app.component('serviceInvoiceApprovalView', {
                                         speed: 500 // unavailable - no need
                                     },
                                 }).show();
+                                // $('.cancel_modal_btn').attr('disabled',true);
                             } else {
                                 $noty = new Noty({
                                     type: 'success',

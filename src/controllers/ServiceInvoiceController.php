@@ -1,6 +1,7 @@
 <?php
 
 namespace Abs\ServiceInvoicePkg;
+use Abs\ApprovalPkg\ApprovalLevel;
 use Abs\AttributePkg\Field;
 use Abs\AttributePkg\FieldConfigSource;
 use Abs\AttributePkg\FieldGroup;
@@ -49,7 +50,8 @@ class ServiceInvoiceController extends Controller {
 				'customers.code as customer_code',
 				'customers.name as customer_name',
 				'configs.name as type_name',
-				'configs.id as si_type_id'
+				'configs.id as si_type_id',
+				'approval_type_statuses.status'
 			)
 			->join('outlets', 'outlets.id', 'service_invoices.branch_id')
 			->join('sbus', 'sbus.id', 'service_invoices.sbu_id')
@@ -57,7 +59,9 @@ class ServiceInvoiceController extends Controller {
 			->join('service_item_categories', 'service_item_categories.id', 'service_item_sub_categories.category_id')
 			->join('customers', 'customers.id', 'service_invoices.customer_id')
 			->join('configs', 'configs.id', 'service_invoices.type_id')
+			->join('approval_type_statuses', 'approval_type_statuses.id', 'service_invoices.status_id')
 			->where('service_invoices.company_id', Auth::user()->company_id)
+			->where('approval_type_statuses.approval_type_id', 1)
 			->groupBy('service_invoices.id')
 			->orderBy('service_invoices.id', 'Desc');
 		// dd($service_invoice_list);
@@ -993,18 +997,34 @@ class ServiceInvoiceController extends Controller {
 			}
 		}
 		$this->data['extras'] = [
-			// 'branch_list' => collect(Outlet::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Branch']),
-			// 'sbu_list' => collect(Sbu::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Sbu']),
 			'sbu_list' => [],
 			'tax_list' => Tax::select('name', 'id')->where('company_id', Auth::user()->company_id)->get(),
 			'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
 			'sub_category_list' => [],
 		];
-
+		$this->data['approval_status'] = ApprovalLevel::where('approval_type_id', 1)->first();
 		$this->data['action'] = 'View';
 		$this->data['success'] = true;
 		$this->data['service_invoice'] = $service_invoice;
 		return response()->json($this->data);
+	}
+
+	public function saveApprovalStatus(Request $request) {
+
+		DB::beginTransaction();
+		try {
+			$send_approval = ServiceInvoice::find($request->id);
+			$send_approval->status_id = $request->send_to_approval;
+			$send_approval->updated_by_id = Auth()->user()->id;
+			$send_approval->updated_at = date("Y-m-d H:i:s");
+			$message = 'Approval status updated successfully';
+			$send_approval->save();
+			DB::commit();
+			return response()->json(['success' => true, 'message' => $message]);
+		} catch (Exception $e) {
+			DB::rollBack();
+			return response()->json(['success' => false, 'errors' => ['Exception Error' => $e->getMessage()]]);
+		}
 	}
 
 }

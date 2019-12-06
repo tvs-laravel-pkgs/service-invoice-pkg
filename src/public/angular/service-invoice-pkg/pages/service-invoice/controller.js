@@ -55,6 +55,7 @@ app.component('serviceInvoiceList', {
                 { data: 'customer_code', name: 'customers.code', searchable: true },
                 { data: 'customer_name', name: 'customers.name', searchable: true },
                 { data: 'invoice_amount', searchable: false },
+                { data: 'status', name: 'approval_type_statuses.status', searchable: false },
             ],
             rowCallback: function(row, data) {
                 $(row).addClass('highlight-row');
@@ -813,8 +814,9 @@ app.component('serviceInvoiceView', {
             self.service_invoice = response.data.service_invoice;
             self.customer = {};
             self.extras = response.data.extras;
+            self.approval_status = response.data.approval_status;
             self.action = response.data.action;
-console.log(self.service_invoice);
+// console.log(self.service_invoice);
             if (self.action == 'View') {
                 $timeout(function() {
                     $scope.serviceInvoiceItemCalc();
@@ -897,5 +899,78 @@ console.log(self.service_invoice);
             self.table_total = self.table_sub_total + self.table_gst_total;
             $scope.$apply()
         }
+
+
+        var form_id = '#form';
+        var v = jQuery(form_id).validate({
+            ignore: '',
+            submitHandler: function(form) {
+                // var submitButtonValue =  $(this.submitButton).attr("data-id");
+                $('#submit').button('loading');
+                $.ajax({
+                        url: laravel_routes['saveApprovalStatus'],
+                        method: "POST",
+                        data: {
+                            id : $('#service_invoice_id').val(),
+                            send_to_approval : $('#send_to_approval').val(),
+                        },
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
+                    })
+                    .done(function(res) {
+                        // console.log(res.success);
+                        if (!res.success) {
+                            $('#submit').button('reset');
+                            var errors = '';
+                            for (var i in res.errors) {
+                                errors += '<li>' + res.errors[i] + '</li>';
+                            }
+                            $noty = new Noty({
+                                type: 'success',
+                                layout: 'topRight',
+                                text: errors,
+                                animation: {
+                                    speed: 500 // unavailable - no need
+                                },
+                            }).show();
+                            setTimeout(function() {
+                                $noty.close();
+                            }, 3000);
+                        } else {
+                            // $('#back_button').addClass("disabled");
+                            // $('#edit_button').addClass("disabled");
+                            $noty = new Noty({
+                                type: 'success',
+                                layout: 'topRight',
+                                text: res.message,
+                                animation: {
+                                    speed: 500 // unavailable - no need
+                                },
+                            }).show();
+                            setTimeout(function() {
+                                $noty.close();
+                            }, 3000);
+                            $location.path('/service-invoice-pkg/service-invoice/list');
+                            $scope.$apply()
+                        }
+                    })
+                    .fail(function(xhr) {
+                        $('#submit').button('reset');
+                        $noty = new Noty({
+                            type: 'error',
+                            layout: 'topRight',
+                            text: 'Something went wrong at server',
+                            animation: {
+                                speed: 500 // unavailable - no need
+                            },
+                        }).show();
+                        setTimeout(function() {
+                            $noty.close();
+                        }, 3000);
+                    });
+                
+            },
+        });
     }
 });

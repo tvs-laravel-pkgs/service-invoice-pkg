@@ -15,8 +15,8 @@
             </div><!-- Page Header Content Left -->
         </div><!-- Page Header Inner -->
     </div><!-- Page Header -->
-    <!-- <form id="form" enctype="multipart-formdata" autocomplete="off"> -->
-        <input type="hidden" name="id" value="{{$ctrl.service_invoice.id}}">
+    <form id="form" enctype="multipart-formdata" autocomplete="off">
+        <input type="hidden" name="id" id="service_invoice_id" value="{{$ctrl.service_invoice.id}}">
         <input type="hidden" name="type_id" value="{{$ctrl.type_id}}">
         <!-- Page Main Content -->
         <div class="page-main-content form-content type2">
@@ -210,9 +210,11 @@
                                         </ul>
                                     </div>
                                     <div class="col-md-4">
-                                        <a href="#!/service-invoice-pkg/service-invoice/list" class="btn btn-white">Back</a>
-                                        <a href="#!/service-invoice-pkg/service-invoice/edit/{{$ctrl.type_id}}/{{$ctrl.service_invoice.id}}" class="btn btn-primary">Edit</a>
+                                        <a href="#!/service-invoice-pkg/service-invoice/list" class="btn btn-white" id="back_button">Back</a>
+                                        <a href="#!/service-invoice-pkg/service-invoice/edit/{{$ctrl.type_id}}/{{$ctrl.service_invoice.id}}" class="btn btn-primary" id="edit_button">Edit</a>
+                                        <button type="submit" id="submit" class="btn btn-primary" ng-if="$ctrl.service_invoice.status_id == 1 || $ctrl.service_invoice.status_id == 5">Send to Approval</button>
                                     </div>
+                                    <input type="hidden" name="send_to_approval" id="send_to_approval" value="{{$ctrl.approval_status.current_status_id}}">
                                 </div>
                             </div><!-- Page Form Footer -->
                         </div><!-- Page Form -->
@@ -220,6 +222,6 @@
                 </div><!-- Row -->
             </div><!-- Container -->
         </div><!-- Page Main Content -->
-    <!-- </form> -->
+    </form>
 </div><!-- Content Wrap -->
 <script src="./public/theme/js/imageuploadify.min.js"></script>
