@@ -628,7 +628,7 @@ class ServiceInvoiceController extends Controller {
 				'sbu_id.required' => 'Sbu is required',
 				'category_id.required' => 'Category is required',
 				'sub_category_id.required' => 'Sub Category is required',
-				'invoice_date.required' => 'Invoice date is required',
+				// 'invoice_date.required' => 'Invoice date is required',
 				'document_date.required' => 'Document date is required',
 				'customer_id.required' => 'Customer is required',
 				'proposal_attachments.*.required' => 'Please upload an image',
@@ -649,9 +649,9 @@ class ServiceInvoiceController extends Controller {
 				'sub_category_id' => [
 					'required:true',
 				],
-				'invoice_date' => [
-					'required:true',
-				],
+				// 'invoice_date' => [
+				// 	'required:true',
+				// ],
 				'document_date' => [
 					'required:true',
 				],
@@ -699,6 +699,7 @@ class ServiceInvoiceController extends Controller {
 
 			$service_invoice->type_id = $request->type_id;
 			$service_invoice->fill($request->all());
+			$service_invoice->invoice_date = date('Y-m-d H:i:s');
 			$service_invoice->company_id = Auth::user()->company_id;
 			$service_invoice->save();
 
