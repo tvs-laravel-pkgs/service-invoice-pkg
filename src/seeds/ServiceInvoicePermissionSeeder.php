@@ -90,6 +90,13 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 				'display_name' => 'Delete',
 			],
 
+			3044 => [
+				'display_order' => 3,
+				'parent_id' => 3040,
+				'name' => 'create-service-invoice-for-all-outlets',
+				'display_name' => 'Created for All Outlets',
+			],
+
 		];
 
 		foreach ($permissions as $permission_id => $permsion) {
