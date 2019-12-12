@@ -142,7 +142,7 @@
                                             <p class="info-content-small italic" ng-show="!isObjectEmpty($ctrl.customer)">Customer Code : {{$ctrl.customer.code}}</p>
                                         </div><!-- Info Wrap -->
                                         <div class="info-wrap" ng-show="!isObjectEmpty($ctrl.customer)">
-                                            <p class="info-content"><b>+ {{$ctrl.customer.mobile_no ? $ctrl.customer.mobile_no : 'NA'}}</b></p>
+                                            <p class="info-content"><b>{{$ctrl.customer.mobile_no ? $ctrl.customer.mobile_no : ''}}</b></p>
                                             <p class="info-content">{{$ctrl.customer.formatted_address}}</p>
                                             <div class="info-space"></div>
                                             <p class="info-content">GST # {{$ctrl.customer.gst_number ? $ctrl.customer.gst_number : 'NA'}}</p>
