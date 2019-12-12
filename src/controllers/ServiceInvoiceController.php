@@ -231,14 +231,14 @@ class ServiceInvoiceController extends Controller {
 					//TAX CALC
 					if (count($serviceInvoiceItem->taxes) > 0) {
 						foreach ($serviceInvoiceItem->taxes as $key => $value) {
-							$gst_total += round($value->pivot->amount);
+							$gst_total += round($value->pivot->amount, 2);
 							$serviceInvoiceItem[$value->name] = [
-								'amount' => round($value->pivot->amount),
-								'percentage' => round($value->pivot->percentage),
+								'amount' => round($value->pivot->amount, 2),
+								'percentage' => round($value->pivot->percentage, 2),
 							];
 						}
 					}
-					$serviceInvoiceItem->total = round($serviceInvoiceItem->sub_total) + round($gst_total);
+					$serviceInvoiceItem->total = round($serviceInvoiceItem->sub_total, 2) + round($gst_total, 2);
 					$serviceInvoiceItem->code = $serviceInvoiceItem->serviceItem->code;
 					$serviceInvoiceItem->name = $serviceInvoiceItem->serviceItem->name;
 				}
@@ -545,10 +545,10 @@ class ServiceInvoiceController extends Controller {
 		$gst_total = 0;
 		if (count($service_item->taxCode->taxes) > 0) {
 			foreach ($service_item->taxCode->taxes as $key => $value) {
-				$gst_total += round(($value->pivot->percentage / 100) * ($request->qty * $request->amount));
+				$gst_total += round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2);
 				$service_item[$value->name] = [
-					'amount' => round(($value->pivot->percentage / 100) * ($request->qty * $request->amount)),
-					'percentage' => round($value->pivot->percentage),
+					'amount' => round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2),
+					'percentage' => round($value->pivot->percentage, 2),
 				];
 			}
 		}
@@ -565,8 +565,8 @@ class ServiceInvoiceController extends Controller {
 		$service_item->description = $request->description;
 		$service_item->qty = $request->qty;
 		$service_item->rate = $request->amount;
-		$service_item->sub_total = round($request->qty * $request->amount);
-		$service_item->total = round($request->qty * $request->amount) + $gst_total;
+		$service_item->sub_total = round(($request->qty * $request->amount), 2);
+		$service_item->total = round($request->qty * $request->amount, 2) + $gst_total;
 
 		if ($request->action == 'add') {
 			$add = true;
@@ -584,52 +584,6 @@ class ServiceInvoiceController extends Controller {
 		// dd($request->all());
 		DB::beginTransaction();
 		try {
-
-			//SERIAL NUMBER GENERATION & VALIDATION
-			if (!$request->id) {
-				//GET FINANCIAL YEAR ID BY DOCUMENT DATE
-				$document_date_year = date('Y', strtotime($request->document_date));
-				$financial_year = FinancialYear::where('from', $document_date_year)
-					->where('company_id', Auth::user()->company_id)
-					->first();
-				if (!$financial_year) {
-					return response()->json(['success' => false, 'errors' => ['Fiancial Year Not Found']]);
-				}
-				$branch = Outlet::where('id', $request->branch_id)->first();
-
-				if ($request->type_id == 1061) {
-//CN
-					$serial_number_category = 4;
-				} elseif ($request->type_id == 1060) {
-//DN
-					$serial_number_category = 5;
-				}
-
-				//GENERATE SERVICE INVOICE NUMBER
-				$generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, $branch->id);
-				if (!$generateNumber['success']) {
-					return response()->json(['success' => false, 'errors' => ['No Serial number found']]);
-				}
-
-				$generateNumber['service_invoice_id'] = $request->id;
-
-				$error_messages_1 = [
-					'number.required' => 'Serial number is required',
-					'number.unique' => 'Serial number is already taken',
-				];
-
-				$validator_1 = Validator::make($generateNumber, [
-					'number' => [
-						'required',
-						'unique:service_invoices,number,' . $request->id . ',id,company_id,' . Auth::user()->company_id,
-					],
-				], $error_messages_1);
-
-				if ($validator_1->fails()) {
-					return response()->json(['success' => false, 'errors' => $validator_1->errors()->all()]);
-				}
-
-			}
 
 			$error_messages = [
 				'branch_id.required' => 'Branch is required',
@@ -674,6 +628,57 @@ class ServiceInvoiceController extends Controller {
 
 			if ($validator->fails()) {
 				return response()->json(['success' => false, 'errors' => $validator->errors()->all()]);
+			}
+
+			//SERIAL NUMBER GENERATION & VALIDATION
+			if (!$request->id) {
+				//GET FINANCIAL YEAR ID BY DOCUMENT DATE
+				$document_date_year = date('Y', strtotime($request->document_date));
+				$financial_year = FinancialYear::where('from', $document_date_year)
+					->where('company_id', Auth::user()->company_id)
+					->first();
+				if (!$financial_year) {
+					return response()->json(['success' => false, 'errors' => ['Fiancial Year Not Found']]);
+				}
+				$branch = Outlet::where('id', $request->branch_id)->first();
+
+				if ($request->type_id == 1061) {
+					//DN
+					$serial_number_category = 5;
+				} elseif ($request->type_id == 1060) {
+					//CN
+					$serial_number_category = 4;
+				}
+
+				$sbu = Sbu::find($request->sbu_id);
+				if (!$sbu) {
+					return response()->json(['success' => false, 'errors' => ['SBU Not Found']]);
+				}
+
+				//GENERATE SERVICE INVOICE NUMBER
+				$generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, $branch->id, $sbu);
+				if (!$generateNumber['success']) {
+					return response()->json(['success' => false, 'errors' => ['No Serial number found']]);
+				}
+
+				$generateNumber['service_invoice_id'] = $request->id;
+
+				$error_messages_1 = [
+					'number.required' => 'Serial number is required',
+					'number.unique' => 'Serial number is already taken',
+				];
+
+				$validator_1 = Validator::make($generateNumber, [
+					'number' => [
+						'required',
+						'unique:service_invoices,number,' . $request->id . ',id,company_id,' . Auth::user()->company_id,
+					],
+				], $error_messages_1);
+
+				if ($validator_1->fails()) {
+					return response()->json(['success' => false, 'errors' => $validator_1->errors()->all()]);
+				}
+
 			}
 
 			//VALIDATE SERVICE INVOICE ITEMS
@@ -839,8 +844,7 @@ class ServiceInvoiceController extends Controller {
 
 		$service_invoice_pdf->company->formatted_address = $service_invoice_pdf->company->primaryAddress ? $service_invoice_pdf->company->primaryAddress->getFormattedAddress() : 'NA';
 		$service_invoice_pdf->outlets->formatted_address = $service_invoice_pdf->outlets->primaryAddress ? $service_invoice_pdf->outlets->primaryAddress->getFormattedAddress() : 'NA';
-		$service_invoice_pdf->customer->formatted_address = $service_invoice_pdf->customer->primaryAddress ? $service_invoice_pdf->customer->primaryAddress->getFormattedAddress() : 'NA';
-
+		$service_invoice_pdf->customer->formatted_address = $service_invoice_pdf->customer->primaryAddress ? $service_invoice_pdf->customer->primaryAddress->address_line1 : 'NA';
 		if (count($service_invoice_pdf->serviceInvoiceItems) > 0) {
 			$array_key_replace = [];
 			foreach ($service_invoice_pdf->serviceInvoiceItems as $key => $serviceInvoiceItem) {
@@ -993,14 +997,14 @@ class ServiceInvoiceController extends Controller {
 				//TAX CALC
 				if (count($serviceInvoiceItem->taxes) > 0) {
 					foreach ($serviceInvoiceItem->taxes as $key => $value) {
-						$gst_total += round($value->pivot->amount);
+						$gst_total += round($value->pivot->amount, 2);
 						$serviceInvoiceItem[$value->name] = [
-							'amount' => round($value->pivot->amount),
-							'percentage' => round($value->pivot->percentage),
+							'amount' => round($value->pivot->amount, 2),
+							'percentage' => round($value->pivot->percentage, 2),
 						];
 					}
 				}
-				$serviceInvoiceItem->total = round($serviceInvoiceItem->sub_total) + round($gst_total);
+				$serviceInvoiceItem->total = round($serviceInvoiceItem->sub_total, 2) + round($gst_total, 2);
 				$serviceInvoiceItem->code = $serviceInvoiceItem->serviceItem->code;
 				$serviceInvoiceItem->name = $serviceInvoiceItem->serviceItem->name;
 			}
