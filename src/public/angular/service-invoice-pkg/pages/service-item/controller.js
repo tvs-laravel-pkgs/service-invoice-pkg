@@ -223,9 +223,9 @@ app.component('serviceItemForm', {
                 'sac_code_id': {
                     required: true,
                 },
-                'field_group_id': {
-                    required: true,
-                },
+                // 'field_group_id': {
+                //     required: true,
+                // },
             },
             messages: {
                 'code': {
