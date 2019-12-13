@@ -9,6 +9,7 @@ use Abs\ServiceInvoicePkg\ServiceItem;
 use Abs\ServiceInvoicePkg\ServiceItemCategory;
 use Abs\TaxPkg\Tax;
 use App\Customer;
+use App\Entity;
 use App\Http\Controllers\Controller;
 use Auth;
 use DB;
@@ -254,9 +255,15 @@ class ServiceInvoiceApprovalController extends Controller {
 			$approval_status->updated_by_id = Auth()->user()->id;
 			$approval_status->updated_at = date("Y-m-d H:i:s");
 			$approval_status->save();
+
 			$approved_status = new ServiceInvoiceController();
-			if ($approval_status->status_id == $approval_levels->next_status_id) {
-				$approved_status->createPdf($approval_status->id);
+			$approval_levels = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 19)->first();
+			if ($approval_levels != '') {
+				if ($approval_status->status_id == $approval_levels->name) {
+					$approved_status->createPdf($approval_status->id);
+				}
+			} else {
+				return response()->json(['success' => false, 'errors' => ['Final CN/DN Status has not mapped.!']]);
 			}
 
 			DB::commit();

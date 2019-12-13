@@ -700,7 +700,7 @@ class ServiceInvoiceController extends Controller {
 				if ($approval_status != '') {
 					$service_invoice->status_id = $approval_status->name;
 				} else {
-					return response()->json(['success' => false, 'errors' => ['Default CN/DN Status has not mapped.!']]);
+					return response()->json(['success' => false, 'errors' => ['Initial CN/DN Status has not mapped.!']]);
 				}
 				$message = 'Service invoice added successfully';
 			}
@@ -715,10 +715,16 @@ class ServiceInvoiceController extends Controller {
 			$service_invoice->invoice_date = date('Y-m-d H:i:s');
 			$service_invoice->company_id = Auth::user()->company_id;
 			$service_invoice->save();
-			$approval_levels = ApprovalLevel::where('approval_type_id', 1)->first();
-			if ($service_invoice->status_id == $approval_levels->next_status_id) {
-				$this->createPdf($service_invoice->id);
+			$approval_levels = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 19)->first();
+			// $approval_levels = ApprovalLevel::where('approval_type_id', 1)->first();
+			if ($approval_levels != '') {
+				if ($service_invoice->status_id == $approval_levels->name) {
+					$this->createPdf($service_invoice->id);
+				}
+			} else {
+				return response()->json(['success' => false, 'errors' => ['Final CN/DN Status has not mapped.!']]);
 			}
+
 			//REMOVE SERVICE INVOICE ITEMS
 			if (!empty($request->service_invoice_item_removal_ids)) {
 				$service_invoice_item_removal_ids = json_decode($request->service_invoice_item_removal_ids, true);
@@ -1040,6 +1046,15 @@ class ServiceInvoiceController extends Controller {
 			$send_approval->updated_at = date("Y-m-d H:i:s");
 			$message = 'Approval status updated successfully';
 			$send_approval->save();
+			$approval_levels = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 19)->first();
+			// $approval_levels = ApprovalLevel::where('approval_type_id', 1)->first();
+			if ($approval_levels != '') {
+				if ($send_approval->status_id == $approval_levels->name) {
+					$this->createPdf($send_approval->id);
+				}
+			} else {
+				return response()->json(['success' => false, 'errors' => ['Final CN/DN Status has not mapped.!']]);
+			}
 			DB::commit();
 			return response()->json(['success' => true, 'message' => $message]);
 		} catch (Exception $e) {
