@@ -96,6 +96,18 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 				'name' => 'create-service-invoice-for-all-outlets',
 				'display_name' => 'Created for All Outlets',
 			],
+			3045 => [
+				'display_order' => 4,
+				'parent_id' => 3040,
+				'name' => 'create-cn',
+				'display_name' => 'Create CN',
+			],
+			3046 => [
+				'display_order' => 5,
+				'parent_id' => 3040,
+				'name' => 'create-dn',
+				'display_name' => 'Create DN',
+			],
 
 		];
 

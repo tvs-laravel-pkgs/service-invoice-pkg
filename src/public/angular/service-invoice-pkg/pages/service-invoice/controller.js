@@ -3,6 +3,8 @@ app.component('serviceInvoiceList', {
     controller: function($http, $location, HelperService, $scope, $routeParams, $rootScope, $element) {
         var self = this;
         self.hasPermission = HelperService.hasPermission;
+        self.create_cn = self.hasPermission('create-cn');
+        self.create_dn = self.hasPermission('create-dn');
         var table_scroll;
         table_scroll = $('.page-main-content').height() - 37;
         var dataTable = $('#service-invoice-table').dataTable({

@@ -4,6 +4,7 @@ namespace Abs\ServiceInvoicePkg;
 use Abs\ApprovalPkg\ApprovalLevel;
 use Abs\AttributePkg\Field;
 use Abs\ServiceInvoicePkg\ServiceInvoice;
+use Abs\ServiceInvoicePkg\ServiceInvoiceController;
 use Abs\ServiceInvoicePkg\ServiceItem;
 use Abs\ServiceInvoicePkg\ServiceItemCategory;
 use Abs\TaxPkg\Tax;
@@ -253,6 +254,10 @@ class ServiceInvoiceApprovalController extends Controller {
 			$approval_status->updated_by_id = Auth()->user()->id;
 			$approval_status->updated_at = date("Y-m-d H:i:s");
 			$approval_status->save();
+			$approved_status = new ServiceInvoiceController();
+			if ($approval_status->status_id == $approval_levels->next_status_id) {
+				$approved_status->createPdf($approval_status->id);
+			}
 
 			DB::commit();
 			return response()->json(['success' => true, 'message' => $message]);

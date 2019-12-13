@@ -23,9 +23,11 @@ use App\Outlet;
 use App\Sbu;
 use Auth;
 use DB;
+use File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use PDF;
+use URL;
 use Validator;
 use Yajra\Datatables\Datatables;
 
@@ -77,15 +79,13 @@ class ServiceInvoiceController extends Controller {
 				$img_view = asset('public/theme/img/table/cndn/view.svg');
 				$img_download = asset('public/theme/img/table/cndn/download.svg');
 				$img_delete = asset('public/theme/img/table/cndn/delete.svg');
+				$path = URL::to('/storage/app/public/service-invoice-pdf');
 
 				if ($service_invoice_list->status_id == '4') {
 					return '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
 	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
 	                    	</a>
-							<a href="#!/service-invoice-pkg/service-invoice/edit/' . $type_id . '/' . $service_invoice_list->id . '" class="">
-	                        <img class="img-responsive" src="' . $img_edit . '" alt="Edit" />
-	                    	</a>
-							<a href="' . route("downloadPdf", ["id" => $service_invoice_list->id]) . '" class=""><img class="img-responsive" src="' . $img_download . '" alt="Download" />
+	                        <a href="' . $path . '/' . $service_invoice_list->number . '.pdf" class=""><img class="img-responsive" src="' . $img_download . '" alt="Download" />
 	                        </a>';
 				} elseif ($service_invoice_list->status_id != '4') {
 					return '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
@@ -715,7 +715,10 @@ class ServiceInvoiceController extends Controller {
 			$service_invoice->invoice_date = date('Y-m-d H:i:s');
 			$service_invoice->company_id = Auth::user()->company_id;
 			$service_invoice->save();
-
+			$approval_levels = ApprovalLevel::where('approval_type_id', 1)->first();
+			if ($service_invoice->status_id == $approval_levels->next_status_id) {
+				$this->createPdf($service_invoice->id);
+			}
 			//REMOVE SERVICE INVOICE ITEMS
 			if (!empty($request->service_invoice_item_removal_ids)) {
 				$service_invoice_item_removal_ids = json_decode($request->service_invoice_item_removal_ids, true);
@@ -828,7 +831,7 @@ class ServiceInvoiceController extends Controller {
 		}
 	}
 
-	public function downloadPdf($service_invoice_pdf_id) {
+	public function createPdf($service_invoice_pdf_id) {
 
 		$service_invoice_pdf = ServiceInvoice::with([
 			'company',
@@ -858,13 +861,18 @@ class ServiceInvoiceController extends Controller {
 
 		$tax_list = Tax::where('company_id', Auth::user()->company_id)->get();
 		$this->data['tax_list'] = $tax_list;
-		$headers = array(
-			'Content-Type: application/pdf',
-		);
-		$pdf = PDF::loadView('service-invoices/pdf/index', $this->data);
-		$po_file_name = 'Invoice-' . $service_invoice_pdf->number . '.pdf';
+		// $headers = array(
+		// 	'Content-Type: application/pdf',
+		// );
 
-		return $pdf->download($po_file_name, $headers);
+		$path = storage_path('app/public/service-invoice-pdf/');
+		$pathToFile = $path . '/' . $service_invoice_pdf->number . '.pdf';
+		File::isDirectory($path) or File::makeDirectory($path, 0777, true, true);
+		$pdf = PDF::loadView('service-invoices/pdf/index', $this->data);
+		// $po_file_name = 'Invoice-' . $service_invoice_pdf->number . '.pdf';
+		File::put($pathToFile, $pdf->output());
+
+		// return $pdf->download($pathToFile, $headers);
 	}
 
 	public function viewServiceInvoice($type_id, $id) {
