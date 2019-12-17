@@ -782,6 +782,41 @@ app.component('serviceInvoiceView', {
             return parseInt(num);
         }
 
+        //EDIT SERVICE INVOICE ITEM
+        $scope.editServiceItem = function(service_invoice_item_id, description, qty, rate, index) {
+            if (service_invoice_item_id) {
+                self.enable_service_item_md_change = false;
+                self.add_service_action = false;
+                self.action_title = 'View';
+                self.update_item_key = index;
+                $http.post(
+                    get_service_item_info_url, {
+                        service_item_id: service_invoice_item_id,
+                        field_groups: self.service_invoice.service_invoice_items[index].field_groups,
+                        btn_action: 'edit',
+                        branch_id: self.service_invoice.branch.id,
+                        customer_id: self.service_invoice.customer.id,
+                    }
+                ).then(function(response) {
+                    if (response.data.success) {
+                        self.service_item_detail = response.data.service_item;
+                        self.service_item = response.data.service_item;
+                        self.description = description;
+                        self.qty = parseInt(qty);
+                        self.rate = rate;
+
+                        //AMOUNT CALCULATION
+                        $scope.totalAmountCalc();
+
+                        //MODAL OPEN
+                        $('#modal-cn-addnew').modal('toggle');
+                    } else {
+                        custom_noty('error', response.data.error);
+                    }
+                });
+            }
+        }
+
         //ITEM TO INVOICE TOTAL AMOUNT CALC
         $scope.totalAmountCalc = function() {
             self.sub_total = 0;

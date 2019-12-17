@@ -32,7 +32,7 @@
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Branch</label>
                                                     <div class="table-form-list-control">
-                                                        <input type="text" name="branch_id" value="{{$ctrl.service_invoice.branch.code}}" readonly>
+                                                        <input type="text" class="form-control" name="branch_id" value="{{$ctrl.service_invoice.branch.code}}" readonly>
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
@@ -40,7 +40,7 @@
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">SBU</label>
                                                     <div class="table-form-list-control">
-                                                        <input type="text" name="sbu_id" id="sbu_id" value="{{$ctrl.service_invoice.sbu.name}}" readonly>
+                                                        <input type="text" class="form-control" name="sbu_id" id="sbu_id" value="{{$ctrl.service_invoice.sbu.name}}" readonly>
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
@@ -48,7 +48,7 @@
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Category</label>
                                                     <div class="table-form-list-control">
-                                                        <input type="text" name="category_id" id="category_id" value="{{$ctrl.service_invoice.service_item_sub_category.service_item_category.name}}" readonly>
+                                                        <input type="text" class="form-control" name="category_id" id="category_id" value="{{$ctrl.service_invoice.service_item_sub_category.service_item_category.name}}" readonly>
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
@@ -56,7 +56,7 @@
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Sub Category</label>
                                                     <div class="table-form-list-control">
-                                                        <input type="text" name="sub_category_id" id="sub_category_id" value="{{$ctrl.service_invoice.service_item_sub_category.name}}" readonly>
+                                                        <input type="text" class="form-control" name="sub_category_id" id="sub_category_id" value="{{$ctrl.service_invoice.service_item_sub_category.name}}" readonly>
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
@@ -68,9 +68,7 @@
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Status</label>
                                                     <div class="table-form-list-control">
-                                                        <div class="input-group date type-sm">
-                                                            <input name="status" type="text" class="form-control" placeholder="" ng-model="$ctrl.service_invoice_status.status" readonly />
-                                                        </div>
+                                                        <input name="status" type="text" class="form-control" placeholder="" ng-model="$ctrl.service_invoice_status.status" readonly />
                                                     </div>
                                                 </div>
                                             </li>
@@ -88,12 +86,12 @@
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Customer Code</label>
                                                     <div class="table-form-list-control">
-                                                        <input type="text" name="customer_id" value="{{$ctrl.service_invoice.customer.code}}" readonly>
+                                                        <input type="text" class="form-control" name="customer_id" value="{{$ctrl.service_invoice.customer.code}}" readonly>
                                                     </div>
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
                                             <li>
-                                                <span class="button-label">Ref Attachments</span>
+                                                <label class="table-form-list-label">Ref Attachments</label>
                                                 <div ng-repeat="(index, service_invoice_attachment) in $ctrl.service_invoice.attachments">
                                                     <div class="imageuploadify-container" data-attachment_id="{{service_invoice_attachment.id}}" style="margin-left: 0px; margin-right: 0px; ">
                                                         <div class="imageuploadify-details">
@@ -231,4 +229,214 @@
         </div><!-- Page Main Content -->
     </form>
 </div><!-- Content Wrap -->
+<!-- Modal -->
+<div class="modal fade" id="modal-cn-addnew" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-md fixed" role="document">
+        <form id="service-invoice-item-form" enctype="multipart-formdata" autocomplete="off">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" class="icon ion-md-close"></span></button>
+                    <h5 class="modal-title">{{$ctrl.action_title}} Item to Invoice</h5>
+                </div><!-- Modal Header -->
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="table-form-list">
+                                <li>
+                                    <div class="table-form-list-wrap">
+                                        <label class="table-form-list-label">Item Code </label>
+                                        <div class="table-form-list-control">
+                                            <input type="text" id="service_item_id" name="service_item_id" value="{{$ctrl.service_item_detail.code}}" class="form-control type-sm" readonly>
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                </li>
+                                <li>
+                                    <div class="table-form-view-wrap">
+                                        <ul class="table-form-view-list">
+                                            <li class="list-12 border-bottom">
+                                                <span class="table-form-view-label">Item Name</span>
+                                                <span class="table-form-view-value">{{$ctrl.service_item_detail.name}}</span>
+                                            </li>
+                                            <li class="list-6 border-right">
+                                                <span class="table-form-view-label">COA Code</span>
+                                                <span class="table-form-view-value">{{$ctrl.service_item_detail.coa_code.code}}</span>
+                                            </li>
+                                            <li class="list-6">
+                                                <span class="table-form-view-label">SAC Code</span>
+                                                <span class="table-form-view-value">{{$ctrl.service_item_detail.tax_code.code}}</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+                            </ul><!-- Table Form List -->
+                        </div><!-- Column -->
+                        <div class="col-md-6">
+                            <ul class="table-form-list">
+                                <li>
+                                    <div class="table-form-list-wrap">
+                                        <label class="table-form-list-label">Reference </label>
+                                        <div class="table-form-list-control">
+                                            <textarea name="description" ng-model="$ctrl.description" class="form-control type-sm" rows="3" placeholder="Enter Reference" readonly></textarea>
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                </li>
+                                <li>
+                                    <div class="table-form-list-wrap">
+                                        <label class="table-form-list-label">Quantity </label>
+                                        <div class="table-form-list-control">
+                                            <input name="qty" ng-model="$ctrl.qty" type="text" class="form-control type-sm" placeholder="Enter Quantity" readonly />
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                </li>
+                                <li>
+                                    <div class="table-form-list-wrap">
+                                        <label class="table-form-list-label">Amount </label>
+                                        <div class="table-form-list-control">
+                                            <input name="amount" ng-model="$ctrl.rate" type="text" class="form-control type-sm" placeholder="Enter Amount" readonly />
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                </li>
+                            </ul><!-- Table Form List -->
+                        </div><!-- Column -->
+                    </div><!-- Row -->
+                    <div class="row" ng-if="$ctrl.service_item_detail.field_groups.length > 0">
+                        <div class="col-md-6" ng-repeat="(index, field_group) in $ctrl.service_item_detail.field_groups">
+                            <input type="hidden" name="field_groups[{{index}}][id]" value="{{field_group.id}}">
+                            <h6>{{field_group.name}}</h6>
+                            <ul class="table-form-list">
+                                <li ng-repeat="(field_index, field) in field_group.fields">
+                                    <!-- SINGLE SELECT DROPDOWN -->
+                                    <div class="table-form-list-wrap" ng-if="field.type_id == 1">
+                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <div class="table-form-list-control">
+                                            <md-select class="type-sm" ng-model="field.value" placeholder="Select {{field.name}}" md-on-close="clearSearch()" data-md-container-class="selectdemoSelectHeader">
+                                                <md-select-header class="demo-select-header">
+                                                    <input ng-model="search" type="search" placeholder="Search for a {{field.name}}.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                                </md-select-header>
+                                                <md-optgroup label="fd">
+                                                    <md-option ng-value="fd.id" ng-repeat="fd in field.get_list | filter:search">{{fd.name}}</md-option>
+                                                </md-optgroup>
+                                            </md-select>
+                                            <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][value]" id="field_groups[{{index}}][fields][{{field_index}}][value]" value="{{field.value}}" ng-class="{required: field.pivot.is_required == 1}">
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                    <!-- MULTIPLE SELECT DROPDOWN -->
+                                    <div class="table-form-list-wrap" ng-if="field.type_id == 2">
+                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <div class="table-form-list-control">
+                                            <md-select class="type-sm" ng-model="field.value" placeholder="Select {{field.name}}" md-on-close="clearSearch()" data-md-container-class="selectdemoSelectHeader" multiple>
+                                                <md-select-header class="demo-select-header">
+                                                    <input ng-model="search" type="search" placeholder="Search for a sub category.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                                </md-select-header>
+                                                <md-optgroup label="fd">
+                                                    <md-option ng-value="fd.id" ng-repeat="fd in field.get_list | filter:search">{{fd.name}}</md-option>
+                                                </md-optgroup>
+                                            </md-select>
+                                            <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][value]" id="field_groups[{{index}}][fields][{{field_index}}][value]" value="{{field.value}}" ng-class="{multiselect_required: field.pivot.is_required == 1}">
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                    <!-- FREE TEXT BOX OR NUMERIC TEXT BOX -->
+                                    <div class="table-form-list-wrap" ng-if="field.type_id == 3 || field.type_id == 4">
+                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <div class="table-form-list-control">
+                                            <input name="field_groups[{{index}}][fields][{{field_index}}][value]" ng-model="field.value" type="text" class="form-control type-sm" placeholder="Enter {{field.name}}" ng-class="{required: field.pivot.is_required == 1}" />
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                    <!-- DATE PICKER -->
+                                    <div class="table-form-list-wrap" ng-if="field.type_id == 7">
+                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <div class="table-form-list-control dynamic_date_error">
+                                            <div class="input-group date type-sm dynamicDatePicker" data-provide="datepicker">
+                                                <input name="field_groups[{{index}}][fields][{{field_index}}][value]" ng-model="field.value" type="text" class="form-control dynamic_date" placeholder="Select {{field.name}}" readonly ng-class="{required: field.pivot.is_required == 1}" />
+                                                <div class="input-group-addon">
+                                                    <img class="img-responsive" src="public/theme/img/content/calender-gray-icon.svg" alt="Calendar Image" />
+                                                </div>
+                                            </div><!-- Input Group -->
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                    <!-- DATE TIME PICKER -->
+                                    <div class="table-form-list-wrap" ng-if="field.type_id == 8">
+                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <div class="table-form-list-control dynamic_date_error">
+                                            <div class="input-group date" moment-picker="field.value" format="DD-MM-YYYY LT">
+                                                <input name="field_groups[{{index}}][fields][{{field_index}}][value]" ng-model="field.value" type="text" class="form-control" placeholder="Select {{field.name}}" readonly ng-class="{required: field.pivot.is_required == 1}">
+                                                <span class="input-group-addon">
+                                                    <img class="img-responsive" src="./public/theme/img/content/calender-gray-icon.svg" alt="Calendar Image" />
+                                                </span>
+                                            </div><!-- Input Group -->
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                    <!-- SWITCH -->
+                                    <div class="table-form-list-wrap" ng-if="field.type_id == 9">
+                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory">*</span></label>
+                                        <div class="table-form-list-control">
+                                            <div class="tab-switch">
+                                                <md-switch ng-model="field.value" aria-label="Switch 1" ng-true-value="'No'" ng-false-value="'Yes'" class="md-warn type-sm type-2">
+                                                    {{ field.value }}
+                                                </md-switch>
+                                                <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][value]" value="{{field.value}}">
+                                            </div>
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                    <!-- AUTOCOMPLETE -->
+                                    <div class="table-form-list-wrap" ng-if="field.type_id == 10">
+                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <div class="table-form-list-control">
+                                            <md-autocomplete class="type-sm" md-items="option in $ctrl.searchField($ctrl.searchText, field.id)" md-selected-item="field.autoval" md-search-text="$ctrl.searchText" md-item-text="option.code" md-min-length="3" placeholder="{{field.name}} code / name">
+                                                <md-item-template>
+                                                    <span>
+                                                        {{option.name}} - {{option.code}}
+                                                    </span>
+                                                </md-item-template>
+                                                <md-not-found>
+                                                    No {{field.name}} matching "{{$ctrl.searchText}}" were found.
+                                                </md-not-found>
+                                            </md-autocomplete>
+                                            <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][value]" value="{{field.autoval.id}}" ng-class="{required: field.pivot.is_required == 1}">
+                                        </div>
+                                    </div><!-- Table Form List Wrap -->
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div><!-- Modal Body -->
+                <input type="hidden" name="action" value="{{$ctrl.add_service_action}}">
+                <input type="hidden" name="customer_id" value="{{$ctrl.service_invoice.customer.id}}">
+                <input type="hidden" name="branch_id" value="{{$ctrl.service_invoice.branch.id}}">
+                <div class="modal-footer">
+                    <div class="row">
+                        <div class="col-md-9 text-left">
+                            <div class="modal-footer-list-wrap">
+                                <ul class="modal-footer-list">
+                                    <li>
+                                        <span class="modal-footer-list-label">Amount</span>
+                                        <span class="modal-footer-list-value">{{($ctrl.sub_total ? $ctrl.sub_total : 0) | number : 2}}</span>
+                                    </li>
+                                    <li ng-repeat="(index, tax) in $ctrl.service_item_detail.tax_code.taxes">
+                                        <span class="modal-footer-list-label">{{tax.name}} ({{tax.pivot.percentage}}%)</span>
+                                        <span class="modal-footer-list-value">{{(tax.pivot.amount ? tax.pivot.amount : 0) | number : 2}}</span>
+                                    </li>
+                                    <li class="color-red">
+                                        <span class="modal-footer-list-label">Total</span>
+                                        <span class="modal-footer-list-value">{{($ctrl.total ? $ctrl.total : 0) | number : 2}}</span>
+                                    </li>
+                                </ul>
+                            </div><!-- Modal Footer List Wrap -->
+                        </div><!-- Column -->
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-white" data-dismiss="modal">Cancel</button>
+                        </div><!-- Column -->
+                    </div><!-- Row -->
+                </div><!-- Modal Footer -->
+            </div><!-- Modal Content -->
+        </form>
+    </div><!-- Modal Dialog -->
+</div><!-- Modal -->
 <script src="./public/theme/js/imageuploadify.min.js"></script>
