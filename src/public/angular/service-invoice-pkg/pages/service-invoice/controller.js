@@ -718,7 +718,7 @@ app.component('serviceInvoiceView', {
         self.angular_routes = angular_routes;
         self.type_id = $routeParams.type_id;
         self.enable_service_item_md_change = true;
-
+        self.ref_attachements_url_link = ref_attachements_url;
         $http.get(
             $form_data_url
         ).then(function(response) {
@@ -736,6 +736,7 @@ app.component('serviceInvoiceView', {
             self.customer = {};
             self.extras = response.data.extras;
             self.approval_status = response.data.approval_status;
+            self.service_invoice_status = response.data.service_invoice_status;
             self.action = response.data.action;
             // console.log(self.service_invoice);
             if (self.action == 'View') {
@@ -777,7 +778,8 @@ app.component('serviceInvoiceView', {
 
         //PARSEINT
         self.parseInt = function(num) {
-            return num.toFixed(2);
+            // return num.toFixed(2);
+            return parseInt(num);
         }
 
         //ITEM TO INVOICE TOTAL AMOUNT CALC
@@ -804,20 +806,40 @@ app.component('serviceInvoiceView', {
             self.table_sub_total = 0;
             self.table_total = 0;
             self.table_gst_total = 0;
-            $(self.extras.tax_list).each(function(key, tax) {
-                self[tax.name + '_amount'] = 0;
-            });
+            self.tax_wise_total = {};
+            for (i = 0; i < self.extras.tax_list.length; i++) {
+                if (typeof(self.extras.tax_list[i].name) != 'undefined') {
+                    self.tax_wise_total[self.extras.tax_list[i].name + '_amount'] = 0;
+                }
+            };
 
             $(self.service_invoice.service_invoice_items).each(function(key, service_invoice_item) {
                 self.table_qty += parseInt(service_invoice_item.qty);
-                self.table_rate += parseFloat(service_invoice_item.rate).toFixed(2);
-                self.table_sub_total += parseFloat(service_invoice_item.sub_total).toFixed(2);
-                $(self.extras.tax_list).each(function(key, tax) {
-                    self.table_gst_total += (service_invoice_item[tax.name] ? parseFloat(service_invoice_item[tax.name].amount).toFixed(2) : 0);
-                    self[tax.name + '_amount'] += (service_invoice_item[tax.name] ? parseFloat(service_invoice_item[tax.name].amount).toFixed(2) : 0);
-                });
+                self.table_rate = (parseFloat(self.table_rate) + parseFloat(service_invoice_item.rate)).toFixed(2);
+                st = parseFloat(service_invoice_item.sub_total).toFixed(2);
+                // console.log(parseFloat(self.table_sub_total));
+                // console.log(parseFloat(st));
+
+                self.table_sub_total = (parseFloat(self.table_sub_total) + parseFloat(st)).toFixed(2);
+                // console.log(parseFloat(self.table_sub_total));
+
+                for (i = 0; i < self.extras.tax_list.length; i++) {
+                    tax_obj = self.extras.tax_list[i];
+                    if (service_invoice_item[tax_obj.name]) {
+                        tax = parseFloat(service_invoice_item[tax_obj.name].amount).toFixed(2);
+                        self.table_gst_total = parseFloat(self.table_gst_total) + parseFloat(tax);
+                        if (typeof(self.tax_wise_total[tax_obj.name + '_amount']) == 'undefined') {
+                            self.tax_wise_total[tax_obj.name + '_amount'] = 0;
+                        }
+                        self.tax_wise_total[tax_obj.name + '_amount'] += parseFloat(tax);
+                        // self.table_sub_total = (parseFloat(self.table_sub_total) + parseFloat(tax)).toFixed(2);
+                        // console.log(parseFloat(self.table_sub_total));
+                    }
+                };
+                // console.log(parseFloat(self.table_sub_total));
+                self.table_total = parseFloat(self.table_total) + parseFloat(service_invoice_item.total); // parseFloat(self.table_sub_total) + parseFloat(self.table_gst_total);
+
             });
-            self.table_total = self.table_sub_total + self.table_gst_total;
             $scope.$apply()
         }
 

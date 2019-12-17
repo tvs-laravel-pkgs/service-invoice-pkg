@@ -66,13 +66,13 @@
                                         <ul class="table-form-list">
                                             <li>
                                                 <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Invoice Date</label>
+                                                    <label class="table-form-list-label">Status</label>
                                                     <div class="table-form-list-control">
                                                         <div class="input-group date type-sm">
-                                                            <input name="invoice_date" type="text" class="form-control" placeholder="Select Invoice Date" ng-model="$ctrl.service_invoice.invoice_date" readonly />
-                                                        </div><!-- Input Group -->
-                                                    </div><!-- Table Form List Control -->
-                                                </div><!-- Table Form List Wrap -->
+                                                            <input name="status" type="text" class="form-control" placeholder="" ng-model="$ctrl.service_invoice_status.status" readonly />
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </li>
                                             <li>
                                                 <div class="table-form-list-wrap">
@@ -97,7 +97,7 @@
                                                 <div ng-repeat="(index, service_invoice_attachment) in $ctrl.service_invoice.attachments">
                                                     <div class="imageuploadify-container" data-attachment_id="{{service_invoice_attachment.id}}" style="margin-left: 0px; margin-right: 0px; ">
                                                         <div class="imageuploadify-details">
-                                                            <span class="imageuploadify-file-name">{{service_invoice_attachment.name}}</span>
+                                                            <span class="imageuploadify-file-name"><a href="{{$ctrl.ref_attachements_url_link}}/{{service_invoice_attachment.name}}" download>{{service_invoice_attachment.name}}</a></span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -111,10 +111,11 @@
                                             <p class="info-content-small italic">Customer Code : {{$ctrl.service_invoice.customer.code}}</p>
                                         </div><!-- Info Wrap -->
                                         <div class="info-wrap">
-                                            <p class="info-content"><b>+ {{$ctrl.service_invoice.customer.mobile_no}}</b></p>
-                                            <p class="info-content">{{$ctrl.service_invoice.customer.formatted_address}}</p>
+                                            <p class="info-content"><b>{{$ctrl.service_invoice.customer.mobile_no}}</b></p>
+                                            <p class="info-content">{{$ctrl.service_invoice.customer.primary_address.address_line1}}</p>
                                             <div class="info-space"></div>
-                                            <p class="info-content">GST # 234284738374847</p>
+                                            <p class="info-content">GST # {{$ctrl.service_invoice.customer.gst_number ? $ctrl.service_invoice.customer.gst_number : 'NA'}}</p>
+                                            <p class="info-content" ng-if="$ctrl.service_invoice.status_id == 5">Remarks: {{$ctrl.service_invoice.comments}}</p>
                                         </div><!-- Info Wrap -->
                                     </li>
                                 </ul><!-- Flex List -->
@@ -131,10 +132,11 @@
                                     <table class="table">
                                         <thead>
                                             <tr>
+                                                <th class="action">Action</th>
                                                 <th>Item Code</th>
                                                 <th>Item Name</th>
                                                 <th>Reference</th>
-                                                <th>Quantity</th>
+                                                <th class="text-right">Quantity</th>
                                                 <th class="text-right">Rate</th>
                                                 <th class="text-right">Amount</th>
                                                 <th class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list">{{tax.name}}</th>
@@ -159,10 +161,15 @@
                                                         </span>
                                                     </span>
                                                 </td>
+                                                <td class="action">
+                                                    <a href="javascript:void(0)" ng-click="editServiceItem(service_invoice_item.service_item_id, service_invoice_item.description, service_invoice_item.qty, service_invoice_item.rate,index)">
+                                                        <img class="img-responsive" src="./public/theme/img/table/cndn/view.svg" alt="View" />
+                                                    </a>
+                                                </td>
                                                 <td>{{service_invoice_item.code}}</td>
                                                 <td>{{service_invoice_item.name}}</td>
                                                 <td>{{service_invoice_item.description}}</td>
-                                                <td>{{$ctrl.parseInt(service_invoice_item.qty)}}</td>
+                                                <td class="text-right">{{$ctrl.parseInt(service_invoice_item.qty)}}</td>
                                                 <td class="text-right">{{service_invoice_item.rate | number : 2}}</td>
                                                 <td class="text-right">{{service_invoice_item.sub_total | number : 2}}</td>
                                                 <td class="text-right" ng-repeat="(tax_index, tax) in $ctrl.extras.tax_list">
@@ -176,13 +183,13 @@
                                         </tbody>
                                         <tfoot>
                                             <tr>
-                                                <th colspan="2"></th>
+                                                <th colspan="3"></th>
                                                 <th>Total</th>
-                                                <th>{{$ctrl.table_qty}}</th>
-                                                <th>{{$ctrl.table_rate | number : 2}}</th>
-                                                <th>{{$ctrl.table_sub_total | number : 2}}</th>
-                                                <th ng-repeat="(index, tax) in $ctrl.extras.tax_list">{{$ctrl[tax.name+'_amount'] | number : 2}}</th>
-                                                <th>{{$ctrl.table_total | number : 2}}</th>
+                                                <th class="text-right">{{$ctrl.table_qty}}</th>
+                                                <th class="text-right">{{$ctrl.table_rate | number : 2}}</th>
+                                                <th class="text-right">{{$ctrl.table_sub_total | number : 2}}</th>
+                                                <th class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list">{{$ctrl.tax_wise_total[tax.name+'_amount'] | number : 2}}</th>
+                                                <th class="text-right">{{$ctrl.table_total | number : 2}}</th>
                                             </tr>
                                         </tfoot>
                                     </table>

@@ -2,6 +2,7 @@
 
 namespace Abs\ServiceInvoicePkg;
 use Abs\ApprovalPkg\ApprovalLevel;
+use Abs\ApprovalPkg\ApprovalTypeStatus;
 use Abs\AttributePkg\Field;
 use Abs\AttributePkg\FieldConfigSource;
 use Abs\AttributePkg\FieldGroup;
@@ -1030,6 +1031,7 @@ class ServiceInvoiceController extends Controller {
 			'sub_category_list' => [],
 		];
 		$this->data['approval_status'] = ApprovalLevel::where('approval_type_id', 1)->first();
+		$this->data['service_invoice_status'] = ApprovalTypeStatus::join('service_invoices', 'service_invoices.status_id', 'approval_type_statuses.id')->where('service_invoices.company_id', Auth::user()->company_id)->where('service_invoices.id', $id)->first();
 		$this->data['action'] = 'View';
 		$this->data['success'] = true;
 		$this->data['service_invoice'] = $service_invoice;
