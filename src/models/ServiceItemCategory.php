@@ -32,6 +32,12 @@ class ServiceItemCategory extends Model {
 		if (!$company) {
 			$company = Company::where('code', $record_data->company)->first();
 		}
+		if (!$company) {
+			dump('Invalid Company : ' . $record_data->company);
+			return;
+
+		}
+		dump($company);
 		$admin = $company->admin();
 
 		$errors = [];

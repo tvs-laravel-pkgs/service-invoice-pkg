@@ -1,16 +1,13 @@
 <?php
 
 namespace Abs\ServiceInvoicePkg;
-use Abs\CoaPkg\CoaCode;
-use Abs\TaxPkg\TaxCode;
 use Abs\AttributePkg\FieldGroup;
+use Abs\CoaPkg\CoaCode;
 use Abs\ServiceInvoicePkg\ServiceItem;
-use Abs\ServiceInvoicePkg\ServiceInvoice;
 use Abs\ServiceInvoicePkg\ServiceItemCategory;
 use Abs\ServiceInvoicePkg\ServiceItemSubCategory;
+use Abs\TaxPkg\TaxCode;
 use App\Http\Controllers\Controller;
-use App\Outlet;
-use App\Sbu;
 use Auth;
 use DB;
 use Illuminate\Http\Request;
@@ -18,7 +15,6 @@ use Validator;
 use Yajra\Datatables\Datatables;
 
 class ServiceItemController extends Controller {
-
 
 	public function __construct() {
 	}
@@ -34,24 +30,24 @@ class ServiceItemController extends Controller {
 				'tax_codes.code as sac_code',
 				DB::raw('IF((service_items.deleted_at) IS NULL ,"Active","Inactive") as status')
 			)
-			->join('service_item_sub_categories', 'service_items.sub_category_id', 'service_item_sub_categories.id')
-			->join('coa_codes', 'service_items.coa_code_id', 'coa_codes.id')
-			->join('tax_codes', 'service_items.sac_code_id', 'tax_codes.id')
+			->leftJoin('service_item_sub_categories', 'service_items.sub_category_id', 'service_item_sub_categories.id')
+			->leftJoin('coa_codes', 'service_items.coa_code_id', 'coa_codes.id')
+			->leftJoin('tax_codes', 'service_items.sac_code_id', 'tax_codes.id')
 			->where('service_items.company_id', Auth::user()->company_id)
 			->groupBy('service_items.id')
 			->orderBy('service_items.name', 'asc')
-			// ->get()
-			;
-			// dd($service_item_category_list);
+		// ->get()
+		;
+		// dd($service_item_category_list);
 
 		return Datatables::of($service_item_list)
 			->addColumn('name', function ($service_item_list) {
-                $status = $service_item_list->status == 'Active' ? 'green' : 'red';
-                return '<span class="status-indicator ' . $status . '"></span>' . $service_item_list->name;
-            })
+				$status = $service_item_list->status == 'Active' ? 'green' : 'red';
+				return '<span class="status-indicator ' . $status . '"></span>' . $service_item_list->name;
+			})
 			->addColumn('action', function ($service_item_list) {
 				$edit_img = asset('public/theme/img/table/cndn/edit.svg');
-                $delete_img = asset('public/theme/img/table/cndn/delete.svg');
+				$delete_img = asset('public/theme/img/table/cndn/delete.svg');
 
 				return '<a href="#!/service-invoice-pkg/service-item/edit/' . $service_item_list->id . '" class="">
                         <img class="img-responsive" src="' . $edit_img . '" alt="Edit" />
@@ -71,20 +67,20 @@ class ServiceItemController extends Controller {
 		} else {
 			$this->data['action'] = 'Edit';
 			$service_item = ServiceItem::withTrashed()->with([
-				 'coaCode',
-				 'taxCode',
-				 'subCategory',
-				 'fieldGroups'
+				'coaCode',
+				'taxCode',
+				'subCategory',
+				'fieldGroups',
 			])->find($id);
-			$this->data['sub_category_list']=collect(ServiceItemSubCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->where('id',$service_item->sub_category_id)->get())->prepend(['id' => '', 'name' => 'Select Category']);
-			$sub_category=ServiceItemSubCategory::where('id',$service_item->sub_category_id)->first();
-			$main_category=ServiceItemCategory::select('id')->where('id',$sub_category->category_id)->first();
-			$service_item->main_category_id=$main_category->id;
+			$this->data['sub_category_list'] = collect(ServiceItemSubCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->where('id', $service_item->sub_category_id)->get())->prepend(['id' => '', 'name' => 'Select Category']);
+			$sub_category = ServiceItemSubCategory::where('id', $service_item->sub_category_id)->first();
+			$main_category = ServiceItemCategory::select('id')->where('id', $sub_category->category_id)->first();
+			$service_item->main_category_id = $main_category->id;
 			//dd($service_item->id);
-			$service_item->field_group_ids =ServiceItem::withTrashed()->join('service_item_field_group', 'service_item_field_group.service_item_id', 'service_items.id')
-			->where('service_item_field_group.service_item_id',$service_item->id)
-			->pluck('field_group_id')
-			->toArray();
+			$service_item->field_group_ids = ServiceItem::withTrashed()->join('service_item_field_group', 'service_item_field_group.service_item_id', 'service_items.id')
+				->where('service_item_field_group.service_item_id', $service_item->id)
+				->pluck('field_group_id')
+				->toArray();
 
 //dd($service_item->all_field_group_ids);
 			if (!$service_item) {
@@ -92,12 +88,12 @@ class ServiceItemController extends Controller {
 			}
 		}
 
-			$service_item->all_field_group_ids=FieldGroup::where('company_id', Auth::user()->company_id)->pluck('id')->toArray();
+		$service_item->all_field_group_ids = FieldGroup::where('company_id', Auth::user()->company_id)->pluck('id')->toArray();
 		$this->data['extras'] = [
 			'main_category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
 			'coa_code_list' => collect(CoaCode::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Coa Code']),
 			'tax_list' => collect(TaxCode::select('code as name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Sac Code']),
-			'field_group_list' => FieldGroup::select('name', 'id')->where('category_id',1040)->where('company_id', Auth::user()->company_id)->get()
+			'field_group_list' => FieldGroup::select('name', 'id')->where('category_id', 1040)->where('company_id', Auth::user()->company_id)->get(),
 		];
 		$this->data['service_item'] = $service_item;
 		$this->data['success'] = true;
@@ -113,7 +109,7 @@ class ServiceItemController extends Controller {
 				'name.required' => 'Service item name is required',
 				'name.unique' => 'Service item  name has already been taken',
 				'code.required' => 'Service item code is required',
-				'code.unique' => 'Service item  code has already been taken'
+				'code.unique' => 'Service item  code has already been taken',
 			];
 
 			$validator = Validator::make($request->all(), [
@@ -138,7 +134,7 @@ class ServiceItemController extends Controller {
 
 			if ($validator->fails()) {
 				return response()->json(['success' => false, 'errors' => $validator->errors()->all()]);
-			}	
+			}
 			if ($request->id) {
 				$service_item = ServiceItem::withTrashed()->find($request->id);
 				$service_item->updated_at = date("Y-m-d H:i:s");
@@ -167,14 +163,14 @@ class ServiceItemController extends Controller {
 			//SAVE FIELD-GROUP FIELD
 			$service_item->fieldGroups()->sync([]);
 			if ($request->field_group_id) {
-				$field_groups=json_decode($request->field_group_id);
+				$field_groups = json_decode($request->field_group_id);
 				$service_item->fieldGroups()->sync($field_groups);
 			}
-			if($request->id){
-				$message='Service item updated successfully';
-            }else{
-            	$message='Service item saved successfully';
-            }
+			if ($request->id) {
+				$message = 'Service item updated successfully';
+			} else {
+				$message = 'Service item saved successfully';
+			}
 
 			DB::commit();
 			return response()->json(['success' => true, 'message' => $message]);
@@ -184,24 +180,22 @@ class ServiceItemController extends Controller {
 			return response()->json(['success' => false, 'errors' => ['Exception Error' => $e->getMessage()]]);
 		}
 	}
-	public function serviceItemDelete($id)
-	{
-		$service_item=ServiceItem::withTrashed()->find($id);
-		if($service_item){
+	public function serviceItemDelete($id) {
+		$service_item = ServiceItem::withTrashed()->find($id);
+		if ($service_item) {
 			$service_item->forceDelete();
-			return response()->json(['success' => true, 'message' => 'Service item  deleted successfully']);	
+			return response()->json(['success' => true, 'message' => 'Service item  deleted successfully']);
 		}
 
 	}
 
-	public function getSubCategory($id) 
-	{
+	public function getSubCategory($id) {
 		if ($id) {
-			$sub_category_list = collect(ServiceItemSubCategory::select('id','name')->where('category_id',$id)->get())->prepend(['id' => '', 'name' => 'Select Sub Category']);
+			$sub_category_list = collect(ServiceItemSubCategory::select('id', 'name')->where('category_id', $id)->get())->prepend(['id' => '', 'name' => 'Select Sub Category']);
 			$this->data['sub_category_list'] = $sub_category_list;
 		} else {
 			return response()->json(['success' => false, 'error' => 'Category not found']);
-			
+
 		}
 		$this->data['success'] = true;
 		//dd($this->data);
