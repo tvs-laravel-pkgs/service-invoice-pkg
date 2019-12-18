@@ -2,6 +2,7 @@
 
 namespace Abs\ServiceInvoicePkg;
 use Abs\ApprovalPkg\ApprovalLevel;
+use Abs\ApprovalPkg\ApprovalTypeStatus;
 use Abs\AttributePkg\Field;
 use Abs\ServiceInvoicePkg\ServiceInvoice;
 use Abs\ServiceInvoicePkg\ServiceInvoiceController;
@@ -211,14 +212,14 @@ class ServiceInvoiceApprovalController extends Controller {
 				//TAX CALC
 				if (count($serviceInvoiceItem->taxes) > 0) {
 					foreach ($serviceInvoiceItem->taxes as $key => $value) {
-						$gst_total += round($value->pivot->amount);
+						$gst_total += round($value->pivot->amount, 2);
 						$serviceInvoiceItem[$value->name] = [
-							'amount' => round($value->pivot->amount),
-							'percentage' => round($value->pivot->percentage),
+							'amount' => round($value->pivot->amount, 2),
+							'percentage' => round($value->pivot->percentage, 2),
 						];
 					}
 				}
-				$serviceInvoiceItem->total = round($serviceInvoiceItem->sub_total) + round($gst_total);
+				$serviceInvoiceItem->total = round($serviceInvoiceItem->sub_total, 2) + round($gst_total, 2);
 				$serviceInvoiceItem->code = $serviceInvoiceItem->serviceItem->code;
 				$serviceInvoiceItem->name = $serviceInvoiceItem->serviceItem->name;
 			}
@@ -229,7 +230,7 @@ class ServiceInvoiceApprovalController extends Controller {
 			'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
 			'sub_category_list' => [],
 		];
-
+		$this->data['service_invoice_status'] = ApprovalTypeStatus::join('service_invoices', 'service_invoices.status_id', 'approval_type_statuses.id')->where('service_invoices.company_id', Auth::user()->company_id)->where('service_invoices.id', $id)->first();
 		$this->data['action'] = 'View';
 		$this->data['success'] = true;
 		$this->data['service_invoice'] = $service_invoice;
