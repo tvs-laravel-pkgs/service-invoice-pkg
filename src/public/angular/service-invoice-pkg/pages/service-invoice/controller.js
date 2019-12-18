@@ -77,6 +77,25 @@ app.component('serviceInvoiceList', {
             $('#service-invoice-table').DataTable().search('').draw();
         });
 
+        $('#parent').on('click', function() {
+            if(this.checked){
+                $('.service_invoice_checkbox').each(function(){
+                    this.checked = true;
+                });
+            }else{
+                 $('.service_invoice_checkbox').each(function(){
+                    this.checked = false;
+                });
+            }
+        });
+        $(document.body).on('click', '.service_invoice_checkbox', function(){
+            if($('.service_invoice_checkbox:checked').length == $('.service_invoice_checkbox').length){
+                $('#parent').prop('checked',true);
+            }else{
+                $('#parent').prop('checked',false);
+            }
+        });
+
         $rootScope.loading = false;
     }
 });

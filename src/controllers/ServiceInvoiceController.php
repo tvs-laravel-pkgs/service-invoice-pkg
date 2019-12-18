@@ -70,7 +70,7 @@ class ServiceInvoiceController extends Controller {
 		// dd($service_invoice_list);
 		return Datatables::of($service_invoice_list)
 			->addColumn('child_checkbox', function ($service_invoice_list) {
-				$checkbox = "<td><div class='table-checkbox'><input type='checkbox' id='child_" . $service_invoice_list->id . "' /><label for='child_" . $service_invoice_list->id . "'></label></div></td>";
+				$checkbox = "<td><div class='table-checkbox'><input type='checkbox' id='child_" . $service_invoice_list->id . "' class='service_invoice_checkbox'/><label for='child_" . $service_invoice_list->id . "'></label></div></td>";
 
 				return $checkbox;
 			})
@@ -623,7 +623,7 @@ class ServiceInvoiceController extends Controller {
 				],
 				'proposal_attachments.*' => [
 					'required:true',
-					'mimes:jpg,jpeg,png,bmp',
+					// 'mimes:jpg,jpeg,png,bmp',
 				],
 			], $error_messages);
 
