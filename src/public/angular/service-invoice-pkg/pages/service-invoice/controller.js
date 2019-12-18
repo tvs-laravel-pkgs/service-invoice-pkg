@@ -556,11 +556,11 @@ app.component('serviceInvoiceForm', {
                 self.table_qty += parseInt(service_invoice_item.qty);
                 self.table_rate = (parseFloat(self.table_rate) + parseFloat(service_invoice_item.rate)).toFixed(2);
                 st = parseFloat(service_invoice_item.sub_total).toFixed(2);
-                console.log(parseFloat(self.table_sub_total));
-                console.log(parseFloat(st));
+                // console.log(parseFloat(self.table_sub_total));
+                // console.log(parseFloat(st));
 
                 self.table_sub_total = (parseFloat(self.table_sub_total) + parseFloat(st)).toFixed(2);
-                console.log(parseFloat(self.table_sub_total));
+                // console.log(parseFloat(self.table_sub_total));
 
                 for (i = 0; i < self.extras.tax_list.length; i++) {
                     tax_obj = self.extras.tax_list[i];
@@ -575,7 +575,7 @@ app.component('serviceInvoiceForm', {
                         // console.log(parseFloat(self.table_sub_total));
                     }
                 };
-                console.log(parseFloat(self.table_sub_total));
+                // console.log(parseFloat(self.table_sub_total));
                 self.table_total = parseFloat(self.table_total) + parseFloat(service_invoice_item.total); // parseFloat(self.table_sub_total) + parseFloat(self.table_gst_total);
 
             });
