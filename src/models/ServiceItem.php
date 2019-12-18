@@ -95,6 +95,9 @@ class ServiceItem extends Model {
 					])->first();
 					if (!$sub_category) {
 						$errors[] = 'Invalid sub category : ' . $record_data->sub_category;
+					} else {
+						$sub_category_id = $sub_category->id;
+
 					}
 				}
 			}
@@ -105,6 +108,9 @@ class ServiceItem extends Model {
 			$coa_code = CoaCode::where('code', $record_data->coa_code)->where('company_id', $company->id)->first();
 			if (!$coa_code) {
 				$errors[] = 'Invalid coa code : ' . $record_data->coa_code;
+			} else {
+				$coa_code_id = $coa_code->id;
+
 			}
 		}
 
@@ -113,6 +119,8 @@ class ServiceItem extends Model {
 			$sac_code = TaxCode::where('code', $record_data->sac_code)->where('type_id', 1021)->where('company_id', $company->id)->first();
 			if (!$sac_code) {
 				$errors[] = 'Invalid sac code : ' . $record_data->sac_code;
+			} else {
+				$sac_code_id = $sac_code->id;
 			}
 		}
 
