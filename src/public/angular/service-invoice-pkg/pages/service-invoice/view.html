@@ -308,9 +308,9 @@
                                     <!-- SINGLE SELECT DROPDOWN -->
                                     <div class="table-form-list-wrap" ng-if="field.type_id == 1">
                                         <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
-                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required"></span></label>
                                         <div class="table-form-list-control">
-                                            <md-select class="type-sm" ng-model="field.value" placeholder="Select {{field.name}}" md-on-close="clearSearch()" data-md-container-class="selectdemoSelectHeader">
+                                            <md-select class="type-sm" ng-model="field.value" placeholder="Select {{field.name}}" md-on-close="clearSearch()" data-md-container-class="selectdemoSelectHeader" ng-disabled="true">
                                                 <md-select-header class="demo-select-header">
                                                     <input ng-model="search" type="search" placeholder="Search for a {{field.name}}.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
                                                 </md-select-header>
@@ -324,9 +324,9 @@
                                     <!-- MULTIPLE SELECT DROPDOWN -->
                                     <div class="table-form-list-wrap" ng-if="field.type_id == 2">
                                         <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
-                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required"></span></label>
                                         <div class="table-form-list-control">
-                                            <md-select class="type-sm" ng-model="field.value" placeholder="Select {{field.name}}" md-on-close="clearSearch()" data-md-container-class="selectdemoSelectHeader" multiple>
+                                            <md-select class="type-sm" ng-model="field.value" placeholder="Select {{field.name}}" md-on-close="clearSearch()" data-md-container-class="selectdemoSelectHeader" multiple ng-disabled="true">
                                                 <md-select-header class="demo-select-header">
                                                     <input ng-model="search" type="search" placeholder="Search for a sub category.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
                                                 </md-select-header>
@@ -340,15 +340,15 @@
                                     <!-- FREE TEXT BOX OR NUMERIC TEXT BOX -->
                                     <div class="table-form-list-wrap" ng-if="field.type_id == 3 || field.type_id == 4">
                                         <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
-                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required"></span></label>
                                         <div class="table-form-list-control">
-                                            <input name="field_groups[{{index}}][fields][{{field_index}}][value]" ng-model="field.value" type="text" class="form-control type-sm" placeholder="Enter {{field.name}}" ng-class="{required: field.pivot.is_required == 1}" />
+                                            <input name="field_groups[{{index}}][fields][{{field_index}}][value]" ng-model="field.value" type="text" class="form-control type-sm" placeholder="Enter {{field.name}}" ng-class="{required: field.pivot.is_required == 1}" readonly />
                                         </div><!-- Table Form List Control -->
                                     </div><!-- Table Form List Wrap -->
                                     <!-- DATE PICKER -->
                                     <div class="table-form-list-wrap" ng-if="field.type_id == 7">
                                         <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
-                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required"></span></label>
                                         <div class="table-form-list-control dynamic_date_error">
                                             <div class="input-group date type-sm dynamicDatePicker" data-provide="datepicker">
                                                 <input name="field_groups[{{index}}][fields][{{field_index}}][value]" ng-model="field.value" type="text" class="form-control dynamic_date" placeholder="Select {{field.name}}" readonly ng-class="{required: field.pivot.is_required == 1}" />
@@ -361,7 +361,7 @@
                                     <!-- DATE TIME PICKER -->
                                     <div class="table-form-list-wrap" ng-if="field.type_id == 8">
                                         <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
-                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required"></span></label>
                                         <div class="table-form-list-control dynamic_date_error">
                                             <div class="input-group date" moment-picker="field.value" format="DD-MM-YYYY LT">
                                                 <input name="field_groups[{{index}}][fields][{{field_index}}][value]" ng-model="field.value" type="text" class="form-control" placeholder="Select {{field.name}}" readonly ng-class="{required: field.pivot.is_required == 1}">
@@ -374,10 +374,10 @@
                                     <!-- SWITCH -->
                                     <div class="table-form-list-wrap" ng-if="field.type_id == 9">
                                         <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
-                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory">*</span></label>
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory"></span></label>
                                         <div class="table-form-list-control">
                                             <div class="tab-switch">
-                                                <md-switch ng-model="field.value" aria-label="Switch 1" ng-true-value="'No'" ng-false-value="'Yes'" class="md-warn type-sm type-2">
+                                                <md-switch ng-model="field.value" aria-label="Switch 1" ng-true-value="'No'" ng-false-value="'Yes'" class="md-warn type-sm type-2" ng-disabled="true">
                                                     {{ field.value }}
                                                 </md-switch>
                                                 <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][value]" value="{{field.value}}">
@@ -387,9 +387,9 @@
                                     <!-- AUTOCOMPLETE -->
                                     <div class="table-form-list-wrap" ng-if="field.type_id == 10">
                                         <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
-                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required"></span></label>
                                         <div class="table-form-list-control">
-                                            <md-autocomplete class="type-sm" md-items="option in $ctrl.searchField($ctrl.searchText, field.id)" md-selected-item="field.autoval" md-search-text="$ctrl.searchText" md-item-text="option.code" md-min-length="3" placeholder="{{field.name}} code / name">
+                                            <md-autocomplete class="type-sm" md-items="option in $ctrl.searchField($ctrl.searchText, field.id)" md-selected-item="field.autoval" md-search-text="$ctrl.searchText" md-item-text="option.code" md-min-length="3" placeholder="{{field.name}} code / name" ng-disabled="true">
                                                 <md-item-template>
                                                     <span>
                                                         {{option.name}} - {{option.code}}
