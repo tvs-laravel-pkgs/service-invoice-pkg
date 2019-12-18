@@ -80,19 +80,40 @@ class ServiceItem extends Model {
 			return;
 		}
 
-		$sub_category = ServiceItemSubCategory::where('name', $record_data->sub_category)->where('company_id', $company->id)->first();
-		if (!$sub_category) {
-			$errors[] = 'Invalid sub category : ' . $record_data->sub_category;
+		$sub_category_id = null;
+
+		if ($record_data->main_category) {
+			$main_category = ServiceItemCategory::where('name', $record_data->main_category)->where('company_id', $company->id)->first();
+			if (!$main_category) {
+				$errors[] = 'Invalid main category : ' . $record_data->main_category;
+			} else {
+				if ($record_data->sub_category) {
+					$sub_category = ServiceItemSubCategory::where([
+						'name' => $record_data->sub_category,
+						'company_id' => $company->id,
+						'category_id' => $main_category->id,
+					])->first();
+					if (!$sub_category) {
+						$errors[] = 'Invalid sub category : ' . $record_data->sub_category;
+					}
+				}
+			}
 		}
 
-		$coa_code = CoaCode::where('code', $record_data->coa_code)->where('company_id', $company->id)->first();
-		if (!$coa_code) {
-			$errors[] = 'Invalid coa code : ' . $record_data->coa_code;
+		$coa_code_id = null;
+		if ($record_data->coa_code) {
+			$coa_code = CoaCode::where('code', $record_data->coa_code)->where('company_id', $company->id)->first();
+			if (!$coa_code) {
+				$errors[] = 'Invalid coa code : ' . $record_data->coa_code;
+			}
 		}
 
-		$sac_code = TaxCode::where('code', $record_data->sac_code)->where('type_id', 1021)->where('company_id', $company->id)->first();
-		if (!$sac_code) {
-			$errors[] = 'Invalid sac code : ' . $record_data->sac_code;
+		$sac_code_id = null;
+		if ($record_data->sac_code) {
+			$sac_code = TaxCode::where('code', $record_data->sac_code)->where('type_id', 1021)->where('company_id', $company->id)->first();
+			if (!$sac_code) {
+				$errors[] = 'Invalid sac code : ' . $record_data->sac_code;
+			}
 		}
 
 		if (count($errors) > 0) {
@@ -105,9 +126,9 @@ class ServiceItem extends Model {
 			'code' => $record_data->code,
 		]);
 		$record->name = $record_data->name;
-		$record->sub_category_id = $sub_category->id;
-		$record->coa_code_id = $coa_code->id;
-		$record->sac_code_id = $sac_code->id;
+		$record->sub_category_id = $sub_category_id;
+		$record->coa_code_id = $coa_code_id;
+		$record->sac_code_id = $sac_code_id;
 		$record->created_by_id = $admin->id;
 		$record->save();
 		return $record;
