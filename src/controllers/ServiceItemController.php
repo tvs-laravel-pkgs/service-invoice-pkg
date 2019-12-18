@@ -74,8 +74,10 @@ class ServiceItemController extends Controller {
 			])->find($id);
 			$this->data['sub_category_list'] = collect(ServiceItemSubCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->where('id', $service_item->sub_category_id)->get())->prepend(['id' => '', 'name' => 'Select Category']);
 			$sub_category = ServiceItemSubCategory::where('id', $service_item->sub_category_id)->first();
-			$main_category = ServiceItemCategory::select('id')->where('id', $sub_category->category_id)->first();
-			$service_item->main_category_id = $main_category->id;
+			if ($sub_category) {
+				$main_category = ServiceItemCategory::select('id')->where('id', $sub_category->category_id)->first();
+				$service_item->main_category_id = $main_category->id;
+			}
 			//dd($service_item->id);
 			$service_item->field_group_ids = ServiceItem::withTrashed()->join('service_item_field_group', 'service_item_field_group.service_item_id', 'service_items.id')
 				->where('service_item_field_group.service_item_id', $service_item->id)
