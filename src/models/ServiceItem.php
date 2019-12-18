@@ -81,10 +81,22 @@ class ServiceItem extends Model {
 		}
 
 		$sub_category_id = null;
-		if ($record_data->sub_category) {
-			$sub_category = ServiceItemSubCategory::where('name', $record_data->sub_category)->where('company_id', $company->id)->first();
-			if (!$sub_category) {
-				$errors[] = 'Invalid sub category : ' . $record_data->sub_category;
+
+		if ($record_data->main_category) {
+			$main_category = ServiceItemCategory::where('name', $record_data->main_category)->where('company_id', $company->id)->first();
+			if (!$main_category) {
+				$errors[] = 'Invalid main category : ' . $record_data->main_category;
+			} else {
+				if ($record_data->sub_category) {
+					$sub_category = ServiceItemSubCategory::where([
+						'name' => $record_data->sub_category,
+						'company_id' => $company->id,
+						'category_id' => $main_category->id,
+					])->first();
+					if (!$sub_category) {
+						$errors[] = 'Invalid sub category : ' . $record_data->sub_category;
+					}
+				}
 			}
 		}
 
