@@ -848,6 +848,9 @@ class ServiceInvoiceController extends Controller {
 			'sbus',
 			'serviceInvoiceItems',
 			'serviceInvoiceItems.serviceItem',
+			'serviceInvoiceItems.eavVarchars',
+			'serviceInvoiceItems.eavInts',
+			'serviceInvoiceItems.eavDatetimes',
 			'serviceInvoiceItems.serviceItem.taxCode',
 			'serviceInvoiceItems.taxes',
 		])->find($service_invoice_pdf_id);
@@ -856,6 +859,7 @@ class ServiceInvoiceController extends Controller {
 		$service_invoice_pdf->outlets->formatted_address = $service_invoice_pdf->outlets->primaryAddress ? $service_invoice_pdf->outlets->primaryAddress->getFormattedAddress() : 'NA';
 		$service_invoice_pdf->customer->formatted_address = $service_invoice_pdf->customer->primaryAddress ? $service_invoice_pdf->customer->primaryAddress->address_line1 : 'NA';
 		//dd($service_invoice_pdf->outlets->formatted_address);
+		$fields = Field::withTrashed()->get()->keyBy('id');
 		if (count($service_invoice_pdf->serviceInvoiceItems) > 0) {
 			$array_key_replace = [];
 			foreach ($service_invoice_pdf->serviceInvoiceItems as $key => $serviceInvoiceItem) {
@@ -865,6 +869,116 @@ class ServiceInvoiceController extends Controller {
 					$serviceInvoiceItem[$tax->name] = $tax;
 				}
 				//dd($type->sac_code_id);
+			}
+			//Field values
+			$gst_total = 0;
+			foreach ($service_invoice_pdf->serviceInvoiceItems as $key => $serviceInvoiceItem) {
+				//FIELD GROUPS AND FIELDS INTEGRATION
+				if (count($serviceInvoiceItem->eavVarchars) > 0) {
+					$eav_varchar_field_group_ids = $serviceInvoiceItem->eavVarchars()->pluck('field_group_id')->toArray();
+				} else {
+					$eav_varchar_field_group_ids = [];
+				}
+				if (count($serviceInvoiceItem->eavInts) > 0) {
+					$eav_int_field_group_ids = $serviceInvoiceItem->eavInts()->pluck('field_group_id')->toArray();
+				} else {
+					$eav_int_field_group_ids = [];
+				}
+				if (count($serviceInvoiceItem->eavDatetimes) > 0) {
+					$eav_datetime_field_group_ids = $serviceInvoiceItem->eavDatetimes()->pluck('field_group_id')->toArray();
+				} else {
+					$eav_datetime_field_group_ids = [];
+				}
+				//GET UNIQUE FIELDGROUP IDs
+				$field_group_ids = array_unique(array_merge($eav_varchar_field_group_ids, $eav_int_field_group_ids, $eav_datetime_field_group_ids));
+				$field_group_val = [];
+				if (!empty($field_group_ids)) {
+					foreach ($field_group_ids as $fg_key => $fg_id) {
+						// dump($fg_id);
+						$fd_varchar_array = [];
+						$fd_int_array = [];
+						$fd_main_varchar_array = [];
+						$fd_varchar_array = DB::table('eav_varchar')
+							->where('entity_type_id', 1040)
+							->where('entity_id', $serviceInvoiceItem->id)
+							->where('field_group_id', $fg_id)
+							->leftJoin('fields', 'fields.id', 'eav_varchar.field_id')
+							->select('field_id as id', 'value', 'fields.name as field_name')
+							->get()
+							->toArray();
+						$fd_datetimes = DB::table('eav_datetime')
+							->where('entity_type_id', 1040)
+							->where('entity_id', $serviceInvoiceItem->id)
+							->where('field_group_id', $fg_id)
+							->leftJoin('fields', 'fields.id', 'eav_datetime.field_id')
+							->select('field_id as id', 'value', 'fields.name as field_name')
+							->get()
+							->toArray();
+						$fd_datetime_array = [];
+						if (!empty($fd_datetimes)) {
+							foreach ($fd_datetimes as $fd_datetime_key => $fd_datetime_value) {
+								//DATEPICKER
+								if ($fields[$fd_datetime_value->id]->type_id == 7) {
+									$fd_datetime_array[] = [
+										'id' => $fd_datetime_value->id,
+										'value' => date('d-m-Y', strtotime($fd_datetime_value->value)),
+									];
+								} elseif ($fields[$fd_datetime_value->id]->type_id == 8) {
+									//DATETIMEPICKER
+									$fd_datetime_array[] = [
+										'id' => $fd_datetime_value->id,
+										'value' => date('d-m-Y H:i:s', strtotime($fd_datetime_value->value)),
+									];
+								}
+							}
+						}
+						$fd_ints = DB::table('eav_int')
+							->where('entity_type_id', 1040)
+							->where('entity_id', $serviceInvoiceItem->id)
+							->where('field_group_id', $fg_id)
+							->leftJoin('fields', 'fields.id', 'eav_int.field_id')
+							->select(
+								'field_id as id',
+								'fields.name as field_name',
+								DB::raw('GROUP_CONCAT(value) as value')
+							)
+							->groupBy('field_id')
+							->get()
+							->toArray();
+						$fd_int_array = [];
+						if (!empty($fd_ints)) {
+							foreach ($fd_ints as $fd_int_key => $fd_int_value) {
+								//MULTISELECT DROPDOWN
+								if ($fields[$fd_int_value->id]->type_id == 2) {
+									$fd_int_array[] = [
+										'id' => $fd_int_value->id,
+										'value' => explode(',', $fd_int_value->value),
+									];
+								} elseif ($fields[$fd_int_value->id]->type_id == 9) {
+									//SWITCH
+									$fd_int_array[] = [
+										'id' => $fd_int_value->id,
+										'value' => ($fd_int_value->value ? 'Yes' : 'No'),
+									];
+								} else {
+									//OTHERS
+									$fd_int_array[] = [
+										'id' => $fd_int_value->id,
+										'value' => $fd_int_value->value,
+									];
+								}
+							}
+						}
+						$fd_main_varchar_array = array_merge($fd_varchar_array, $fd_int_array, $fd_datetime_array);
+						//PUSH INDIVIDUAL FIELD GROUP TO ARRAY
+						$field_group_val[] = [
+							'id' => $fg_id,
+							'fields' => $fd_main_varchar_array,
+						];
+					}
+				}
+				//PUSH TOTAL FIELD GROUPS
+				$serviceInvoiceItem->field_groups = $field_group_val;
 			}
 		}
 		//dd($service_invoice_pdf->type_id);
@@ -879,17 +993,12 @@ class ServiceInvoiceController extends Controller {
 			$service_invoice_pdf->sac_code_status = 'FINANCIAL DEBIT NOTE';
 		}
 		//dd($service_invoice_pdf->sac_code_status);
-		// if ($service_invoice_pdf->type_id == 1060) {
-		// 	$service_invoice_pdf->cn_dn_type = 'CREDIT NOTE';
-		// } else {
-		// 	$service_invoice_pdf->cn_dn_type = 'DEBIT NOTE';
-		// }
-		//dd($type->sac_code_id);
+		//dd($serviceInvoiceItem->field_groups);
 		$this->data['service_invoice_pdf'] = $service_invoice_pdf;
 
 		$tax_list = Tax::where('company_id', Auth::user()->company_id)->get();
 		$this->data['tax_list'] = $tax_list;
-		//dd($this->data['service_invoice_pdf']);
+		// dd($this->data['service_invoice_pdf']);
 		$path = storage_path('app/public/service-invoice-pdf/');
 		$pathToFile = $path . '/' . $service_invoice_pdf->number . '.pdf';
 		File::isDirectory($path) or File::makeDirectory($path, 0777, true, true);
