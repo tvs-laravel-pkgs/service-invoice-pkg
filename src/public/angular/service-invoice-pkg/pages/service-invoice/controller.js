@@ -738,6 +738,11 @@ app.component('serviceInvoiceView', {
         self.type_id = $routeParams.type_id;
         self.enable_service_item_md_change = true;
         self.ref_attachements_url_link = ref_attachements_url;
+        if(self.type_id == 1060) {
+            self.minus_value = '-';
+        } else if(self.type_id == 1061) {
+            self.minus_value = '';
+        }
         $http.get(
             $form_data_url
         ).then(function(response) {

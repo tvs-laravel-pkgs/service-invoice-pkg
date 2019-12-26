@@ -187,7 +187,7 @@
                                                 <th class="text-right">{{$ctrl.table_rate | number : 2}}</th>
                                                 <th class="text-right">{{$ctrl.table_sub_total | number : 2}}</th>
                                                 <th class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list">{{$ctrl.tax_wise_total[tax.name+'_amount'] | number : 2}}</th>
-                                                <th class="text-right">{{$ctrl.table_total | number : 2}}</th>
+                                                <th class="text-right">{{$ctrl.minus_value}}{{$ctrl.table_total | number : 2}}</th>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -210,7 +210,7 @@
                                             </li>
                                             <li>
                                                 <span class="form-footer-label">Total Amount</span>
-                                                <span class="form-footer-value" ng-if="$ctrl.table_total">INR {{$ctrl.table_total | number : 2}} <small>({{$ctrl.table_sub_total | number : 2}} + {{$ctrl.table_gst_total | number : 2}} GST)</small></span>
+                                                <span class="form-footer-value" ng-if="$ctrl.table_total">INR {{$ctrl.minus_value}}{{$ctrl.table_total | number : 2}} <small>({{$ctrl.table_sub_total | number : 2}} + {{$ctrl.table_gst_total | number : 2}} GST)</small></span>
                                             </li>
                                         </ul>
                                     </div>

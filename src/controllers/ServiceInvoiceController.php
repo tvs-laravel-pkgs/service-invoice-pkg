@@ -74,6 +74,14 @@ class ServiceInvoiceController extends Controller {
 
 				return $checkbox;
 			})
+			->addColumn('invoice_amount', function ($service_invoice_list) {
+				if ($service_invoice_list->type_name == 'CN') {
+					return '-' . $service_invoice_list->invoice_amount;
+				} else {
+					return $service_invoice_list->invoice_amount;
+				}
+
+			})
 			->addColumn('action', function ($service_invoice_list) {
 				$type_id = $service_invoice_list->si_type_id == '1060' ? 1060 : 1061;
 				$img_edit = asset('public/theme/img/table/cndn/edit.svg');
