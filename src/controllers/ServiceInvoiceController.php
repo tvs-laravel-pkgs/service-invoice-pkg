@@ -855,23 +855,41 @@ class ServiceInvoiceController extends Controller {
 		$service_invoice_pdf->company->formatted_address = $service_invoice_pdf->company->primaryAddress ? $service_invoice_pdf->company->primaryAddress->getFormattedAddress() : 'NA';
 		$service_invoice_pdf->outlets->formatted_address = $service_invoice_pdf->outlets->primaryAddress ? $service_invoice_pdf->outlets->primaryAddress->getFormattedAddress() : 'NA';
 		$service_invoice_pdf->customer->formatted_address = $service_invoice_pdf->customer->primaryAddress ? $service_invoice_pdf->customer->primaryAddress->address_line1 : 'NA';
+		//dd($service_invoice_pdf->outlets->formatted_address);
 		if (count($service_invoice_pdf->serviceInvoiceItems) > 0) {
 			$array_key_replace = [];
 			foreach ($service_invoice_pdf->serviceInvoiceItems as $key => $serviceInvoiceItem) {
 				$taxes = $serviceInvoiceItem->taxes;
+				$type = $serviceInvoiceItem->serviceItem;
 				foreach ($taxes as $array_key_replace => $tax) {
 					$serviceInvoiceItem[$tax->name] = $tax;
 				}
+				//dd($type->sac_code_id);
 			}
 		}
+		//dd($service_invoice_pdf->type_id);
+		$type = $serviceInvoiceItem->serviceItem;
+		if (!empty($type->sac_code_id) && ($service_invoice_pdf->type_id == 1060)) {
+			$service_invoice_pdf->sac_code_status = 'CREDIT NOTE';
+		} elseif (!empty($type->sac_code_id) && ($service_invoice_pdf->type_id == 1061)) {
+			$service_invoice_pdf->sac_code_status = 'DEBIT NOTE';
+		} elseif (empty($type->sac_code_id) && ($service_invoice_pdf->type_id == 1060)) {
+			$service_invoice_pdf->sac_code_status = 'FINANCIAL CREDIT NOTE';
+		} elseif (empty($type->sac_code_id) && ($service_invoice_pdf->type_id == 1061)) {
+			$service_invoice_pdf->sac_code_status = 'FINANCIAL DEBIT NOTE';
+		}
+		//dd($service_invoice_pdf->sac_code_status);
+		// if ($service_invoice_pdf->type_id == 1060) {
+		// 	$service_invoice_pdf->cn_dn_type = 'CREDIT NOTE';
+		// } else {
+		// 	$service_invoice_pdf->cn_dn_type = 'DEBIT NOTE';
+		// }
+		//dd($type->sac_code_id);
 		$this->data['service_invoice_pdf'] = $service_invoice_pdf;
 
 		$tax_list = Tax::where('company_id', Auth::user()->company_id)->get();
 		$this->data['tax_list'] = $tax_list;
-		// $headers = array(
-		// 	'Content-Type: application/pdf',
-		// );
-
+		//dd($this->data['service_invoice_pdf']);
 		$path = storage_path('app/public/service-invoice-pdf/');
 		$pathToFile = $path . '/' . $service_invoice_pdf->number . '.pdf';
 		File::isDirectory($path) or File::makeDirectory($path, 0777, true, true);
