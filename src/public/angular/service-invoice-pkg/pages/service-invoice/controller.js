@@ -344,13 +344,14 @@ app.component('serviceInvoiceForm', {
         }
 
         //SEARCH SERVICE ITEM
-        self.searchServiceItem = function(query) {
+        self.searchServiceItem = function(query, type_id) {
             if (query) {
                 return new Promise(function(resolve, reject) {
                     $http
                         .post(
                             search_service_item_url, {
                                 key: query,
+                                type_id: self.type_id,
                             }
                         )
                         .then(function(response) {

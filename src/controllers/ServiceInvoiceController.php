@@ -28,6 +28,7 @@ use File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use PDF;
+use Session;
 use URL;
 use Validator;
 use Yajra\Datatables\Datatables;
@@ -114,6 +115,7 @@ class ServiceInvoiceController extends Controller {
 			$service_invoice = new ServiceInvoice;
 			$service_invoice->invoice_date = date('d-m-Y');
 			$this->data['action'] = 'Add';
+			Session::put('sac_code_value', 'new');
 		} else {
 			$service_invoice = ServiceInvoice::with([
 				'attachments',
@@ -250,6 +252,9 @@ class ServiceInvoiceController extends Controller {
 					$serviceInvoiceItem->total = round($serviceInvoiceItem->sub_total, 2) + round($gst_total, 2);
 					$serviceInvoiceItem->code = $serviceInvoiceItem->serviceItem->code;
 					$serviceInvoiceItem->name = $serviceInvoiceItem->serviceItem->name;
+					$serviceInvoiceItem->sac_code_value = $serviceInvoiceItem->serviceItem->sac_code_id;
+					session(['sac_code_value' => $serviceInvoiceItem->sac_code_value]);
+					//dd($serviceInvoiceItem->sac_code_value);
 				}
 			}
 
@@ -299,6 +304,7 @@ class ServiceInvoiceController extends Controller {
 	}
 
 	public function searchServiceItem(Request $r) {
+		//dd(session('sac_code_value'));
 		return ServiceItem::searchServiceItem($r);
 	}
 
@@ -526,12 +532,14 @@ class ServiceInvoiceController extends Controller {
 				}
 			}
 		}
-
+		$sac_code_value = $service_item->sac_code_id;
+		//dd($sac_code_value);
+		session(['sac_code_value' => $sac_code_value]);
+		// dd($service_item);
 		return response()->json(['success' => true, 'service_item' => $service_item]);
 	}
 
 	public function getServiceItem(Request $request) {
-
 		//GET TAXES BY CONDITIONS
 		$taxes = Tax::getTaxes($request->service_item_id, $request->branch_id, $request->customer_id);
 		if (!$taxes['success']) {
@@ -552,15 +560,19 @@ class ServiceInvoiceController extends Controller {
 
 		//TAX CALC AND PUSH
 		$gst_total = 0;
-		if (count($service_item->taxCode->taxes) > 0) {
-			foreach ($service_item->taxCode->taxes as $key => $value) {
-				$gst_total += round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2);
-				$service_item[$value->name] = [
-					'amount' => round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2),
-					'percentage' => round($value->pivot->percentage, 2),
-				];
+		if (!is_null($service_item->sac_code_id)) {
+			//dd('is not null');
+			if (count($service_item->taxCode->taxes) > 0) {
+				foreach ($service_item->taxCode->taxes as $key => $value) {
+					$gst_total += round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2);
+					$service_item[$value->name] = [
+						'amount' => round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2),
+						'percentage' => round($value->pivot->percentage, 2),
+					];
+				}
 			}
 		}
+		//dd('is null');
 
 		//FIELD GROUPS PUSH
 		if (isset($request->field_groups)) {
@@ -993,12 +1005,14 @@ class ServiceInvoiceController extends Controller {
 		$type = $serviceInvoiceItem->serviceItem;
 		if (!empty($type->sac_code_id) && ($service_invoice_pdf->type_id == 1060)) {
 			$service_invoice_pdf->sac_code_status = 'CREDIT NOTE';
-		} elseif (!empty($type->sac_code_id) && ($service_invoice_pdf->type_id == 1061)) {
-			$service_invoice_pdf->sac_code_status = 'DEBIT NOTE';
+
+			// elseif (!empty($type->sac_code_id) && $service_invoice_pdf->type_id == 1061) {
+			// 	$service_invoice_pdf->sac_code_status = 'Tax Invoice';
+			// }
 		} elseif (empty($type->sac_code_id) && ($service_invoice_pdf->type_id == 1060)) {
 			$service_invoice_pdf->sac_code_status = 'FINANCIAL CREDIT NOTE';
-		} elseif (empty($type->sac_code_id) && ($service_invoice_pdf->type_id == 1061)) {
-			$service_invoice_pdf->sac_code_status = 'FINANCIAL DEBIT NOTE';
+		} else {
+			$service_invoice_pdf->sac_code_status = 'Tax Invoice';
 		}
 		//dd($service_invoice_pdf->sac_code_status);
 		//dd($serviceInvoiceItem->field_groups);

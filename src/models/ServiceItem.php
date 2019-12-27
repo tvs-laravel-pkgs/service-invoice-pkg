@@ -35,18 +35,30 @@ class ServiceItem extends Model {
 
 	public static function searchServiceItem($r) {
 		$key = $r->key;
+		$type_id = $r->type_id;
 		$list = self::where('company_id', Auth::user()->company_id)
 			->select(
 				'id',
 				'name',
 				'code'
-			)
-			->where(function ($q) use ($key) {
-				$q->where('name', 'like', '%' . $key . '%')
-					->orWhere('code', 'like', '%' . $key . '%')
-				;
-			})
+			);
+		if ($type_id == 1061) {
+			$list = $list->whereNotNull('sac_code_id');
+		}
+		if ($type_id == 1060 && session('sac_code_value') != 'new') {
+			if (session('sac_code_value') == NULL) {
+				$list = $list->whereNull('sac_code_id');
+			} elseif (session('sac_code_value') != NULL) {
+				$list = $list->whereNotNull('sac_code_id');
+			}
+		}
+		$list = $list->where(function ($q) use ($key) {
+			$q->where('name', 'like', '%' . $key . '%')
+				->orWhere('code', 'like', '%' . $key . '%')
+			;
+		})
 			->get();
+
 		return response()->json($list);
 	}
 
