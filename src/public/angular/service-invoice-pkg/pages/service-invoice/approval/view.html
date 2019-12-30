@@ -10,7 +10,7 @@
                 </div><!-- Page Header Content -->
                 <div class="page-header-content title-block">
                     <h1 class="title" ng-show="$ctrl.type_id == 1060"><b>{{$ctrl.action}} Credit Note</b></h1>
-                    <h1 class="title" ng-show="$ctrl.type_id == 1061"><b>{{$ctrl.action}} Debit Note</b></h1>
+                    <h1 class="title" ng-show="$ctrl.type_id == 1061"><b>{{$ctrl.action}} Invoice</b></h1>
                     <!-- <p class="subtitle">Service Item category List / Form</p> -->
                 </div><!-- Page Header Content -->
             </div><!-- Page Header Content Left -->
@@ -123,7 +123,7 @@
                             <div class="table-wrap-header">
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <h5 class="table-wrap-title">Invoice Details</h5>
+                                        <h5 class="table-wrap-title">Details</h5>
                                     </div><!-- Column -->
                                 </div><!-- Row -->
                             </div><!-- Table Wrap Header -->
@@ -189,7 +189,7 @@
                                                 <th class="text-right">{{$ctrl.table_rate | number : 2}}</th>
                                                 <th class="text-right">{{$ctrl.table_sub_total | number : 2}}</th>
                                                 <th class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list">{{$ctrl.tax_wise_total[tax.name+'_amount'] | number : 2}}</th>
-                                                <th class="text-right">{{$ctrl.table_total | number : 2}}</th>
+                                                <th class="text-right">{{$ctrl.minus_value}}{{$ctrl.table_total | number : 2}}</th>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -212,7 +212,7 @@
                                             </li>
                                             <li>
                                                 <span class="form-footer-label">Total Amount</span>
-                                                <span class="form-footer-value" ng-if="$ctrl.table_total">INR {{$ctrl.table_total | number : 2}} <small>({{$ctrl.table_sub_total | number : 2}} + {{$ctrl.table_gst_total | number : 2}} GST)</small></span>
+                                                <span class="form-footer-value" ng-if="$ctrl.table_total">INR {{$ctrl.minus_value}}{{$ctrl.table_total | number : 2}} <small>({{$ctrl.table_sub_total | number : 2}} + {{$ctrl.table_gst_total | number : 2}} GST)</small></span>
                                             </li>
                                         </ul>
                                     </div>

@@ -529,11 +529,13 @@ app.component('serviceInvoiceForm', {
             self.gst_total = 0;
             if (self.qty && self.rate) {
                 self.sub_total = self.qty * self.rate;
-                if (self.service_item_detail.tax_code.taxes.length > 0) {
-                    $(self.service_item_detail.tax_code.taxes).each(function(key, tax) {
-                        tax.pivot.amount = $scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2);
-                        self.gst_total += parseFloat($scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2));
-                    });
+                if (self.service_item_detail.tax_code != null) {
+                    if (self.service_item_detail.tax_code.taxes.length > 0) {
+                        $(self.service_item_detail.tax_code.taxes).each(function(key, tax) {
+                            tax.pivot.amount = $scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2);
+                            self.gst_total += parseFloat($scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2));
+                        });
+                    }
                 }
                 self.total = self.sub_total + self.gst_total;
             }
@@ -849,11 +851,13 @@ app.component('serviceInvoiceView', {
             self.gst_total = 0;
             if (self.qty && self.rate) {
                 self.sub_total = self.qty * self.rate;
-                if (self.service_item_detail.tax_code.taxes.length > 0) {
-                    $(self.service_item_detail.tax_code.taxes).each(function(key, tax) {
-                        tax.pivot.amount = $scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2);
-                        self.gst_total += parseFloat($scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2));
-                    });
+                if (self.service_item_detail.tax_code != null) {
+                    if (self.service_item_detail.tax_code.taxes.length > 0) {
+                        $(self.service_item_detail.tax_code.taxes).each(function(key, tax) {
+                            tax.pivot.amount = $scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2);
+                            self.gst_total += parseFloat($scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2));
+                        });
+                    }
                 }
                 self.total = self.sub_total + self.gst_total;
             }

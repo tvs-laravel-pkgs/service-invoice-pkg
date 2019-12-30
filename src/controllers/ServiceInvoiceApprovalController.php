@@ -67,7 +67,14 @@ class ServiceInvoiceApprovalController extends Controller {
 			->orderBy('service_invoices.id', 'Desc');
 		// dd($cn_dn_approval_list);
 		return Datatables::of($cn_dn_approval_list)
+			->addColumn('invoice_amount', function ($cn_dn_approval_list) {
+				if ($cn_dn_approval_list->type_name == 'CN') {
+					return '-' . $cn_dn_approval_list->invoice_amount;
+				} else {
+					return $cn_dn_approval_list->invoice_amount;
+				}
 
+			})
 			->addColumn('action', function ($cn_dn_approval_list) {
 				$approval_type_id = $cn_dn_approval_list->approval_type_id;
 				$type_id = $cn_dn_approval_list->si_type_id == '1060' ? 1060 : 1061;

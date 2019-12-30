@@ -116,6 +116,11 @@ app.component('serviceInvoiceApprovalView', {
         self.approval_type_id = $routeParams.approval_type_id;
         self.enable_service_item_md_change = true;
         self.ref_attachements_url_link = ref_attachements_url;
+        if(self.type_id == 1060) {
+            self.minus_value = '-';
+        } else if(self.type_id == 1061) {
+            self.minus_value = '';
+        }
         $http.get(
             $form_data_url
         ).then(function(response) {
@@ -219,11 +224,13 @@ app.component('serviceInvoiceApprovalView', {
             self.gst_total = 0;
             if (self.qty && self.rate) {
                 self.sub_total = self.qty * self.rate;
-                if (self.service_item_detail.tax_code.taxes.length > 0) {
-                    $(self.service_item_detail.tax_code.taxes).each(function(key, tax) {
-                        tax.pivot.amount = $scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2);
-                        self.gst_total += parseFloat($scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2));
-                    });
+                if (self.service_item_detail.tax_code != null) {
+                    if (self.service_item_detail.tax_code.taxes.length > 0) {
+                        $(self.service_item_detail.tax_code.taxes).each(function(key, tax) {
+                            tax.pivot.amount = $scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2);
+                            self.gst_total += parseFloat($scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2));
+                        });
+                    }
                 }
                 self.total = self.sub_total + self.gst_total;
             }

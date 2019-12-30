@@ -35,7 +35,7 @@ class ServiceItemController extends Controller {
 			->leftJoin('tax_codes', 'service_items.sac_code_id', 'tax_codes.id')
 			->where('service_items.company_id', Auth::user()->company_id)
 			->groupBy('service_items.id')
-			->orderBy('service_items.name', 'asc')
+			->orderBy('service_items.code', 'asc')
 		// ->get()
 		;
 		// dd($service_item_category_list);
