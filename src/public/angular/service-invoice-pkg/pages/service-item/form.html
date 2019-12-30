@@ -94,7 +94,7 @@
                                         </div><!-- Column -->
                                         <div class="col-md-3">
                                             <div class="input-text form-group">
-                                                <label>SAC Code <sup class="mandatory">*</sup></label>
+                                                <label>SAC Code</label>
                                                 <md-select ng-model="$ctrl.service_item.sac_code_id" placeholder="Select SAC Code" data-md-container-class="selectdemoSelectHeader">
                                                     <md-select-header class="demo-select-header ng-hide">
                                                         <input ng-model="searchType" type="search" placeholder="Search for a SAC Code" class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
@@ -103,7 +103,7 @@
                                                         <md-option ng-value="type.id" ng-repeat="type in $ctrl.extras.tax_list | filter:searchTravel">{{type.name}}</md-option>
                                                     </md-optgroup>
                                                 </md-select>
-                                                <input type="hidden" name="sac_code_id" value='{{$ctrl.service_item.sac_code_id}}' class="required">
+                                                <input type="hidden" name="sac_code_id" value='{{$ctrl.service_item.sac_code_id}}'>
                                             </div><!-- Feild -->
                                         </div><!-- Column -->
                                         <div class="col-md-3">

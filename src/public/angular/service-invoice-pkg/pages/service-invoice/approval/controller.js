@@ -107,7 +107,7 @@ app.component('serviceInvoiceApprovalView', {
             $location.path('/page-not-found')
             return;
         }
-        $form_data_url = cn_dn_aprroval_view_data_url + '/' + $routeParams.approval_type_id+ '/' + $routeParams.type_id + '/' + $routeParams.id;
+        $form_data_url = cn_dn_approval_view_data_url + '/' + $routeParams.approval_type_id+ '/' + $routeParams.type_id + '/' + $routeParams.id;
         //alert($form_data_url);
         var self = this;
         self.hasPermission = HelperService.hasPermission;
@@ -144,18 +144,6 @@ app.component('serviceInvoiceApprovalView', {
                 $timeout(function() {
                     $scope.serviceInvoiceItemCalc();
                 }, 1500);
-
-                //ATTACHMENTS
-                // if (self.service_invoice.attachments.length) {
-                //     $(self.service_invoice.attachments).each(function(key, attachment) {
-                //         var design = '<div class="imageuploadify-container" data-attachment_id="' + attachment.id + '" style="margin-left: 0px; margin-right: 0px;">' +
-                //             '<div class="imageuploadify-details"><div class="imageuploadify-file-icon"></div><span class="imageuploadify-file-name">' + attachment.name + '' +
-                //             '</span><span class="imageuploadify-file-type">image/jpeg</span>' +
-                //             '<span class="imageuploadify-file-size">369960</span></div>' +
-                //             '</div>';
-                //         $('.imageuploadify-images-list').append(design);
-                //     });
-                // }
             }
             $rootScope.loading = false;
         });
@@ -169,8 +157,6 @@ app.component('serviceInvoiceApprovalView', {
             $('.cndn-tabs li.active').prev().children('a').trigger("click");
             tabPaneFooter();
         });
-
-        // $('.image_uploadify').imageuploadify();
 
         //PERCENTAGE CALC
         $scope.percentage = function(num, per) {

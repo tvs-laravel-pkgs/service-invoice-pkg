@@ -129,9 +129,9 @@ class ServiceItemController extends Controller {
 				'coa_code_id' => [
 					'required:true',
 				],
-				'sac_code_id' => [
-					'required:true',
-				],
+				// 'sac_code_id' => [
+				// 	'required:true',
+				// ],
 			], $error_messages);
 
 			if ($validator->fails()) {

@@ -304,7 +304,6 @@ class ServiceInvoiceController extends Controller {
 	}
 
 	public function searchServiceItem(Request $r) {
-		//dd(session('sac_code_value'));
 		return ServiceItem::searchServiceItem($r);
 	}
 
@@ -561,7 +560,6 @@ class ServiceInvoiceController extends Controller {
 		//TAX CALC AND PUSH
 		$gst_total = 0;
 		if (!is_null($service_item->sac_code_id)) {
-			//dd('is not null');
 			if (count($service_item->taxCode->taxes) > 0) {
 				foreach ($service_item->taxCode->taxes as $key => $value) {
 					$gst_total += round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2);
@@ -572,7 +570,6 @@ class ServiceInvoiceController extends Controller {
 				}
 			}
 		}
-		//dd('is null');
 
 		//FIELD GROUPS PUSH
 		if (isset($request->field_groups)) {
@@ -1005,10 +1002,6 @@ class ServiceInvoiceController extends Controller {
 		$type = $serviceInvoiceItem->serviceItem;
 		if (!empty($type->sac_code_id) && ($service_invoice_pdf->type_id == 1060)) {
 			$service_invoice_pdf->sac_code_status = 'CREDIT NOTE';
-
-			// elseif (!empty($type->sac_code_id) && $service_invoice_pdf->type_id == 1061) {
-			// 	$service_invoice_pdf->sac_code_status = 'Tax Invoice';
-			// }
 		} elseif (empty($type->sac_code_id) && ($service_invoice_pdf->type_id == 1060)) {
 			$service_invoice_pdf->sac_code_status = 'FINANCIAL CREDIT NOTE';
 		} else {

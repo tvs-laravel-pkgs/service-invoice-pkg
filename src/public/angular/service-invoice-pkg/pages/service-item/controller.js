@@ -221,9 +221,9 @@ app.component('serviceItemForm', {
                 'coa_code_id': {
                     required: true,
                 },
-                'sac_code_id': {
-                    required: true,
-                },
+                // 'sac_code_id': {
+                //     required: true,
+                // },
                 // 'field_group_id': {
                 //     required: true,
                 // },
