@@ -147,4 +147,68 @@ class ServiceInvoice extends Model {
 		return $record;
 	}
 
+	public function exportToAxapta() {
+
+// $invoice, $sno, $TransDate, $owner, $outlet, $coa_code, $ratio, $bank_detail, $rent_details, $debit, $credit, $voucher, $txt, $payment_modes, $flip, $account_type, $ledger_dimention, $sac_code, $sharing_type_id, $hsn_code = '', $tds_group_in = ''
+
+		if ($sharing_type_id == 9) {
+			$ratio_sbu = $ratio->name;
+		} else {
+			$ratio_sbu = $ratio->sbu->name;
+		}
+		$row = [];
+		$row['entity_type_id'] = $invoice->vendor->vendor_type_id;
+		$row['entity_id'] = $invoice->id;
+		$row['CurrencyCode'] = config('custom.axapta_common_values.CurrencyCode');
+		$row['JournalName'] = config('custom.axapta_common_values.JournalName');
+		$row['JournalNum'] = "";
+		$row['LineNum'] = $sno + 1;
+		$row['Voucher'] = $voucher;
+		$row['ApproverPersonnelNumber'] = '30723';
+		$row['Approved'] = config('custom.axapta_common_values.Approved');
+		$row['TransDate'] = $invoice->approved_date;
+		//dd($ledger_dimention);
+		$row['AccountType'] = $account_type;
+		$row['LedgerDimension'] = $ledger_dimention;
+
+		$row['DefaultDimension'] = $ratio_sbu . '-' . $outlet->code;
+		$row['Txt'] = $txt;
+		$row['AmountCurDebit'] = $debit > 0 ? $debit : NULL;
+		$row['AmountCurCredit'] = $credit > 0 ? $credit : NULL;
+		$row['OffsetAccountType'] = '';
+		$row['OffsetLedgerDimension'] = '';
+		$row['OffsetDefaultDimension'] = '';
+		if (isset($payment_modes[$bank_detail->payment_mode])) {
+			$row['PaymMode'] = $payment_modes[$bank_detail->payment_mode];
+		} else {
+			$row['PaymMode'] = '';
+		}
+		$row['TaxGroup'] = $tds_group_in;
+		$row['TaxItemGroup'] = '';
+		$row['Invoice'] = $invoice->invoice_number;
+		$row['SalesTaxFormTypes_IN_FormType'] = '';
+		$row['TDSGroup_IN'] = $tds_group_in;
+		$row['DocumentNum'] = $invoice->invoice_number;
+		$row['DocumentDate'] = date('d/m/Y', strtotime($invoice->invoice_date));
+		$row['LogisticsLocation_LocationId'] = '000127079';
+		$row['Due'] = '';
+		$row['PaymReference'] = '';
+		$row['TVSHSNCode'] = $hsn_code;
+		$row['TVSSACCode'] = $sac_code ? $sac_code : '';
+		$row['TVSVendorLocationID'] = $invoice->vendor->axapta_location_id;
+		$row['TVSCustomerLocationID'] = '';
+		$row['TVSCompanyLocationId'] = $outlet->company_location_id;
+		$row['customer_code'] = $owner->axapta_code;
+		$export = Export::firstOrNew([
+			'entity_type_id' => $invoice->vendor->vendor_type_id,
+			'entity_id' => $invoice->id,
+			'LedgerDimension' => $row['LedgerDimension'],
+		]);
+		$export->fill($row);
+		$export->save();
+		//dd($export);
+		return $row;
+
+	}
+
 }
