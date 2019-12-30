@@ -33,6 +33,7 @@ app.component('serviceInvoiceApprovalList', {
                     "previous": '<i class="icon ion-ios-arrow-back"></i>'
                 },
             },
+            scrollX: true,
             scrollY: table_scroll + "px",
             scrollCollapse: true,
             stateSave: true,
