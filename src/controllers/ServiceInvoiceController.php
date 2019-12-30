@@ -38,6 +38,14 @@ class ServiceInvoiceController extends Controller {
 	public function __construct() {
 	}
 
+	public function getServiceInvoiceFilter() {
+		$this->data['extras'] = [
+			'sbu_list' => [],
+			'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
+			'sub_category_list' => [],
+		];
+	}
+
 	public function getServiceInvoiceList() {
 		$service_invoice_list = ServiceInvoice::withTrashed()
 			->select(
