@@ -32,6 +32,7 @@ app.component('serviceItemList', {
             paging: true,
             searching: true,
             ordering: false,
+            scrollX: true,
             scrollY: table_scroll + "px",
             scrollCollapse: true,
 
