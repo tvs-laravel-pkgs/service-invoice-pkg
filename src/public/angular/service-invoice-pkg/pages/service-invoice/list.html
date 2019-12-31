@@ -17,7 +17,12 @@
                             <button class="btn-clear search_clear">Clear</button>
                         </label>
                     </div><!-- Search Filter -->
-                </div><!-- Page Header Content -->
+                </div><!-- Page Header Content pad-lf-rt-->
+                <div class="page-header-content button-block">
+                    <button type="button" class="btn btn-refresh refresh_table">
+                        <img src="./public/theme/img/content/refresh-arrow.png" class="img-responsive btn-refresh-icon">
+                    </button>
+                </div>
                 <div class="page-header-content button-block">
                     <div class="dropdown">
                         <a class="btn-extension dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
@@ -172,7 +177,7 @@
                         <div class="col-md-6">
                             <div class="input-text form-group">
                                 <label>Customer</label>
-                                <md-autocomplete md-items="option in $ctrl.searchCustomer($ctrl.customerSearchText)" md-selected-item="$ctrl.service_invoice.customer" md-search-text="$ctrl.customerSearchText" md-item-text="option.code" md-min-length="3" placeholder="Customer code / name" md-selected-item-change="$ctrl.getCustomerDetails()" md-search-text-change="$ctrl.customerChanged()">
+                                <md-autocomplete md-items="option in $ctrl.searchCustomer($ctrl.customerSearchText)" md-selected-item="$ctrl.service_invoice.customer" md-search-text="$ctrl.customerSearchText" md-item-text="option.code" md-min-length="3" placeholder="Customer code / name" md-selected-item-change="getCustomerDetails($ctrl.service_invoice.customer.id)" md-search-text-change="$ctrl.customerChanged()">
                                     <md-item-template>
                                         <span>
                                             {{option.name}} - {{option.code}}
@@ -199,6 +204,11 @@
                                 <input type="hidden" name="status_id" id="status_id" value="">
                             </div><!-- Feild -->
                         </div><!-- Column -->
+                        <div class="col-md-12">
+                            <div class="text-right">
+                                <button type="button" class="btn btn-rose" ng-click="reset_filter(); $ctrl.type_id=''; $ctrl.branchSearchText=''; $ctrl.service_invoice.sbu_id=''; $ctrl.service_invoice.service_item_sub_category.category_id=''; $ctrl.service_invoice.sub_category_id=''; $ctrl.customerSearchText=''; $ctrl.status_id=''">Reset Filter</button>
+                            </div>
+                        </div>
                     </div><!-- Row -->
                 </div><!-- Modal Form -->
             </div><!-- Modal Body -->

@@ -10,7 +10,7 @@ app.component('serviceInvoiceList', {
         ).then(function (response) {
             self.extras = response.data.extras;
             $rootScope.loading = false;
-            console.log(self.extras);
+            //console.log(self.extras);
         });
 var dataTable;
         setTimeout(function() {
@@ -78,6 +78,9 @@ var dataTable;
                     { data: 'invoice_amount', searchable: false },
                     { data: 'status', name: 'approval_type_statuses.status', searchable: false },
                 ],
+                "initComplete": function(settings, json) {
+                    $('.dataTables_length select').select2();
+                },
                 rowCallback: function(row, data) {
                     $(row).addClass('highlight-row');
                 },
@@ -87,11 +90,13 @@ var dataTable;
                 },
             });
         }, 1000);
-        $('.dataTables_length select').select2();
         $('.modal').bind('click', function (event) {
             if($('.md-select-menu-container').hasClass('md-active')){
                 $mdSelect.hide();
             }
+        });
+        $('.refresh_table').on("click", function() {
+            $('#service-invoice-table').DataTable().ajax.reload();
         });
         $('#invoice_number').keyup(function () {
             setTimeout(function() {
@@ -133,9 +138,24 @@ var dataTable;
                 dataTable.draw();
             }, 900);
         }
+        $scope.reset_filter = function () {
+            $('#invoice_number').val('');
+            $('#invoice_date').val('');
+            $('#type_id').val('');
+            $('#branch_id').val('');
+            $('#sbu_id').val('');
+            $('#category_id').val('');
+            $('#sub_category_id').val('');
+            $('#customer_id').val('');
+            $('#status_id').val('');
+            dataTable.draw();
+        }
         //GET SERVICE ITEM SUB CATEGORY BY CATEGORY
         $scope.getServiceItemSubCategory = function(category_id) {
             self.extras.sub_category_list = [];
+            if(category_id == '') {
+                $('#sub_category_id').val('');
+            }
             $('#category_id').val(category_id);
             dataTable.draw();
             if (category_id) {
@@ -160,14 +180,15 @@ var dataTable;
                     });
             }
         }
-
-        // $("#search").keyup(function() { //alert(this.value);
-        //     dataTable.fnFilter(this.value);
-        // });
-
         $(".search_clear").on("click", function() {
             $('#search').val('');
             $('#service-invoice-table').DataTable().search('').draw();
+        });
+
+        $("#search").on('keyup', function() {
+            dataTable
+                    .search( this.value )
+                    .draw();
         });
 
         $('#parent').on('click', function() {
@@ -226,6 +247,8 @@ var dataTable;
         //GET BRANCH DETAILS
         self.getBranchDetails = function() {
             if (self.service_invoice.branch == null) {
+                $('#branch_id').val('');
+                dataTable.draw();
                 return
             }
             $scope.getSbuByBranch(self.service_invoice.branch.id);
@@ -233,6 +256,8 @@ var dataTable;
         //GET SBU BY BRANCH
         $scope.getSbuByBranch = function(branch_id) {
             self.extras.sbu_list = [];
+            $('#branch_id').val(branch_id);
+            dataTable.draw();
             if (branch_id) {
                 $.ajax({
                         url: get_sbu_url + '/' + branch_id,
@@ -278,6 +303,11 @@ var dataTable;
             } else {
                 return [];
             }
+        }
+        //GET CUSTOMER DETAILS
+        $scope.getCustomerDetails = function(selected_customer_id) {
+            $('#customer_id').val(selected_customer_id);
+            dataTable.draw();
         }
         $rootScope.loading = false;
     }
