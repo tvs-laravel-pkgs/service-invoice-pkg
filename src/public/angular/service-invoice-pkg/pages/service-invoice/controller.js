@@ -7,12 +7,12 @@ app.component('serviceInvoiceList', {
         self.create_dn = self.hasPermission('create-dn');
         $http.get(
             get_service_invoice_filter_url
-        ).then(function (response) {
+        ).then(function(response) {
             self.extras = response.data.extras;
             $rootScope.loading = false;
             console.log(self.extras);
         });
-var dataTable;
+        var dataTable;
         setTimeout(function() {
             var table_scroll;
             table_scroll = $('.page-main-content').height() - 37;
@@ -88,22 +88,22 @@ var dataTable;
             });
         }, 1000);
         $('.dataTables_length select').select2();
-        $('.modal').bind('click', function (event) {
-            if($('.md-select-menu-container').hasClass('md-active')){
+        $('.modal').bind('click', function(event) {
+            if ($('.md-select-menu-container').hasClass('md-active')) {
                 $mdSelect.hide();
             }
         });
-        $('#invoice_number').keyup(function () {
+        $('#invoice_number').keyup(function() {
             setTimeout(function() {
                 dataTable.draw();
             }, 900);
         });
-        $('body').on('click','.applyBtn', function() { //alert('sd');
+        $('body').on('click', '.applyBtn', function() { //alert('sd');
             setTimeout(function() {
                 dataTable.draw();
             }, 900);
         });
-        $('body').on('click','.cancelBtn', function() { //alert('sd');
+        $('body').on('click', '.cancelBtn', function() { //alert('sd');
             setTimeout(function() {
                 dataTable.draw();
             }, 900);
@@ -115,19 +115,19 @@ var dataTable;
                 dataTable.draw();
             }, 900);
         }
-        $scope.getSelectedSbu = function (selected_sbu_id) {
+        $scope.getSelectedSbu = function(selected_sbu_id) {
             setTimeout(function() {
                 $('#sbu_id').val(selected_sbu_id);
                 dataTable.draw();
             }, 900);
         }
-        $scope.getSubCategory = function (selected_sub_category_id) {
+        $scope.getSubCategory = function(selected_sub_category_id) {
             setTimeout(function() {
                 $('#sub_category_id').val(selected_sub_category_id);
                 dataTable.draw();
             }, 900);
         }
-        $scope.getSelectedStatus = function (selected_status_id) {
+        $scope.getSelectedStatus = function(selected_status_id) {
             setTimeout(function() {
                 $('#status_id').val(selected_status_id);
                 dataTable.draw();
@@ -161,9 +161,28 @@ var dataTable;
             }
         }
 
-        // $("#search").keyup(function() { //alert(this.value);
-        //     dataTable.fnFilter(this.value);
-        // });
+        self.exportServiceInvoicesToExcelUrl = exportServiceInvoicesToExcelUrl;
+        self.csrf_token = $('meta[name="csrf-token"]').attr('content');
+        var filter_form_id = '#filter-form';
+        var filter_form_v = jQuery(filter_form_id).validate({
+            errorPlacement: function(error, element) {
+                if (element.hasClass("dynamic_date")) {
+                    error.insertAfter(element.parent("div"));
+                } else {
+                    error.insertAfter(element);
+                }
+            },
+            ignore: '',
+            rules: {
+                'invoice_date': {
+                    required: true,
+                },
+            },
+            submitHandler: function(form) {
+                form.submit();
+                $('#addServiceItem').button('loading');
+            },
+        });
 
         $(".search_clear").on("click", function() {
             $('#search').val('');
@@ -171,21 +190,21 @@ var dataTable;
         });
 
         $('#parent').on('click', function() {
-            if(this.checked){
-                $('.service_invoice_checkbox').each(function(){
+            if (this.checked) {
+                $('.service_invoice_checkbox').each(function() {
                     this.checked = true;
                 });
-            }else{
-                 $('.service_invoice_checkbox').each(function(){
+            } else {
+                $('.service_invoice_checkbox').each(function() {
                     this.checked = false;
                 });
             }
         });
-        $(document.body).on('click', '.service_invoice_checkbox', function(){
-            if($('.service_invoice_checkbox:checked').length == $('.service_invoice_checkbox').length){
-                $('#parent').prop('checked',true);
-            }else{
-                $('#parent').prop('checked',false);
+        $(document.body).on('click', '.service_invoice_checkbox', function() {
+            if ($('.service_invoice_checkbox:checked').length == $('.service_invoice_checkbox').length) {
+                $('#parent').prop('checked', true);
+            } else {
+                $('#parent').prop('checked', false);
             }
         });
         $('.align-left.daterange').daterangepicker({
@@ -924,9 +943,9 @@ app.component('serviceInvoiceView', {
         self.type_id = $routeParams.type_id;
         self.enable_service_item_md_change = true;
         self.ref_attachements_url_link = ref_attachements_url;
-        if(self.type_id == 1060) {
+        if (self.type_id == 1060) {
             self.minus_value = '-';
-        } else if(self.type_id == 1061) {
+        } else if (self.type_id == 1061) {
             self.minus_value = '';
         }
         $http.get(
