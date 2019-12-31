@@ -16,6 +16,7 @@ use Abs\ServiceInvoicePkg\ServiceItemSubCategory;
 use Abs\TaxPkg\Tax;
 use App\Attachment;
 use App\Company;
+use App\Config;
 use App\Customer;
 use App\Entity;
 use App\FinancialYear;
@@ -41,12 +42,26 @@ class ServiceInvoiceController extends Controller {
 	public function getServiceInvoiceFilter() {
 		$this->data['extras'] = [
 			'sbu_list' => [],
-			'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
+			'category_list' => collect(ServiceItemCategory::select('id', 'name')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
 			'sub_category_list' => [],
+			'cn_dn_statuses' => collect(ApprovalTypeStatus::select('id', 'status')->where('approval_type_id', 1)->orderBy('id', 'asc')->get())->prepend(['id' => '', 'status' => 'Select CN/DN Status']),
+			'type_list' => collect(Config::select('id', 'name')->where('config_type_id', 84)->get())->prepend(['id' => '', 'name' => 'Select Service Invoice Type']),
 		];
+		return response()->json($this->data);
 	}
 
-	public function getServiceInvoiceList() {
+	public function getServiceInvoiceList(Request $request) {
+		//dd($request->all());
+		if (!empty($request->invoice_date)) {
+			$invoice_date = explode('to', $request->invoice_date);
+			$first_date_this_month = date('Y-m-d', strtotime($invoice_date[0]));
+			$last_date_this_month = date('Y-m-d', strtotime($invoice_date[1]));
+		} else {
+			$first_date_this_month = '';
+			$last_date_this_month = '';
+		}
+		$invoice_number_filter = $request->invoice_number;
+
 		$service_invoice_list = ServiceInvoice::withTrashed()
 			->select(
 				'service_invoices.id',
@@ -74,6 +89,46 @@ class ServiceInvoiceController extends Controller {
 			->join('approval_type_statuses', 'approval_type_statuses.id', 'service_invoices.status_id')
 			->where('service_invoices.company_id', Auth::user()->company_id)
 			->where('approval_type_statuses.approval_type_id', 1)
+			->where(function ($query) use ($first_date_this_month, $last_date_this_month) {
+				if (!empty($first_date_this_month) && !empty($last_date_this_month)) {
+					$query->whereRaw("DATE(service_invoices.invoice_date) BETWEEN '" . $first_date_this_month . "' AND '" . $last_date_this_month . "'");
+				}
+			})
+			->where(function ($query) use ($invoice_number_filter) {
+				if ($invoice_number_filter != null) {
+					$query->where('service_invoices.number', 'like', "%" . $invoice_number_filter . "%");
+				}
+			})
+			->where(function ($query) use ($request) {
+				if (!empty($request->type_id)) {
+					$query->where('service_invoices.type_id', $request->type_id);
+				}
+			})
+			->where(function ($query) use ($request) {
+				if (!empty($request->branch_id)) {
+					$query->where('service_invoices.branch_id', $request->branch_id);
+				}
+			})
+			->where(function ($query) use ($request) {
+				if (!empty($request->sbu_id)) {
+					$query->where('service_invoices.sbu_id', $request->sbu_id);
+				}
+			})
+			->where(function ($query) use ($request) {
+				if (!empty($request->sub_category_id)) {
+					$query->where('service_invoices.sub_category_id', $request->sub_category_id);
+				}
+			})
+			->where(function ($query) use ($request) {
+				if (!empty($request->customer_id)) {
+					$query->where('service_invoices.customer_id', $request->customer_id);
+				}
+			})
+			->where(function ($query) use ($request) {
+				if (!empty($request->status_id)) {
+					$query->where('service_invoices.status_id', $request->status_id);
+				}
+			})
 			->groupBy('service_invoices.id')
 			->orderBy('service_invoices.id', 'Desc');
 		// dd($service_invoice_list);
