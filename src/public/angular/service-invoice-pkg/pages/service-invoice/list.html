@@ -99,7 +99,43 @@
                                         </span>
                                     </div><!-- Input Group -->
                                 </div><!-- Feild -->
-                            </div>                        
+                            </div> 
+                            <div class="col-md-6">
+                                <div class="input-text form-group">
+                                    <label>Invoice Number</label>
+                                    <input type="text" class="form-control" name="invoice_number" id="invoice_number" value="" placeholder="Enter Invoice Number" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-text form-group">
+                                    <label>Type</label>
+                                    <md-select ng-model="$ctrl.type_id" placeholder="Select Type" data-md-container-class="selectdemoSelectHeader" ng-change="onSelectedType($ctrl.type_id)">
+                                        <md-select-header class="demo-select-header ng-hide">
+                                            <input ng-model="searchCategory" type="search" placeholder="Search for a Type" class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                        </md-select-header>
+                                        <md-optgroup label="Travel List">
+                                            <md-option ng-value="type.id" ng-repeat="type in $ctrl.extras.type_list | filter:searchTravel">{{type.name}}</md-option>
+                                        </md-optgroup>
+                                    </md-select>
+                                    <input type="hidden" name="type_id" id="type_id" value="">
+                                </div><!-- Feild -->
+                            </div><!-- Column -->
+                            <div class="col-md-6">
+                                <div class="input-text form-group">
+                                    <label>Branch</label>
+                                    <md-autocomplete md-items="option in $ctrl.searchBranchFilter($ctrl.branchSearchText)" md-selected-item="$ctrl.service_invoice.branch" md-search-text="$ctrl.branchSearchText" md-item-text="option.code" md-min-length="3" placeholder="Branch code / name" md-selected-item-change="$ctrl.getBranchDetails()" md-search-text-change="$ctrl.branchChanged()" md-autofocus>
+                                        <md-item-template>
+                                            <span>
+                                                {{option.name}} - {{option.code}}
+                                            </span>
+                                        </md-item-template>
+                                        <md-not-found>
+                                            No Branch matching "{{$ctrl.branchSearchText}}" were found.
+                                        </md-not-found>
+                                    </md-autocomplete>
+                                    <input type="hidden" name="branch_id" id="branch_id" value="{{$ctrl.service_invoice.branch.id}}">
+                                </div>
+                            </div>                       
                             <div class="col-md-6">
                                 <div class="input-text form-group">
                                     <label>SBU</label>

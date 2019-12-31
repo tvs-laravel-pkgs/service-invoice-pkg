@@ -18,6 +18,11 @@
                         </label>
                     </div><!-- Search Filter -->
                 </div><!-- Page Header Content -->
+                <div class="page-header-content button-block">
+                    <button type="button" class="btn btn-refresh refresh_table">
+                        <img src="./public/theme/img/content/refresh-arrow.png" class="img-responsive btn-refresh-icon">
+                    </button>
+                </div>
             </div><!-- Page Header Content Right -->
         </div><!-- Page Header Inner -->
     </div><!-- Page Header -->
@@ -50,3 +55,143 @@
         </div><!-- Container -->
     </div><!-- Page Main Content -->
 </div><!-- Content Wrap -->
+<div class="modal fade filter" id="filter" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close ripple" data-dismiss="modal" aria-label="Close"><i class="icon ion-md-close"></i></button>
+                <h5 class="modal-title" id="myModalLabel">Filter</h5>
+            </div><!-- Modal Header -->
+            <div class="modal-body">
+                <div class="modal-form mb-30">
+                    <div class="row modal-row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Invoice Date</label>
+                                <div class="input-group date">
+                                    <input class="form-control daterange align-left" placeholder="Select a Date Range" name="invoice_date" id="invoice_date" value="" autocomplete="off">
+                                    <span class="input-group-addon">
+                                        <img class="img-responsive" src="./public/theme/img/content/calender-gray-icon.svg" alt="Calendar Image" />
+                                    </span>
+                                </div><!-- Input Group -->
+                            </div><!-- Feild -->
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-text form-group">
+                                <label>Invoice Number</label>
+                                <input type="text" class="form-control" name="invoice_number" id="invoice_number" value="" placeholder="Enter Invoice Number" autocomplete="off">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-text form-group">
+                                <label>Type</label>
+                                <md-select ng-model="$ctrl.type_id" placeholder="Select Type" data-md-container-class="selectdemoSelectHeader" ng-change="onSelectedType($ctrl.type_id)">
+                                    <md-select-header class="demo-select-header ng-hide">
+                                        <input ng-model="searchCategory" type="search" placeholder="Search for a Type" class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                    </md-select-header>
+                                    <md-optgroup label="Travel List">
+                                        <md-option ng-value="type.id" ng-repeat="type in $ctrl.extras.type_list | filter:searchTravel">{{type.name}}</md-option>
+                                    </md-optgroup>
+                                </md-select>
+                                <input type="hidden" name="type_id" id="type_id" value="">
+                            </div><!-- Feild -->
+                        </div><!-- Column -->
+                        <div class="col-md-6">
+                            <div class="input-text form-group">
+                                <label>Branch</label>
+                                <md-autocomplete md-items="option in $ctrl.searchBranchFilter($ctrl.branchSearchText)" md-selected-item="$ctrl.service_invoice.branch" md-search-text="$ctrl.branchSearchText" md-item-text="option.code" md-min-length="3" placeholder="Branch code / name" md-selected-item-change="$ctrl.getBranchDetails()" md-search-text-change="$ctrl.branchChanged()" md-autofocus>
+                                    <md-item-template>
+                                        <span>
+                                            {{option.name}} - {{option.code}}
+                                        </span>
+                                    </md-item-template>
+                                    <md-not-found>
+                                        No Branch matching "{{$ctrl.branchSearchText}}" were found.
+                                    </md-not-found>
+                                </md-autocomplete>
+                                <input type="hidden" name="branch_id" id="branch_id" value="{{$ctrl.service_invoice.branch.id}}">
+                            </div>
+                        </div>                        
+                        <div class="col-md-6">
+                            <div class="input-text form-group">
+                                <label>SBU</label>
+                                <md-select ng-model="$ctrl.service_invoice.sbu_id" ng-change="getSelectedSbu($ctrl.service_invoice.sbu_id)" placeholder="Select SBU" md-on-close="clearSearchSbu()" data-md-container-class="selectdemoSelectHeader">
+                                    <md-select-header class="demo-select-header">
+                                        <input ng-model="searchSbu" type="search" placeholder="Search for a sbu.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                    </md-select-header>
+                                    <md-optgroup label="sbu">
+                                        <md-option ng-value="sbu.id" ng-repeat="sbu in $ctrl.extras.sbu_list | filter:searchSbu">{{sbu.name}}</md-option>
+                                    </md-optgroup>
+                                </md-select>
+                                <input type="hidden" name="sbu_id" id="sbu_id" value="{{$ctrl.service_invoice.sbu_id}}">
+                            </div><!-- Feild -->
+                        </div><!-- Column -->
+                        <div class="col-md-6">
+                            <div class="input-text form-group">
+                                <label>Category</label>
+                                <md-select ng-model="$ctrl.service_invoice.service_item_sub_category.category_id" ng-change="getServiceItemSubCategory($ctrl.service_invoice.service_item_sub_category.category_id); $ctrl.extras.sub_category_list=''; $ctrl.service_invoice.sub_category_id=''" placeholder="Select Category" md-on-close="clearSearchCategory()" data-md-container-class="selectdemoSelectHeader">
+                                    <md-select-header class="demo-select-header">
+                                        <input ng-model="searchCategory" type="search" placeholder="Search for a category.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                    </md-select-header>
+                                    <md-optgroup label="category">
+                                        <md-option ng-value="category.id" ng-repeat="category in $ctrl.extras.category_list | filter:searchCategory">{{category.name}}</md-option>
+                                    </md-optgroup>
+                                </md-select>
+                                <input type="hidden" name="category_id" id="category_id" value="{{$ctrl.service_invoice.service_item_sub_category.category_id}}">
+                            </div><!-- Feild -->
+                        </div><!-- Column -->
+                        <div class="col-md-6">
+                            <div class="input-text form-group">
+                                <label>Sub Category</label>
+                                <md-select ng-model="$ctrl.service_invoice.sub_category_id" ng-change="getSubCategory($ctrl.service_invoice.sub_category_id)" placeholder="Select sub category" md-on-close="clearSearchSubCategory()" data-md-container-class="selectdemoSelectHeader">
+                                    <md-select-header class="demo-select-header">
+                                        <input ng-model="searchSubCategory" type="search" placeholder="Search for a sub category.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                    </md-select-header>
+                                    <md-optgroup label="sub_category">
+                                        <md-option ng-value="sub_category.id" ng-repeat="sub_category in $ctrl.extras.sub_category_list | filter:searchSubCategory">{{sub_category.name}}</md-option>
+                                    </md-optgroup>
+                                </md-select>
+                                <input type="hidden" name="sub_category_id" id="sub_category_id" value="{{$ctrl.service_invoice.sub_category_id}}">
+                            </div><!-- Feild -->
+                        </div><!-- Column -->
+                        <div class="col-md-6">
+                            <div class="input-text form-group">
+                                <label>Customer</label>
+                                <md-autocomplete md-items="option in $ctrl.searchCustomer($ctrl.customerSearchText)" md-selected-item="$ctrl.service_invoice.customer" md-search-text="$ctrl.customerSearchText" md-item-text="option.code" md-min-length="3" placeholder="Customer code / name" md-selected-item-change="getCustomerDetails($ctrl.service_invoice.customer.id)" md-search-text-change="$ctrl.customerChanged()">
+                                    <md-item-template>
+                                        <span>
+                                            {{option.name}} - {{option.code}}
+                                        </span>
+                                    </md-item-template>
+                                    <md-not-found>
+                                        No Customers matching "{{$ctrl.customerSearchText}}" were found.
+                                    </md-not-found>
+                                </md-autocomplete>
+                                <input type="hidden" name="customer_id" id="customer_id" value="{{$ctrl.service_invoice.customer.id}}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-text form-group">
+                                <label>CN/DN Status</label>
+                                <md-select ng-model="$ctrl.status_id" ng-change="getSelectedStatus($ctrl.status_id)" placeholder="Select CN/DN Status" data-md-container-class="selectdemoSelectHeader" ng-change="onSelectedStatus($ctrl.status_id)">
+                                    <md-select-header class="demo-select-header ng-hide">
+                                        <input ng-model="searchCategory" type="search" placeholder="Search for a CN/DN Status" class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                    </md-select-header>
+                                    <md-optgroup label="Travel List">
+                                        <md-option ng-value="cn_dn_status.id" ng-repeat="cn_dn_status in $ctrl.extras.cn_dn_statuses | filter:searchTravel">{{cn_dn_status.status}}</md-option>
+                                    </md-optgroup>
+                                </md-select>
+                                <input type="hidden" name="status_id" id="status_id" value="">
+                            </div><!-- Feild -->
+                        </div><!-- Column -->
+                    </div>
+                    <div class="row modal-row">
+                        <div class="col-md-6">
+                            <button type="button" class="btn btn-rose" ng-click="reset_filter(); $ctrl.type_id=''; $ctrl.branchSearchText=''; $ctrl.service_invoice.sbu_id=''; $ctrl.service_invoice.service_item_sub_category.category_id=''; $ctrl.service_invoice.sub_category_id=''; $ctrl.customerSearchText=''; $ctrl.status_id=''">Reset Filter</button>
+                        </div>
+                    </div><!-- Row -->
+                </div><!-- Modal Form -->
+            </div><!-- Modal Body -->
+        </div><!-- Modal Content -->
+    </div><!-- Modal Dialog -->
+</div><!-- Modal Content -->

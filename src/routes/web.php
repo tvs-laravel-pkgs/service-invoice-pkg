@@ -15,7 +15,7 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 	Route::get('/service-invoice/cn-dn-approvals/approval/view/{approval_type_id?}/{type_id?}/{id?}', 'ServiceInvoiceApprovalController@viewServiceInvoiceApproval')->name('viewServiceInvoiceApproval');
 	Route::get('/service-invoice/cn-dn-approvals/', 'ServiceInvoiceApprovalController@approvalTypeValid')->name('approvalTypeValid');
 	Route::post('/service-invoice/cn-dn-approvals/save', 'ServiceInvoiceApprovalController@updateApprovalStatus')->name('updateApprovalStatus');
-
+	Route::get('/service-invoice/cn-dn-approvals/filter', 'ServiceInvoiceApprovalController@getApprovalFilter')->name('getApprovalFilter');
 	//GET SBUs
 	Route::get('/get-sbu/{outlet_id?}', 'ServiceInvoiceController@getSbus')->name('getSbus');
 
