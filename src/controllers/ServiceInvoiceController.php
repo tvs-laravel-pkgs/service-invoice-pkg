@@ -7,6 +7,7 @@ use Abs\AttributePkg\Field;
 use Abs\AttributePkg\FieldConfigSource;
 use Abs\AttributePkg\FieldGroup;
 use Abs\AttributePkg\FieldSourceTable;
+use Abs\AxaptaExportPkg\AxaptaExport;
 use Abs\SerialNumberPkg\SerialNumberGroup;
 use Abs\ServiceInvoicePkg\ServiceInvoice;
 use Abs\ServiceInvoicePkg\ServiceInvoiceItem;
@@ -25,6 +26,7 @@ use App\Outlet;
 use App\Sbu;
 use Auth;
 use DB;
+use Excel;
 use File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -1277,4 +1279,44 @@ class ServiceInvoiceController extends Controller {
 		}
 	}
 
+	public function exportServiceInvoicesToExcel(Request $r) {
+		$date_range = explode(" to ", $r->invoice_date);
+		$service_invoice_ids = ServiceInvoice::where('invoice_date', '>=', date('Y-m-d', strtotime($date_range[0])))
+			->where('invoice_date', '<=', date('Y-m-d', strtotime($date_range[1])))
+			->where('company_id', Auth::user()->company_id)
+			->pluck('id');
+		$axapta_records = AxaptaExport::where([
+			'company_id' => Auth::user()->company_id,
+			'entity_type_id' => 1400,
+		])
+			->whereIn('entity_id', $service_invoice_ids)
+			->get()->toArray();
+
+		// $axapta_records = [];
+		foreach ($axapta_records as $key => &$axapta_record) {
+			unset($axapta_record['id']);
+			unset($axapta_record['company_id']);
+			unset($axapta_record['entity_type_id']);
+			unset($axapta_record['entity_id']);
+			unset($axapta_record['created_at']);
+			unset($axapta_record['updated_at']);
+			$axapta_record['JournalNum'] = $key + 1;
+		}
+		// dd($axapta_records);
+
+		$file_name = 'cn-dn-export-' . date('Y-m-d-H-i-s');
+		Excel::create($file_name, function ($excel) use ($axapta_records) {
+			$excel->sheet('cn-dns', function ($sheet) use ($axapta_records) {
+
+				$sheet->fromArray($axapta_records);
+			});
+		})->store('xlsx')
+		//->download('xlsx')
+		;
+		return response()->download('storage/exports/' . $file_name . '.xlsx');
+		return Storage::download(storage_path('exports/') . $file_name . '.xlsx');
+
+		// dd($r->all(), $date_range, $service_invoice_ids, $axapta_records);
+
+	}
 }
