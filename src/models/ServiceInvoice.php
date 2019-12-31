@@ -6,6 +6,7 @@ use App\Company;
 use App\Customer;
 use App\Outlet;
 use App\Sbu;
+use Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -153,25 +154,61 @@ class ServiceInvoice extends Model {
 	}
 
 	public function exportToAxapta() {
+		// DB::beginTransaction();
+
+		// try {
+		$item_codes = [];
+		foreach ($this->serviceInvoiceItems as $invoice_item) {
+			$item_codes[] = $invoice_item->serviceItem->code;
+		}
+
+		if ($this->type_id == 1060) {
+			//CN
+			$Txt = 'Credit note for';
+		} else {
+			//DN
+			$Txt = 'Debit note for';
+		}
+		$Txt .= ' ' . implode(',', $item_codes);
 		$params = [
-			'LedgerDimension' => ,
-			'Voucher' => ,
-			'AccountType' => ,
-			'AmountCurDebit' => ,
-			'AmountCurCredit' => ,
-			'TaxGroup' => ,
-			'TaxGroup' => ,
-			'TaxGroup' => ,
-			'TaxGroup' => ,
-			'TaxGroup' => ,
+			'Voucher' => 'V',
+			'AccountType' => 'Vendor',
+			'LedgerDimension' => $this->customer->code,
+			'Txt' => $Txt . '-' . $this->number,
+			'AmountCurDebit' => $this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') : 0,
+			'AmountCurCredit' => $this->type_id == 1060 ? $this->serviceInvoiceItems()->sum('sub_total') : 0,
+			'TaxGroup' => '',
+			'TVSSACCode' => $this->serviceInvoiceItems[0]->serviceItem->taxCode->code,
 		];
+		$this->exportRowToAxapta($params);
+
+		foreach ($this->serviceInvoiceItems as $invoice_item) {
+			// dump($invoice_item->coaCode, $this->branch);
+			$params = [
+				'Voucher' => 'D',
+				'AccountType' => 'Ledger',
+				'LedgerDimension' => $invoice_item->serviceItem->coaCode->code . '-' . $this->branch->code . '-' . $this->sbu->name,
+				'Txt' => $invoice_item->serviceItem->code . ' ' . $invoice_item->serviceItem->description . ' ' . $invoice_item->description . '-' . $this->number,
+				'AmountCurDebit' => $this->type_id == 1060 ? $invoice_item->sub_total : 0,
+				'AmountCurCredit' => $this->type_id == 1061 ? $invoice_item->sub_total : 0,
+				'TaxGroup' => '',
+				'TVSSACCode' => $invoice_item->serviceItem->taxCode->code,
+			];
+			$this->exportRowToAxapta($params);
+		}
+		// 	DB::commit();
+		// 	// dd(1);
+		// } catch (\Exception $e) {
+		// 	DB::rollback();
+		// 	dd($e);
+		// }
 	}
 
 	protected function exportRowToAxapta($params) {
 
 // $invoice, $sno, $TransDate, $owner, $outlet, $coa_code, $ratio, $bank_detail, $rent_details, $debit, $credit, $voucher, $txt, $payment_modes, $flip, $account_type, $ledger_dimention, $sac_code, $sharing_type_id, $hsn_code = '', $tds_group_in = ''
 
-		$export = AxaptaExport::firstOrNew([
+		$export = new AxaptaExport([
 			'company_id' => Auth::user()->company_id,
 			'entity_type_id' => 1400,
 			'entity_id' => $this->id,
@@ -181,10 +218,10 @@ class ServiceInvoice extends Model {
 		$export->CurrencyCode = 'INR';
 		$export->JournalName = 'COGLMBBI';
 		$export->JournalNum = "";
-		$export->Voucher = $params['voucher'];
+		$export->Voucher = $params['Voucher'];
 		$export->ApproverPersonnelNumber = Auth::user()->employee->code;
 		$export->Approved = 1;
-		$export->TransDate = date('Y-m-d');
+		$export->TransDate = date("Y-m-d", strtotime($this->document_date));
 		//dd($ledger_dimention);
 		$export->AccountType = $params['AccountType'];
 
@@ -202,19 +239,16 @@ class ServiceInvoice extends Model {
 		$export->SalesTaxFormTypes_IN_FormType = '';
 		$export->TDSGroup_IN = $params['TaxGroup'];
 		$export->DocumentNum = $this->number;
-		$export->DocumentDate = date('d/m/Y', strtotime($this->document_date));
+		$export->DocumentDate = date("Y-m-d", strtotime($this->document_date));
 		$export->LogisticsLocation_LocationId = '000127079';
 		$export->Due = '';
 		$export->PaymReference = '';
 		$export->TVSHSNCode = '';
-		$export->TVSSACCode = '';
+		$export->TVSSACCode = $params['TVSSACCode'];
 		$export->TVSVendorLocationID = $this->customer->axapta_location_id;
 		$export->TVSCustomerLocationID = '';
-		$export->TVSCompanyLocationId = $this->outlet->company_location_id;
-		// $export->fill($row);
+		$export->TVSCompanyLocationId = $this->outlet->axapta_location_id ? $this->outlet->axapta_location_id : '';
 		$export->save();
-		//dd($export);
-		// return $row;
 
 	}
 

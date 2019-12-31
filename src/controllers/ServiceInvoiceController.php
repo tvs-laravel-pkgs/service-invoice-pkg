@@ -880,6 +880,8 @@ class ServiceInvoiceController extends Controller {
 			'serviceInvoiceItems.taxes',
 		])->find($service_invoice_pdf_id);
 
+		$service_invoice_pdf->exportToAxapta();
+
 		$service_invoice_pdf->company->formatted_address = $service_invoice_pdf->company->primaryAddress ? $service_invoice_pdf->company->primaryAddress->getFormattedAddress() : 'NA';
 		$service_invoice_pdf->outlets->formatted_address = $service_invoice_pdf->outlets->primaryAddress ? $service_invoice_pdf->outlets->primaryAddress->getFormattedAddress() : 'NA';
 		$service_invoice_pdf->customer->formatted_address = $service_invoice_pdf->customer->primaryAddress ? $service_invoice_pdf->customer->primaryAddress->address_line1 : 'NA';
