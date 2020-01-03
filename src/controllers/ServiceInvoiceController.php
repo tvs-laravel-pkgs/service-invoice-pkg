@@ -24,8 +24,10 @@ use App\FinancialYear;
 use App\Http\Controllers\Controller;
 use App\Outlet;
 use App\Sbu;
+use App\User;
 use Auth;
 use DB;
+use Entrust;
 use Excel;
 use File;
 use Illuminate\Http\Request;
@@ -54,6 +56,7 @@ class ServiceInvoiceController extends Controller {
 
 	public function getServiceInvoiceList(Request $request) {
 		//dd($request->all());
+		//dd(Entrust::can('view-all-cn-dn'));
 		if (!empty($request->invoice_date)) {
 			$invoice_date = explode('to', $request->invoice_date);
 			$first_date_this_month = date('Y-m-d', strtotime($invoice_date[0]));
@@ -80,7 +83,11 @@ class ServiceInvoiceController extends Controller {
 				'customers.name as customer_name',
 				'configs.name as type_name',
 				'configs.id as si_type_id',
-				'approval_type_statuses.status'
+				'approval_type_statuses.status',
+				'service_invoices.created_by_id'
+				// 'employee_outlet.employee_id',
+				// 'employee_outlet.outlet_id',
+				// 'users.id as user_id'
 			)
 			->join('outlets', 'outlets.id', 'service_invoices.branch_id')
 			->join('sbus', 'sbus.id', 'service_invoices.sbu_id')
@@ -89,6 +96,11 @@ class ServiceInvoiceController extends Controller {
 			->join('customers', 'customers.id', 'service_invoices.customer_id')
 			->join('configs', 'configs.id', 'service_invoices.type_id')
 			->join('approval_type_statuses', 'approval_type_statuses.id', 'service_invoices.status_id')
+		// ->leftjoin('user_outlets', 'user_outlets.user_id', 'service_invoices.created_by_id')
+		// ->leftJoin('users', 'users.id', 'service_invoices.created_by_id')
+		// ->leftJoin('employees', 'employees.id', 'users.entity_id')
+		// ->leftJoin('employee_outlet', 'employee_outlet.employee_id', 'employees.id')
+
 			->where('service_invoices.company_id', Auth::user()->company_id)
 			->where('approval_type_statuses.approval_type_id', 1)
 			->where(function ($query) use ($first_date_this_month, $last_date_this_month) {
@@ -138,6 +150,7 @@ class ServiceInvoiceController extends Controller {
 			})
 			->groupBy('service_invoices.id')
 			->orderBy('service_invoices.id', 'Desc');
+		// ->get();
 		// dd($service_invoice_list);
 		return Datatables::of($service_invoice_list)
 			->addColumn('child_checkbox', function ($service_invoice_list) {
@@ -160,21 +173,54 @@ class ServiceInvoiceController extends Controller {
 				$img_download = asset('public/theme/img/table/cndn/download.svg');
 				$img_delete = asset('public/theme/img/table/cndn/delete.svg');
 				$path = URL::to('/storage/app/public/service-invoice-pdf');
-
+				$output = '';
+				$view_user_outlets_only = User::select('employee_outlet.employee_id', 'employee_outlet.outlet_id', 'users.id as user_id', 'users.entity_id', 'users.company_id')
+					->leftJoin('employees', 'employees.id', 'users.entity_id')
+					->leftJoin('employee_outlet', 'employee_outlet.employee_id', 'employees.id')
+					->leftJoin('outlets', 'outlets.id', 'employee_outlet.outlet_id')
+					->where('employee_outlet.employee_id', Auth::user()->entity_id)
+					->where('users.company_id', Auth::user()->company_id)
+					->where('users.user_type_id', 1)
+					->get()->toArray();
 				if ($service_invoice_list->status_id == '4') {
-					return '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
+					if (Entrust::can('view-all-cn-dn')) {
+						$output .= '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
 	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
-	                    	</a>
-	                        <a href="' . $path . '/' . $service_invoice_list->number . '.pdf" class=""><img class="img-responsive" src="' . $img_download . '" alt="Download" />
+	                    	</a>';
+					}
+					if (Entrust::can('view-own-cn-dn') && $service_invoice_list->created_by_id == Auth::user()->id) {
+						$output .= '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
+					                    <img class="img-responsive" src="' . $img_view . '" alt="View" />
+					                	</a>';
+					}
+					if (Entrust::can('view-outlet-based-cn-dn') && count($view_user_outlets_only) > 0) {
+						$output .= '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
+						                   <img class="img-responsive" src="' . $img_view . '" alt="View" />
+						               	</a>';
+					}
+					$output .= '<a href="' . $path . '/' . $service_invoice_list->number . '.pdf" class=""><img class="img-responsive" src="' . $img_download . '" alt="Download" />
 	                        </a>';
 				} elseif ($service_invoice_list->status_id != '4') {
-					return '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
+					if (Entrust::can('view-all-cn-dn')) {
+						$output .= '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
 	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
-	                    	</a>
-							<a href="#!/service-invoice-pkg/service-invoice/edit/' . $type_id . '/' . $service_invoice_list->id . '" class="">
+	                    	</a>';
+					}
+					if (Entrust::can('view-own-cn-dn') && $service_invoice_list->created_by_id == Auth::user()->id) {
+						$output .= '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
+					                    <img class="img-responsive" src="' . $img_view . '" alt="View" />
+					                	</a>';
+					}
+					if (Entrust::can('view-outlet-based-cn-dn') && count($view_user_outlets_only) > 0) {
+						$output .= '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
+						                   <img class="img-responsive" src="' . $img_view . '" alt="View" />
+						               	</a>';
+					}
+					$output .= '<a href="#!/service-invoice-pkg/service-invoice/edit/' . $type_id . '/' . $service_invoice_list->id . '" class="">
 	                        <img class="img-responsive" src="' . $img_edit . '" alt="Edit" />
 	                    	</a>';
 				}
+				return $output;
 			})
 			->rawColumns(['child_checkbox', 'action'])
 			->make(true);
