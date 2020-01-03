@@ -1,22 +1,22 @@
-<!-- Content Wrap -->
+Content Wrap -->
 <form id="form" enctype="multipart-formdata" autocomplete="off">
-<div class="content-wrap cndn-wrap">
-    <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-inner">
-            <div class="page-header-content-left">
-                <div class="page-header-content button-block">
-                    <a href="#!/service-invoice-pkg/cn-dn/approval/approval-level/{{$ctrl.approval_type_id}}/list/" type="button" class="btn-back btn-img"><img class="img-responsive" src="./public/theme/img/content/previous.svg" alt="Back" /></a>
-                </div><!-- Page Header Content -->
-                <div class="page-header-content title-block">
-                    <h1 class="title" ng-show="$ctrl.type_id == 1060"><b>{{$ctrl.action}} Credit Note</b></h1>
-                    <h1 class="title" ng-show="$ctrl.type_id == 1061"><b>{{$ctrl.action}} Invoice</b></h1>
-                    <!-- <p class="subtitle">Service Item category List / Form</p> -->
-                </div><!-- Page Header Content -->
-            </div><!-- Page Header Content Left -->
-        </div><!-- Page Header Inner -->
-    </div><!-- Page Header -->
-    <!-- <form id="form" enctype="multipart-formdata" autocomplete="off"> -->
+    <div class="content-wrap cndn-wrap">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-header-inner">
+                <div class="page-header-content-left">
+                    <div class="page-header-content button-block">
+                        <a href="#!/service-invoice-pkg/cn-dn/approval/approval-level/{{$ctrl.approval_type_id}}/list/" type="button" class="btn-back btn-img"><img class="img-responsive" src="./public/theme/img/content/previous.svg" alt="Back" /></a>
+                    </div><!-- Page Header Content -->
+                    <div class="page-header-content title-block">
+                        <h1 class="title" ng-show="$ctrl.type_id == 1060"><b>{{$ctrl.action}} Credit Note</b></h1>
+                        <h1 class="title" ng-show="$ctrl.type_id == 1061"><b>{{$ctrl.action}} Invoice</b></h1>
+                        <!-- <p class="subtitle">Service Item category List / Form</p> -->
+                    </div><!-- Page Header Content -->
+                </div><!-- Page Header Content Left -->
+            </div><!-- Page Header Inner -->
+        </div><!-- Page Header -->
+        <!-- <form id="form" enctype="multipart-formdata" autocomplete="off"> -->
         <input type="hidden" name="id" id="id" value="{{$ctrl.service_invoice.id}}">
         <input type="hidden" name="type_id" value="{{$ctrl.type_id}}">
         <input type="hidden" name="approval_type_id" id="approval_type_id" value="{{$ctrl.approval_type_id}}">
@@ -108,7 +108,7 @@
                                     <li class="flex-md-4">
                                         <div class="info-wrap">
                                             <p class="info-content color-red right"><b>Invoice To</b></p>
-                                            <p class="info-title" >{{$ctrl.service_invoice.customer.name}}</p>
+                                            <p class="info-title">{{$ctrl.service_invoice.customer.name}}</p>
                                             <p class="info-content-small italic">Customer Code : {{$ctrl.service_invoice.customer.code}}</p>
                                         </div><!-- Info Wrap -->
                                         <div class="info-wrap">
@@ -136,8 +136,8 @@
                                                 <th>Item Code</th>
                                                 <th>Item Name</th>
                                                 <th>Reference</th>
-                                                <th class="text-right">Quantity</th>
-                                                <th class="text-right">Rate</th>
+                                                <!-- <th class="text-right">Quantity</th> -->
+                                                <!-- <th class="text-right">Rate</th> -->
                                                 <th class="text-right">Amount</th>
                                                 <th class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list">{{tax.name}}</th>
                                                 <th class="text-right">Total Amount</th>
@@ -148,7 +148,7 @@
                                                 <input type="hidden" name="service_invoice_items[{{index}}][id]" value="{{service_invoice_item.id}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][service_item_id]" value="{{service_invoice_item.service_item_id}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][description]" value="{{service_invoice_item.description}}">
-                                                <input type="hidden" name="service_invoice_items[{{index}}][qty]" value="{{service_invoice_item.qty}}">
+                                                <!-- <input type="hidden" name="service_invoice_items[{{index}}][qty]" value="{{service_invoice_item.qty}}"> -->
                                                 <input type="hidden" name="service_invoice_items[{{index}}][rate]" value="{{service_invoice_item.rate}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][sub_total]" value="{{service_invoice_item.sub_total}}">
                                                 <!-- FIELD GROUPS -->
@@ -162,15 +162,16 @@
                                                     </span>
                                                 </td>
                                                 <td class="action">
-                                                    <a href="javascript:void(0)" ng-click="editServiceItem(service_invoice_item.service_item_id, service_invoice_item.description, service_invoice_item.qty, service_invoice_item.rate,index)">
+                                                    <!-- <a href="javascript:void(0)" ng-click="editServiceItem(service_invoice_item.service_item_id, service_invoice_item.description, service_invoice_item.qty, service_invoice_item.rate,index)"> -->
+                                                    <a href="javascript:void(0)" ng-click="editServiceItem(service_invoice_item.service_item_id, service_invoice_item.description, service_invoice_item.rate,index)">
                                                         <img class="img-responsive" src="./public/theme/img/table/cndn/view.svg" alt="View" />
                                                     </a>
                                                 </td>
                                                 <td>{{service_invoice_item.code}}</td>
                                                 <td>{{service_invoice_item.name}}</td>
                                                 <td>{{service_invoice_item.description}}</td>
-                                                <td class="text-right">{{$ctrl.parseInt(service_invoice_item.qty)}}</td>
-                                                <td class="text-right">{{service_invoice_item.rate | number : 2}}</td>
+                                                <!-- <td class="text-right">{{$ctrl.parseInt(service_invoice_item.qty)}}</td> -->
+                                                <!-- <td class="text-right">{{service_invoice_item.rate | number : 2}}</td> -->
                                                 <td class="text-right">{{service_invoice_item.sub_total | number : 2}}</td>
                                                 <td class="text-right" ng-repeat="(tax_index, tax) in $ctrl.extras.tax_list">
                                                     {{(service_invoice_item[tax.name] ? (service_invoice_item[tax.name].amount | number : 2) : 0.00)}}({{(service_invoice_item[tax.name] ? (service_invoice_item[tax.name].percentage) : 0)}}%)
@@ -185,8 +186,8 @@
                                             <tr>
                                                 <th colspan="3"></th>
                                                 <th>Total</th>
-                                                <th class="text-right">{{$ctrl.table_qty}}</th>
-                                                <th class="text-right">{{$ctrl.table_rate | number : 2}}</th>
+                                                <!-- <th class="text-right">{{$ctrl.table_qty}}</th> -->
+                                                <!-- <th class="text-right">{{$ctrl.table_rate | number : 2}}</th> -->
                                                 <th class="text-right">{{$ctrl.table_sub_total | number : 2}}</th>
                                                 <th class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list">{{$ctrl.tax_wise_total[tax.name+'_amount'] | number : 2}}</th>
                                                 <th class="text-right">{{$ctrl.minus_value}}{{$ctrl.table_total | number : 2}}</th>
@@ -206,10 +207,10 @@
                                 <div class="row">
                                     <div class="col-md-8 text-left">
                                         <ul class="form-footer-list">
-                                            <li>
+                                            <!--  <li>
                                                 <span class="form-footer-label">Total Quantity</span>
                                                 <span class="form-footer-value" ng-if="$ctrl.table_qty">{{$ctrl.table_qty}}</span>
-                                            </li>
+                                            </li> -->
                                             <li>
                                                 <span class="form-footer-label">Total Amount</span>
                                                 <span class="form-footer-value" ng-if="$ctrl.table_total">INR {{$ctrl.minus_value}}{{$ctrl.table_total | number : 2}} <small>({{$ctrl.table_sub_total | number : 2}} + {{$ctrl.table_gst_total | number : 2}} GST)</small></span>
@@ -227,35 +228,33 @@
                 </div><!-- Row -->
             </div><!-- Container -->
         </div><!-- Page Main Content -->
-    <!-- </form> -->
-</div><!-- Content Wrap -->
-<script src="./public/theme/js/imageuploadify.min.js"></script>
-
-<!-- Modal -->
-<div class="modal fade filter" id="cancel_request_reject_modal" role="dialog" aria-labelledby="myModalLabel">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close ripple reject_close" data-dismiss="modal" aria-label="Close"><i class="icon ion-md-close"></i></button>
-                <h5 class="modal-title" id="myModalLabel">Reject</h5>
-            </div>
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="form-group">
-                        <label>Rejection Remarks<span class="mandatory">*</span></label>
-                        <textarea rows="5" class="form-control rejection_remarks" placeholder="Enter Rejection Remarks" name="comments" value="" id="comments" autocomplete="off" minlength="3" maxlength="191"></textarea>
-                    </div><!-- Field -->
-                </div><!-- Column -->
-                <div class="col-md-12 text-right mb-15">
-                    <button type="button" data-dismiss="modal" class="btn btn-primary btn-bordered cancel_modal_btn">Cancel</button>
-                    <button type="submit" id="reject" class="btn btn-bordered btn-red reject_btn">Reject</button>
-                </div><!-- Column -->
-            </div><!-- Row -->
-        </div><!-- Modal Content -->
-    </div><!-- Modal Dialog -->
-</div><!-- Modal -->
+        <!-- </form> -->
+    </div><!-- Content Wrap -->
+    <script src="./public/theme/js/imageuploadify.min.js"></script>
+    <!-- Modal -->
+    <div class="modal fade filter" id="cancel_request_reject_modal" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close ripple reject_close" data-dismiss="modal" aria-label="Close"><i class="icon ion-md-close"></i></button>
+                    <h5 class="modal-title" id="myModalLabel">Reject</h5>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label>Rejection Remarks<span class="mandatory">*</span></label>
+                            <textarea rows="5" class="form-control rejection_remarks" placeholder="Enter Rejection Remarks" name="comments" value="" id="comments" autocomplete="off" minlength="3" maxlength="191"></textarea>
+                        </div><!-- Field -->
+                    </div><!-- Column -->
+                    <div class="col-md-12 text-right mb-15">
+                        <button type="button" data-dismiss="modal" class="btn btn-primary btn-bordered cancel_modal_btn">Cancel</button>
+                        <button type="submit" id="reject" class="btn btn-bordered btn-red reject_btn">Reject</button>
+                    </div><!-- Column -->
+                </div><!-- Row -->
+            </div><!-- Modal Content -->
+        </div><!-- Modal Dialog -->
+    </div><!-- Modal -->
 </form>
-
 <!-- Modal -->
 <div class="modal fade" id="modal-cn-addnew" role="dialog" aria-labelledby="myModalLabel">
     <div class="modal-dialog modal-md fixed" role="document">
@@ -307,14 +306,14 @@
                                         </div><!-- Table Form List Control -->
                                     </div><!-- Table Form List Wrap -->
                                 </li>
-                                <li>
+                                <!--  <li>
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">Quantity </label>
                                         <div class="table-form-list-control">
                                             <input name="qty" ng-model="$ctrl.qty" type="text" class="form-control type-sm" placeholder="Enter Quantity" readonly />
-                                        </div><!-- Table Form List Control -->
-                                    </div><!-- Table Form List Wrap -->
-                                </li>
+                                        </div>
+                                    </div>
+                                </li> -->
                                 <li>
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">Amount </label>
@@ -465,4 +464,4 @@
             </div><!-- Modal Content -->
         </form>
     </div><!-- Modal Dialog -->
-</div><!-- Modal -->
+</div><!-- Modal

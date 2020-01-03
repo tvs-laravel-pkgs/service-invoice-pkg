@@ -104,15 +104,15 @@ app.component('serviceInvoiceApprovalList', {
                 },
             });
         }, 1000);
-        $('.modal').bind('click', function (event) {
-            if($('.md-select-menu-container').hasClass('md-active')){
+        $('.modal').bind('click', function(event) {
+            if ($('.md-select-menu-container').hasClass('md-active')) {
                 $mdSelect.hide();
             }
         });
         $('.refresh_table').on("click", function() {
             $('#cn-dn-approval-table').DataTable().ajax.reload();
         });
-        $('#invoice_number').keyup(function () {
+        $('#invoice_number').keyup(function() {
             setTimeout(function() {
                 dataTable.draw();
             }, 900);
@@ -152,7 +152,7 @@ app.component('serviceInvoiceApprovalList', {
                 dataTable.draw();
             }, 900);
         }
-        $scope.reset_filter = function () {
+        $scope.reset_filter = function() {
             $('#invoice_number').val('');
             $('#invoice_date').val('');
             $('#type_id').val('');
@@ -167,7 +167,7 @@ app.component('serviceInvoiceApprovalList', {
         //GET SERVICE ITEM SUB CATEGORY BY CATEGORY
         $scope.getServiceItemSubCategory = function(category_id) {
             self.extras.sub_category_list = [];
-            if(category_id == '') {
+            if (category_id == '') {
                 $('#sub_category_id').val('');
             }
             $('#category_id').val(category_id);
@@ -194,7 +194,7 @@ app.component('serviceInvoiceApprovalList', {
                     });
             }
         }
-        
+
         $(".search_clear").on("click", function() {
             $('#search').val('');
             $('#cn-dn-approval-table').DataTable().search('').draw();
@@ -202,8 +202,8 @@ app.component('serviceInvoiceApprovalList', {
 
         $("#search").on('keyup', function() {
             dataTable
-                    .search( this.value )
-                    .draw();
+                .search(this.value)
+                .draw();
         });
         $('.align-left.daterange').daterangepicker({
             autoUpdateInput: false,
@@ -311,14 +311,14 @@ app.component('serviceInvoiceApprovalList', {
 
 //------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------
-app.component('serviceInvoiceApprovalView', { 
+app.component('serviceInvoiceApprovalView', {
     templateUrl: service_invoice_approval_view_template_url,
     controller: function($http, $location, HelperService, $routeParams, $rootScope, $scope, $timeout, $mdSelect, $window) {
         if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061) {} else {
             $location.path('/page-not-found')
             return;
         }
-        $form_data_url = cn_dn_approval_view_data_url + '/' + $routeParams.approval_type_id+ '/' + $routeParams.type_id + '/' + $routeParams.id;
+        $form_data_url = cn_dn_approval_view_data_url + '/' + $routeParams.approval_type_id + '/' + $routeParams.type_id + '/' + $routeParams.id;
         //alert($form_data_url);
         var self = this;
         self.hasPermission = HelperService.hasPermission;
@@ -327,9 +327,9 @@ app.component('serviceInvoiceApprovalView', {
         self.approval_type_id = $routeParams.approval_type_id;
         self.enable_service_item_md_change = true;
         self.ref_attachements_url_link = ref_attachements_url;
-        if(self.type_id == 1060) {
+        if (self.type_id == 1060) {
             self.minus_value = '-';
-        } else if(self.type_id == 1061) {
+        } else if (self.type_id == 1061) {
             self.minus_value = '';
         }
         $http.get(
@@ -341,7 +341,7 @@ app.component('serviceInvoiceApprovalView', {
                     layout: 'topRight',
                     text: response.data.error,
                 }).show();
-                $location.path('/service-invoice-pkg/cn-dn/approval/approval-level/'+ $routeParams.approval_type_id +'/list/')
+                $location.path('/service-invoice-pkg/cn-dn/approval/approval-level/' + $routeParams.approval_type_id + '/list/')
                 $scope.$apply()
             }
             // self.list_url = cn_dn_approval_list_url;
@@ -350,7 +350,7 @@ app.component('serviceInvoiceApprovalView', {
             self.extras = response.data.extras;
             self.action = response.data.action;
             self.service_invoice_status = response.data.service_invoice_status;
-// console.log(self.service_invoice);
+            // console.log(self.service_invoice);
             if (self.action == 'View') {
                 $timeout(function() {
                     $scope.serviceInvoiceItemCalc();
@@ -380,7 +380,8 @@ app.component('serviceInvoiceApprovalView', {
         }
 
         //EDIT SERVICE INVOICE ITEM
-        $scope.editServiceItem = function(service_invoice_item_id, description, qty, rate, index) {
+        // $scope.editServiceItem = function(service_invoice_item_id, description, qty, rate, index) {
+        $scope.editServiceItem = function(service_invoice_item_id, description, rate, index) {
             if (service_invoice_item_id) {
                 self.enable_service_item_md_change = false;
                 self.add_service_action = false;
@@ -399,7 +400,7 @@ app.component('serviceInvoiceApprovalView', {
                         self.service_item_detail = response.data.service_item;
                         self.service_item = response.data.service_item;
                         self.description = description;
-                        self.qty = parseInt(qty);
+                        // self.qty = parseInt(qty);
                         self.rate = rate;
 
                         //AMOUNT CALCULATION
@@ -419,8 +420,10 @@ app.component('serviceInvoiceApprovalView', {
             self.sub_total = 0;
             self.total = 0;
             self.gst_total = 0;
-            if (self.qty && self.rate) {
-                self.sub_total = self.qty * self.rate;
+            // if (self.qty && self.rate) {
+            if (self.rate) {
+                // self.sub_total = self.qty * self.rate;
+                self.sub_total = self.rate;
                 if (self.service_item_detail.tax_code != null) {
                     if (self.service_item_detail.tax_code.taxes.length > 0) {
                         $(self.service_item_detail.tax_code.taxes).each(function(key, tax) {
@@ -435,7 +438,7 @@ app.component('serviceInvoiceApprovalView', {
 
         //SERVICE INVOICE ITEMS CALCULATION
         $scope.serviceInvoiceItemCalc = function() {
-            self.table_qty = 0;
+            // self.table_qty = 0;
             self.table_rate = 0;
             self.table_sub_total = 0;
             self.table_total = 0;
@@ -448,7 +451,7 @@ app.component('serviceInvoiceApprovalView', {
             };
 
             $(self.service_invoice.service_invoice_items).each(function(key, service_invoice_item) {
-                self.table_qty += parseInt(service_invoice_item.qty);
+                // self.table_qty += parseInt(service_invoice_item.qty);
                 self.table_rate = (parseFloat(self.table_rate) + parseFloat(service_invoice_item.rate)).toFixed(2);
                 st = parseFloat(service_invoice_item.sub_total).toFixed(2);
                 // console.log(parseFloat(self.table_sub_total));
@@ -482,9 +485,9 @@ app.component('serviceInvoiceApprovalView', {
             ignore: '',
             submitHandler: function(form) {
                 // var submitButtonValue =  $(this.submitButton).attr("data-id");
-                var submitButtonId =  $(this.submitButton).attr("id");
+                var submitButtonId = $(this.submitButton).attr("id");
                 var comment_value = $('#comments').val();
-                if(submitButtonId == 'reject' && comment_value == '') {
+                if (submitButtonId == 'reject' && comment_value == '') {
                     $(submitButtonId).button('reset');
                     $noty = new Noty({
                         type: 'error',
@@ -504,10 +507,10 @@ app.component('serviceInvoiceApprovalView', {
                         url: laravel_routes['updateApprovalStatus'],
                         method: "POST",
                         data: {
-                            id : $('#id').val(),
-                            approval_type_id : $('#approval_type_id').val(),
-                            comments : $('#comments').val(),
-                            status_name : submitButtonId,
+                            id: $('#id').val(),
+                            approval_type_id: $('#approval_type_id').val(),
+                            comments: $('#comments').val(),
+                            status_name: submitButtonId,
                         },
                         headers: {
                             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -533,7 +536,7 @@ app.component('serviceInvoiceApprovalView', {
                                 $noty.close();
                             }, 3000);
                         } else {
-                            if(res.message == 'Rejected') {
+                            if (res.message == 'Rejected') {
                                 $('#cancel_request_reject_modal').modal('hide');
                                 $noty = new Noty({
                                     type: 'success',
@@ -557,7 +560,7 @@ app.component('serviceInvoiceApprovalView', {
                                 $noty.close();
                             }, 3000);
                             $timeout(function() {
-                                $location.path('/service-invoice-pkg/cn-dn/approval/approval-level/'+ $routeParams.approval_type_id +'/list/');
+                                $location.path('/service-invoice-pkg/cn-dn/approval/approval-level/' + $routeParams.approval_type_id + '/list/');
                             }, 900);
                             $scope.$apply()
                         }
@@ -576,7 +579,7 @@ app.component('serviceInvoiceApprovalView', {
                             $noty.close();
                         }, 3000);
                     });
-                
+
             },
         });
     }

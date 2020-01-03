@@ -90,15 +90,15 @@ app.component('serviceInvoiceList', {
                 },
             });
         }, 1000);
-        $('.modal').bind('click', function (event) {
-            if($('.md-select-menu-container').hasClass('md-active')){
+        $('.modal').bind('click', function(event) {
+            if ($('.md-select-menu-container').hasClass('md-active')) {
                 $mdSelect.hide();
             }
         });
         $('.refresh_table').on("click", function() {
             $('#service-invoice-table').DataTable().ajax.reload();
         });
-        $('#invoice_number').keyup(function () {
+        $('#invoice_number').keyup(function() {
             setTimeout(function() {
                 dataTable.draw();
             }, 900);
@@ -138,7 +138,7 @@ app.component('serviceInvoiceList', {
                 dataTable.draw();
             }, 900);
         }
-        $scope.reset_filter = function () {
+        $scope.reset_filter = function() {
             $('#invoice_number').val('');
             $('#invoice_date').val('');
             $('#type_id').val('');
@@ -153,7 +153,7 @@ app.component('serviceInvoiceList', {
         //GET SERVICE ITEM SUB CATEGORY BY CATEGORY
         $scope.getServiceItemSubCategory = function(category_id) {
             self.extras.sub_category_list = [];
-            if(category_id == '') {
+            if (category_id == '') {
                 $('#sub_category_id').val('');
             }
             $('#category_id').val(category_id);
@@ -203,7 +203,7 @@ app.component('serviceInvoiceList', {
                 $('#addServiceItem').button('loading');
             },
         });
-        
+
         $(".search_clear").on("click", function() {
             $('#search').val('');
             $('#service-invoice-table').DataTable().search('').draw();
@@ -211,8 +211,8 @@ app.component('serviceInvoiceList', {
 
         $("#search").on('keyup', function() {
             dataTable
-                    .search( this.value )
-                    .draw();
+                .search(this.value)
+                .draw();
         });
 
         $('#parent').on('click', function() {
@@ -701,7 +701,7 @@ app.component('serviceInvoiceForm', {
             self.action_title = 'Add';
             self.update_item_key = '';
             self.description = '';
-            self.qty = '';
+            // self.qty = '';
             self.rate = '';
             self.sub_total = '';
             self.total = '';
@@ -712,7 +712,8 @@ app.component('serviceInvoiceForm', {
         }
 
         //EDIT SERVICE INVOICE ITEM
-        $scope.editServiceItem = function(service_invoice_item_id, description, qty, rate, index) {
+        // $scope.editServiceItem = function(service_invoice_item_id, description, qty, rate, index) {
+        $scope.editServiceItem = function(service_invoice_item_id, description, rate, index) {
             if (service_invoice_item_id) {
                 self.enable_service_item_md_change = false;
                 self.add_service_action = false;
@@ -731,9 +732,8 @@ app.component('serviceInvoiceForm', {
                         self.service_item_detail = response.data.service_item;
                         self.service_item = response.data.service_item;
                         self.description = description;
-                        self.qty = parseInt(qty);
+                        // self.qty = parseInt(qty);
                         self.rate = rate;
-
                         //AMOUNT CALCULATION
                         $scope.totalAmountCalc();
 
@@ -764,8 +764,10 @@ app.component('serviceInvoiceForm', {
             self.sub_total = 0;
             self.total = 0;
             self.gst_total = 0;
-            if (self.qty && self.rate) {
-                self.sub_total = self.qty * self.rate;
+            // if (self.qty && self.rate) {
+            if (self.rate) {
+                // self.sub_total = self.qty * self.rate;
+                self.sub_total = self.rate;
                 if (self.service_item_detail.tax_code != null) {
                     if (self.service_item_detail.tax_code.taxes.length > 0) {
                         $(self.service_item_detail.tax_code.taxes).each(function(key, tax) {
@@ -774,17 +776,17 @@ app.component('serviceInvoiceForm', {
                         });
                     }
                 }
-                self.total = self.sub_total + self.gst_total;
+                self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total);
             }
         };
 
         //SERVICE INVOICE ITEMS CALCULATION
         $scope.serviceInvoiceItemCalc = function() {
-            self.table_qty = 0;
+            // self.table_qty = 0;
             self.table_rate = 0;
+            self.table_gst_total = 0;
             self.table_sub_total = 0;
             self.table_total = 0;
-            self.table_gst_total = 0;
             self.tax_wise_total = {};
             for (i = 0; i < self.extras.tax_list.length; i++) {
                 if (typeof(self.extras.tax_list[i].name) != 'undefined') {
@@ -793,13 +795,11 @@ app.component('serviceInvoiceForm', {
             };
 
             $(self.service_invoice.service_invoice_items).each(function(key, service_invoice_item) {
-                self.table_qty += parseInt(service_invoice_item.qty);
+                // self.table_qty += parseInt(service_invoice_item.qty);
                 self.table_rate = (parseFloat(self.table_rate) + parseFloat(service_invoice_item.rate)).toFixed(2);
-                st = parseFloat(service_invoice_item.sub_total).toFixed(2);
+                // st = parseFloat(service_invoice_item.sub_total).toFixed(2);
                 // console.log(parseFloat(self.table_sub_total));
-                // console.log(parseFloat(st));
-
-                self.table_sub_total = (parseFloat(self.table_sub_total) + parseFloat(st)).toFixed(2);
+                self.table_sub_total = (parseFloat(self.table_rate)).toFixed(2); // + parseFloat(st)).toFixed(2);
                 // console.log(parseFloat(self.table_sub_total));
 
                 for (i = 0; i < self.extras.tax_list.length; i++) {
@@ -815,7 +815,6 @@ app.component('serviceInvoiceForm', {
                         // console.log(parseFloat(self.table_sub_total));
                     }
                 };
-                // console.log(parseFloat(self.table_sub_total));
                 self.table_total = parseFloat(self.table_total) + parseFloat(service_invoice_item.total); // parseFloat(self.table_sub_total) + parseFloat(self.table_gst_total);
 
             });
@@ -849,10 +848,10 @@ app.component('serviceInvoiceForm', {
                 'description': {
                     required: true,
                 },
-                'qty': {
-                    required: true,
-                    digits: true,
-                },
+                // 'qty': {
+                //     required: true,
+                //     digits: true,
+                // },
                 'amount': {
                     required: true,
                 },
@@ -1047,7 +1046,8 @@ app.component('serviceInvoiceView', {
         }
 
         //EDIT SERVICE INVOICE ITEM
-        $scope.editServiceItem = function(service_invoice_item_id, description, qty, rate, index) {
+        // $scope.editServiceItem = function(service_invoice_item_id, description, qty, rate, index) {
+        $scope.editServiceItem = function(service_invoice_item_id, description, rate, index) {
             if (service_invoice_item_id) {
                 self.enable_service_item_md_change = false;
                 self.add_service_action = false;
@@ -1066,7 +1066,7 @@ app.component('serviceInvoiceView', {
                         self.service_item_detail = response.data.service_item;
                         self.service_item = response.data.service_item;
                         self.description = description;
-                        self.qty = parseInt(qty);
+                        // self.qty = parseInt(qty);
                         self.rate = rate;
 
                         //AMOUNT CALCULATION
@@ -1086,8 +1086,10 @@ app.component('serviceInvoiceView', {
             self.sub_total = 0;
             self.total = 0;
             self.gst_total = 0;
-            if (self.qty && self.rate) {
-                self.sub_total = self.qty * self.rate;
+            // if (self.qty && self.rate) {
+            if (self.rate) {
+                // self.sub_total = self.qty * self.rate;
+                self.sub_total = self.rate;
                 if (self.service_item_detail.tax_code != null) {
                     if (self.service_item_detail.tax_code.taxes.length > 0) {
                         $(self.service_item_detail.tax_code.taxes).each(function(key, tax) {
@@ -1096,13 +1098,13 @@ app.component('serviceInvoiceView', {
                         });
                     }
                 }
-                self.total = self.sub_total + self.gst_total;
+                self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total);
             }
         };
 
         //SERVICE INVOICE ITEMS CALCULATION
         $scope.serviceInvoiceItemCalc = function() {
-            self.table_qty = 0;
+            // self.table_qty = 0;
             self.table_rate = 0;
             self.table_sub_total = 0;
             self.table_total = 0;
@@ -1115,7 +1117,7 @@ app.component('serviceInvoiceView', {
             };
 
             $(self.service_invoice.service_invoice_items).each(function(key, service_invoice_item) {
-                self.table_qty += parseInt(service_invoice_item.qty);
+                // self.table_qty += parseInt(service_invoice_item.qty);
                 self.table_rate = (parseFloat(self.table_rate) + parseFloat(service_invoice_item.rate)).toFixed(2);
                 st = parseFloat(service_invoice_item.sub_total).toFixed(2);
                 // console.log(parseFloat(self.table_sub_total));

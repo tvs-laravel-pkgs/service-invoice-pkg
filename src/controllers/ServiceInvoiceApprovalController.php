@@ -285,6 +285,7 @@ class ServiceInvoiceApprovalController extends Controller {
 
 				//TAX CALC
 				if (count($serviceInvoiceItem->taxes) > 0) {
+					$gst_total = 0;
 					foreach ($serviceInvoiceItem->taxes as $key => $value) {
 						$gst_total += round($value->pivot->amount, 2);
 						$serviceInvoiceItem[$value->name] = [
@@ -312,7 +313,6 @@ class ServiceInvoiceApprovalController extends Controller {
 	}
 
 	public function updateApprovalStatus(Request $request) {
-		//dd($request->all());
 		DB::beginTransaction();
 		try {
 			$approval_status = ServiceInvoice::find($request->id);
@@ -333,6 +333,7 @@ class ServiceInvoiceApprovalController extends Controller {
 
 			$approved_status = new ServiceInvoiceController();
 			$approval_levels = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 19)->first();
+
 			if ($approval_levels != '') {
 				if ($approval_status->status_id == $approval_levels->name) {
 					$approved_status->createPdf($approval_status->id);
@@ -340,7 +341,6 @@ class ServiceInvoiceApprovalController extends Controller {
 			} else {
 				return response()->json(['success' => false, 'errors' => ['Final CN/DN Status has not mapped.!']]);
 			}
-
 			DB::commit();
 			return response()->json(['success' => true, 'message' => $message]);
 		} catch (Exception $e) {

@@ -311,6 +311,7 @@ class ServiceInvoiceController extends Controller {
 
 					//TAX CALC
 					if (count($serviceInvoiceItem->taxes) > 0) {
+						$gst_total = 0;
 						foreach ($serviceInvoiceItem->taxes as $key => $value) {
 							$gst_total += round($value->pivot->amount, 2);
 							$serviceInvoiceItem[$value->name] = [
@@ -632,9 +633,11 @@ class ServiceInvoiceController extends Controller {
 		if (!is_null($service_item->sac_code_id)) {
 			if (count($service_item->taxCode->taxes) > 0) {
 				foreach ($service_item->taxCode->taxes as $key => $value) {
-					$gst_total += round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2);
+					// $gst_total += round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2);
+					$gst_total += round(($value->pivot->percentage / 100) * ($request->amount), 2);
 					$service_item[$value->name] = [
-						'amount' => round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2),
+						// 'amount' => round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2),
+						'amount' => round(($value->pivot->percentage / 100) * ($request->amount), 2),
 						'percentage' => round($value->pivot->percentage, 2),
 					];
 				}
@@ -651,10 +654,12 @@ class ServiceInvoiceController extends Controller {
 		$service_item->service_item_id = $service_item->id;
 		$service_item->id = null;
 		$service_item->description = $request->description;
-		$service_item->qty = $request->qty;
+		// $service_item->qty = $request->qty;
 		$service_item->rate = $request->amount;
-		$service_item->sub_total = round(($request->qty * $request->amount), 2);
-		$service_item->total = round($request->qty * $request->amount, 2) + $gst_total;
+		// $service_item->sub_total = round(($request->qty * $request->amount), 2);
+		// $service_item->total = round($request->qty * $request->amount, 2) + $gst_total;
+		$service_item->sub_total = round($request->amount, 2);
+		$service_item->total = round($request->amount, 2) + $gst_total;
 
 		if ($request->action == 'add') {
 			$add = true;
@@ -926,7 +931,6 @@ class ServiceInvoiceController extends Controller {
 	}
 
 	public function createPdf($service_invoice_pdf_id) {
-
 		$service_invoice_pdf = ServiceInvoice::with([
 			'company',
 			'customer',
@@ -945,9 +949,10 @@ class ServiceInvoiceController extends Controller {
 		$service_invoice_pdf->exportToAxapta();
 
 		$service_invoice_pdf->company->formatted_address = $service_invoice_pdf->company->primaryAddress ? $service_invoice_pdf->company->primaryAddress->getFormattedAddress() : 'NA';
-		$service_invoice_pdf->outlets->formatted_address = $service_invoice_pdf->outlets->primaryAddress ? $service_invoice_pdf->outlets->primaryAddress->getFormattedAddress() : 'NA';
+		// $service_invoice_pdf->outlets->formatted_address = $service_invoice_pdf->outlets->primaryAddress ? $service_invoice_pdf->outlets->primaryAddress->getFormattedAddress() : 'NA';
+		$service_invoice_pdf->outlets = $service_invoice_pdf->outlets ? $service_invoice_pdf->outlets : 'NA';
 		$service_invoice_pdf->customer->formatted_address = $service_invoice_pdf->customer->primaryAddress ? $service_invoice_pdf->customer->primaryAddress->address_line1 : 'NA';
-		//dd($service_invoice_pdf->outlets->formatted_address);
+		// dd($service_invoice_pdf->outlets->formatted_address);
 		$fields = Field::withTrashed()->get()->keyBy('id');
 		if (count($service_invoice_pdf->serviceInvoiceItems) > 0) {
 			$array_key_replace = [];
@@ -1089,6 +1094,7 @@ class ServiceInvoiceController extends Controller {
 		$path = storage_path('app/public/service-invoice-pdf/');
 		$pathToFile = $path . '/' . $service_invoice_pdf->number . '.pdf';
 		File::isDirectory($path) or File::makeDirectory($path, 0777, true, true);
+
 		$pdf = PDF::loadView('service-invoices/pdf/index', $this->data);
 		// $po_file_name = 'Invoice-' . $service_invoice_pdf->number . '.pdf';
 		File::put($pathToFile, $pdf->output());
@@ -1225,6 +1231,7 @@ class ServiceInvoiceController extends Controller {
 
 				//TAX CALC
 				if (count($serviceInvoiceItem->taxes) > 0) {
+					$gst_total = 0;
 					foreach ($serviceInvoiceItem->taxes as $key => $value) {
 						$gst_total += round($value->pivot->amount, 2);
 						$serviceInvoiceItem[$value->name] = [

@@ -169,8 +169,8 @@
                                                 <th>Item Code</th>
                                                 <th>Item Name</th>
                                                 <th>Reference</th>
-                                                <th class="text-right">Quantity</th>
-                                                <th class="text-right">Rate</th>
+                                                <!-- <th class="text-right">Quantity</th> -->
+                                                <!-- <th class="text-right">Rate</th> -->
                                                 <th class="text-right">Amount</th>
                                                 <th class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list">{{tax.name}}</th>
                                                 <th class="text-right">Total Amount</th>
@@ -181,7 +181,7 @@
                                                 <input type="hidden" name="service_invoice_items[{{index}}][id]" value="{{service_invoice_item.id}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][service_item_id]" value="{{service_invoice_item.service_item_id}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][description]" value="{{service_invoice_item.description}}">
-                                                <input type="hidden" name="service_invoice_items[{{index}}][qty]" value="{{service_invoice_item.qty}}">
+                                                <!-- <input type="hidden" name="service_invoice_items[{{index}}][qty]" value="{{service_invoice_item.qty}}"> -->
                                                 <input type="hidden" name="service_invoice_items[{{index}}][rate]" value="{{service_invoice_item.rate}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][sub_total]" value="{{service_invoice_item.sub_total}}">
                                                 <!-- FIELD GROUPS -->
@@ -195,7 +195,7 @@
                                                     </span>
                                                 </td>
                                                 <td class="action">
-                                                    <a href="javascript:void(0)" ng-click="editServiceItem(service_invoice_item.service_item_id, service_invoice_item.description, service_invoice_item.qty, service_invoice_item.rate,index)">
+                                                    <a href="javascript:void(0)" ng-click="editServiceItem(service_invoice_item.service_item_id, service_invoice_item.description,service_invoice_item.rate,index)">
                                                         <img class="img-responsive" src="./public/theme/img/table/cndn/edit.svg" alt="Edit" />
                                                     </a>
                                                     <a href="javascript:void(0)" ng-click="removeServiceItem(service_invoice_item.id, index)">
@@ -205,9 +205,9 @@
                                                 <td>{{service_invoice_item.code}}</td>
                                                 <td>{{service_invoice_item.name}}</td>
                                                 <td>{{service_invoice_item.description}}</td>
-                                                <td class="text-right">{{$ctrl.parseInt(service_invoice_item.qty)}}</td>
+                                                <!-- <td class="text-right">{{$ctrl.parseInt(service_invoice_item.qty)}}</td> -->
                                                 <td class="text-right">{{service_invoice_item.rate | number : 2}}</td>
-                                                <td class="text-right">{{service_invoice_item.sub_total | number : 2}}</td>
+                                                <td class="text-right" style="display: none;">{{service_invoice_item.sub_total | number : 2}}</td>
                                                 <td class="text-right" ng-repeat="(tax_index, tax) in $ctrl.extras.tax_list">
                                                     {{(service_invoice_item[tax.name] ? (service_invoice_item[tax.name].amount | number : 2) : 0.00)}}
                                                     <!-- ({{(service_invoice_item[tax.name] ? (service_invoice_item[tax.name].percentage) : 0)}}%) -->
@@ -222,9 +222,9 @@
                                             <tr>
                                                 <th colspan="3"></th>
                                                 <th>Total</th>
-                                                <th class="text-right">{{$ctrl.table_qty}}</th>
+                                                <!-- <th class="text-right">{{$ctrl.table_qty}}</th> -->
                                                 <th class="text-right">{{$ctrl.table_rate | number : 2}}</th>
-                                                <th class="text-right">{{$ctrl.table_sub_total | number : 2}}</th>
+                                                <!-- <th class="text-right">{{$ctrl.table_sub_total | number : 2}}</th> -->
                                                 <th class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list">{{$ctrl.tax_wise_total[tax.name+'_amount'] | number : 2}}</th>
                                                 <th class="text-right">{{$ctrl.table_total | number : 2}}</th>
                                             </tr>
@@ -243,10 +243,10 @@
                                 <div class="row">
                                     <div class="col-md-8 text-left">
                                         <ul class="form-footer-list">
-                                            <li>
+                                            <!-- <li>
                                                 <span class="form-footer-label">Total Quantity</span>
                                                 <span class="form-footer-value" ng-if="$ctrl.table_qty">{{$ctrl.table_qty}}</span>
-                                            </li>
+                                            </li> -->
                                             <li>
                                                 <span class="form-footer-label">Total Amount</span>
                                                 <span class="form-footer-value" ng-if="$ctrl.table_total">INR {{$ctrl.table_total | number : 2}} <small>({{$ctrl.table_sub_total | number : 2}} + {{$ctrl.table_gst_total | number : 2}} GST)</small></span>
@@ -327,14 +327,14 @@
                                         </div><!-- Table Form List Control -->
                                     </div><!-- Table Form List Wrap -->
                                 </li>
-                                <li>
+                                <!-- <li>
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">Quantity <span class="mandatory">*</span></label>
                                         <div class="table-form-list-control">
                                             <input name="qty" ng-model="$ctrl.qty" type="text" class="form-control type-sm required" placeholder="Enter Quantity" ng-change="totalAmountCalc()" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');" />
-                                        </div><!-- Table Form List Control -->
-                                    </div><!-- Table Form List Wrap -->
-                                </li>
+                                        </div>
+                                    </div>
+                                </li> -->
                                 <li>
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">Amount <span class="mandatory">*</span></label>
