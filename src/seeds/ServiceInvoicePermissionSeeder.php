@@ -108,6 +108,24 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 				'name' => 'create-dn',
 				'display_name' => 'Create DN',
 			],
+			3047 => [
+				'display_order' => 6,
+				'parent_id' => 3040,
+				'name' => 'view-all-cn-dn',
+				'display_name' => 'View All',
+			],
+			3048 => [
+				'display_order' => 7,
+				'parent_id' => 3040,
+				'name' => 'view-own-cn-dn',
+				'display_name' => 'View Own Only',
+			],
+			3049 => [
+				'display_order' => 8,
+				'parent_id' => 3040,
+				'name' => 'view-outlet-based-cn-dn',
+				'display_name' => 'View Outlet Based',
+			],
 
 		];
 
