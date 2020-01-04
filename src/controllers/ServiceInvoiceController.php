@@ -679,11 +679,9 @@ class ServiceInvoiceController extends Controller {
 		if (!is_null($service_item->sac_code_id)) {
 			if (count($service_item->taxCode->taxes) > 0) {
 				foreach ($service_item->taxCode->taxes as $key => $value) {
-					// $gst_total += round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2);
-					$gst_total += round(($value->pivot->percentage / 100) * ($request->amount), 2);
+					$gst_total += round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2);
 					$service_item[$value->name] = [
-						// 'amount' => round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2),
-						'amount' => round(($value->pivot->percentage / 100) * ($request->amount), 2),
+						'amount' => round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2),
 						'percentage' => round($value->pivot->percentage, 2),
 					];
 				}
@@ -700,12 +698,10 @@ class ServiceInvoiceController extends Controller {
 		$service_item->service_item_id = $service_item->id;
 		$service_item->id = null;
 		$service_item->description = $request->description;
-		// $service_item->qty = $request->qty;
+		$service_item->qty = $request->qty;
 		$service_item->rate = $request->amount;
-		// $service_item->sub_total = round(($request->qty * $request->amount), 2);
-		// $service_item->total = round($request->qty * $request->amount, 2) + $gst_total;
-		$service_item->sub_total = round($request->amount, 2);
-		$service_item->total = round($request->amount, 2) + $gst_total;
+		$service_item->sub_total = round(($request->qty * $request->amount), 2);
+		$service_item->total = round($request->qty * $request->amount, 2) + $gst_total;
 
 		if ($request->action == 'add') {
 			$add = true;

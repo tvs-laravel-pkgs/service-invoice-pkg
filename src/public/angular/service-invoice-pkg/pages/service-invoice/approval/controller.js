@@ -380,8 +380,7 @@ app.component('serviceInvoiceApprovalView', {
         }
 
         //EDIT SERVICE INVOICE ITEM
-        // $scope.editServiceItem = function(service_invoice_item_id, description, qty, rate, index) {
-        $scope.editServiceItem = function(service_invoice_item_id, description, rate, index) {
+        $scope.editServiceItem = function(service_invoice_item_id, description, qty, rate, index) {
             if (service_invoice_item_id) {
                 self.enable_service_item_md_change = false;
                 self.add_service_action = false;
@@ -400,7 +399,7 @@ app.component('serviceInvoiceApprovalView', {
                         self.service_item_detail = response.data.service_item;
                         self.service_item = response.data.service_item;
                         self.description = description;
-                        // self.qty = parseInt(qty);
+                        self.qty = parseInt(qty);
                         self.rate = rate;
 
                         //AMOUNT CALCULATION
@@ -420,10 +419,8 @@ app.component('serviceInvoiceApprovalView', {
             self.sub_total = 0;
             self.total = 0;
             self.gst_total = 0;
-            // if (self.qty && self.rate) {
-            if (self.rate) {
-                // self.sub_total = self.qty * self.rate;
-                self.sub_total = self.rate;
+            if (self.qty && self.rate) {
+                self.sub_total = self.qty * self.rate;
                 if (self.service_item_detail.tax_code != null) {
                     if (self.service_item_detail.tax_code.taxes.length > 0) {
                         $(self.service_item_detail.tax_code.taxes).each(function(key, tax) {
@@ -438,7 +435,7 @@ app.component('serviceInvoiceApprovalView', {
 
         //SERVICE INVOICE ITEMS CALCULATION
         $scope.serviceInvoiceItemCalc = function() {
-            // self.table_qty = 0;
+            self.table_qty = 0;
             self.table_rate = 0;
             self.table_sub_total = 0;
             self.table_total = 0;
@@ -451,7 +448,7 @@ app.component('serviceInvoiceApprovalView', {
             };
 
             $(self.service_invoice.service_invoice_items).each(function(key, service_invoice_item) {
-                // self.table_qty += parseInt(service_invoice_item.qty);
+                self.table_qty += parseInt(service_invoice_item.qty);
                 self.table_rate = (parseFloat(self.table_rate) + parseFloat(service_invoice_item.rate)).toFixed(2);
                 st = parseFloat(service_invoice_item.sub_total).toFixed(2);
                 // console.log(parseFloat(self.table_sub_total));

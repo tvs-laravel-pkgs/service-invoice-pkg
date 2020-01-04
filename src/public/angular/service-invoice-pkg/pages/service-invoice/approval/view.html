@@ -148,7 +148,7 @@ Content Wrap -->
                                                 <input type="hidden" name="service_invoice_items[{{index}}][id]" value="{{service_invoice_item.id}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][service_item_id]" value="{{service_invoice_item.service_item_id}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][description]" value="{{service_invoice_item.description}}">
-                                                <!-- <input type="hidden" name="service_invoice_items[{{index}}][qty]" value="{{service_invoice_item.qty}}"> -->
+                                                <input type="hidden" name="service_invoice_items[{{index}}][qty]" value="{{service_invoice_item.qty}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][rate]" value="{{service_invoice_item.rate}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][sub_total]" value="{{service_invoice_item.sub_total}}">
                                                 <!-- FIELD GROUPS -->
@@ -163,7 +163,9 @@ Content Wrap -->
                                                 </td>
                                                 <td class="action">
                                                     <!-- <a href="javascript:void(0)" ng-click="editServiceItem(service_invoice_item.service_item_id, service_invoice_item.description, service_invoice_item.qty, service_invoice_item.rate,index)"> -->
-                                                    <a href="javascript:void(0)" ng-click="editServiceItem(service_invoice_item.service_item_id, service_invoice_item.description, service_invoice_item.rate,index)">
+                                                    <a href="javascript:void(0)" ng-click="editServiceItem(service_invoice_item.service_item_id, service_invoice_item.description, 
+                                                    service_invoice_item.qty, 
+                                                    service_invoice_item.rate,index)">
                                                         <img class="img-responsive" src="./public/theme/img/table/cndn/view.svg" alt="View" />
                                                     </a>
                                                 </td>
