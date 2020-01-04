@@ -19,7 +19,18 @@ class ServiceItemController extends Controller {
 	public function __construct() {
 	}
 
-	public function getServiceItemList() {
+	public function getServiceItemFilter() {
+		$this->data['extras'] = [
+			'main_category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
+			'sub_category_list' => [],
+		];
+		return response()->json($this->data);
+	}
+
+	public function getServiceItemList(Request $request) {
+		$item_code_filter = $request->item_code;
+		$item_name_filter = $request->item_name;
+
 		$service_item_list = ServiceItem::withTrashed()
 			->select(
 				'service_items.id',
@@ -36,10 +47,38 @@ class ServiceItemController extends Controller {
 			->leftJoin('coa_codes', 'service_items.coa_code_id', 'coa_codes.id')
 			->leftJoin('tax_codes', 'service_items.sac_code_id', 'tax_codes.id')
 			->where('service_items.company_id', Auth::user()->company_id)
+			->where(function ($query) use ($item_code_filter) {
+				if ($item_code_filter != null) {
+					$query->where('service_items.code', 'like', "%" . $item_code_filter . "%");
+				}
+			})
+			->where(function ($query) use ($item_name_filter) {
+				if ($item_name_filter != null) {
+					$query->where('service_items.name', 'like', "%" . $item_name_filter . "%");
+				}
+			})
+			->where(function ($query) use ($request) {
+				if (!empty($request->main_category_id)) {
+					$query->where('service_item_sub_categories.category_id', $request->main_category_id);
+				}
+			})
+			->where(function ($query) use ($request) {
+				if (!empty($request->sub_category_id)) {
+					$query->where('service_items.sub_category_id', $request->sub_category_id);
+				}
+			})
+			->where(function ($query) use ($request) {
+				if (!empty($request->coa_code_id)) {
+					$query->where('service_items.coa_code_id', $request->coa_code_id);
+				}
+			})
+			->where(function ($query) use ($request) {
+				if (!empty($request->sac_code_id)) {
+					$query->where('service_items.sac_code_id', $request->sac_code_id);
+				}
+			})
 			->groupBy('service_items.id')
-			->orderBy('service_items.code', 'asc')
-		// ->get()
-		;
+			->orderBy('service_items.code', 'asc');
 		// dd($service_item_category_list);
 
 		return Datatables::of($service_item_list)
@@ -204,6 +243,14 @@ class ServiceItemController extends Controller {
 		$this->data['success'] = true;
 		//dd($this->data);
 		return response()->json($this->data);
+	}
+
+	public function searchCoaCode(Request $r) {
+		return CoaCode::searchCoaCode($r);
+	}
+
+	public function searchSacCode(Request $r) {
+		return TaxCode::searchSacCode($r);
 	}
 
 }

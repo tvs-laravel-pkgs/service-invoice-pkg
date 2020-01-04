@@ -1,11 +1,20 @@
 app.component('serviceItemList', {
     templateUrl: service_item_list_template_url,
-    controller: function($http, $location, HelperService, $scope, $routeParams, $rootScope, $element) {
+    controller: function($http, $location, HelperService, $scope, $routeParams, $rootScope, $element, $mdSelect) {
         var self = this;
         self.hasPermission = HelperService.hasPermission;
+        $http.get(
+            get_service_item_filter_url
+        ).then(function(response) {
+            self.extras = response.data.extras;
+            $rootScope.loading = false;
+            // console.log(self.extras);
+        });
+        var dataTable
+        setTimeout(function() { 
         var table_scroll;
         table_scroll = $('.page-main-content').height() - 37;
-        var dataTable = $('#service-item-table').dataTable({
+        dataTable = $('#service-item-table').DataTable({
             "dom": cndn_dom_structure,
             "language": {
                 // "search": "",
@@ -40,7 +49,14 @@ app.component('serviceItemList', {
                 url: laravel_routes['getServiceItemList'],
                 type: "GET",
                 dataType: "json",
-                data: function(d) {}
+                data: function(d) {
+                    d.item_code = $('#item_code').val();
+                    d.item_name = $('#item_name').val();
+                    d.main_category_id = $('#main_category_id').val();
+                    d.sub_category_id = $('#sub_category_id').val();
+                    d.coa_code_id = $('#coa_code_id').val();
+                    d.sac_code_id = $('#sac_code_id').val();
+                },
             },
 
             columns: [
@@ -61,14 +77,121 @@ app.component('serviceItemList', {
             },
         });
         $('.dataTables_length select').select2();
+        },900);
+        $('.modal').bind('click', function(event) {
+            if ($('.md-select-menu-container').hasClass('md-active')) {
+                $mdSelect.hide();
+            }
+        });
+        $('.refresh_table').on("click", function() {
+            $('#service-item-table').DataTable().ajax.reload();
+        });
         $("#search_box").keyup(function() { //alert(this.value);
-            dataTable.fnFilter(this.value);
+            dataTable
+                .search(this.value)
+                .draw();
         });
 
         $(".search_clear").on("click", function() {
             $('#search_box').val('');
             $('#service-item-table').DataTable().search('').draw();
         });
+        $('#item_code').keyup(function() {
+            setTimeout(function() {
+                dataTable.draw();
+            }, 900);
+        });
+        $('#item_name').keyup(function() {
+            setTimeout(function() {
+                dataTable.draw();
+            }, 900);
+        });
+        $scope.onSelectedCategory = function($id) {
+            //alert($id);
+            self.extras.sub_category_list = []; 
+            if($id == "") {
+               $('#sub_category_id').val('');
+               $('#main_category_id').val('');
+               dataTable.draw();
+            } else {
+                $('#main_category_id').val($id);
+                dataTable.draw();
+                $http.get(
+                    get_sub_category_based_category_url + '/' + $id
+                ).then(function(response) {
+                    //console.log(response.data.sub_category_list);
+                    self.extras.sub_category_list = response.data.sub_category_list;
+                });
+            }
+            
+        }
+        $scope.getSubCategory = function(selected_sub_category_id) {
+            setTimeout(function() {
+                $('#sub_category_id').val(selected_sub_category_id);
+                dataTable.draw();
+            }, 900);
+        }
+        //SEARCH COA CODE
+        self.searchCoaCodeFilter = function(query) {
+            if (query) {
+                return new Promise(function(resolve, reject) {
+                    $http
+                        .post(
+                            search_coa_code_url, {
+                                key: query,
+                            }
+                        )
+                        .then(function(response) {
+                            resolve(response.data);
+                        });
+                    //reject(response);
+                });
+            } else {
+                return [];
+            }
+        }
+        $scope.getCoaCodeDetails = function(selected_coa_code_id) {
+            setTimeout(function() {
+                $('#coa_code_id').val(selected_coa_code_id);
+                dataTable.draw();
+            }, 900);
+        }
+        //SEARCH SAC CODE
+        self.searchSacCodeFilter = function(query) {
+            if (query) {
+                return new Promise(function(resolve, reject) {
+                    $http
+                        .post(
+                            search_sac_code_url, {
+                                key: query,
+                            }
+                        )
+                        .then(function(response) {
+                            resolve(response.data);
+                        });
+                    //reject(response);
+                });
+            } else {
+                return [];
+            }
+        }
+        $scope.getSacCodeDetails = function(selected_sac_code_id) {
+            setTimeout(function() {
+                $('#sac_code_id').val(selected_sac_code_id);
+                dataTable.draw();
+            },900);
+        }
+
+        $scope.reset_filter = function() {
+            $('#item_code').val('');
+            $('#item_name').val('');
+            $('#main_category_id').val('');
+            $('#sub_category_id').val('');
+            $('#coa_code_id').val('');
+            $('#sac_code_id').val('');
+            dataTable.draw();
+        }
+
         $scope.deleteServiceItem = function(id) {
             $('#service_item_id').val(id);
         }
