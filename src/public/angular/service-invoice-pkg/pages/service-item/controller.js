@@ -47,6 +47,7 @@ app.component('serviceItemList', {
                 { data: 'action', searchable: false, class: 'action' },
                 { data: 'code', name: 'service_items.code', searchable: true },
                 { data: 'name', name: 'service_items.name', searchable: true },
+                { data: 'main_category', searchable: false },
                 { data: 'sub_category', searchable: false },
                 { data: 'coa_code', searchable: false },
                 { data: 'sac_code', searchable: false },
