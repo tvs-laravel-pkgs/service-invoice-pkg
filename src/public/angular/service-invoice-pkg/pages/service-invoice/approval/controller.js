@@ -544,6 +544,7 @@ app.component('serviceInvoiceApprovalView', {
                                     },
                                 }).show();
                             } else {
+                                $('#cn_dn_approval_modal').modal('hide');
                                 $noty = new Noty({
                                     type: 'success',
                                     layout: 'topRight',
