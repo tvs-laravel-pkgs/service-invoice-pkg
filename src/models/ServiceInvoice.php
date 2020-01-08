@@ -182,8 +182,21 @@ class ServiceInvoice extends Model {
 		];
 		$this->exportRowToAxapta($params);
 
+		$errors = [];
 		foreach ($this->serviceInvoiceItems as $invoice_item) {
-			// dump($invoice_item->coaCode, $this->branch);
+			if (!$invoice_item->serviceItem->coaCode) {
+				$errors[] = 'COA Code not configured. Item Code : ' . $invoice_item->serviceItem->code;
+				continue;
+			}
+		}
+		if (count($errors) > 0) {
+			return [
+				'success' => false,
+				'errors' => $errors,
+			];
+		}
+
+		foreach ($this->serviceInvoiceItems as $invoice_item) {
 			$params = [
 				'Voucher' => 'D',
 				'AccountType' => 'Ledger',
@@ -196,6 +209,11 @@ class ServiceInvoice extends Model {
 			];
 			$this->exportRowToAxapta($params);
 		}
+
+		return [
+			'success' => true,
+		];
+
 		// 	DB::commit();
 		// 	// dd(1);
 		// } catch (\Exception $e) {

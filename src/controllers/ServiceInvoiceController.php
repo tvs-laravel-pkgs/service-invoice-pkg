@@ -854,7 +854,11 @@ class ServiceInvoiceController extends Controller {
 			// $approval_levels = ApprovalLevel::where('approval_type_id', 1)->first();
 			if ($approval_levels != '') {
 				if ($service_invoice->status_id == $approval_levels->name) {
-					$this->createPdf($service_invoice->id);
+					$r = $this->createPdf($service_invoice->id);
+					if (!$r['success']) {
+						DB::rollBack();
+						return response()->json($r);
+					}
 				}
 			} else {
 				return response()->json(['success' => false, 'errors' => ['Final CN/DN Status has not mapped.!']]);
@@ -988,7 +992,10 @@ class ServiceInvoiceController extends Controller {
 			'serviceInvoiceItems.taxes',
 		])->find($service_invoice_pdf_id);
 
-		$service_invoice_pdf->exportToAxapta();
+		$r = $service_invoice_pdf->exportToAxapta();
+		if (!$r['success']) {
+			return $r;
+		}
 
 		$service_invoice_pdf->company->formatted_address = $service_invoice_pdf->company->primaryAddress ? $service_invoice_pdf->company->primaryAddress->getFormattedAddress() : 'NA';
 		// $service_invoice_pdf->outlets->formatted_address = $service_invoice_pdf->outlets->primaryAddress ? $service_invoice_pdf->outlets->primaryAddress->getFormattedAddress() : 'NA';
@@ -1140,6 +1147,7 @@ class ServiceInvoiceController extends Controller {
 		$pdf = PDF::loadView('service-invoices/pdf/index', $this->data);
 		// $po_file_name = 'Invoice-' . $service_invoice_pdf->number . '.pdf';
 		File::put($pathToFile, $pdf->output());
+		return $r;
 
 		// return $pdf->download($pathToFile, $headers);
 	}
@@ -1315,7 +1323,11 @@ class ServiceInvoiceController extends Controller {
 			// $approval_levels = ApprovalLevel::where('approval_type_id', 1)->first();
 			if ($approval_levels != '') {
 				if ($send_approval->status_id == $approval_levels->name) {
-					$this->createPdf($send_approval->id);
+					$r = $this->createPdf($send_approval->id);
+					if (!$r['success']) {
+						DB::rollBack();
+						return response()->json($r);
+					}
 				}
 			} else {
 				return response()->json(['success' => false, 'errors' => ['Final CN/DN Status has not mapped.!']]);

@@ -336,7 +336,12 @@ class ServiceInvoiceApprovalController extends Controller {
 
 			if ($approval_levels != '') {
 				if ($approval_status->status_id == $approval_levels->name) {
-					$approved_status->createPdf($approval_status->id);
+					$r = $approved_status->createPdf($approval_status->id);
+					if (!$r['success']) {
+						DB::rollBack();
+						return response()->json($r);
+					}
+
 				}
 			} else {
 				return response()->json(['success' => false, 'errors' => ['Final CN/DN Status has not mapped.!']]);
