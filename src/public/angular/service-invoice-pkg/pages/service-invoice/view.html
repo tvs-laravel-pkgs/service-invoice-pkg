@@ -113,7 +113,14 @@
                                             <p class="info-content">{{$ctrl.service_invoice.customer.address}}</p>
                                             <div class="info-space"></div>
                                             <p class="info-content">GST # {{$ctrl.service_invoice.customer.gst_number ? $ctrl.service_invoice.customer.gst_number : 'NA'}}</p>
-                                            <p class="info-content" ng-if="$ctrl.service_invoice.status_id == 5">Remarks: {{$ctrl.service_invoice.comments}}</p>
+                                            <div class="info-space"></div>
+                                            <div class="table-form-list-wrap" ng-if="$ctrl.service_invoice.status_id == 5">
+                                                <label class="table-form-list-label">Remarks</label>
+                                                <div class="table-form-list-control">
+                                                    <p>{{$ctrl.service_invoice.comments}}</p>
+                                                </div>
+                                            </div>
+                                            <!-- <p class="info-content color-red" ng-if="$ctrl.service_invoice.status_id == 5"><b>Remarks:</b> {{$ctrl.service_invoice.comments}}</p> -->
                                         </div><!-- Info Wrap -->
                                     </li>
                                 </ul><!-- Flex List -->
