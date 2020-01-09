@@ -588,6 +588,8 @@ app.component('serviceInvoiceForm', {
                             search_service_item_url, {
                                 key: query,
                                 type_id: self.type_id,
+                                category_id: $('#category_id').val(),
+                                sub_category_id: $('#sub_category_id').val(),
                             }
                         )
                         .then(function(response) {
