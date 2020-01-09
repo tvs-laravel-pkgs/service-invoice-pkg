@@ -49,9 +49,9 @@ class ServiceInvoiceApprovalController extends Controller {
 	public function getServiceInvoiceApprovalList(Request $request) {
 		$approval_status_id = $request->approval_status_id;
 		if (!empty($request->invoice_date)) {
-			$invoice_date = explode('to', $request->invoice_date);
-			$first_date_this_month = date('Y-m-d', strtotime($invoice_date[0]));
-			$last_date_this_month = date('Y-m-d', strtotime($invoice_date[1]));
+			$document_date = explode('to', $request->invoice_date);
+			$first_date_this_month = date('Y-m-d', strtotime($document_date[0]));
+			$last_date_this_month = date('Y-m-d', strtotime($document_date[1]));
 		} else {
 			$first_date_this_month = '';
 			$last_date_this_month = '';
@@ -61,7 +61,7 @@ class ServiceInvoiceApprovalController extends Controller {
 			->select(
 				'service_invoices.id',
 				'service_invoices.number',
-				'service_invoices.invoice_date',
+				'service_invoices.document_date',
 				'service_invoices.total as invoice_amount',
 				'service_invoices.is_cn_created',
 				'service_invoices.status_id',
@@ -91,7 +91,7 @@ class ServiceInvoiceApprovalController extends Controller {
 			->where('service_invoices.status_id', $approval_status_id)
 			->where(function ($query) use ($first_date_this_month, $last_date_this_month) {
 				if (!empty($first_date_this_month) && !empty($last_date_this_month)) {
-					$query->whereRaw("DATE(service_invoices.invoice_date) BETWEEN '" . $first_date_this_month . "' AND '" . $last_date_this_month . "'");
+					$query->whereRaw("DATE(service_invoices.document_date) BETWEEN '" . $first_date_this_month . "' AND '" . $last_date_this_month . "'");
 				}
 			})
 			->where(function ($query) use ($invoice_number_filter) {

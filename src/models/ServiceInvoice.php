@@ -161,7 +161,6 @@ class ServiceInvoice extends Model {
 		foreach ($this->serviceInvoiceItems as $invoice_item) {
 			$item_codes[] = $invoice_item->serviceItem->code;
 		}
-
 		if ($this->type_id == 1060) {
 			//CN
 			$Txt = 'Credit note for';
@@ -178,7 +177,7 @@ class ServiceInvoice extends Model {
 			'AmountCurDebit' => $this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') : 0,
 			'AmountCurCredit' => $this->type_id == 1060 ? $this->serviceInvoiceItems()->sum('sub_total') : 0,
 			'TaxGroup' => '',
-			'TVSSACCode' => $this->serviceInvoiceItems[0]->serviceItem->taxCode->code,
+			'TVSSACCode' => ($this->serviceInvoiceItems[0]->serviceItem->taxCode != null) ? $this->serviceInvoiceItems[0]->serviceItem->taxCode->code : NULL,
 		];
 		$this->exportRowToAxapta($params);
 
@@ -192,7 +191,7 @@ class ServiceInvoice extends Model {
 				'AmountCurDebit' => $this->type_id == 1060 ? $invoice_item->sub_total : 0,
 				'AmountCurCredit' => $this->type_id == 1061 ? $invoice_item->sub_total : 0,
 				'TaxGroup' => '',
-				'TVSSACCode' => $invoice_item->serviceItem->taxCode->code,
+				'TVSSACCode' => ($invoice_item->serviceItem->taxCode != null) ? $invoice_item->serviceItem->taxCode->code : NULL,
 			];
 			$this->exportRowToAxapta($params);
 		}

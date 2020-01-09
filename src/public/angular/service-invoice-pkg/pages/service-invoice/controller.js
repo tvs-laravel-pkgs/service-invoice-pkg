@@ -66,7 +66,7 @@ app.component('serviceInvoiceList', {
                 columns: [
                     { data: 'child_checkbox', searchable: false },
                     { data: 'action', searchable: false, class: 'action' },
-                    { data: 'invoice_date', searchable: false },
+                    { data: 'document_date', searchable: false },
                     { data: 'number', name: 'service_invoices.number', searchable: true },
                     { data: 'type_name', name: 'configs.name', searchable: true },
                     { data: 'branch', name: 'outlets.code', searchable: true },
@@ -75,7 +75,7 @@ app.component('serviceInvoiceList', {
                     { data: 'sub_category', name: 'service_item_sub_categories.name', searchable: true },
                     { data: 'customer_code', name: 'customers.code', searchable: true },
                     { data: 'customer_name', name: 'customers.name', searchable: true },
-                    { data: 'invoice_amount', searchable: false },
+                    { data: 'invoice_amount', searchable: false, class: 'text-right' },
                     { data: 'status', name: 'approval_type_statuses.status', searchable: false },
                 ],
                 "initComplete": function(settings, json) {
@@ -333,6 +333,7 @@ app.component('serviceInvoiceList', {
             $('#customer_id').val(selected_customer_id);
             dataTable.draw();
         }
+        window.onpopstate = function (e) { window.history.forward(1); }
         $rootScope.loading = false;
     }
 });
