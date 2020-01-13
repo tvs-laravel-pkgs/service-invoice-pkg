@@ -283,7 +283,7 @@
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">Item Code <span class="mandatory">*</span></label>
                                         <div class="table-form-list-control">
-                                            <md-autocomplete class="type-sm type-2" md-items="option in $ctrl.searchServiceItem($ctrl.serviceItemSearchText)" md-selected-item="$ctrl.service_item" md-search-text="$ctrl.serviceItemSearchText" md-item-text="option.code" md-min-length="3" placeholder="Item code / name" md-selected-item-change="$ctrl.getServiceItemDetails()" md-search-text-change="$ctrl.serviceItemChanged()">
+                                            <md-autocomplete class="type-sm type-2" md-items="option in $ctrl.searchServiceItem($ctrl.serviceItemSearchText)" md-selected-item="$ctrl.service_item" md-search-text="$ctrl.serviceItemSearchText" md-item-text="option.code" md-min-length="3" placeholder="Item code / name" md-selected-item-change="$ctrl.getServiceItemDetails()" md-search-text-change="$ctrl.serviceItemChanged()" md-no-cache="true">
                                                 <md-item-template>
                                                     <span>
                                                         {{option.name}} - {{option.code}}
