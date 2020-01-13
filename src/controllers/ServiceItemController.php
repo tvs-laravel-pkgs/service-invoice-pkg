@@ -38,9 +38,10 @@ class ServiceItemController extends Controller {
 				'service_items.name',
 				'service_item_sub_categories.name as sub_category',
 				'service_item_categories.name as main_category',
-				'coa_codes.name as coa_code',
+				// 'coa_codes.name as coa_code',
 				'tax_codes.code as sac_code',
-				DB::raw('IF((service_items.deleted_at) IS NULL ,"Active","Inactive") as status')
+				DB::raw('IF((service_items.deleted_at) IS NULL ,"Active","Inactive") as status'),
+				DB::raw('CONCAT(coa_codes.code," / ",coa_codes.name) as coa_code')
 			)
 			->leftJoin('service_item_sub_categories', 'service_items.sub_category_id', 'service_item_sub_categories.id')
 			->leftJoin('service_item_categories', 'service_item_categories.id', 'service_item_sub_categories.category_id')

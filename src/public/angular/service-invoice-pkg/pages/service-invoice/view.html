@@ -113,7 +113,14 @@
                                             <p class="info-content">{{$ctrl.service_invoice.customer.address}}</p>
                                             <div class="info-space"></div>
                                             <p class="info-content">GST # {{$ctrl.service_invoice.customer.gst_number ? $ctrl.service_invoice.customer.gst_number : 'NA'}}</p>
-                                            <p class="info-content" ng-if="$ctrl.service_invoice.status_id == 5">Remarks: {{$ctrl.service_invoice.comments}}</p>
+                                            <div class="info-space"></div>
+                                            <div class="table-form-list-wrap" ng-if="$ctrl.service_invoice.status_id == 5">
+                                                <label class="table-form-list-label">Remarks</label>
+                                                <div class="table-form-list-control">
+                                                    <p class="info-content color-red">{{$ctrl.service_invoice.comments}}</p>
+                                                </div>
+                                            </div>
+                                            <!-- <p class="info-content color-red" ng-if="$ctrl.service_invoice.status_id == 5"><b>Remarks:</b> {{$ctrl.service_invoice.comments}}</p> -->
                                         </div><!-- Info Wrap -->
                                     </li>
                                 </ul><!-- Flex List -->
@@ -217,7 +224,7 @@
                                     </div>
                                     <div class="col-md-4">
                                         <a href="#!/service-invoice-pkg/service-invoice/list" class="btn btn-white" id="back_button">Back</a>
-                                        <a href="#!/service-invoice-pkg/service-invoice/edit/{{$ctrl.type_id}}/{{$ctrl.service_invoice.id}}" class="btn btn-primary" id="edit_button">Edit</a>
+                                        <a href="#!/service-invoice-pkg/service-invoice/edit/{{$ctrl.type_id}}/{{$ctrl.service_invoice.id}}" class="btn btn-primary" id="edit_button" ng-if="$ctrl.service_invoice.status_id != 4">Edit</a>
                                         <button type="submit" id="submit" class="btn btn-primary" ng-if="$ctrl.service_invoice.status_id == 1 || $ctrl.service_invoice.status_id == 5">Send to Approval</button>
                                     </div>
                                     <input type="hidden" name="send_to_approval" id="send_to_approval" value="{{$ctrl.approval_status.current_status_id}}">

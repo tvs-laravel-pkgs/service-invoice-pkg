@@ -11,10 +11,13 @@ use Abs\ServiceInvoicePkg\ServiceItemCategory;
 use Abs\TaxPkg\Tax;
 use App\Config;
 use App\Customer;
+use App\Employee;
 use App\Entity;
 use App\Http\Controllers\Controller;
+use App\User;
 use Auth;
 use DB;
+use Entrust;
 use Illuminate\Http\Request;
 use Yajra\Datatables\Datatables;
 
@@ -46,23 +49,23 @@ class ServiceInvoiceApprovalController extends Controller {
 	public function getServiceInvoiceApprovalList(Request $request) {
 		$approval_status_id = $request->approval_status_id;
 		if (!empty($request->invoice_date)) {
-			$invoice_date = explode('to', $request->invoice_date);
-			$first_date_this_month = date('Y-m-d', strtotime($invoice_date[0]));
-			$last_date_this_month = date('Y-m-d', strtotime($invoice_date[1]));
+			$document_date = explode('to', $request->invoice_date);
+			$first_date_this_month = date('Y-m-d', strtotime($document_date[0]));
+			$last_date_this_month = date('Y-m-d', strtotime($document_date[1]));
 		} else {
 			$first_date_this_month = '';
 			$last_date_this_month = '';
 		}
 		$invoice_number_filter = $request->invoice_number;
-
 		$cn_dn_approval_list = ServiceInvoice::withTrashed()
 			->select(
 				'service_invoices.id',
 				'service_invoices.number',
-				'service_invoices.invoice_date',
+				'service_invoices.document_date',
 				'service_invoices.total as invoice_amount',
 				'service_invoices.is_cn_created',
 				'service_invoices.status_id',
+				'service_invoices.branch_id',
 				'outlets.code as branch',
 				'sbus.name as sbu',
 				'service_item_categories.name as category',
@@ -72,7 +75,8 @@ class ServiceInvoiceApprovalController extends Controller {
 				'configs.name as type_name',
 				'configs.id as si_type_id',
 				'approval_levels.approval_type_id',
-				'approval_type_statuses.status'
+				'approval_type_statuses.status',
+				'service_invoices.created_by_id'
 			)
 			->join('outlets', 'outlets.id', 'service_invoices.branch_id')
 			->join('sbus', 'sbus.id', 'service_invoices.sbu_id')
@@ -83,11 +87,11 @@ class ServiceInvoiceApprovalController extends Controller {
 			->join('approval_type_statuses', 'approval_type_statuses.id', 'service_invoices.status_id')
 			->join('approval_types', 'approval_types.id', 'approval_type_statuses.approval_type_id')
 			->join('approval_levels', 'approval_levels.approval_type_id', 'approval_types.id')
-			->where('service_invoices.company_id', Auth::user()->company_id)
+		// ->where('service_invoices.company_id', Auth::user()->company_id)
 			->where('service_invoices.status_id', $approval_status_id)
 			->where(function ($query) use ($first_date_this_month, $last_date_this_month) {
 				if (!empty($first_date_this_month) && !empty($last_date_this_month)) {
-					$query->whereRaw("DATE(service_invoices.invoice_date) BETWEEN '" . $first_date_this_month . "' AND '" . $last_date_this_month . "'");
+					$query->whereRaw("DATE(service_invoices.document_date) BETWEEN '" . $first_date_this_month . "' AND '" . $last_date_this_month . "'");
 				}
 			})
 			->where(function ($query) use ($invoice_number_filter) {
@@ -133,6 +137,30 @@ class ServiceInvoiceApprovalController extends Controller {
 			->groupBy('service_invoices.id')
 			->orderBy('service_invoices.id', 'Desc');
 		// dd($cn_dn_approval_list);
+		if (Entrust::can('CN/DN Approval 1 View All')) {
+			$cn_dn_approval_list = $cn_dn_approval_list->where('service_invoices.company_id', Auth::user()->company_id);
+		} elseif (Entrust::can('CN/DN Approval 1 Outlet Based')) {
+			$view_user_outlets_only = User::leftJoin('employees', 'employees.id', 'users.entity_id')
+				->leftJoin('employee_outlet', 'employee_outlet.employee_id', 'employees.id')
+				->leftJoin('outlets', 'outlets.id', 'employee_outlet.outlet_id')
+				->where('employee_outlet.employee_id', Auth::user()->entity_id)
+				->where('users.company_id', Auth::user()->company_id)
+				->where('users.user_type_id', 1)
+				->pluck('employee_outlet.outlet_id')
+				->toArray();
+			$cn_dn_approval_list = $cn_dn_approval_list->whereIn('service_invoices.branch_id', $view_user_outlets_only);
+		} elseif (Entrust::can('CN/DN Approval 1 Sub Employee Based')) {
+			$sub_employee_based = Employee::join('users', 'users.entity_id', 'employees.id')
+				->join('service_invoices', 'service_invoices.created_by_id', 'users.id')
+				->where('users.company_id', Auth::user()->company_id)
+				->where('users.user_type_id', 1)
+				->where('employees.reporting_to_id', Auth::user()->entity_id)
+				->pluck('users.id as user_id')->toArray();
+			$sub_employee_based[] = Auth::user()->id;
+			$cn_dn_approval_list = $cn_dn_approval_list->whereIn('service_invoices.created_by_id', $sub_employee_based);
+		} else {
+			$cn_dn_approval_list = [];
+		}
 		return Datatables::of($cn_dn_approval_list)
 			->addColumn('invoice_amount', function ($cn_dn_approval_list) {
 				if ($cn_dn_approval_list->type_name == 'CN') {
@@ -146,12 +174,10 @@ class ServiceInvoiceApprovalController extends Controller {
 				$approval_type_id = $cn_dn_approval_list->approval_type_id;
 				$type_id = $cn_dn_approval_list->si_type_id == '1060' ? 1060 : 1061;
 				$img_view = asset('public/theme/img/table/cndn/view.svg');
-
 				return '<a href="#!/service-invoice-pkg/cn-dn/approval/approval-level/' . $approval_type_id . '/view/' . $type_id . '/' . $cn_dn_approval_list->id . '" class="">
-                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
-                    	</a>';
+	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
+	                    	</a>';
 			})
-		// ->rawColumns(['child_checkbox', 'action'])
 			->make(true);
 	}
 
