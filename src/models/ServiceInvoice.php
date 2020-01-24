@@ -171,7 +171,7 @@ class ServiceInvoice extends Model {
 		$Txt .= ' ' . implode(',', $item_codes);
 		$params = [
 			'Voucher' => 'V',
-			'AccountType' => 'Vendor',
+			'AccountType' => 'Customer',
 			'LedgerDimension' => $this->customer->code,
 			'Txt' => $Txt . '-' . $this->number,
 			'AmountCurDebit' => $this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') : 0,
