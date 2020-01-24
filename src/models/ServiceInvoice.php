@@ -238,7 +238,7 @@ class ServiceInvoice extends Model {
 		$export->Voucher = $params['Voucher'];
 		$export->ApproverPersonnelNumber = Auth::user()->employee->code;
 		$export->Approved = 1;
-		$export->TransDate = date("d/m/Y", strtotime($this->document_date));
+		$export->TransDate = date("Y-m-d", strtotime($this->document_date));
 		//dd($ledger_dimention);
 		$export->AccountType = $params['AccountType'];
 
@@ -256,7 +256,7 @@ class ServiceInvoice extends Model {
 		$export->SalesTaxFormTypes_IN_FormType = '';
 		$export->TDSGroup_IN = $params['TaxGroup'];
 		$export->DocumentNum = $this->number;
-		$export->DocumentDate = date("d/m/Y", strtotime($this->document_date));
+		$export->DocumentDate = date("Y-m-d", strtotime($this->document_date));
 		$export->LogisticsLocation_LocationId = '000127079';
 		$export->Due = '';
 		$export->PaymReference = '';

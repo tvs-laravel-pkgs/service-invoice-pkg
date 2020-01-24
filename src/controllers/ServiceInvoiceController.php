@@ -1330,6 +1330,8 @@ class ServiceInvoiceController extends Controller {
 
 		// $axapta_records = [];
 		foreach ($axapta_records as $key => &$axapta_record) {
+			$axapta_record['TransDate'] = date('d/m/Y', strtotime($axapta_record['TransDate']));
+			$axapta_record['DocumentDate'] = date('d/m/Y', strtotime($axapta_record['DocumentDate']));
 			unset($axapta_record['id']);
 			unset($axapta_record['company_id']);
 			unset($axapta_record['entity_type_id']);
