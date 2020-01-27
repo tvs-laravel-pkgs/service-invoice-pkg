@@ -17,6 +17,8 @@ class ServiceInvoicePkgServiceProvider extends ServiceProvider {
 		$this->loadViewsFrom(__DIR__ . '/views', 'service-invoice-pkg');
 		$this->publishes([
 			__DIR__ . '/public' => base_path('public'),
+			__DIR__ . '/database/seeds/client' => 'database/seeds',
+			__DIR__ . '/config/config.php' => config_path('service-invoice-pkg.php'),
 		]);
 	}
 
