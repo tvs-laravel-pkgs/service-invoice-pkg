@@ -153,27 +153,36 @@ class ServiceInvoice extends Model {
 		return $record;
 	}
 
-	public function exportToAxapta() {
+	public function exportToAxapta($delete = false) {
 		// DB::beginTransaction();
 
+		if ($delete) {
+			AxaptaExport::where([
+				'company_id' => Auth::user()->company_id,
+				'entity_type_id' => 1400,
+				'entity_id' => $this->id,
+			])->delete();
+		}
 		// try {
 		$item_codes = [];
 		foreach ($this->serviceInvoiceItems as $invoice_item) {
 			$item_codes[] = $invoice_item->serviceItem->code;
+			$item_descriptions[] = $invoice_item->description;
 		}
+		$Txt = implode(',', $item_descriptions);
 		if ($this->type_id == 1060) {
 			//CN
-			$Txt = 'Credit note for';
+			$Txt .= ' Credit note for';
 		} else {
 			//DN
-			$Txt = 'Debit note for';
+			$Txt .= ' Debit note for';
 		}
-		$Txt .= ' ' . implode(',', $item_codes);
+		$Txt .= implode(',', $item_codes);
 		$params = [
 			'Voucher' => 'V',
 			'AccountType' => 'Customer',
 			'LedgerDimension' => $this->customer->code,
-			'Txt' => $Txt . '-' . $this->number,
+			'Txt' => $invoice_item->serviceItem->description . ' ' . $Txt . '-' . $this->number,
 			'AmountCurDebit' => $this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') : 0,
 			'AmountCurCredit' => $this->type_id == 1060 ? $this->serviceInvoiceItems()->sum('sub_total') : 0,
 			'TaxGroup' => '',
@@ -200,7 +209,7 @@ class ServiceInvoice extends Model {
 				'Voucher' => 'D',
 				'AccountType' => 'Ledger',
 				'LedgerDimension' => $invoice_item->serviceItem->coaCode->code . '-' . $this->branch->code . '-' . $this->sbu->name,
-				'Txt' => $invoice_item->serviceItem->code . ' ' . $invoice_item->serviceItem->description . ' ' . $invoice_item->description . '-' . $this->number,
+				'Txt' => $invoice_item->serviceItem->code . ' ' . $invoice_item->serviceItem->description . ' ' . $invoice_item->description . '-' . $this->number . '-' . $this->customer->code,
 				'AmountCurDebit' => $this->type_id == 1060 ? $invoice_item->sub_total : 0,
 				'AmountCurCredit' => $this->type_id == 1061 ? $invoice_item->sub_total : 0,
 				'TaxGroup' => '',
@@ -233,7 +242,7 @@ class ServiceInvoice extends Model {
 		]);
 
 		$export->CurrencyCode = 'INR';
-		$export->JournalName = 'COGLMBBI';
+		$export->JournalName = 'BPAS_NJV';
 		$export->JournalNum = "";
 		$export->Voucher = $params['Voucher'];
 		$export->ApproverPersonnelNumber = Auth::user()->employee->code;

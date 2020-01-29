@@ -1,4 +1,4 @@
-@if(config('custom.PKG_DEV'))
+@if(config('service-invoice-pkg.DEV'))
     <?php $service_invoice_pkg_prefix = '/packages/abs/service-invoice-pkg/src';?>
 @else
     <?php $service_invoice_pkg_prefix = '';?>
