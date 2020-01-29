@@ -172,10 +172,10 @@ class ServiceInvoice extends Model {
 		$Txt = implode(',', $item_descriptions);
 		if ($this->type_id == 1060) {
 			//CN
-			$Txt .= ' Credit note for';
+			$Txt .= ' - Credit note for ';
 		} else {
 			//DN
-			$Txt .= ' Debit note for';
+			$Txt .= ' - Debit note for ';
 		}
 		$Txt .= implode(',', $item_codes);
 		$params = [
