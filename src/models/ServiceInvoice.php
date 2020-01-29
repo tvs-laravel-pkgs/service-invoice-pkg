@@ -182,7 +182,7 @@ class ServiceInvoice extends Model {
 			'Voucher' => 'V',
 			'AccountType' => 'Customer',
 			'LedgerDimension' => $this->customer->code,
-			'Txt' => $invoice_item->serviceItem->description . ' ' . $Txt . '-' . $this->number,
+			'Txt' => $Txt . '-' . $this->number,
 			'AmountCurDebit' => $this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') : 0,
 			'AmountCurCredit' => $this->type_id == 1060 ? $this->serviceInvoiceItems()->sum('sub_total') : 0,
 			'TaxGroup' => '',
