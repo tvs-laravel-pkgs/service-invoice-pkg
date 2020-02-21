@@ -2,6 +2,7 @@
 
 namespace Abs\ServiceInvoicePkg;
 use Abs\AxaptaExportPkg\AxaptaExport;
+use Abs\ImportCronJobPkg\ImportCronJob;
 use App\Company;
 use App\Customer;
 use App\Outlet;
@@ -9,6 +10,8 @@ use App\Sbu;
 use Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
+use PHPExcel_Shared_Date;
 
 class ServiceInvoice extends Model {
 	use SoftDeletes;
@@ -275,6 +278,188 @@ class ServiceInvoice extends Model {
 		$export->TVSCustomerLocationID = '';
 		$export->TVSCompanyLocationId = $this->outlet->axapta_location_id ? $this->outlet->axapta_location_id : '';
 		$export->save();
+
+	}
+
+	public static function importFromExcel($job) {
+		try {
+			$response = ImportCronJob::getRecordsFromExcel($job, 'N');
+			$rows = $response['rows'];
+			$header = $response['header'];
+
+			$all_error_records = [];
+			foreach ($rows as $k => $row) {
+				$record = [];
+				foreach ($header as $key => $column) {
+					if (!$column) {
+						continue;
+					} else {
+						$record[$column] = trim($row[$key]);
+					}
+				}
+
+				$original_record = $record;
+				$status = [];
+				$status['errors'] = [];
+
+				if (empty($record['Reference Number'])) {
+					$status['errors'][] = 'Reference Number is empty';
+				}
+
+				if (empty($record['Type'])) {
+					$status['errors'][] = 'Type is empty';
+				} else {
+					$type = Config::where([
+						'config_type_id' => 84,
+						'name' => $record['Type'],
+					])->first();
+					if (!$type) {
+						$status['errors'][] = 'Invalid Type';
+					}
+				}
+
+				if (empty($record['Doc Date'])) {
+					$status['errors'][] = 'Doc Date is empty';
+				}
+
+				if (empty($record['Branch'])) {
+					$status['errors'][] = 'Branch is empty';
+				} else {
+					$branch = Outlet::where([
+						'company_id' => $job->company_id,
+						'code' => $record['Branch'],
+					])->first();
+					if (!$branch) {
+						$status['errors'][] = 'Invalid Branch';
+					}
+				}
+
+				if (empty($record['SBU'])) {
+					$status['errors'][] = 'SBU is empty';
+				} else {
+					$sbu = Sbu::where([
+						'company_id' => $job->company_id,
+						'name' => $record['SBU'],
+					])->first();
+					if (!$sbu) {
+						$status['errors'][] = 'Invalid SBU';
+					}
+					$outlet_sbu = $branch->outlet_sbu;
+					if (!$outlet_sbu) {
+						$status['errors'][] = 'SBU is not mapped for this branch';
+					}
+				}
+
+				if (empty($record['Category'])) {
+					$status['errors'][] = 'Category is empty';
+				} else {
+					$category = ServiceItemCategory::where([
+						'company_id' => $job->company_id,
+						'name' => $record['Category'],
+					])->first();
+					if (!$category) {
+						$status['errors'][] = 'Invalid Category';
+					}
+				}
+
+				if (empty($record['Sub Category'])) {
+					$status['errors'][] = 'Sub Category is empty';
+				} else {
+					$sub_category = ServiceItemSubCategory::where([
+						'company_id' => $job->company_id,
+						'category_id' => $category->id,
+						'name' => $record['Sub Category'],
+					])->first();
+					if (!$sub_category) {
+						$status['errors'][] = 'Invalid Sub Category Or Sub Category is not mapped for this Category';
+					}
+				}
+
+				if (empty($record['Customer Code'])) {
+					$status['errors'][] = 'Customer Code is empty';
+				} else {
+					$customer = Customer::where([
+						'company_id' => $job->company_id,
+						'code' => $record['Customer Code'],
+					])->first();
+					if (!$customer) {
+						$status['errors'][] = 'Invalid Customer';
+					}
+				}
+
+				if (empty($record['Item Code'])) {
+					$status['errors'][] = 'Item Code is empty';
+				} else {
+					$item_code = ServiceItem::where([
+						'company_id' => $job->company_id,
+						'code' => $record['Item Code'],
+					])->first();
+					if (!$item_code) {
+						$status['errors'][] = 'Invalid Item Code';
+					}
+				}
+
+				if (empty($record['Reference'])) {
+					$status['errors'][] = 'Reference is empty';
+				}
+
+				if (empty($record['Amount'])) {
+					$status['errors'][] = 'Amount is empty';
+				} elseif (!is_numeric($record['Amount'])) {
+					$status['errors'][] = 'Invalid Amount';
+				}
+
+				if (count($status['errors']) > 0) {
+					// dump($status['errors']);
+					$original_record['Record No'] = $k + 1;
+					$original_record['Error Details'] = implode(',', $status['errors']);
+					$all_error_records[] = $original_record;
+					$job->incrementError();
+					continue;
+				}
+
+				DB::beginTransaction();
+				$coupon = Coupon::create([
+					'company_id' => $job->company_id,
+					'code' => $record['Code'], //ITEM
+					'date' => date('Y-m-d', PHPExcel_Shared_Date::ExcelToPHP($record['Date of Printing'])),
+					'point' => $record['Point'],
+					'pack_size' => $record['Pack Size'],
+					'status_id' => 7400,
+					'created_by_id' => $job->created_by_id,
+					'updated_at' => NULL,
+				]);
+
+				$encrypted_qr_code = $coupon->code . ', ' . date('d-m-Y', strtotime($coupon->date));
+				$qr_code = base64_decode(DNS2D::getBarcodePNG($encrypted_qr_code, "QRCODE", 30, 30));
+				$qr_destination = 'public/wad-qr-coupons/'; // . date('d-m-Y', strtotime($coupon->date)) . '/';
+				Storage::makeDirectory($qr_destination, 0777);
+				$result = Storage::put($qr_destination . $coupon->code . '.png', $qr_code);
+
+				$job->incrementNew();
+
+				DB::commit();
+				//UPDATING PROGRESS FOR EVERY FIVE RECORDS
+				if (($k + 1) % 5 == 0) {
+					$job->save();
+				}
+			}
+
+			//COMPLETED or completed with errors
+			$job->status_id = $job->error_count == 0 ? 7202 : 7205;
+			$job->save();
+
+			ImportCronJob::generateImportReport([
+				'job' => $job,
+				'all_error_records' => $all_error_records,
+			]);
+
+		} catch (\Throwable $e) {
+			$job->status_id = 7203; //Error
+			$job->error_details = 'Error:' . $e->getMessage() . '. Line:' . $e->getLine() . '. File:' . $e->getFile(); //Error
+			$job->save();
+			dump($job->error_details);
+		}
 
 	}
 
