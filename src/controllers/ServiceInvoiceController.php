@@ -1,5 +1,4 @@
 <?php
-
 namespace Abs\ServiceInvoicePkg;
 use Abs\ApprovalPkg\ApprovalLevel;
 use Abs\ApprovalPkg\ApprovalTypeStatus;
@@ -1316,6 +1315,7 @@ class ServiceInvoiceController extends Controller {
 	}
 
 	public function exportServiceInvoicesToExcel(Request $r) {
+		ob_end_clean();
 		$date_range = explode(" to ", $r->invoice_date);
 		$service_invoices = ServiceInvoice::where('invoice_date', '>=', date('Y-m-d', strtotime($date_range[0])))
 			->where('invoice_date', '<=', date('Y-m-d', strtotime($date_range[1])))
