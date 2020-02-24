@@ -3,20 +3,28 @@
 namespace Abs\ServiceInvoicePkg;
 use Abs\AxaptaExportPkg\AxaptaExport;
 use Abs\ImportCronJobPkg\ImportCronJob;
+use Abs\SerialNumberPkg\SerialNumberGroup;
+use Abs\TaxPkg\Tax;
+use Abs\TaxPkg\TaxCode;
 use App\Company;
+use App\Config;
 use App\Customer;
+use App\Entity;
+use App\FinancialYear;
 use App\Outlet;
 use App\Sbu;
 use Auth;
+use DB;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Storage;
 use PHPExcel_Shared_Date;
 
 class ServiceInvoice extends Model {
 	use SoftDeletes;
 	protected $table = 'service_invoices';
 	protected $fillable = [
+		'company_id',
+		'number',
 		'branch_id',
 		'sbu_id',
 		'sub_category_id',
@@ -297,14 +305,12 @@ class ServiceInvoice extends Model {
 						$record[$column] = trim($row[$key]);
 					}
 				}
-
 				$original_record = $record;
 				$status = [];
 				$status['errors'] = [];
-
-				if (empty($record['Reference Number'])) {
-					$status['errors'][] = 'Reference Number is empty';
-				}
+				// if (empty($record['Reference Number'])) {
+				// 	$status['errors'][] = 'Type is empty';
+				// }
 
 				if (empty($record['Type'])) {
 					$status['errors'][] = 'Type is empty';
@@ -320,6 +326,10 @@ class ServiceInvoice extends Model {
 
 				if (empty($record['Doc Date'])) {
 					$status['errors'][] = 'Doc Date is empty';
+				} else {
+					if (!is_numeric($record['Doc Date'])) {
+						$status['errors'][] = 'Invalid Format';
+					}
 				}
 
 				if (empty($record['Branch'])) {
@@ -409,6 +419,35 @@ class ServiceInvoice extends Model {
 					$status['errors'][] = 'Invalid Amount';
 				}
 
+				//GET FINANCIAL YEAR ID BY DOCUMENT DATE
+				$document_date_year = date('Y', PHPExcel_Shared_Date::ExcelToPHP($record['Doc Date']));
+				$financial_year = FinancialYear::where('from', $document_date_year)
+					->where('company_id', $job->company_id)
+					->first();
+				if (!$financial_year) {
+					$status['errors'][] = 'Fiancial Year Not Found';
+				}
+				if ($type->id == 1061) {
+					//DN
+					$serial_number_category = 5;
+				} elseif ($type->id == 1060) {
+					//CN
+					$serial_number_category = 4;
+				}
+
+				//GENERATE SERVICE INVOICE NUMBER
+				$generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, $branch->id, $sbu);
+				if (!$generateNumber['success']) {
+					$status['errors'][] = 'No Serial number found';
+				}
+
+				$approval_status = Entity::select('entities.name')->where('company_id', $job->company_id)->where('entity_type_id', 18)->first();
+				if ($approval_status != '') {
+					$status_id = $approval_status->name;
+				} else {
+					$status['errors'][] = 'Initial CN/DN Status has not mapped.!';
+				}
+
 				if (count($status['errors']) > 0) {
 					// dump($status['errors']);
 					$original_record['Record No'] = $k + 1;
@@ -419,22 +458,65 @@ class ServiceInvoice extends Model {
 				}
 
 				DB::beginTransaction();
-				$coupon = Coupon::create([
-					'company_id' => $job->company_id,
-					'code' => $record['Code'], //ITEM
-					'date' => date('Y-m-d', PHPExcel_Shared_Date::ExcelToPHP($record['Date of Printing'])),
-					'point' => $record['Point'],
-					'pack_size' => $record['Pack Size'],
-					'status_id' => 7400,
-					'created_by_id' => $job->created_by_id,
-					'updated_at' => NULL,
-				]);
 
-				$encrypted_qr_code = $coupon->code . ', ' . date('d-m-Y', strtotime($coupon->date));
-				$qr_code = base64_decode(DNS2D::getBarcodePNG($encrypted_qr_code, "QRCODE", 30, 30));
-				$qr_destination = 'public/wad-qr-coupons/'; // . date('d-m-Y', strtotime($coupon->date)) . '/';
-				Storage::makeDirectory($qr_destination, 0777);
-				$result = Storage::put($qr_destination . $coupon->code . '.png', $qr_code);
+				// dd(Auth::user()->company_id);
+				$service_invoice = ServiceInvoice::firstOrNew([
+					'company_id' => $job->company_id,
+					'number' => $generateNumber['number'],
+				]);
+				if ($type->id == 1061) {
+					$service_invoice->is_cn_created = 0;
+				} elseif ($type->id == 1060) {
+					$service_invoice->is_cn_created = 1;
+				}
+
+				$service_invoice->company_id = $job->company_id;
+				$service_invoice->type_id = $type->id;
+				$service_invoice->branch_id = $branch->id;
+				$service_invoice->sbu_id = $sbu->id;
+				$service_invoice->sub_category_id = $sub_category->id;
+				$service_invoice->invoice_date = date('Y-m-d', PHPExcel_Shared_Date::ExcelToPHP($record['Doc Date']));
+				$service_invoice->document_date = date('Y-m-d', PHPExcel_Shared_Date::ExcelToPHP($record['Doc Date']));
+				$service_invoice->customer_id = $customer->id;
+				$message = 'Service invoice added successfully';
+				$service_invoice->items_count = 1;
+				$service_invoice->status_id = $status_id;
+				$service_invoice->created_by_id = $job->created_by_id;
+				$service_invoice->updated_at = NULL;
+				$service_invoice->save();
+
+				$service_invoice_item = ServiceInvoiceItem::firstOrNew([
+					'service_invoice_id' => $service_invoice->id,
+					'service_item_id' => $item_code->id,
+				]);
+				$service_invoice_item->description = $record['Reference'];
+				$service_invoice_item->qty = 1;
+				$service_invoice_item->rate = $record['Amount'];
+				$service_invoice_item->sub_total = 1 * $record['Amount'];
+				$service_invoice_item->save();
+
+				//SAVE SERVICE INVOICE ITEM TAX
+				$taxes = Tax::getTaxes($item_code->id, $branch->id, $customer->id);
+				if ($item_code->sac_code_id) {
+					$tax_code = TaxCode::find($item_code->sac_code_id)->first();
+					$tax_percentages = DB::table('tax_code_tax')
+						->join('taxes', 'taxes.id', 'tax_code_tax.tax_id')
+						->where('tax_code_id', $tax_code->id)
+						->whereIn('tax_id', $taxes['tax_ids'])
+						->get()
+						->toArray()
+					;
+					$total_tax_amount = 0;
+					foreach ($tax_percentages as $tax) {
+						// $tax_amount[$tax->name] = self::percentage(1 * $record['Amount'], $tax->percentage);
+						$total_tax_amount += self::percentage(1 * $record['Amount'], $tax->percentage);
+					}
+				}
+				$service_invoice->amount_total = $record['Amount'];
+				$service_invoice->tax_total = $item_code->sac_code_id ? $total_tax_amount : 0;
+				$service_invoice->sub_total = 1 * $record['Amount'];
+				$service_invoice->total = $record['Amount'] + $total_tax_amount;
+				$service_invoice->save();
 
 				$job->incrementNew();
 
@@ -463,4 +545,7 @@ class ServiceInvoice extends Model {
 
 	}
 
+	public static function percentage($num, $per) {
+		return ($num / 100) * $per;
+	}
 }
