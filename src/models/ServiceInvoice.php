@@ -422,15 +422,15 @@ class ServiceInvoice extends Model {
 				//GET FINANCIAL YEAR ID BY DOCUMENT DATE
 				try {
 					$document_date_year = date('Y', PHPExcel_Shared_Date::ExcelToPHP($record['Doc Date']));
+					$financial_year = FinancialYear::where('from', $document_date_year)
+						->where('company_id', $job->company_id)
+						->first();
+					if (!$financial_year) {
+						$status['errors'][] = 'Fiancial Year Not Found';
+					}
 				} catch (\Exception $e) {
 					$status['errors'][] = 'Invalid Date Format';
 
-				}
-				$financial_year = FinancialYear::where('from', $document_date_year)
-					->where('company_id', $job->company_id)
-					->first();
-				if (!$financial_year) {
-					$status['errors'][] = 'Fiancial Year Not Found';
 				}
 
 				if ($type) {
