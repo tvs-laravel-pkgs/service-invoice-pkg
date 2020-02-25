@@ -496,6 +496,7 @@ class ServiceInvoice extends Model {
 				$service_invoice_item->save();
 
 				//SAVE SERVICE INVOICE ITEM TAX
+				$total_tax_amount = 0;
 				$taxes = Tax::getTaxes($item_code->id, $branch->id, $customer->id);
 				if ($item_code->sac_code_id) {
 					$tax_code = TaxCode::find($item_code->sac_code_id)->first();
@@ -506,7 +507,6 @@ class ServiceInvoice extends Model {
 						->get()
 						->toArray()
 					;
-					$total_tax_amount = 0;
 					foreach ($tax_percentages as $tax) {
 						// $tax_amount[$tax->name] = self::percentage(1 * $record['Amount'], $tax->percentage);
 						$total_tax_amount += self::percentage(1 * $record['Amount'], $tax->percentage);
