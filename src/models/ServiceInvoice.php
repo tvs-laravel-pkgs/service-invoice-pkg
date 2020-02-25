@@ -328,7 +328,7 @@ class ServiceInvoice extends Model {
 					$status['errors'][] = 'Doc Date is empty';
 				} else {
 					if (!is_numeric($record['Doc Date'])) {
-						$status['errors'][] = 'Invalid Format';
+						$status['errors'][] = 'Invalid Date Format';
 					}
 				}
 
@@ -354,10 +354,10 @@ class ServiceInvoice extends Model {
 					if (!$sbu) {
 						$status['errors'][] = 'Invalid SBU';
 					}
-					$outlet_sbu = $branch->outlet_sbu;
-					if (!$outlet_sbu) {
-						$status['errors'][] = 'SBU is not mapped for this branch';
-					}
+					// $outlet_sbu = $branch->outlet_sbu;
+					// if (!$outlet_sbu) {
+					// 	$status['errors'][] = 'SBU is not mapped for this branch';
+					// }
 				}
 
 				if (empty($record['Category'])) {
@@ -369,19 +369,19 @@ class ServiceInvoice extends Model {
 					])->first();
 					if (!$category) {
 						$status['errors'][] = 'Invalid Category';
-					}
-				}
-
-				if (empty($record['Sub Category'])) {
-					$status['errors'][] = 'Sub Category is empty';
-				} else {
-					$sub_category = ServiceItemSubCategory::where([
-						'company_id' => $job->company_id,
-						'category_id' => $category->id,
-						'name' => $record['Sub Category'],
-					])->first();
-					if (!$sub_category) {
-						$status['errors'][] = 'Invalid Sub Category Or Sub Category is not mapped for this Category';
+					} else {
+						if (empty($record['Sub Category'])) {
+							$status['errors'][] = 'Sub Category is empty';
+						} else {
+							$sub_category = ServiceItemSubCategory::where([
+								'company_id' => $job->company_id,
+								'category_id' => $category->id,
+								'name' => $record['Sub Category'],
+							])->first();
+							if (!$sub_category) {
+								$status['errors'][] = 'Invalid Sub Category Or Sub Category is not mapped for this Category';
+							}
+						}
 					}
 				}
 
@@ -420,29 +420,40 @@ class ServiceInvoice extends Model {
 				}
 
 				//GET FINANCIAL YEAR ID BY DOCUMENT DATE
-				$document_date_year = date('Y', PHPExcel_Shared_Date::ExcelToPHP($record['Doc Date']));
+				try {
+					$document_date_year = date('Y', PHPExcel_Shared_Date::ExcelToPHP($record['Doc Date']));
+				} catch (\Exception $e) {
+					$status['errors'][] = 'Invalid Date Format';
+
+				}
 				$financial_year = FinancialYear::where('from', $document_date_year)
 					->where('company_id', $job->company_id)
 					->first();
 				if (!$financial_year) {
 					$status['errors'][] = 'Fiancial Year Not Found';
 				}
-				if ($type->id == 1061) {
-					//DN
-					$serial_number_category = 5;
-				} elseif ($type->id == 1060) {
-					//CN
-					$serial_number_category = 4;
-				}
 
-				//GENERATE SERVICE INVOICE NUMBER
-				$generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, $branch->id, $sbu);
-				if (!$generateNumber['success']) {
-					$status['errors'][] = 'No Serial number found';
+				if ($type) {
+					if ($type->id == 1061) {
+						//DN
+						$serial_number_category = 5;
+					} elseif ($type->id == 1060) {
+						//CN
+						$serial_number_category = 4;
+					}
+
+					if ($branch && $sbu && $financial_year) {
+						//GENERATE SERVICE INVOICE NUMBER
+						$generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, $branch->id, $sbu);
+						if (!$generateNumber['success']) {
+							$status['errors'][] = 'No Serial number found';
+						}
+					}
+
 				}
 
 				$approval_status = Entity::select('entities.name')->where('company_id', $job->company_id)->where('entity_type_id', 18)->first();
-				if ($approval_status != '') {
+				if ($approval_status) {
 					$status_id = $approval_status->name;
 				} else {
 					$status['errors'][] = 'Initial CN/DN Status has not mapped.!';
@@ -507,7 +518,10 @@ class ServiceInvoice extends Model {
 						->get()
 						->toArray()
 					;
+					// dd($tax_percentages);
+					$service_invoice_item->taxes()->sync([]);
 					foreach ($tax_percentages as $tax) {
+						$service_invoice_item->taxes()->attach($tax->tax_id, ['percentage' => $tax->percentage, 'amount' => self::percentage(1 * $record['Amount'], $tax->percentage)]);
 						// $tax_amount[$tax->name] = self::percentage(1 * $record['Amount'], $tax->percentage);
 						$total_tax_amount += self::percentage(1 * $record['Amount'], $tax->percentage);
 					}
