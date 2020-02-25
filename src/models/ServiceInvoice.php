@@ -459,6 +459,13 @@ class ServiceInvoice extends Model {
 					$status['errors'][] = 'Initial CN/DN Status has not mapped.!';
 				}
 
+				if ($item_code && $branch && $customer) {
+					$taxes = Tax::getTaxes($item_code->id, $branch->id, $customer->id);
+					if (!$taxes['success']) {
+						$status['errors'][] = $taxes['error'];
+					}
+				}
+
 				if (count($status['errors']) > 0) {
 					// dump($status['errors']);
 					$original_record['Record No'] = $k + 1;
@@ -508,7 +515,7 @@ class ServiceInvoice extends Model {
 
 				//SAVE SERVICE INVOICE ITEM TAX
 				$total_tax_amount = 0;
-				$taxes = Tax::getTaxes($item_code->id, $branch->id, $customer->id);
+
 				if ($item_code->sac_code_id) {
 					$tax_code = TaxCode::find($item_code->sac_code_id)->first();
 					$tax_percentages = DB::table('tax_code_tax')
