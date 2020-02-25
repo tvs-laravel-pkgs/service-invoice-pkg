@@ -68,6 +68,7 @@ app.component('serviceInvoiceList', {
         self.hasPermission = HelperService.hasPermission;
         self.create_cn = self.hasPermission('create-cn');
         self.create_dn = self.hasPermission('create-dn');
+        self.import_cn_dn = self.hasPermission('import-cn-dn');
         $http.get(
             get_service_invoice_filter_url
         ).then(function(response) {
@@ -396,7 +397,7 @@ app.component('serviceInvoiceList', {
             $('#customer_id').val(selected_customer_id);
             dataTable.draw();
         }
-        window.onpopstate = function (e) { window.history.forward(1); }
+        window.onpopstate = function(e) { window.history.forward(1); }
         $rootScope.loading = false;
     }
 });

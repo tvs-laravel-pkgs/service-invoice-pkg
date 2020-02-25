@@ -126,6 +126,12 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 				'name' => 'view-outlet-based-cn-dn',
 				'display_name' => 'View Outlet Based',
 			],
+			3050 => [
+				'display_order' => 9,
+				'parent_id' => 3040,
+				'name' => 'import-cn-dn',
+				'display_name' => 'Import',
+			],
 
 		];
 
