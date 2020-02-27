@@ -23,6 +23,20 @@
                         <img src="./public/theme/img/content/refresh-arrow.png" class="img-responsive btn-refresh-icon">
                     </button>
                 </div>
+                <div class="page-header-content button-block">
+                    <div class="dropdown">
+                        <a class="btn-extension dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+                            <img class="img-responsive" src="./public/theme/img/content/extension-white.svg" alt="Extension" />
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu1">
+                            <li>
+                                <a type="submit" id="send_for_approval">
+                                    Send for Approval
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div><!-- Page Header Content -->
             </div><!-- Page Header Content Right -->
         </div><!-- Page Header Inner -->
     </div><!-- Page Header -->
@@ -33,6 +47,12 @@
                     <table class="table" id="cn-dn-approval-table" style="width: 100% !important;">
                         <thead>
                             <tr>
+                                <th>
+                                    <div class="table-checkbox">
+                                        <input type="checkbox" id="parent" />
+                                        <label for="parent"></label>
+                                    </div>
+                                </th>
                                 <th class="action">Actions</th>
                                 <th>Doc. Date</th>
                                 <th>Invoice No</th>

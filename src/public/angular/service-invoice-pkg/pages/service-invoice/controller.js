@@ -279,6 +279,31 @@ app.component('serviceInvoiceList', {
                 .draw();
         });
 
+        $('#send_for_approval').on('click', function() { //alert('dsf');
+            if ($('.service_invoice_checkbox:checked').length > 0) {
+                var send_for_approval = []
+                $('input[name="child_boxes"]:checked').each(function() {
+                    send_for_approval.push(this.value);
+                });
+                // console.log(send_for_approval);
+                $http.post(
+                    laravel_routes['sendMultipleApproval'], {
+                        send_for_approval: send_for_approval,
+                    }
+                ).then(function(response) {
+                    if (response.data.success == true) {
+                        custom_noty('success', response.data.message);
+                        $('#service-invoice-table').DataTable().ajax.reload();
+                        $scope.$apply();
+                    } else {
+                        custom_noty('error', response.data.errors);
+                    }
+                });
+            } else {
+                custom_noty('error', 'Please Select Checkbox');
+            }
+        })
+
         $('#parent').on('click', function() {
             if (this.checked) {
                 $('.service_invoice_checkbox').each(function() {

@@ -7,6 +7,7 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 	Route::get('/service-invoice/create-pdf/{id?}', 'ServiceInvoiceController@createPdf')->name('createPdf');
 	Route::get('/service-invoice/view/{type_id}/{id?}', 'ServiceInvoiceController@viewServiceInvoice')->name('viewServiceInvoice');
 	Route::post('/service-invoice/send-to-approval', 'ServiceInvoiceController@saveApprovalStatus')->name('saveApprovalStatus');
+	Route::post('/service-invoice/send-multiple-approval', 'ServiceInvoiceController@sendMultipleApproval')->name('sendMultipleApproval');
 	Route::get('/service-invoice/filter', 'ServiceInvoiceController@getServiceInvoiceFilter')->name('getServiceInvoiceFilter');
 	Route::post('/service-invoice/export', 'ServiceInvoiceController@exportServiceInvoicesToExcel')->name('exportServiceInvoicesToExcel');
 
@@ -15,6 +16,7 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 	Route::get('/service-invoice/cn-dn-approvals/approval/view/{approval_type_id?}/{type_id?}/{id?}', 'ServiceInvoiceApprovalController@viewServiceInvoiceApproval')->name('viewServiceInvoiceApproval');
 	Route::get('/service-invoice/cn-dn-approvals/', 'ServiceInvoiceApprovalController@approvalTypeValid')->name('approvalTypeValid');
 	Route::post('/service-invoice/cn-dn-approvals/save', 'ServiceInvoiceApprovalController@updateApprovalStatus')->name('updateApprovalStatus');
+	Route::post('/service-invoice/update-multiple-approvals', 'ServiceInvoiceApprovalController@updateMultipleApproval')->name('updateMultipleApproval');
 	Route::get('/service-invoice/cn-dn-approvals/filter', 'ServiceInvoiceApprovalController@getApprovalFilter')->name('getApprovalFilter');
 	//GET SBUs
 	Route::get('/get-sbu/{outlet_id?}', 'ServiceInvoiceController@getSbus')->name('getSbus');

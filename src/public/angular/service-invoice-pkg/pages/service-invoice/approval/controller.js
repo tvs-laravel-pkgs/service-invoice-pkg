@@ -79,6 +79,7 @@ app.component('serviceInvoiceApprovalList', {
                 },
 
                 columns: [
+                    { data: 'child_checkbox', searchable: false },
                     { data: 'action', searchable: false, class: 'action' },
                     { data: 'document_date', searchable: false },
                     { data: 'number', name: 'service_invoices.number', searchable: true },
@@ -205,6 +206,51 @@ app.component('serviceInvoiceApprovalList', {
                 .search(this.value)
                 .draw();
         });
+        
+        $('#send_for_approval').on('click', function() { //alert('dsf');
+            if ($('.service_invoice_checkbox:checked').length > 0) {
+                var send_for_approval = []
+                $('input[name="child_boxes"]:checked').each(function() {
+                    send_for_approval.push(this.value);
+                });
+                // console.log(send_for_approval);
+                $http.post(
+                    laravel_routes['updateMultipleApproval'], {
+                        send_for_approval: send_for_approval,
+                    }
+                ).then(function(response) {
+                    if (response.data.success == true) {
+                        custom_noty('success', response.data.message);
+                        $('#cn-dn-approval-table').DataTable().ajax.reload();
+                        $scope.$apply();
+                    } else {
+                        custom_noty('error', response.data.errors);
+                    }
+                });
+            } else {
+                custom_noty('error', 'Please Select Checkbox');
+            }
+        })
+
+        $('#parent').on('click', function() {
+            if (this.checked) {
+                $('.service_invoice_checkbox').each(function() {
+                    this.checked = true;
+                });
+            } else {
+                $('.service_invoice_checkbox').each(function() {
+                    this.checked = false;
+                });
+            }
+        });
+        $(document.body).on('click', '.service_invoice_checkbox', function() {
+            if ($('.service_invoice_checkbox:checked').length == $('.service_invoice_checkbox').length) {
+                $('#parent').prop('checked', true);
+            } else {
+                $('#parent').prop('checked', false);
+            }
+        });
+
         $('.align-left.daterange').daterangepicker({
             autoUpdateInput: false,
             "opens": "left",
