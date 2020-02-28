@@ -178,6 +178,7 @@ class ServiceInvoiceController extends Controller {
 				$img_view = asset('public/theme/img/table/cndn/view.svg');
 				$img_download = asset('public/theme/img/table/cndn/download.svg');
 				$img_delete = asset('public/theme/img/table/cndn/delete.svg');
+				// $img_approval = asset('public/theme/img/table/cndn/errordownload.svg');
 				$path = URL::to('/storage/app/public/service-invoice-pdf');
 				$output = '';
 				if ($service_invoice_list->status_id == '4') {
@@ -194,6 +195,12 @@ class ServiceInvoiceController extends Controller {
 	                        <img class="img-responsive" src="' . $img_edit . '" alt="Edit" />
 	                    	</a>';
 				}
+				// if ($service_invoice_list->status_id == '1') {
+				// 	$next_status = ApprovalLevel::where('approval_type_id', 1)->pluck('current_status_id')->first();
+				// 	$output .= '<a href="' . route('saveApprovalStatus', ['id' => $service_invoice_list->id, 'send_to_approval' => $next_status]) . '" class="">
+				//                      <img class="img-responsive" src="' . $img_approval . '" alt="Approval" />
+				//                  	</a>';
+				// }
 				return $output;
 			})
 			->rawColumns(['child_checkbox', 'action'])
@@ -942,7 +949,8 @@ class ServiceInvoiceController extends Controller {
 			}
 
 			DB::commit();
-			return response()->json(['success' => true, 'message' => $message]);
+			// dd($service_invoice->id);
+			return response()->json(['success' => true, 'message' => $message, 'service_invoice_id' => $service_invoice->id]);
 		} catch (Exception $e) {
 			DB::rollBack();
 			// dd($e->getMessage());

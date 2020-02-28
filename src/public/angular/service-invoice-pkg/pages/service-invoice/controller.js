@@ -1036,9 +1036,10 @@ app.component('serviceInvoiceForm', {
                                 errors += '<li>' + res.errors[i] + '</li>';
                             }
                             custom_noty('error', errors);
-                        } else {
+                        } else { 
                             custom_noty('success', res.message);
-                            $location.path('/service-invoice-pkg/service-invoice/list');
+                            // $location.path('/service-invoice-pkg/service-invoice/list');
+                            $location.path('/service-invoice-pkg/service-invoice/view/' + $routeParams.type_id + '/' + res.service_invoice_id);
                             $scope.$apply()
                         }
                     })
