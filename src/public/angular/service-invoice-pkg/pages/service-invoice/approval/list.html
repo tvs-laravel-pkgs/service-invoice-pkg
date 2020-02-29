@@ -6,7 +6,7 @@
                     <h1 class="title type-2">CN/DN Approvals</h1>
                 </div><!-- Page Header Content -->
                 <div class="page-header-content button-block">
-                    <button class="btn btn-bordered" data-toggle="modal" data-target="#filter"><i class="icon ion-md-funnel"></i>Filter</button>
+                    <button class="btn btn-bordered" data-toggle="modal" data-target="#filter" ng-shortcut="'meta+shift+f'" ng-shortcut-click><i class="icon ion-md-funnel"></i>Filter</button>
                 </div><!-- Page Header Content -->
             </div><!-- Page Header Content Left -->
             <div class="page-header-content-right">
@@ -30,7 +30,7 @@
                         </a>
                         <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu1">
                             <li>
-                                <a href="" type="submit" id="send_for_approval">
+                                <a href="" type="submit" id="send_for_approval" class="refresh_table">
                                     Send for Approval
                                 </a>
                             </li>
@@ -215,3 +215,22 @@
         </div><!-- Modal Content -->
     </div><!-- Modal Dialog -->
 </div><!-- Modal Content -->
+<!-- Modal -->
+<div class="modal fade alert-modal failure" id="cn-dn-approval-modal" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">ARE YOU SURE?</h4>
+            </div>
+            <div class="modal-body">
+                <h5>Approve</h5>
+                <p>Are you sure you want to approve? </p>
+                <input type="hidden" name="approval_id" id="approval_id" value="">
+                <input type="hidden" name="next_status" id="next_status" value="">
+                <button type="button" class="btn btn-grey" data-dismiss="modal" aria-label="Close">No</button>
+                <button class="btn btn-rose refresh_table" ng-click="approvalConfirm()" type="button" data-dismiss="modal" aria-label="Close" id="approve">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal -->

@@ -179,9 +179,16 @@ class ServiceInvoiceApprovalController extends Controller {
 				$approval_type_id = $cn_dn_approval_list->approval_type_id;
 				$type_id = $cn_dn_approval_list->si_type_id == '1060' ? 1060 : 1061;
 				$img_view = asset('public/theme/img/table/cndn/view.svg');
+				$img_approval = asset('public/theme/img/table/cndn/approval.svg');
+				$next_status = ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
+
 				return '<a href="#!/service-invoice-pkg/cn-dn/approval/approval-level/' . $approval_type_id . '/view/' . $type_id . '/' . $cn_dn_approval_list->id . '" class="">
 	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
-	                    	</a>';
+	                    	</a>
+	                    	<a href="javascript:;" data-toggle="modal" data-target="#cn-dn-approval-modal"
+					onclick="angular.element(this).scope().sendApproval(' . $cn_dn_approval_list->id . ',' . $next_status . ')" title="Approval">
+					<img src="' . $img_approval . '" alt="Approval" class="img-responsive">
+					</a>';
 			})
 			->rawColumns(['child_checkbox', 'action'])
 			->make(true);

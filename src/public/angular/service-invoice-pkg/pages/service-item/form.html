@@ -124,6 +124,12 @@
                                         </div><!-- Column -->
                                         <div class="col-md-3">
                                             <div class="input-text form-group">
+                                                <label>Default Reference</label>
+                                                <textarea class="form-control" ng-model="$ctrl.service_item.default_reference" name="default_reference" rows="2" placeholder="Enter Default Reference" autocomplete="off" minlength="3" maxlength="255"></textarea>
+                                            </div><!-- Feild -->
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="input-text form-group">
                                                 <label>Active Status <sup class="mandatory">*</sup></label>
                                                 <div class="tab-switch">
                                                     <md-switch ng-model="$ctrl.switch_value" aria-label="Switch 1" ng-true-value="'Inactive'" ng-false-value="'Active'" class="md-warn">

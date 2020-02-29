@@ -422,6 +422,30 @@ app.component('serviceInvoiceList', {
             $('#customer_id').val(selected_customer_id);
             dataTable.draw();
         }
+
+        $scope.sendApproval = function($id, $send_to_approval) {
+            $('#approval_id').val($id);
+            $('#next_status').val($send_to_approval);
+        }
+        $scope.approvalConfirm = function() {
+            $id = $('#approval_id').val();
+            $send_to_approval = $('#next_status').val();
+            $http.post(
+                laravel_routes['saveApprovalStatus'], {
+                    id: $id,
+                    send_to_approval: $send_to_approval,
+                }
+            ).then(function(response) {
+                if (response.data.success == true) {
+                    custom_noty('success', response.data.message);
+                    $('#service-invoice-table').DataTable().ajax.reload();
+                    $scope.$apply();
+                } else {
+                    custom_noty('error', response.data.errors);
+                }
+            });
+        }
+
         window.onpopstate = function(e) { window.history.forward(1); }
         $rootScope.loading = false;
     }
