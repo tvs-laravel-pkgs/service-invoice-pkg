@@ -6,7 +6,7 @@
                     <h1 class="title type-2">Credit &amp; Debit Notes</h1>
                 </div><!-- Page Header Content -->
                 <div class="page-header-content button-block">
-                    <button class="btn btn-bordered" data-toggle="modal" data-target="#filter" ng-shortcut="'meta+shift+f'" ng-shortcut-click><i class="icon ion-md-funnel"></i>Filter</button>
+                    <button class="btn btn-bordered my-tooltip" data-toggle="modal" data-target="#filter" ng-shortcut="'meta+shift+f'" ng-shortcut-click data-title="ctrl+shift+f"><i class="icon ion-md-funnel"></i>Filter</button>
                 </div><!-- Page Header Content -->
             </div><!-- Page Header Content Left -->
             <div class="page-header-content-right">
@@ -19,7 +19,7 @@
                     </div><!-- Search Filter -->
                 </div><!-- Page Header Content pad-lf-rt-->
                 <div class="page-header-content button-block">
-                    <button type="button" class="btn btn-refresh refresh_table">
+                    <button type="button" class="btn btn-refresh refresh_table my-tooltip" ng-shortcut="'meta+shift+r'" ng-shortcut-click data-title="ctrl+shift+r">
                         <img src="./public/theme/img/content/refresh-arrow.png" class="img-responsive btn-refresh-icon">
                     </button>
                 </div>
@@ -41,8 +41,8 @@
                             </li>
                         </ul>
                     </div>
-                    <a href="#!/service-invoice-pkg/service-invoice/add/1060" ng-if="$ctrl.create_cn == true" class="btn btn-primary" ng-shortcut="'meta+shift+c'" ng-shortcut-click>Add CN</a>
-                    <a href="#!/service-invoice-pkg/service-invoice/add/1061" ng-if="$ctrl.create_dn == true" class="btn btn-primary" ng-shortcut="'meta+shift+d'" ng-shortcut-click>Add DN</a>
+                    <a href="#!/service-invoice-pkg/service-invoice/add/1060" ng-if="$ctrl.create_cn == true" class="btn btn-primary my-tooltip" ng-shortcut="'meta+shift+c'" ng-shortcut-click data-title="ctrl+shift+c">Add CN</a>
+                    <a href="#!/service-invoice-pkg/service-invoice/add/1061" ng-if="$ctrl.create_dn == true" class="btn btn-primary my-tooltip" ng-shortcut="'meta+shift+d'" ng-shortcut-click data-title="ctrl+shift+d">Add DN</a>
                 </div><!-- Page Header Content -->
             </div><!-- Page Header Content Right -->
         </div><!-- Page Header Inner -->

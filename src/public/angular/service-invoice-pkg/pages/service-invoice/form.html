@@ -5,7 +5,7 @@
         <div class="page-header-inner">
             <div class="page-header-content-left">
                 <div class="page-header-content button-block">
-                    <a href="{{$ctrl.list_url}}" type="button" class="btn-back btn-img"><img class="img-responsive" src="./public/theme/img/content/previous.svg" alt="Back" ng-shortcut="'meta+shift+left'" ng-shortcut-click /></a>
+                    <a href="{{$ctrl.list_url}}" type="button" class="btn-back btn-img"><img class="img-responsive my-tooltip" src="./public/theme/img/content/previous.svg" alt="Back" ng-shortcut="'meta+shift+left'" ng-shortcut-click data-title="ctrl+shift+left"/></a>
                 </div><!-- Page Header Content -->
                 <div class="page-header-content title-block">
                     <h1 class="title" ng-show="$ctrl.type_id == 1060"><b> Credit Note</b></h1>
@@ -156,7 +156,7 @@
                                         <h5 class="table-wrap-title">Details</h5>
                                     </div><!-- Column -->
                                     <div class="col-md-6 text-right">
-                                        <a class="btn btn-secondary-dark btn-md type2" data-toggle="modal" data-target="#modal-cn-addnew" ng-click="addItem()">+ Add Item</a>
+                                        <a class="btn btn-secondary-dark btn-md type2 my-tooltip" data-toggle="modal" data-target="#modal-cn-addnew" ng-click="addItem()" ng-shortcut="'meta+shift+o'" ng-shortcut-click data-title="ctrl+shift+o">+ Add Item</a>
                                     </div><!-- Column -->
                                 </div><!-- Row -->
                             </div><!-- Table Wrap Header -->
@@ -254,8 +254,8 @@
                                         </ul>
                                     </div>
                                     <div class="col-md-4">
-                                        <a href="#!/service-invoice-pkg/service-invoice/list" class="btn btn-white">Cancel</a>
-                                        <button type="submit" class="btn btn-primary" id="submit" ng-shortcut="'meta+shift+s'" ng-shortcut-click>Submit</button>
+                                        <a href="#!/service-invoice-pkg/service-invoice/list" class="btn btn-white my-tooltip" ng-shortcut="'meta+shift+left'" ng-shortcut-click data-title="ctrl+shift+left">Cancel</a>
+                                        <button type="submit" class="btn btn-primary my-tooltip" id="submit" ng-shortcut="'meta+shift+s'" ng-shortcut-click data-title="ctrl+shift+s">Submit</button>
                                     </div>
                                 </div>
                             </div><!-- Page Form Footer -->
@@ -481,8 +481,8 @@
                             </div><!-- Modal Footer List Wrap -->
                         </div><!-- Column -->
                         <div class="col-md-3">
-                            <button type="button" class="btn btn-white" data-dismiss="modal">Cancel</button>
-                            <button id="addServiceItem" type="submit" class="btn btn-default" ng-shortcut="'meta+shift+i'" ng-shortcut-click>Save</button>
+                            <button type="button" class="btn btn-white my-tooltip" data-dismiss="modal" ng-shortcut="'meta+shift+m'" ng-shortcut-click data-title="ctrl+shift+m">Cancel</button>
+                            <button id="addServiceItem" type="submit" class="btn btn-default my-tooltip" ng-shortcut="'meta+shift+i'" ng-shortcut-click data-title="ctrl+shift+i">Save</button>
                         </div><!-- Column -->
                     </div><!-- Row -->
                 </div><!-- Modal Footer -->
