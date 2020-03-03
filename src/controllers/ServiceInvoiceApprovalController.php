@@ -162,6 +162,11 @@ class ServiceInvoiceApprovalController extends Controller {
 			$cn_dn_approval_list = [];
 		}
 		return Datatables::of($cn_dn_approval_list)
+			->addColumn('child_checkbox', function ($cn_dn_approval_list) {
+				$checkbox = "<td><div class='table-checkbox'><input type='checkbox' id='child_" . $cn_dn_approval_list->id . "' name='child_boxes' value='" . $cn_dn_approval_list->id . "' class='service_invoice_checkbox'/><label for='child_" . $cn_dn_approval_list->id . "'></label></div></td>";
+
+				return $checkbox;
+			})
 			->addColumn('invoice_amount', function ($cn_dn_approval_list) {
 				if ($cn_dn_approval_list->type_name == 'CN') {
 					return '-' . $cn_dn_approval_list->invoice_amount;
@@ -174,10 +179,18 @@ class ServiceInvoiceApprovalController extends Controller {
 				$approval_type_id = $cn_dn_approval_list->approval_type_id;
 				$type_id = $cn_dn_approval_list->si_type_id == '1060' ? 1060 : 1061;
 				$img_view = asset('public/theme/img/table/cndn/view.svg');
+				$img_approval = asset('public/theme/img/table/cndn/approval.svg');
+				$next_status = ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
+
 				return '<a href="#!/service-invoice-pkg/cn-dn/approval/approval-level/' . $approval_type_id . '/view/' . $type_id . '/' . $cn_dn_approval_list->id . '" class="">
 	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
-	                    	</a>';
+	                    	</a>
+	                    	<a href="javascript:;" data-toggle="modal" data-target="#cn-dn-approval-modal"
+					onclick="angular.element(this).scope().sendApproval(' . $cn_dn_approval_list->id . ',' . $next_status . ')" title="Approval">
+					<img src="' . $img_approval . '" alt="Approval" class="img-responsive">
+					</a>';
 			})
+			->rawColumns(['child_checkbox', 'action'])
 			->make(true);
 	}
 
@@ -377,6 +390,46 @@ class ServiceInvoiceApprovalController extends Controller {
 		} catch (Exception $e) {
 			DB::rollBack();
 			return response()->json(['success' => false, 'errors' => ['Exception Error' => $e->getMessage()]]);
+		}
+	}
+
+	public function updateMultipleApproval(Request $request) {
+		$send_for_approvals = ServiceInvoice::whereIn('id', $request->send_for_approval)->where('status_id', 2)->pluck('id')->toArray();
+		$next_status = ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
+		// dd($send_for_approvals);
+		if (count($send_for_approvals) == 0) {
+			return response()->json(['success' => false, 'errors' => ['No Approval 1 Pending Status in the list!']]);
+		} else {
+			DB::beginTransaction();
+			try {
+				foreach ($send_for_approvals as $key => $value) {
+					// return $this->saveApprovalStatus($value, $next_status);
+					$send_approval = ServiceInvoice::find($value);
+					$send_approval->status_id = $next_status;
+					$send_approval->updated_by_id = Auth()->user()->id;
+					$send_approval->updated_at = date("Y-m-d H:i:s");
+					$send_approval->save();
+
+					$approved_status = new ServiceInvoiceController();
+					$approval_levels = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 19)->first();
+					if ($approval_levels != '') {
+						if ($send_approval->status_id == $approval_levels->name) {
+							$r = $approved_status->createPdf($send_approval->id);
+							if (!$r['success']) {
+								DB::rollBack();
+								return response()->json($r);
+							}
+						}
+					} else {
+						return response()->json(['success' => false, 'errors' => ['Final CN/DN Status has not mapped.!']]);
+					}
+				}
+				DB::commit();
+				return response()->json(['success' => true, 'message' => 'CN/DN Approved successfully']);
+			} catch (Exception $e) {
+				DB::rollBack();
+				return response()->json(['success' => false, 'errors' => ['Exception Error' => $e->getMessage()]]);
+			}
 		}
 	}
 }

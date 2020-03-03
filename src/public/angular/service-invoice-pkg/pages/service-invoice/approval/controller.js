@@ -79,10 +79,12 @@ app.component('serviceInvoiceApprovalList', {
                 },
 
                 columns: [
+                    { data: 'child_checkbox', searchable: false },
                     { data: 'action', searchable: false, class: 'action' },
                     { data: 'document_date', searchable: false },
                     { data: 'number', name: 'service_invoices.number', searchable: true },
                     { data: 'type_name', name: 'configs.name', searchable: true },
+                    { data: 'status', name: 'approval_type_statuses.status', searchable: false },
                     { data: 'branch', name: 'outlets.code', searchable: true },
                     { data: 'sbu', name: 'sbus.name', searchable: true },
                     { data: 'category', name: 'service_item_categories.name', searchable: true },
@@ -90,7 +92,6 @@ app.component('serviceInvoiceApprovalList', {
                     { data: 'customer_code', name: 'customers.code', searchable: true },
                     { data: 'customer_name', name: 'customers.name', searchable: true },
                     { data: 'invoice_amount', searchable: false, class: 'text-right' },
-                    { data: 'status', name: 'approval_type_statuses.status', searchable: false },
                 ],
                 "initComplete": function(settings, json) {
                     $('.dataTables_length select').select2();
@@ -205,6 +206,51 @@ app.component('serviceInvoiceApprovalList', {
                 .search(this.value)
                 .draw();
         });
+        
+        $('#send_for_approval').on('click', function() { //alert('dsf');
+            if ($('.service_invoice_checkbox:checked').length > 0) {
+                var send_for_approval = []
+                $('input[name="child_boxes"]:checked').each(function() {
+                    send_for_approval.push(this.value);
+                });
+                // console.log(send_for_approval);
+                $http.post(
+                    laravel_routes['updateMultipleApproval'], {
+                        send_for_approval: send_for_approval,
+                    }
+                ).then(function(response) {
+                    if (response.data.success == true) {
+                        custom_noty('success', response.data.message);
+                        $('#cn-dn-approval-table').DataTable().ajax.reload();
+                        $scope.$apply();
+                    } else {
+                        custom_noty('error', response.data.errors);
+                    }
+                });
+            } else {
+                custom_noty('error', 'Please Select Checkbox');
+            }
+        })
+
+        $('#parent').on('click', function() {
+            if (this.checked) {
+                $('.service_invoice_checkbox').each(function() {
+                    this.checked = true;
+                });
+            } else {
+                $('.service_invoice_checkbox').each(function() {
+                    this.checked = false;
+                });
+            }
+        });
+        $(document.body).on('click', '.service_invoice_checkbox', function() {
+            if ($('.service_invoice_checkbox:checked').length == $('.service_invoice_checkbox').length) {
+                $('#parent').prop('checked', true);
+            } else {
+                $('#parent').prop('checked', false);
+            }
+        });
+
         $('.align-left.daterange').daterangepicker({
             autoUpdateInput: false,
             "opens": "left",
@@ -305,6 +351,32 @@ app.component('serviceInvoiceApprovalList', {
             $('#customer_id').val(selected_customer_id);
             dataTable.draw();
         }
+
+        $scope.sendApproval = function($id, $send_to_approval) {
+            $('#approval_id').val($id);
+            $('#next_status').val($send_to_approval);
+        }
+        $scope.approvalConfirm = function() {
+            $id = $('#approval_id').val();
+            $send_to_approval = $('#next_status').val();
+            var ButtonValue = $('#approve').attr("id");
+            $http.post(
+                laravel_routes['updateApprovalStatus'], {
+                    id: $id,
+                    send_to_approval: $send_to_approval,
+                    status_name: ButtonValue,
+                }
+            ).then(function(response) {
+                if (response.data.success == true) {
+                    custom_noty('success', 'CN/DN ' + response.data.message + ' Successfully');
+                    $('#cn-dn-approval-table').DataTable().ajax.reload();
+                    $scope.$apply();
+                } else {
+                    custom_noty('error', response.data.errors);
+                }
+            });
+        }
+
         window.onpopstate = function (e) { window.history.forward(1); }
         $rootScope.loading = false;
     }

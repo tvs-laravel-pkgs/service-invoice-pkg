@@ -5,7 +5,7 @@
         <div class="page-header-inner">
             <div class="page-header-content-left">
                 <div class="page-header-content button-block">
-                    <a href="{{$ctrl.list_url}}" type="button" class="btn-back btn-img"><img class="img-responsive" src="./public/theme/img/content/previous.svg" alt="Back" /></a>
+                    <a href="{{$ctrl.list_url}}" type="button" class="btn-back btn-img my-tooltip" ng-shortcut="'meta+shift+left'" ng-shortcut-click data-title="ctrl+shift+left"><img class="img-responsive" src="./public/theme/img/content/previous.svg" alt="Back" /></a>
                 </div><!-- Page Header Content -->
                 <div class="page-header-content title-block">
                     <h1 class="title" ng-show="$ctrl.type_id == 1060"><b>{{$ctrl.action}} Credit Note</b></h1>
@@ -223,9 +223,9 @@
                                         </ul>
                                     </div>
                                     <div class="col-md-4">
-                                        <a href="#!/service-invoice-pkg/service-invoice/list" class="btn btn-white" id="back_button">Back</a>
-                                        <a href="#!/service-invoice-pkg/service-invoice/edit/{{$ctrl.type_id}}/{{$ctrl.service_invoice.id}}" class="btn btn-primary" id="edit_button" ng-if="$ctrl.service_invoice.status_id != 4">Edit</a>
-                                        <button type="submit" id="submit" class="btn btn-primary" ng-if="$ctrl.service_invoice.status_id == 1 || $ctrl.service_invoice.status_id == 5">Send to Approval</button>
+                                        <a href="#!/service-invoice-pkg/service-invoice/list" class="btn btn-white my-tooltip" id="back_button" ng-shortcut="'meta+shift+b'" ng-shortcut-click data-title="ctrl+shift+b">Back</a>
+                                        <a href="#!/service-invoice-pkg/service-invoice/edit/{{$ctrl.type_id}}/{{$ctrl.service_invoice.id}}" class="btn btn-primary my-tooltip" id="edit_button" ng-if="$ctrl.service_invoice.status_id != 4" ng-shortcut="'meta+shift+e'" ng-shortcut-click data-title="ctrl+shift+e">Edit</a>
+                                        <button type="submit" id="submit" class="btn btn-primary my-tooltip" ng-if="$ctrl.service_invoice.status_id == 1 || $ctrl.service_invoice.status_id == 5" ng-shortcut="'meta+shift+a'" ng-shortcut-click data-title="ctrl+shift+a">Send to Approval</button>
                                     </div>
                                     <input type="hidden" name="send_to_approval" id="send_to_approval" value="{{$ctrl.approval_status.current_status_id}}">
                                 </div>
@@ -270,7 +270,7 @@
                                                 <span class="table-form-view-value">{{$ctrl.service_item_detail.coa_code.code}}</span>
                                             </li>
                                             <li class="list-6">
-                                                <span class="table-form-view-label">SAC Code</span>
+                                                <span class="table-form-view-label">HSN/SAC Code</span>
                                                 <span class="table-form-view-value">{{$ctrl.service_item_detail.tax_code.code}}</span>
                                             </li>
                                         </ul>
@@ -439,7 +439,7 @@
                             </div><!-- Modal Footer List Wrap -->
                         </div><!-- Column -->
                         <div class="col-md-3">
-                            <button type="button" class="btn btn-white" data-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-white my-tooltip" data-dismiss="modal" ng-shortcut="'meta+shift+m'" ng-shortcut-click data-title="ctrl+shift+m">Cancel</button>
                         </div><!-- Column -->
                     </div><!-- Row -->
                 </div><!-- Modal Footer -->

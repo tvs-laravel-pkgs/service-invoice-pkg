@@ -203,6 +203,7 @@ class ServiceItemController extends Controller {
 			$service_item->sub_category_id = $request->sub_category_id;
 			$service_item->coa_code_id = $request->coa_code_id;
 			$service_item->sac_code_id = $request->sac_code_id;
+			$service_item->default_reference = $request->default_reference;
 			$service_item->save();
 			//SAVE FIELD-GROUP FIELD
 			$service_item->fieldGroups()->sync([]);

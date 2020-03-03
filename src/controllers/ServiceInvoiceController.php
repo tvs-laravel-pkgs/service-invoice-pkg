@@ -160,7 +160,7 @@ class ServiceInvoiceController extends Controller {
 		}
 		return Datatables::of($service_invoice_list)
 			->addColumn('child_checkbox', function ($service_invoice_list) {
-				$checkbox = "<td><div class='table-checkbox'><input type='checkbox' id='child_" . $service_invoice_list->id . "' class='service_invoice_checkbox'/><label for='child_" . $service_invoice_list->id . "'></label></div></td>";
+				$checkbox = "<td><div class='table-checkbox'><input type='checkbox' id='child_" . $service_invoice_list->id . "' name='child_boxes' value='" . $service_invoice_list->id . "' class='service_invoice_checkbox'/><label for='child_" . $service_invoice_list->id . "'></label></div></td>";
 
 				return $checkbox;
 			})
@@ -178,6 +178,7 @@ class ServiceInvoiceController extends Controller {
 				$img_view = asset('public/theme/img/table/cndn/view.svg');
 				$img_download = asset('public/theme/img/table/cndn/download.svg');
 				$img_delete = asset('public/theme/img/table/cndn/delete.svg');
+				$img_approval = asset('public/theme/img/table/cndn/approval.svg');
 				$path = URL::to('/storage/app/public/service-invoice-pdf');
 				$output = '';
 				if ($service_invoice_list->status_id == '4') {
@@ -193,6 +194,13 @@ class ServiceInvoiceController extends Controller {
 	                    	<a href="#!/service-invoice-pkg/service-invoice/edit/' . $type_id . '/' . $service_invoice_list->id . '" class="">
 	                        <img class="img-responsive" src="' . $img_edit . '" alt="Edit" />
 	                    	</a>';
+				}
+				if ($service_invoice_list->status_id == '1') {
+					$next_status = ApprovalLevel::where('approval_type_id', 1)->pluck('current_status_id')->first();
+					$output .= '<a href="javascript:;" data-toggle="modal" data-target="#send-to-approval"
+					onclick="angular.element(this).scope().sendApproval(' . $service_invoice_list->id . ',' . $next_status . ')" title="Approval">
+					<img src="' . $img_approval . '" alt="Approval" class="img-responsive">
+					</a>';
 				}
 				return $output;
 			})
@@ -942,7 +950,8 @@ class ServiceInvoiceController extends Controller {
 			}
 
 			DB::commit();
-			return response()->json(['success' => true, 'message' => $message]);
+			// dd($service_invoice->id);
+			return response()->json(['success' => true, 'message' => $message, 'service_invoice_id' => $service_invoice->id]);
 		} catch (Exception $e) {
 			DB::rollBack();
 			// dd($e->getMessage());
@@ -1311,6 +1320,43 @@ class ServiceInvoiceController extends Controller {
 		} catch (Exception $e) {
 			DB::rollBack();
 			return response()->json(['success' => false, 'errors' => ['Exception Error' => $e->getMessage()]]);
+		}
+	}
+
+	public function sendMultipleApproval(Request $request) {
+		$send_for_approvals = ServiceInvoice::whereIn('id', $request->send_for_approval)->where('status_id', 1)->pluck('id')->toArray();
+		$next_status = ApprovalLevel::where('approval_type_id', 1)->pluck('current_status_id')->first();
+		if (count($send_for_approvals) == 0) {
+			return response()->json(['success' => false, 'errors' => ['No New CN/DN Status in the list!']]);
+		} else {
+			DB::beginTransaction();
+			try {
+				foreach ($send_for_approvals as $key => $value) {
+					// return $this->saveApprovalStatus($value, $next_status);
+					$send_approval = ServiceInvoice::find($value);
+					$send_approval->status_id = $next_status;
+					$send_approval->updated_by_id = Auth()->user()->id;
+					$send_approval->updated_at = date("Y-m-d H:i:s");
+					$send_approval->save();
+					$approval_levels = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 19)->first();
+					if ($approval_levels != '') {
+						if ($send_approval->status_id == $approval_levels->name) {
+							$r = $this->createPdf($send_approval->id);
+							if (!$r['success']) {
+								DB::rollBack();
+								return response()->json($r);
+							}
+						}
+					} else {
+						return response()->json(['success' => false, 'errors' => ['Final CN/DN Status has not mapped.!']]);
+					}
+				}
+				DB::commit();
+				return response()->json(['success' => true, 'message' => 'Approval status updated successfully']);
+			} catch (Exception $e) {
+				DB::rollBack();
+				return response()->json(['success' => false, 'errors' => ['Exception Error' => $e->getMessage()]]);
+			}
 		}
 	}
 

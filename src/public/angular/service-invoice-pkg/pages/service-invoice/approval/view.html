@@ -1,4 +1,4 @@
-Content Wrap -->
+<!-- Content Wrap -->
 <form id="form" enctype="multipart-formdata" autocomplete="off">
     <div class="content-wrap cndn-wrap">
         <!-- Page Header -->
@@ -6,7 +6,7 @@ Content Wrap -->
             <div class="page-header-inner">
                 <div class="page-header-content-left">
                     <div class="page-header-content button-block">
-                        <a href="#!/service-invoice-pkg/cn-dn/approval/approval-level/{{$ctrl.approval_type_id}}/list/" type="button" class="btn-back btn-img"><img class="img-responsive" src="./public/theme/img/content/previous.svg" alt="Back" /></a>
+                        <a href="#!/service-invoice-pkg/cn-dn/approval/approval-level/{{$ctrl.approval_type_id}}/list/" type="button" class="btn-back btn-img my-tooltip" ng-shortcut="'meta+shift+left'" ng-shortcut-click data-title="ctrl+shift+left"><img class="img-responsive" src="./public/theme/img/content/previous.svg" alt="Back" /></a>
                     </div><!-- Page Header Content -->
                     <div class="page-header-content title-block">
                         <h1 class="title" ng-show="$ctrl.type_id == 1060"><b>{{$ctrl.action}} Credit Note</b></h1>
@@ -220,9 +220,9 @@ Content Wrap -->
                                         </ul>
                                     </div>
                                     <div class="col-md-4">
-                                        <button type="button" class="btn btn-bordered" data-toggle="modal" data-target="#cancel_request_reject_modal" ng-if="$ctrl.service_invoice.status_id == 2">Reject</button>
+                                        <button type="button" class="btn btn-bordered my-tooltip" data-toggle="modal" data-target="#cancel_request_reject_modal" ng-if="$ctrl.service_invoice.status_id == 2" ng-shortcut="'meta+shift+r'" ng-shortcut-click data-title="ctrl+shift+r">Reject</button>
                                         <!-- <button type="submit" id="approve" class="btn btn-primary">Approve</button> -->
-                                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#cn_dn_approval_modal" ng-if="$ctrl.service_invoice.status_id == 2">Approve</button>
+                                        <button type="button" class="btn btn-primary my-tooltip" data-toggle="modal" data-target="#cn_dn_approval_modal" ng-if="$ctrl.service_invoice.status_id == 2" ng-shortcut="'meta+shift+a'" ng-shortcut-click data-title="ctrl+shift+a">Approve</button>
                                     </div>
                                 </div>
                             </div><!-- Page Form Footer -->
@@ -475,11 +475,11 @@ Content Wrap -->
                             </div><!-- Modal Footer List Wrap -->
                         </div><!-- Column -->
                         <div class="col-md-3">
-                            <button type="button" class="btn btn-white" data-dismiss="modal">Cancel</button>
+                            <button type="button" class="btn btn-white my-tooltip" data-dismiss="modal" ng-shortcut="'meta+shift+c'" ng-shortcut-click data-title="ctrl+shift+c">Cancel</button>
                         </div><!-- Column -->
                     </div><!-- Row -->
                 </div><!-- Modal Footer -->
             </div><!-- Modal Content -->
         </form>
     </div><!-- Modal Dialog -->
-</div><!-- Modal
+</div><!-- Modal -->

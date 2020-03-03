@@ -375,6 +375,10 @@ app.component('serviceItemForm', {
                 'coa_code_id': {
                     required: true,
                 },
+                'default_reference': {
+                    minlength: 3,
+                    maxlength: 255,
+                },
                 // 'sac_code_id': {
                 //     required: true,
                 // },
