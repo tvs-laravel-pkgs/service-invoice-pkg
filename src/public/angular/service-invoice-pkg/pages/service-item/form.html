@@ -1,4 +1,4 @@
-<!-- Content Wrap -->
+Content Wrap -->
 <div class="content-wrap cndn-wrap">
     <!-- Page Header -->
     <div class="page-header">
@@ -53,12 +53,12 @@
                                         <div class="col-md-3">
                                             <div class="input-text form-group">
                                                 <label>Main Category <sup class="mandatory">*</sup></label>
-                                                <md-select ng-model="$ctrl.service_item.main_category_id" placeholder="Select Main Category" data-md-container-class="selectdemoSelectHeader" ng-change="onSelectedCategory($ctrl.service_item.main_category_id);$ctrl.service_item.sub_category_id=''">
-                                                    <md-select-header class="demo-select-header ng-hide">
-                                                        <input ng-model="searchType" type="search" placeholder="Search for a Main Category" class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                                <md-select ng-model="$ctrl.service_item.main_category_id" placeholder="Select Main Category" data-md-container-class="selectdemoSelectHeader" ng-change="onSelectedCategory($ctrl.service_item.main_category_id);$ctrl.service_item.sub_category_id=''" md-on-close="clearSearchTerm()">
+                                                    <md-select-header class="demo-select-header">
+                                                        <input ng-model="searchMainCategory" type="search" placeholder="Search for a Main Category" class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
                                                     </md-select-header>
                                                     <md-optgroup label="Main Category List">
-                                                        <md-option ng-value="type.id" ng-repeat="type in $ctrl.extras.main_category_list | filter:searchTravel">{{type.name}}</md-option>
+                                                        <md-option ng-value="type.id" ng-repeat="type in $ctrl.extras.main_category_list | filter:searchMainCategory">{{type.name}}</md-option>
                                                     </md-optgroup>
                                                 </md-select>
                                                 <input type="hidden" name="main_category_id" value='{{$ctrl.service_item.main_category_id}}' class="required">
@@ -67,12 +67,12 @@
                                         <div class="col-md-3">
                                             <div class="input-text form-group">
                                                 <label>Sub Category <sup class="mandatory">*</sup></label>
-                                                <md-select ng-model="$ctrl.service_item.sub_category_id" placeholder="Select Sub Category" data-md-container-class="selectdemoSelectHeader">
-                                                    <md-select-header class="demo-select-header ng-hide">
-                                                        <input ng-model="searchType" type="search" placeholder="Search for a Sub Category" class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                                <md-select ng-model="$ctrl.service_item.sub_category_id" placeholder="Select Sub Category" data-md-container-class="selectdemoSelectHeader" md-on-close="clearSearchTerm()">
+                                                    <md-select-header class="demo-select-header">
+                                                        <input ng-model="searchSubCategory" type="search" placeholder="Search for a Sub Category" class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
                                                     </md-select-header>
                                                     <md-optgroup label="Sub Category List">
-                                                        <md-option ng-value="type.id" ng-repeat="type in $ctrl.sub_category_list | filter:searchTravel">{{type.name}}</md-option>
+                                                        <md-option ng-value="type.id" ng-repeat="type in $ctrl.sub_category_list | filter:searchSubCategory">{{type.name}}</md-option>
                                                     </md-optgroup>
                                                 </md-select>
                                                 <input type="hidden" name="sub_category_id" value='{{$ctrl.service_item.sub_category_id}}' class="required">
@@ -81,26 +81,28 @@
                                         <div class="col-md-3">
                                             <div class="input-text form-group">
                                                 <label>COA Code <sup class="mandatory">*</sup></label>
-                                                <md-select ng-model="$ctrl.service_item.coa_code_id" placeholder="Select COA Code" data-md-container-class="selectdemoSelectHeader">
-                                                    <md-select-header class="demo-select-header ng-hide">
-                                                        <input ng-model="searchType" type="search" placeholder="Search for a COA Code" class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
-                                                    </md-select-header>
-                                                    <md-optgroup label="COA Code List">
-                                                        <md-option ng-value="type.id" ng-repeat="type in $ctrl.extras.coa_code_list | filter:searchTravel">{{type.name}}</md-option>
-                                                    </md-optgroup>
-                                                </md-select>
-                                                <input type="hidden" name="coa_code_id" value='{{$ctrl.service_item.coa_code_id}}' class="required">
+                                                <md-autocomplete md-items="option in $ctrl.searchCoaCode($ctrl.coaCodeSearchText)" md-selected-item="$ctrl.service_item.coa_code" md-search-text="$ctrl.coaCodeSearchText" md-item-text="option.code" md-min-length="3" placeholder="COA Code / Name">
+                                                    <md-item-template>
+                                                        <span>
+                                                            {{option.code}} - {{option.name}}
+                                                        </span>
+                                                    </md-item-template>
+                                                    <md-not-found>
+                                                        No COA Code matching "{{$ctrl.coaCodeSearchText}}" were found.
+                                                    </md-not-found>
+                                                </md-autocomplete>
+                                                <input type="hidden" name="coa_code_id" id="coa_code_id" value="{{$ctrl.service_item.coa_code.id}}">
                                             </div><!-- Feild -->
                                         </div><!-- Column -->
                                         <div class="col-md-3">
                                             <div class="input-text form-group">
                                                 <label>SAC Code</label>
-                                                <md-select ng-model="$ctrl.service_item.sac_code_id" placeholder="Select SAC Code" data-md-container-class="selectdemoSelectHeader">
-                                                    <md-select-header class="demo-select-header ng-hide">
-                                                        <input ng-model="searchType" type="search" placeholder="Search for a SAC Code" class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                                <md-select ng-model="$ctrl.service_item.sac_code_id" placeholder="Select SAC Code" data-md-container-class="selectdemoSelectHeader" md-on-close="clearSearchTerm()">
+                                                    <md-select-header class="demo-select-header">
+                                                        <input ng-model="searchSac" type="search" placeholder="Search for a SAC Code" class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
                                                     </md-select-header>
                                                     <md-optgroup label="SAC Code List">
-                                                        <md-option ng-value="type.id" ng-repeat="type in $ctrl.extras.tax_list | filter:searchTravel">{{type.name}}</md-option>
+                                                        <md-option ng-value="type.id" ng-repeat="type in $ctrl.extras.tax_list | filter:searchSac">{{type.name}}</md-option>
                                                     </md-optgroup>
                                                 </md-select>
                                                 <input type="hidden" name="sac_code_id" value='{{$ctrl.service_item.sac_code_id}}'>
@@ -150,4 +152,4 @@
             </div><!-- Page Form -->
         </form>
     </div><!-- Page Main Content -->
-</div><!-- Content Wrap -->
+</div><!-- Content Wrap

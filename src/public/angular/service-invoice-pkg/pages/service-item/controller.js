@@ -11,73 +11,73 @@ app.component('serviceItemList', {
             // console.log(self.extras);
         });
         var dataTable
-        setTimeout(function() { 
-        var table_scroll;
-        table_scroll = $('.page-main-content').height() - 37;
-        dataTable = $('#service-item-table').DataTable({
-            "dom": cndn_dom_structure,
-            "language": {
-                // "search": "",
-                // "searchPlaceholder": "Search",
-                "lengthMenu": "Rows _MENU_",
-                "paginate": {
-                    "next": '<i class="icon ion-ios-arrow-forward"></i>',
-                    "previous": '<i class="icon ion-ios-arrow-back"></i>'
+        setTimeout(function() {
+            var table_scroll;
+            table_scroll = $('.page-main-content').height() - 37;
+            dataTable = $('#service-item-table').DataTable({
+                "dom": cndn_dom_structure,
+                "language": {
+                    // "search": "",
+                    // "searchPlaceholder": "Search",
+                    "lengthMenu": "Rows _MENU_",
+                    "paginate": {
+                        "next": '<i class="icon ion-ios-arrow-forward"></i>',
+                        "previous": '<i class="icon ion-ios-arrow-back"></i>'
+                    },
                 },
-            },
-            stateSave: true,
-            stateSaveCallback: function(settings, data) {
-                localStorage.setItem('SIDataTables_' + settings.sInstance, JSON.stringify(data));
-            },
-            stateLoadCallback: function(settings) {
-                var state_save_val = JSON.parse(localStorage.getItem('SIDataTables_' + settings.sInstance));
-                if (state_save_val) {
-                    $('#search').val(state_save_val.search.search);
-                }
-                return JSON.parse(localStorage.getItem('SIDataTables_' + settings.sInstance));
-            },
-            processing: true,
-            serverSide: true,
-            paging: true,
-            searching: true,
-            ordering: false,
-            scrollX: true,
-            scrollY: table_scroll + "px",
-            scrollCollapse: true,
-
-            ajax: {
-                url: laravel_routes['getServiceItemList'],
-                type: "GET",
-                dataType: "json",
-                data: function(d) {
-                    d.item_code = $('#item_code').val();
-                    d.item_name = $('#item_name').val();
-                    d.main_category_id = $('#main_category_id').val();
-                    d.sub_category_id = $('#sub_category_id').val();
-                    d.coa_code_id = $('#coa_code_id').val();
-                    d.sac_code_id = $('#sac_code_id').val();
+                stateSave: true,
+                stateSaveCallback: function(settings, data) {
+                    localStorage.setItem('SIDataTables_' + settings.sInstance, JSON.stringify(data));
                 },
-            },
+                stateLoadCallback: function(settings) {
+                    var state_save_val = JSON.parse(localStorage.getItem('SIDataTables_' + settings.sInstance));
+                    if (state_save_val) {
+                        $('#search').val(state_save_val.search.search);
+                    }
+                    return JSON.parse(localStorage.getItem('SIDataTables_' + settings.sInstance));
+                },
+                processing: true,
+                serverSide: true,
+                paging: true,
+                searching: true,
+                ordering: false,
+                scrollX: true,
+                scrollY: table_scroll + "px",
+                scrollCollapse: true,
 
-            columns: [
-                { data: 'action', searchable: false, class: 'action' },
-                { data: 'code', name: 'service_items.code', searchable: true },
-                { data: 'name', name: 'service_items.name', searchable: true },
-                { data: 'main_category', searchable: false },
-                { data: 'sub_category', searchable: false },
-                { data: 'coa_code', searchable: false },
-                { data: 'sac_code', searchable: false },
-            ],
-            rowCallback: function(row, data) {
-                $(row).addClass('highlight-row');
-            },
-            infoCallback: function(settings, start, end, max, total, pre) {
-                $('#table_info').html(total)
-                $('.foot_info').html('Showing ' + start + ' to ' + end + ' of ' + max + ' entries')
-            },
-        });
-        $('.dataTables_length select').select2();
-        },900);
+                ajax: {
+                    url: laravel_routes['getServiceItemList'],
+                    type: "GET",
+                    dataType: "json",
+                    data: function(d) {
+                        d.item_code = $('#item_code').val();
+                        d.item_name = $('#item_name').val();
+                        d.main_category_id = $('#main_category_id').val();
+                        d.sub_category_id = $('#sub_category_id').val();
+                        d.coa_code_id = $('#coa_code_id').val();
+                        d.sac_code_id = $('#sac_code_id').val();
+                    },
+                },
+
+                columns: [
+                    { data: 'action', searchable: false, class: 'action' },
+                    { data: 'code', name: 'service_items.code', searchable: true },
+                    { data: 'name', name: 'service_items.name', searchable: true },
+                    { data: 'main_category', searchable: false },
+                    { data: 'sub_category', searchable: false },
+                    { data: 'coa_code', searchable: false },
+                    { data: 'sac_code', searchable: false },
+                ],
+                rowCallback: function(row, data) {
+                    $(row).addClass('highlight-row');
+                },
+                infoCallback: function(settings, start, end, max, total, pre) {
+                    $('#table_info').html(total)
+                    $('.foot_info').html('Showing ' + start + ' to ' + end + ' of ' + max + ' entries')
+                },
+            });
+            $('.dataTables_length select').select2();
+        }, 900);
         $('.modal').bind('click', function(event) {
             if ($('.md-select-menu-container').hasClass('md-active')) {
                 $mdSelect.hide();
@@ -108,11 +108,11 @@ app.component('serviceItemList', {
         });
         $scope.onSelectedCategory = function($id) {
             //alert($id);
-            self.extras.sub_category_list = []; 
-            if($id == "") {
-               $('#sub_category_id').val('');
-               $('#main_category_id').val('');
-               dataTable.draw();
+            self.extras.sub_category_list = [];
+            if ($id == "") {
+                $('#sub_category_id').val('');
+                $('#main_category_id').val('');
+                dataTable.draw();
             } else {
                 $('#main_category_id').val($id);
                 dataTable.draw();
@@ -123,7 +123,7 @@ app.component('serviceItemList', {
                     self.extras.sub_category_list = response.data.sub_category_list;
                 });
             }
-            
+
         }
         $scope.getSubCategory = function(selected_sub_category_id) {
             setTimeout(function() {
@@ -179,7 +179,7 @@ app.component('serviceItemList', {
             setTimeout(function() {
                 $('#sac_code_id').val(selected_sac_code_id);
                 dataTable.draw();
-            },900);
+            }, 900);
         }
 
         $scope.reset_filter = function() {
@@ -226,7 +226,7 @@ app.component('serviceItemList', {
 
 app.component('serviceItemForm', {
     templateUrl: service_item_form_template_url,
-    controller: function($http, $location, $location, HelperService, $routeParams, $rootScope, $scope) {
+    controller: function($http, $location, $location, HelperService, $routeParams, $rootScope, $scope, $element) {
         $form_data_url = typeof($routeParams.id) == 'undefined' ? service_item_get_form_data_url : service_item_get_form_data_url + '/' + $routeParams.id;
         var self = this;
         self.hasPermission = HelperService.hasPermission;
@@ -244,7 +244,7 @@ app.component('serviceItemForm', {
                  $location.path('/service-invoice-pkg/service-invoice/list')
                  $scope.$apply()
              }*/
-            console.log(response.data.service_item.field_group_ids);
+            // console.log(response.data.service_item.field_group_ids);
             self.action = response.data.action;
             self.list_url = service_invoice_list_url;
             self.extras = response.data.extras;
@@ -252,7 +252,7 @@ app.component('serviceItemForm', {
             self.service_item = response.data.service_item;
             self.field_group_ids = response.data.service_item.field_group_ids;
             self.all_field_group_ids = response.data.service_item.all_field_group_ids;
-            console.log(self.field_group_ids);
+            console.log(self.service_item);
             if (self.action == 'Add') {
                 //self.service_item.sub_category = [];
             }
@@ -287,6 +287,36 @@ app.component('serviceItemForm', {
                 console.log(response.data.sub_category_list);
                 self.sub_category_list = response.data.sub_category_list;
             });
+        }
+
+        //SEARCH MD_SELECT
+        $element.find('input').on('keydown', function(ev) {
+            ev.stopPropagation();
+        });
+        $scope.clearSearchTerm = function() {
+            $scope.searchMainCategory = '';
+            $scope.searchSubCategory = '';
+            $scope.searchCoa = '';
+            $scope.searchSac = '';
+        };
+
+        //SEARCH COA CODE
+        self.searchCoaCode = function(query) {
+            if (query) {
+                return new Promise(function(resolve, reject) {
+                    $http
+                        .post(
+                            search_coa_code_url, {
+                                key: query,
+                            }
+                        )
+                        .then(function(response) {
+                            resolve(response.data);
+                        });
+                });
+            } else {
+                return [];
+            }
         }
 
 
