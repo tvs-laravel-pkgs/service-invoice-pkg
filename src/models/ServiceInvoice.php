@@ -197,8 +197,21 @@ class ServiceInvoice extends Model {
 			'AmountCurDebit' => $this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') : 0,
 			'AmountCurCredit' => $this->type_id == 1060 ? $this->serviceInvoiceItems()->sum('sub_total') : 0,
 			'TaxGroup' => '',
-			'TVSSACCode' => ($this->serviceInvoiceItems[0]->serviceItem->taxCode != null) ? $this->serviceInvoiceItems[0]->serviceItem->taxCode->code : NULL,
 		];
+
+		if ($this->serviceInvoiceItems[0]->taxCode) {
+			if ($this->serviceInvoiceItems[0]->taxCode->type == 1020) {
+				//HSN Code
+				$params['TVSHSNCode'] = $this->serviceInvoiceItems[0]->taxCode->code;
+				$params['TVSSACCode'] = '';
+			} else {
+				$params['TVSHSNCode'] = '';
+				$params['TVSSACCode'] = $this->serviceInvoiceItems[0]->taxCode->code;
+			}
+		} else {
+			$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
+		}
+
 		$this->exportRowToAxapta($params);
 
 		$errors = [];
@@ -224,14 +237,16 @@ class ServiceInvoice extends Model {
 				'AmountCurDebit' => $this->type_id == 1060 ? $invoice_item->sub_total : 0,
 				'AmountCurCredit' => $this->type_id == 1061 ? $invoice_item->sub_total : 0,
 				'TaxGroup' => '',
-				'TVSSACCode' => ($invoice_item->serviceItem->taxCode != null) ? $invoice_item->serviceItem->taxCode->code : NULL,
+				// 'TVSSACCode' => ($invoice_item->serviceItem->taxCode != null) ? $invoice_item->serviceItem->taxCode->code : NULL,
 			];
 
 			if ($invoice_item->serviceItem->taxCode) {
 				if ($invoice_item->serviceItem->taxCode->type == 1020) {
 					//HSN Code
 					$params['TVSHSNCode'] = $invoice_item->serviceItem->taxCode->code;
+					$params['TVSSACCode'] = '';
 				} else {
+					$params['TVSHSNCode'] = '';
 					$params['TVSSACCode'] = $invoice_item->serviceItem->taxCode->code;
 				}
 			} else {
@@ -263,6 +278,7 @@ class ServiceInvoice extends Model {
 			'LedgerDimension' => $params['LedgerDimension'],
 		]);
 
+		$params['TVSHSNCode'] = isset($params['TVSHSNCode']) ? $params['TVSHSNCode'] : '';
 		$export->CurrencyCode = 'INR';
 		$export->JournalName = 'BPAS_NJV';
 		$export->JournalNum = "";
