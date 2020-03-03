@@ -1363,16 +1363,16 @@ class ServiceInvoiceController extends Controller {
 	public function exportServiceInvoicesToExcel(Request $r) {
 		ob_end_clean();
 		$date_range = explode(" to ", $r->invoice_date);
-		$service_invoices = ServiceInvoice::where('invoice_date', '>=', date('Y-m-d', strtotime($date_range[0])))
-			->where('invoice_date', '<=', date('Y-m-d', strtotime($date_range[1])))
+		$service_invoices = ServiceInvoice::where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
+			->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
 			->where('company_id', Auth::user()->company_id)
 			->get();
 		foreach ($service_invoices as $service_invoice) {
 			$service_invoice->exportToAxapta(true);
 		}
 
-		$service_invoice_ids = ServiceInvoice::where('invoice_date', '>=', date('Y-m-d', strtotime($date_range[0])))
-			->where('invoice_date', '<=', date('Y-m-d', strtotime($date_range[1])))
+		$service_invoice_ids = ServiceInvoice::where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
+			->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
 			->where('company_id', Auth::user()->company_id)
 			->pluck('id');
 
