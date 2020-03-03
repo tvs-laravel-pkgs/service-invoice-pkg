@@ -1363,10 +1363,13 @@ class ServiceInvoiceController extends Controller {
 	public function exportServiceInvoicesToExcel(Request $r) {
 		ob_end_clean();
 		$date_range = explode(" to ", $r->invoice_date);
+		$approved_status = ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
 		$service_invoices = ServiceInvoice::where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
 			->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
 			->where('company_id', Auth::user()->company_id)
+			->where('status_id', $approved_status)
 			->get();
+		// dd($service_invoices);
 		foreach ($service_invoices as $service_invoice) {
 			$service_invoice->exportToAxapta(true);
 		}
@@ -1374,8 +1377,9 @@ class ServiceInvoiceController extends Controller {
 		$service_invoice_ids = ServiceInvoice::where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
 			->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
 			->where('company_id', Auth::user()->company_id)
+			->where('status_id', $approved_status)
 			->pluck('id');
-
+		// dd($service_invoice_ids);
 		$axapta_records = AxaptaExport::where([
 			'company_id' => Auth::user()->company_id,
 			'entity_type_id' => 1400,
