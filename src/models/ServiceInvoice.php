@@ -226,6 +226,17 @@ class ServiceInvoice extends Model {
 				'TaxGroup' => '',
 				'TVSSACCode' => ($invoice_item->serviceItem->taxCode != null) ? $invoice_item->serviceItem->taxCode->code : NULL,
 			];
+
+			if ($invoice_item->serviceItem->taxCode) {
+				if ($invoice_item->serviceItem->taxCode->type == 1020) {
+					//HSN Code
+					$params['TVSHSNCode'] = $invoice_item->serviceItem->taxCode->code;
+				} else {
+					$params['TVSSACCode'] = $invoice_item->serviceItem->taxCode->code;
+				}
+			} else {
+				$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
+			}
 			$this->exportRowToAxapta($params);
 		}
 
@@ -280,11 +291,11 @@ class ServiceInvoice extends Model {
 		$export->LogisticsLocation_LocationId = '000127079';
 		$export->Due = '';
 		$export->PaymReference = '';
-		$export->TVSHSNCode = '';
+		$export->TVSHSNCode = $params['TVSHSNCode'];
 		$export->TVSSACCode = $params['TVSSACCode'];
-		$export->TVSVendorLocationID = $params['TVSSACCode'] ? $this->customer->axapta_location_id : '';
+		$export->TVSVendorLocationID = $params['TVSHSNCode'] || $params['TVSSACCode'] ? $this->customer->axapta_location_id : '';
 		$export->TVSCustomerLocationID = '';
-		$export->TVSCompanyLocationId = $params['TVSSACCode'] && $this->outlet->axapta_location_id ? $this->outlet->axapta_location_id : '';
+		$export->TVSCompanyLocationId = ($params['TVSHSNCode'] || $params['TVSSACCode']) && $this->outlet->axapta_location_id ? $this->outlet->axapta_location_id : '';
 		$export->save();
 
 	}
