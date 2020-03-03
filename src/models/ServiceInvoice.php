@@ -265,6 +265,7 @@ class ServiceInvoice extends Model {
 			'LedgerDimension' => $params['LedgerDimension'],
 		]);
 
+		$params['TVSHSNCode'] = isset($params['TVSHSNCode']) ? $params['TVSHSNCode'] : '';
 		$export->CurrencyCode = 'INR';
 		$export->JournalName = 'BPAS_NJV';
 		$export->JournalNum = "";
