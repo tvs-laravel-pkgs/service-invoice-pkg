@@ -200,7 +200,7 @@ class ServiceInvoice extends Model {
 		];
 
 		if ($this->serviceInvoiceItems[0]->taxCode) {
-			if ($this->serviceInvoiceItems[0]->taxCode->type == 1020) {
+			if ($this->serviceInvoiceItems[0]->taxCode->type_id == 1020) {
 				//HSN Code
 				$params['TVSHSNCode'] = $this->serviceInvoiceItems[0]->taxCode->code;
 				$params['TVSSACCode'] = '';
@@ -241,7 +241,7 @@ class ServiceInvoice extends Model {
 			];
 
 			if ($invoice_item->serviceItem->taxCode) {
-				if ($invoice_item->serviceItem->taxCode->type == 1020) {
+				if ($invoice_item->serviceItem->taxCode->type_id == 1020) {
 					//HSN Code
 					$params['TVSHSNCode'] = $invoice_item->serviceItem->taxCode->code;
 					$params['TVSSACCode'] = '';
