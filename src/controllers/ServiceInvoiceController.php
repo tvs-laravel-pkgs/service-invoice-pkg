@@ -185,7 +185,7 @@ class ServiceInvoiceController extends Controller {
 					$output .= '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
 	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
 	                    	</a>
-	                    	<a href="' . $path . '/' . $service_invoice_list->number . '.pdf" class=""><img class="img-responsive" src="' . $img_download . '" alt="Download" />
+	                    	<a href="' . $path . '/' . $service_invoice_list->number . '.pdf" class="" target="_blank"><img class="img-responsive" src="' . $img_download . '" alt="Download" />
 	                        </a>';
 				} elseif ($service_invoice_list->status_id != '4') {
 					$output .= '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
