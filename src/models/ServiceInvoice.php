@@ -231,7 +231,9 @@ class ServiceInvoice extends Model {
 				if ($invoice_item->serviceItem->taxCode->type == 1020) {
 					//HSN Code
 					$params['TVSHSNCode'] = $invoice_item->serviceItem->taxCode->code;
+					$params['TVSSACCode'] = '';
 				} else {
+					$params['TVSHSNCode'] = '';
 					$params['TVSSACCode'] = $invoice_item->serviceItem->taxCode->code;
 				}
 			} else {
