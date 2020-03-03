@@ -133,6 +133,7 @@ app.component('serviceInvoiceList', {
                     { data: 'document_date', searchable: false },
                     { data: 'number', name: 'service_invoices.number', searchable: true },
                     { data: 'type_name', name: 'configs.name', searchable: true },
+                    { data: 'status', name: 'approval_type_statuses.status', searchable: false },
                     { data: 'branch', name: 'outlets.code', searchable: true },
                     { data: 'sbu', name: 'sbus.name', searchable: true },
                     { data: 'category', name: 'service_item_categories.name', searchable: true },
@@ -140,7 +141,6 @@ app.component('serviceInvoiceList', {
                     { data: 'customer_code', name: 'customers.code', searchable: true },
                     { data: 'customer_name', name: 'customers.name', searchable: true },
                     { data: 'invoice_amount', searchable: false, class: 'text-right' },
-                    { data: 'status', name: 'approval_type_statuses.status', searchable: false },
                 ],
                 "initComplete": function(settings, json) {
                     $('.dataTables_length select').select2();
