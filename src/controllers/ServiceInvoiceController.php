@@ -959,8 +959,8 @@ class ServiceInvoiceController extends Controller {
 		}
 	}
 
-	public function createPdf($service_invoice_pdf_id) {
-		$service_invoice_pdf = ServiceInvoice::with([
+	public function createPdf($service_invoice_id) {
+		$service_invoice = $service_invoice_pdf = ServiceInvoice::with([
 			'company',
 			'customer',
 			'outlets',
@@ -973,9 +973,9 @@ class ServiceInvoiceController extends Controller {
 			'serviceInvoiceItems.eavDatetimes',
 			'serviceInvoiceItems.serviceItem.taxCode',
 			'serviceInvoiceItems.taxes',
-		])->find($service_invoice_pdf_id);
+		])->find($service_invoice_id);
 
-		$r = $service_invoice_pdf->exportToAxapta();
+		$r = $service_invoice->exportToAxapta();
 		if (!$r['success']) {
 			return $r;
 		}
