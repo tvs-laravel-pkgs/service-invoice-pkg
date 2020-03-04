@@ -48,7 +48,7 @@
                                 <th>Main Category</th>
                                 <th>Sub Category</th>
                                 <th>COA code</th>
-                                <th>SAC code</th>
+                                <th>HSN/SAC code</th>
                             </tr>
                         </thead>
                     </table>
@@ -75,7 +75,6 @@
     </div>
 </div>
 <!-- Modal -->
-
 <div class="modal fade filter" id="filter" role="dialog" aria-labelledby="myModalLabel">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -93,7 +92,7 @@
                                     <label>Item Code</label>
                                     <input type="text" class="form-control" name="item_code" id="item_code" value="" placeholder="Enter Item Code" autocomplete="off">
                                 </div>
-                            </div> 
+                            </div>
                             <div class="col-md-6">
                                 <div class="input-text form-group">
                                     <label>Item Name</label>
@@ -166,7 +165,7 @@
                                 <button type="button" class="btn btn-rose" ng-click="reset_filter(); $ctrl.coaCodeSearchText=''; $ctrl.service_item.main_category_id=''; $ctrl.service_item.sub_category_id=''; $ctrl.sacCodeSearchText=''">Reset Filter</button>
                             </div>
                         </div><!-- Row -->
-                    </div><!-- Modal Form -->      
+                    </div><!-- Modal Form -->
                 </form>
             </div><!-- Modal Body -->
         </div><!-- Modal Content -->
