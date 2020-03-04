@@ -296,8 +296,8 @@ class ServiceInvoice extends Model {
 		$export->PaymReference = '';
 		$export->TVSHSNCode = $params['TVSHSNCode'];
 		$export->TVSSACCode = $params['TVSSACCode'];
-		$export->TVSVendorLocationID = $params['TVSHSNCode'] || $params['TVSSACCode'] ? $this->customer->axapta_location_id : '';
-		$export->TVSCustomerLocationID = '';
+		$export->TVSVendorLocationID = '';
+		$export->TVSCustomerLocationID = $params['TVSHSNCode'] || $params['TVSSACCode'] ? $this->customer->axapta_location_id : '';
 		$export->TVSCompanyLocationId = ($params['TVSHSNCode'] || $params['TVSSACCode']) && $this->outlet->axapta_location_id ? $this->outlet->axapta_location_id : '';
 		$export->save();
 
