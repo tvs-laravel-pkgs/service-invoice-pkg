@@ -185,7 +185,7 @@ class ServiceInvoiceController extends Controller {
 					$output .= '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
 	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
 	                    	</a>
-	                    	<a href="' . $path . '/' . $service_invoice_list->number . '.pdf" class=""><img class="img-responsive" src="' . $img_download . '" alt="Download" />
+	                    	<a href="' . $path . '/' . $service_invoice_list->number . '.pdf" class="" target="_blank"><img class="img-responsive" src="' . $img_download . '" alt="Download" />
 	                        </a>';
 				} elseif ($service_invoice_list->status_id != '4') {
 					$output .= '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
@@ -1363,10 +1363,13 @@ class ServiceInvoiceController extends Controller {
 	public function exportServiceInvoicesToExcel(Request $r) {
 		ob_end_clean();
 		$date_range = explode(" to ", $r->invoice_date);
+		$approved_status = ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
 		$service_invoices = ServiceInvoice::where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
 			->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
 			->where('company_id', Auth::user()->company_id)
+			->where('status_id', $approved_status)
 			->get();
+		// dd($service_invoices);
 		foreach ($service_invoices as $service_invoice) {
 			$service_invoice->exportToAxapta(true);
 		}
@@ -1374,8 +1377,9 @@ class ServiceInvoiceController extends Controller {
 		$service_invoice_ids = ServiceInvoice::where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
 			->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
 			->where('company_id', Auth::user()->company_id)
+			->where('status_id', $approved_status)
 			->pluck('id');
-
+		// dd($service_invoice_ids);
 		$axapta_records = AxaptaExport::where([
 			'company_id' => Auth::user()->company_id,
 			'entity_type_id' => 1400,
