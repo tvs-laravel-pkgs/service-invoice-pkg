@@ -1360,25 +1360,60 @@ class ServiceInvoiceController extends Controller {
 		}
 	}
 
-	public function exportServiceInvoicesToExcel(Request $r) {
+	public function exportServiceInvoicesToExcel(Request $request) {
 		ob_end_clean();
-		$date_range = explode(" to ", $r->invoice_date);
+		$date_range = explode(" to ", $request->invoice_date);
 		$approved_status = ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
-		$service_invoices = ServiceInvoice::where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
+
+		$query = ServiceInvoice::where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
 			->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
 			->where('company_id', Auth::user()->company_id)
 			->where('status_id', $approved_status)
-			->get();
+			->where(function ($query) use ($invoice_number_filter) {
+				if ($invoice_number_filter != null) {
+					$query->where('service_invoices.number', 'like', "%" . $invoice_number_filter . "%");
+				}
+			})
+			->where(function ($query) use ($request) {
+				if (!empty($request->type_id)) {
+					$query->where('service_invoices.type_id', $request->type_id);
+				}
+			})
+			->where(function ($query) use ($request) {
+				if (!empty($request->branch_id)) {
+					$query->where('service_invoices.branch_id', $request->branch_id);
+				}
+			})
+			->where(function ($query) use ($request) {
+				if (!empty($request->sbu_id)) {
+					$query->where('service_invoices.sbu_id', $request->sbu_id);
+				}
+			})
+			->where(function ($query) use ($request) {
+				if (!empty($request->category_id)) {
+					$query->where('service_item_sub_categories.category_id', $request->category_id);
+				}
+			})
+			->where(function ($query) use ($request) {
+				if (!empty($request->sub_category_id)) {
+					$query->where('service_invoices.sub_category_id', $request->sub_category_id);
+				}
+			})
+			->where(function ($query) use ($request) {
+				if (!empty($request->customer_id)) {
+					$query->where('service_invoices.customer_id', $request->customer_id);
+				}
+			});
+		$service_invoices = clone $query;
+		$service_invoices = $service_invoices->get();
 		// dd($service_invoices);
 		foreach ($service_invoices as $service_invoice) {
 			$service_invoice->exportToAxapta(true);
 		}
 
-		$service_invoice_ids = ServiceInvoice::where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
-			->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
-			->where('company_id', Auth::user()->company_id)
-			->where('status_id', $approved_status)
-			->pluck('id');
+		$service_invoice_ids = clone $query;
+
+		$service_invoice_ids = $service_invoice_ids->pluck('id');
 		// dd($service_invoice_ids);
 		$axapta_records = AxaptaExport::where([
 			'company_id' => Auth::user()->company_id,
