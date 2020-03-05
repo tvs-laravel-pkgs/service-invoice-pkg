@@ -63,7 +63,7 @@ app.config(['$routeProvider', function($routeProvider) {
 
 app.component('serviceInvoiceList', {
     templateUrl: service_invoice_list_template_url,
-    controller: function($http, $location, HelperService, $scope, $routeParams, $rootScope, $element, $mdSelect) {
+    controller: function($http, $location, HelperService, $scope, $routeParams, $rootScope, $element, $mdSelect, $timeout) {
         var self = this;
         self.hasPermission = HelperService.hasPermission;
         self.create_cn = self.hasPermission('create-cn');
@@ -159,9 +159,10 @@ app.component('serviceInvoiceList', {
                 $mdSelect.hide();
             }
         });
-        $('.refresh_table').on("click", function() {
+        function RefreshTable() {
             $('#service-invoice-table').DataTable().ajax.reload();
-        });
+        }
+        
         $('#invoice_number').keyup(function() {
             setTimeout(function() {
                 dataTable.draw();
@@ -293,8 +294,11 @@ app.component('serviceInvoiceList', {
                 ).then(function(response) {
                     if (response.data.success == true) {
                         custom_noty('success', response.data.message);
-                        $('#service-invoice-table').DataTable().ajax.reload();
-                        $scope.$apply();
+                        $timeout(function() {
+                            // $('#service-invoice-table').DataTable().ajax.reload();
+                            RefreshTable();
+                            // $scope.$apply();
+                        }, 1000);
                     } else {
                         custom_noty('error', response.data.errors);
                     }
@@ -303,7 +307,9 @@ app.component('serviceInvoiceList', {
                 custom_noty('error', 'Please Select Checkbox');
             }
         })
-
+        $('.refresh_table').on("click", function() {
+            RefreshTable();
+        });
         $('#parent').on('click', function() {
             if (this.checked) {
                 $('.service_invoice_checkbox').each(function() {
@@ -446,7 +452,7 @@ app.component('serviceInvoiceList', {
             });
         }
 
-        window.onpopstate = function(e) { window.history.forward(1); }
+        // window.onpopstate = function(e) { window.history.forward(1); }
         $rootScope.loading = false;
     }
 });

@@ -1,6 +1,6 @@
 app.component('serviceInvoiceApprovalList', {
     templateUrl: service_invoice_approval_list_template_url,
-    controller: function($http, $location, HelperService, $scope, $routeParams, $rootScope, $element) {
+    controller: function($http, $location, HelperService, $scope, $routeParams, $rootScope, $element, $timeout) {
         var self = this;
         self.hasPermission = HelperService.hasPermission;
         $http.get(
@@ -110,9 +110,10 @@ app.component('serviceInvoiceApprovalList', {
                 $mdSelect.hide();
             }
         });
-        $('.refresh_table').on("click", function() {
+        function RefreshTable() {
             $('#cn-dn-approval-table').DataTable().ajax.reload();
-        });
+        }
+        
         $('#invoice_number').keyup(function() {
             setTimeout(function() {
                 dataTable.draw();
@@ -221,8 +222,11 @@ app.component('serviceInvoiceApprovalList', {
                 ).then(function(response) {
                     if (response.data.success == true) {
                         custom_noty('success', response.data.message);
-                        $('#cn-dn-approval-table').DataTable().ajax.reload();
-                        $scope.$apply();
+                        $timeout(function() {
+                            // $('#cn-dn-approval-table').DataTable().ajax.reload();
+                            RefreshTable();
+                            // $scope.$apply();
+                        }, 1000);
                     } else {
                         custom_noty('error', response.data.errors);
                     }
@@ -231,7 +235,9 @@ app.component('serviceInvoiceApprovalList', {
                 custom_noty('error', 'Please Select Checkbox');
             }
         })
-
+        $('.refresh_table').on("click", function() {
+            RefreshTable();
+        });
         $('#parent').on('click', function() {
             if (this.checked) {
                 $('.service_invoice_checkbox').each(function() {
@@ -377,7 +383,7 @@ app.component('serviceInvoiceApprovalList', {
             });
         }
 
-        window.onpopstate = function (e) { window.history.forward(1); }
+        // window.onpopstate = function (e) { window.history.forward(1); }
         $rootScope.loading = false;
     }
 });
