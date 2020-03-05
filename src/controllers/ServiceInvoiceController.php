@@ -1369,9 +1369,9 @@ class ServiceInvoiceController extends Controller {
 			->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
 			->where('company_id', Auth::user()->company_id)
 			->where('status_id', $approved_status)
-			->where(function ($query) use ($invoice_number_filter) {
-				if ($invoice_number_filter != null) {
-					$query->where('service_invoices.number', 'like', "%" . $invoice_number_filter . "%");
+			->where(function ($query) use ($request) {
+				if ($request->invoice_number) {
+					$query->where('service_invoices.number', 'like', "%" . $request->invoice_number . "%");
 				}
 			})
 			->where(function ($query) use ($request) {
