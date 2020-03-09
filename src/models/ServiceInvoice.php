@@ -1,6 +1,7 @@
 <?php
 
 namespace Abs\ServiceInvoicePkg;
+use Abs\AttributePkg\Field;
 use Abs\AxaptaExportPkg\AxaptaExport;
 use Abs\ImportCronJobPkg\ImportCronJob;
 use Abs\SerialNumberPkg\SerialNumberGroup;
@@ -13,7 +14,6 @@ use App\Entity;
 use App\FinancialYear;
 use App\Outlet;
 use App\Sbu;
-use Auth;
 use DB;
 use File;
 use Illuminate\Database\Eloquent\Model;
@@ -46,6 +46,11 @@ class ServiceInvoice extends Model {
 	public function getInvoiceDateAttribute($value) {
 		return empty($value) ? '' : date('d-m-Y', strtotime($value));
 	}
+
+	public function createdBy() {
+		return $this->belongsTo('App\User', 'created_by_id');
+	}
+
 	public function getDocumentDateAttribute($value) {
 		return empty($value) ? '' : date('d-m-Y', strtotime($value));
 	}
@@ -171,7 +176,7 @@ class ServiceInvoice extends Model {
 
 		if ($delete) {
 			AxaptaExport::where([
-				'company_id' => Auth::user()->company_id,
+				'company_id' => $this->company_id,
 				'entity_type_id' => 1400,
 				'entity_id' => $this->id,
 			])->delete();
@@ -274,7 +279,7 @@ class ServiceInvoice extends Model {
 // $invoice, $sno, $TransDate, $owner, $outlet, $coa_code, $ratio, $bank_detail, $rent_details, $debit, $credit, $voucher, $txt, $payment_modes, $flip, $account_type, $ledger_dimention, $sac_code, $sharing_type_id, $hsn_code = '', $tds_group_in = ''
 
 		$export = new AxaptaExport([
-			'company_id' => Auth::user()->company_id,
+			'company_id' => $this->company_id,
 			'entity_type_id' => 1400,
 			'entity_id' => $this->id,
 			'LedgerDimension' => $params['LedgerDimension'],
@@ -285,7 +290,7 @@ class ServiceInvoice extends Model {
 		$export->JournalName = 'BPAS_NJV';
 		$export->JournalNum = "";
 		$export->Voucher = $params['Voucher'];
-		$export->ApproverPersonnelNumber = Auth::user()->employee->code;
+		$export->ApproverPersonnelNumber = $this->createdBy->employee->code;
 		$export->Approved = 1;
 		$export->TransDate = date("Y-m-d", strtotime($this->document_date));
 		//dd($ledger_dimention);
@@ -596,7 +601,6 @@ class ServiceInvoice extends Model {
 	}
 
 	public function createPdf() {
-		dd($this);
 		$r = $this->exportToAxapta();
 		if (!$r['success']) {
 			return $r;
@@ -740,10 +744,11 @@ class ServiceInvoice extends Model {
 		}
 		//dd($this->sac_code_status);
 		//dd($serviceInvoiceItem->field_groups);
-		$this->data['service_invoice_pdf'] = $this;
+		$data = [];
+		$data['service_invoice_pdf'] = $this;
 
-		$tax_list = Tax::where('company_id', Auth::user()->company_id)->get();
-		$this->data['tax_list'] = $tax_list;
+		$tax_list = Tax::where('company_id', $this->company_id)->get();
+		$data['tax_list'] = $tax_list;
 		// dd($this->data['service_invoice_pdf']);
 		$path = storage_path('app/public/service-invoice-pdf/');
 		$pathToFile = $path . '/' . $this->number . '.pdf';
