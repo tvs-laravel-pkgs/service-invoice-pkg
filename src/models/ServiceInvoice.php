@@ -754,7 +754,7 @@ class ServiceInvoice extends Model {
 		$pathToFile = $path . '/' . $this->number . '.pdf';
 		File::isDirectory($path) or File::makeDirectory($path, 0777, true, true);
 
-		$pdf = PDF::loadView('service-invoices/pdf/index', $this->data);
+		$pdf = PDF::loadView('service-invoices/pdf/index', $data);
 		// $po_file_name = 'Invoice-' . $this->number . '.pdf';
 		File::put($pathToFile, $pdf->output());
 	}
