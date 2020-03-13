@@ -551,21 +551,38 @@ class ServiceInvoice extends Model {
 				$total_tax_amount = 0;
 
 				if ($item_code->sac_code_id) {
-					$tax_code = TaxCode::find($item_code->sac_code_id)->first();
-					$tax_percentages = DB::table('tax_code_tax')
-						->join('taxes', 'taxes.id', 'tax_code_tax.tax_id')
-						->where('tax_code_id', $tax_code->id)
-						->whereIn('tax_id', $taxes['tax_ids'])
-						->get()
-						->toArray()
-					;
-					// dd($tax_percentages);
-					$service_invoice_item->taxes()->sync([]);
-					foreach ($tax_percentages as $tax) {
-						$service_invoice_item->taxes()->attach($tax->tax_id, ['percentage' => $tax->percentage, 'amount' => self::percentage(1 * $record['Amount'], $tax->percentage)]);
-						// $tax_amount[$tax->name] = self::percentage(1 * $record['Amount'], $tax->percentage);
-						$total_tax_amount += self::percentage(1 * $record['Amount'], $tax->percentage);
+
+					if ($service_invoice->customer->primaryAddress->state_id == $service_invoice->outlet->state_id) {
+						$taxes = $service_invoice_item->serviceItem->taxCode->taxes()->where('type_id', 1160)->get();
+					} else {
+						$taxes = $service_invoice_item->serviceItem->taxCode->taxes()->where('type_id', 1161)->get();
 					}
+					$item_taxes = [];
+					foreach ($taxes as $tax) {
+						$tax_amount = round($service_invoice_item->sub_total * $tax->pivot->percentage / 100, 2);
+						$total_tax_amount += $tax_amount;
+						$item_taxes[$tax->id] = [
+							'percentage' => $tax->pivot->percentage,
+							'amount' => $tax_amount,
+						];
+					}
+					$service_invoice_item->taxes()->sync($item_taxes);
+
+					// $tax_code = TaxCode::find($item_code->sac_code_id)->first();
+					// $tax_percentages = DB::table('tax_code_tax')
+					// 	->join('taxes', 'taxes.id', 'tax_code_tax.tax_id')
+					// 	->where('tax_code_id', $tax_code->id)
+					// 	->whereIn('tax_id', $taxes['tax_ids'])
+					// 	->get()
+					// 	->toArray()
+					// ;
+					// // dd($tax_percentages);
+					// $service_invoice_item->taxes()->sync([]);
+					// foreach ($tax_percentages as $tax) {
+					// 	$service_invoice_item->taxes()->attach($tax->tax_id, ['percentage' => $tax->percentage, 'amount' => self::percentage(1 * $record['Amount'], $tax->percentage)]);
+					// 	// $tax_amount[$tax->name] = self::percentage(1 * $record['Amount'], $tax->percentage);
+					// 	$total_tax_amount += self::percentage(1 * $record['Amount'], $tax->percentage);
+					// }
 				}
 				$service_invoice->amount_total = $record['Amount'];
 				$service_invoice->tax_total = $item_code->sac_code_id ? $total_tax_amount : 0;
