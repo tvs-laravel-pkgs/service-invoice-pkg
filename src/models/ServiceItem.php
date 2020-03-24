@@ -45,9 +45,10 @@ class ServiceItem extends Model {
 				'service_items.name',
 				'service_items.code'
 			);
-		if ($type_id == 1061) {
-			$list = $list->whereNotNull('sac_code_id');
-		}
+		// if ($type_id == 1061) {
+		//DN
+		// 	$list = $list->whereNotNull('sac_code_id');
+		// }
 		if ($type_id == 1060 && session('sac_code_value') != 'new') {
 			if (session('sac_code_value') == NULL) {
 				$list = $list->whereNull('sac_code_id');
