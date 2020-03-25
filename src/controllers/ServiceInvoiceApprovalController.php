@@ -180,7 +180,7 @@ class ServiceInvoiceApprovalController extends Controller {
 				$type_id = $cn_dn_approval_list->si_type_id == '1060' ? 1060 : 1061;
 				$img_view = asset('public/theme/img/table/cndn/view.svg');
 				$img_approval = asset('public/theme/img/table/cndn/approval.svg');
-				$next_status = ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
+				$next_status = 4; //ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
 
 				return '<a href="#!/service-invoice-pkg/cn-dn/approval/approval-level/' . $approval_type_id . '/view/' . $type_id . '/' . $cn_dn_approval_list->id . '" class="">
 	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
@@ -358,11 +358,11 @@ class ServiceInvoiceApprovalController extends Controller {
 			$approval_levels = ApprovalLevel::where('approval_type_id', 1)->first();
 
 			if ($request->status_name == 'approve') {
-				$approval_status->status_id = $approval_levels->next_status_id;
+				$approval_status->status_id = 4; //$approval_levels->next_status_id;
 				$approval_status->comments = NULL;
 				$message = 'Approved';
 			} elseif ($request->status_name == 'reject') {
-				$approval_status->status_id = $approval_levels->reject_status_id;
+				$approval_status->status_id = 5; //$approval_levels->reject_status_id;
 				$approval_status->comments = $request->comments;
 				$message = 'Rejected';
 			}
@@ -395,7 +395,7 @@ class ServiceInvoiceApprovalController extends Controller {
 
 	public function updateMultipleApproval(Request $request) {
 		$send_for_approvals = ServiceInvoice::whereIn('id', $request->send_for_approval)->where('status_id', 2)->pluck('id')->toArray();
-		$next_status = ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
+		$next_status = 4; //ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
 		// dd($send_for_approvals);
 		if (count($send_for_approvals) == 0) {
 			return response()->json(['success' => false, 'errors' => ['No Approval 1 Pending Status in the list!']]);
