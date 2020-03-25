@@ -815,7 +815,7 @@ class ServiceInvoiceController extends Controller {
 				$service_invoice->created_by_id = Auth()->user()->id;
 				$service_invoice->number = $generateNumber['number'];
 				if ($approval_status != '') {
-					$service_invoice->status_id = $approval_status->name;
+					$service_invoice->status_id = 1; //$approval_status->name;
 				} else {
 					return response()->json(['success' => false, 'errors' => ['Initial CN/DN Status has not mapped.!']]);
 				}
@@ -1284,7 +1284,7 @@ class ServiceInvoiceController extends Controller {
 			'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
 			'sub_category_list' => [],
 		];
-		$this->data['approval_status'] = ApprovalLevel::where('approval_type_id', 1)->first();
+		// $this->data['approval_status'] = ApprovalLevel::where('approval_type_id', 1)->first();
 		$this->data['service_invoice_status'] = ApprovalTypeStatus::join('service_invoices', 'service_invoices.status_id', 'approval_type_statuses.id')->where('service_invoices.company_id', Auth::user()->company_id)->where('service_invoices.id', $id)->first();
 		$this->data['action'] = 'View';
 		$this->data['success'] = true;

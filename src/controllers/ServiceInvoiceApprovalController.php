@@ -1,7 +1,6 @@
 <?php
 
 namespace Abs\ServiceInvoicePkg;
-use Abs\ApprovalPkg\ApprovalLevel;
 use Abs\ApprovalPkg\ApprovalTypeStatus;
 use Abs\AttributePkg\Field;
 use Abs\ServiceInvoicePkg\ServiceInvoice;
@@ -27,10 +26,10 @@ class ServiceInvoiceApprovalController extends Controller {
 	}
 
 	public function approvalTypeValid() {
-		$this->data['approval_level'] = $approval_level = ApprovalLevel::where('approval_type_id', 1)->first();
-		if (!$approval_level) {
-			return response()->json(['success' => false, 'error' => 'Approval Type ID not found']);
-		}
+		// $this->data['approval_level'] = $approval_level = ApprovalLevel::where('approval_type_id', 1)->first();
+		// if (!$approval_level) {
+		// 	return response()->json(['success' => false, 'error' => 'Approval Type ID not found']);
+		// }
 		$this->data['success'] = true;
 		return response()->json($this->data);
 	}
@@ -74,7 +73,7 @@ class ServiceInvoiceApprovalController extends Controller {
 				'customers.name as customer_name',
 				'configs.name as type_name',
 				'configs.id as si_type_id',
-				'approval_levels.approval_type_id',
+				// 'approval_levels.approval_type_id',
 				'approval_type_statuses.status',
 				'service_invoices.created_by_id'
 			)
@@ -86,9 +85,9 @@ class ServiceInvoiceApprovalController extends Controller {
 			->join('configs', 'configs.id', 'service_invoices.type_id')
 			->join('approval_type_statuses', 'approval_type_statuses.id', 'service_invoices.status_id')
 			->join('approval_types', 'approval_types.id', 'approval_type_statuses.approval_type_id')
-			->join('approval_levels', 'approval_levels.approval_type_id', 'approval_types.id')
+		// ->join('approval_levels', 'approval_levels.approval_type_id', 'approval_types.id')
 		// ->where('service_invoices.company_id', Auth::user()->company_id)
-			->where('service_invoices.status_id', $approval_status_id)
+			->where('service_invoices.status_id', 2)
 			->where(function ($query) use ($first_date_this_month, $last_date_this_month) {
 				if (!empty($first_date_this_month) && !empty($last_date_this_month)) {
 					$query->whereRaw("DATE(service_invoices.document_date) BETWEEN '" . $first_date_this_month . "' AND '" . $last_date_this_month . "'");
@@ -181,10 +180,10 @@ class ServiceInvoiceApprovalController extends Controller {
 				$img_view = asset('public/theme/img/table/cndn/view.svg');
 				$img_approval = asset('public/theme/img/table/cndn/approval.svg');
 				$next_status = 4; //ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
-
-				return '<a href="#!/service-invoice-pkg/cn-dn/approval/approval-level/' . $approval_type_id . '/view/' . $type_id . '/' . $cn_dn_approval_list->id . '" class="">
+				/*<a href="#!/service-invoice-pkg/cn-dn/approval/approval-level/' . $approval_type_id . '/view/' . $type_id . '/' . $cn_dn_approval_list->id . '" class="">
 	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
-	                    	</a>
+	                    	</a>*/
+				return '
 	                    	<a href="javascript:;" data-toggle="modal" data-target="#cn-dn-approval-modal"
 					onclick="angular.element(this).scope().sendApproval(' . $cn_dn_approval_list->id . ',' . $next_status . ')" title="Approval">
 					<img src="' . $img_approval . '" alt="Approval" class="img-responsive">
@@ -355,7 +354,7 @@ class ServiceInvoiceApprovalController extends Controller {
 		DB::beginTransaction();
 		try {
 			$approval_status = ServiceInvoice::find($request->id);
-			$approval_levels = ApprovalLevel::where('approval_type_id', 1)->first();
+			// $approval_levels = ApprovalLevel::where('approval_type_id', 1)->first();
 
 			if ($request->status_name == 'approve') {
 				$approval_status->status_id = 4; //$approval_levels->next_status_id;
