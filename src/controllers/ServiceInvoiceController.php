@@ -1325,7 +1325,7 @@ class ServiceInvoiceController extends Controller {
 
 	public function sendMultipleApproval(Request $request) {
 		$send_for_approvals = ServiceInvoice::whereIn('id', $request->send_for_approval)->where('status_id', 1)->pluck('id')->toArray();
-		$next_status = ApprovalLevel::where('approval_type_id', 1)->pluck('current_status_id')->first();
+		$next_status = 2; //ApprovalLevel::where('approval_type_id', 1)->pluck('current_status_id')->first();
 		if (count($send_for_approvals) == 0) {
 			return response()->json(['success' => false, 'errors' => ['No New CN/DN Status in the list!']]);
 		} else {
