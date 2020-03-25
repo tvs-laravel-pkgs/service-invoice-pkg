@@ -1,6 +1,5 @@
 <?php
 namespace Abs\ServiceInvoicePkg;
-use Abs\ApprovalPkg\ApprovalLevel;
 use Abs\ApprovalPkg\ApprovalTypeStatus;
 use Abs\AttributePkg\Field;
 use Abs\AttributePkg\FieldConfigSource;
@@ -1363,12 +1362,12 @@ class ServiceInvoiceController extends Controller {
 	public function exportServiceInvoicesToExcel(Request $request) {
 		ob_end_clean();
 		$date_range = explode(" to ", $request->invoice_date);
-		$approved_status = ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
+		// $approved_status = ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
 
 		$query = ServiceInvoice::where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
 			->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
 			->where('company_id', Auth::user()->company_id)
-			->where('status_id', $approved_status)
+			->where('status_id', 4)
 			->where(function ($query) use ($request) {
 				if ($request->invoice_number) {
 					$query->where('service_invoices.number', 'like', "%" . $request->invoice_number . "%");
