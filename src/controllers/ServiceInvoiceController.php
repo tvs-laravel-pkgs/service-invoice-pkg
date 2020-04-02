@@ -1390,6 +1390,7 @@ class ServiceInvoiceController extends Controller {
 			})
 			->where(function ($query) use ($request) {
 				if (!empty($request->category_id)) {
+					$query->join('sc', 'sc.id', 'service_invoices.sub_category_id');
 					$query->where('service_item_sub_categories.category_id', $request->category_id);
 				}
 			})
