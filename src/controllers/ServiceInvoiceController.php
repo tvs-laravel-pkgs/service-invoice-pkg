@@ -1365,8 +1365,9 @@ class ServiceInvoiceController extends Controller {
 		// $approved_status = ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
 
 		$query = ServiceInvoice::where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
+			->join('service_item_sub_categories as sc', 'sc.id', 'service_invoices.sub_category_id')
 			->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
-			->where('company_id', Auth::user()->company_id)
+			->where('service_invoices.company_id', Auth::user()->company_id)
 			->where('status_id', 4)
 			->where(function ($query) use ($request) {
 				if ($request->invoice_number) {
@@ -1390,8 +1391,7 @@ class ServiceInvoiceController extends Controller {
 			})
 			->where(function ($query) use ($request) {
 				if (!empty($request->category_id)) {
-					$query->join('sc', 'sc.id', 'service_invoices.sub_category_id');
-					$query->where('service_item_sub_categories.category_id', $request->category_id);
+					$query->where('sc.category_id', $request->category_id);
 				}
 			})
 			->where(function ($query) use ($request) {
