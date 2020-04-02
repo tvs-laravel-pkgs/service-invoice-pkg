@@ -1413,7 +1413,7 @@ class ServiceInvoiceController extends Controller {
 
 		$service_invoice_ids = clone $query;
 
-		$service_invoice_ids = $service_invoice_ids->pluck('id');
+		$service_invoice_ids = $service_invoice_ids->pluck('service_invoices.id');
 		// dd($service_invoice_ids);
 		$axapta_records = AxaptaExport::where([
 			'company_id' => Auth::user()->company_id,
