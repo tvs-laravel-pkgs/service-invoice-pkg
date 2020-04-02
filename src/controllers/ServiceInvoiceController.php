@@ -1360,6 +1360,9 @@ class ServiceInvoiceController extends Controller {
 	}
 
 	public function exportServiceInvoicesToExcel(Request $request) {
+		ini_set('memory_limit', '-1');
+		ini_set('max_execution_time', 0);
+
 		ob_end_clean();
 		$date_range = explode(" to ", $request->invoice_date);
 		// $approved_status = ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
