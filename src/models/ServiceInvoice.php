@@ -773,6 +773,7 @@ class ServiceInvoice extends Model {
 
 		$pdf = PDF::loadView('service-invoices/pdf/index', $data);
 		// $po_file_name = 'Invoice-' . $this->number . '.pdf';
+		File::delete($pathToFile);
 		File::put($pathToFile, $pdf->output());
 	}
 
