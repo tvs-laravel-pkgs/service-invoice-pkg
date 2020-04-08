@@ -1408,7 +1408,13 @@ class ServiceInvoiceController extends Controller {
 				if (!empty($request->customer_id)) {
 					$query->where('service_invoices.customer_id', $request->customer_id);
 				}
-			});
+			})
+			->where(function ($query) use ($request) {
+				if (Entrust::can('view-own-cn-dn')) {
+					$query->where('service_invoices.created_by_id', Auth::id());
+				}
+			})
+		;
 		$service_invoices = clone $query;
 		$service_invoices = $service_invoices->get();
 		// dd($service_invoices);
