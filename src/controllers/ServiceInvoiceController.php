@@ -750,7 +750,11 @@ class ServiceInvoiceController extends Controller {
 			//SERIAL NUMBER GENERATION & VALIDATION
 			if (!$request->id) {
 				//GET FINANCIAL YEAR ID BY DOCUMENT DATE
-				$document_date_year = date('Y', strtotime($request->document_date));
+				if (date('m', strtotime($request->document_date)) > 6) {
+					$document_date_year = date('Y', strtotime($request->document_date)) + 1;
+				} else {
+					$document_date_year = date('Y', strtotime($request->document_date));
+				}
 				$financial_year = FinancialYear::where('from', $document_date_year)
 					->where('company_id', Auth::user()->company_id)
 					->first();
