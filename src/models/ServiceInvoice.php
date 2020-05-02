@@ -455,7 +455,13 @@ class ServiceInvoice extends Model {
 
 				//GET FINANCIAL YEAR ID BY DOCUMENT DATE
 				try {
-					$document_date_year = date('Y', PHPExcel_Shared_Date::ExcelToPHP($record['Doc Date']));
+					$date = PHPExcel_Shared_Date::ExcelToPHP($record['Doc Date']);
+					if (date('m', $date) > 3) {
+						$document_date_year = date('Y', $date) + 1;
+					} else {
+						$document_date_year = date('Y', $date);
+					}
+
 					$financial_year = FinancialYear::where('from', $document_date_year)
 						->where('company_id', $job->company_id)
 						->first();
