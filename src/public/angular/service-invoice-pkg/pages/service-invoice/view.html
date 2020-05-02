@@ -30,6 +30,16 @@
                                         <ul class="table-form-list">
                                             <li>
                                                 <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">
+                                                        Invoice #
+                                                    </label>
+                                                    <div class="table-form-list-control">
+                                                        <input type="text" class="form-control" name="number" value="{{$ctrl.service_invoice.number}}" readonly>
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                            <li>
+                                                <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Branch</label>
                                                     <div class="table-form-list-control">
                                                         <input type="text" class="form-control" name="branch_id" value="{{$ctrl.service_invoice.branch.code}}" readonly>
