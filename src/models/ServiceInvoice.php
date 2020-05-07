@@ -573,22 +573,6 @@ class ServiceInvoice extends Model {
 						];
 					}
 					$service_invoice_item->taxes()->sync($item_taxes);
-
-					// $tax_code = TaxCode::find($item_code->sac_code_id)->first();
-					// $tax_percentages = DB::table('tax_code_tax')
-					// 	->join('taxes', 'taxes.id', 'tax_code_tax.tax_id')
-					// 	->where('tax_code_id', $tax_code->id)
-					// 	->whereIn('tax_id', $taxes['tax_ids'])
-					// 	->get()
-					// 	->toArray()
-					// ;
-					// // dd($tax_percentages);
-					// $service_invoice_item->taxes()->sync([]);
-					// foreach ($tax_percentages as $tax) {
-					// 	$service_invoice_item->taxes()->attach($tax->tax_id, ['percentage' => $tax->percentage, 'amount' => self::percentage(1 * $record['Amount'], $tax->percentage)]);
-					// 	// $tax_amount[$tax->name] = self::percentage(1 * $record['Amount'], $tax->percentage);
-					// 	$total_tax_amount += self::percentage(1 * $record['Amount'], $tax->percentage);
-					// }
 				}
 				$service_invoice->amount_total = $record['Amount'];
 				$service_invoice->tax_total = $item_code->sac_code_id ? $total_tax_amount : 0;
