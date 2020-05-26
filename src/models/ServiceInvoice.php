@@ -424,7 +424,7 @@ class ServiceInvoice extends Model {
 				} else {
 					$customer = Customer::where([
 						'company_id' => $job->company_id,
-						'code' => $record['Customer Code'],
+						'code' => trim($record['Customer Code']),
 					])->first();
 					if (!$customer) {
 						$status['errors'][] = 'Invalid Customer';
@@ -436,7 +436,7 @@ class ServiceInvoice extends Model {
 				} else {
 					$item_code = ServiceItem::where([
 						'company_id' => $job->company_id,
-						'code' => $record['Item Code'],
+						'code' => trim($record['Item Code']),
 					])->first();
 					if (!$item_code) {
 						$status['errors'][] = 'Invalid Item Code';
