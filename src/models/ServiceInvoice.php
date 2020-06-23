@@ -499,6 +499,7 @@ class ServiceInvoice extends Model {
 					$status['errors'][] = 'Initial CN/DN Status has not mapped.!';
 				}
 
+				$taxes = [];
 				if ($item_code && $branch && $customer) {
 					$taxes = Tax::getTaxes($item_code->id, $branch->id, $customer->id);
 					if (!$taxes['success']) {
@@ -557,22 +558,34 @@ class ServiceInvoice extends Model {
 				$total_tax_amount = 0;
 
 				if ($item_code->sac_code_id) {
+					// if ($service_invoice->customer->primaryAddress->state_id == $service_invoice->outlet->state_id) {
+					// 	$taxes = $service_invoice_item->serviceItem->taxCode->taxes()->where('type_id', 1160)->get();
+					// } else {
+					// 	$taxes = $service_invoice_item->serviceItem->taxCode->taxes()->where('type_id', 1161)->get();
+					// }
 
-					if ($service_invoice->customer->primaryAddress->state_id == $service_invoice->outlet->state_id) {
-						$taxes = $service_invoice_item->serviceItem->taxCode->taxes()->where('type_id', 1160)->get();
-					} else {
-						$taxes = $service_invoice_item->serviceItem->taxCode->taxes()->where('type_id', 1161)->get();
-					}
+					$tax_codes = TaxCode::with([
+						'taxes' => function ($query) use ($taxes) {
+							$query->whereIn('tax_id', $taxes['tax_ids']);
+						},
+					])
+						->where('id', $item_code->sac_code_id)
+						->get();
+
 					$item_taxes = [];
-					foreach ($taxes as $tax) {
-						$tax_amount = round($service_invoice_item->sub_total * $tax->pivot->percentage / 100, 2);
-						$total_tax_amount += $tax_amount;
-						$item_taxes[$tax->id] = [
-							'percentage' => $tax->pivot->percentage,
-							'amount' => $tax_amount,
-						];
+					if (!empty($tax_codes)) {
+						foreach ($tax_codes as $tax_code) {
+							foreach ($tax_code->taxes as $tax) {
+								$tax_amount = round($service_invoice_item->sub_total * $tax->pivot->percentage / 100, 2);
+								$total_tax_amount += $tax_amount;
+								$item_taxes[$tax->id] = [
+									'percentage' => $tax->pivot->percentage,
+									'amount' => $tax_amount,
+								];
+							}
+						}
+						$service_invoice_item->taxes()->sync($item_taxes);
 					}
-					$service_invoice_item->taxes()->sync($item_taxes);
 				}
 				$service_invoice->amount_total = $record['Amount'];
 				$service_invoice->tax_total = $item_code->sac_code_id ? $total_tax_amount : 0;
