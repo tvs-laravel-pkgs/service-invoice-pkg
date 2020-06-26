@@ -16,7 +16,7 @@
     var get_sbu_url = "{{url('/service-invoice-pkg/get-sbu/')}}";
     var search_branch_url = "{{url('/service-invoice-pkg/branch/search')}}";
     var get_branch_info_url = "{{url('/service-invoice-pkg/get-branch-details')}}";
-    var search_customer_url = "{{url('/service-invoice-pkg/service-invoice/customer/search')}}";
+    var service_invoice_search_customer_url = "{{url('/service-invoice-pkg/service-invoice/customer/search')}}";
     var search_field_url = "{{url('/service-invoice-pkg/field/search')}}";
     var get_customer_info_url = "{{url('/service-invoice-pkg/service-invoice/get-customer-details')}}";
     var search_service_item_url = "{{url('/service-invoice-pkg/service-invoice/service-item/search')}}";

@@ -411,7 +411,7 @@ app.component('serviceInvoiceList', {
                 return new Promise(function(resolve, reject) {
                     $http
                         .post(
-                            search_customer_url, {
+                            service_invoice_search_customer_url, {
                                 key: query,
                             }
                         )
