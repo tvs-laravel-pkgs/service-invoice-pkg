@@ -159,10 +159,11 @@ app.component('serviceInvoiceList', {
                 $mdSelect.hide();
             }
         });
+
         function RefreshTable() {
             $('#service-invoice-table').DataTable().ajax.reload();
         }
-        
+
         $('#invoice_number').keyup(function() {
             setTimeout(function() {
                 dataTable.draw();
@@ -884,6 +885,7 @@ app.component('serviceInvoiceForm', {
         $scope.totalAmountCalc = function() {
             self.sub_total = 0;
             self.total = 0;
+            self.KFC_total = 0;
             self.gst_total = 0;
             if (self.qty && self.rate) {
                 self.sub_total = self.qty * self.rate;
@@ -896,7 +898,14 @@ app.component('serviceInvoiceForm', {
                         });
                     }
                 }
-                self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total);
+                else{
+                    if(self.service_invoice.branch.primary_address.state_id){
+                        if(self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.customer.primary_address.state_id == 3){
+                            self.KFC_total = self.sub_total/100;
+                        }
+                    }
+                }
+                self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total);
             }
         };
 
@@ -1066,7 +1075,7 @@ app.component('serviceInvoiceForm', {
                                 errors += '<li>' + res.errors[i] + '</li>';
                             }
                             custom_noty('error', errors);
-                        } else { 
+                        } else {
                             custom_noty('success', res.message);
                             // $location.path('/service-invoice-pkg/service-invoice/list');
                             $location.path('/service-invoice-pkg/service-invoice/view/' + $routeParams.type_id + '/' + res.service_invoice_id);

@@ -218,6 +218,7 @@ class ServiceInvoiceController extends Controller {
 			$service_invoice = ServiceInvoice::with([
 				'attachments',
 				'customer',
+				'customer.primaryAddress',
 				'branch',
 				'serviceInvoiceItems',
 				'serviceInvoiceItems.serviceItem',
@@ -644,6 +645,9 @@ class ServiceInvoiceController extends Controller {
 			return response()->json(['success' => false, 'error' => $taxes['error']]);
 		}
 
+		$outlet = Outlet::find($request->branch_id);
+		$customer = Customer::with(['primaryAddress'])->find($request->customer_id);
+
 		$service_item = ServiceItem::with([
 			'coaCode',
 			'taxCode',
@@ -665,6 +669,19 @@ class ServiceInvoiceController extends Controller {
 					$service_item[$value->name] = [
 						'amount' => round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2),
 						'percentage' => round($value->pivot->percentage, 2),
+					];
+				}
+			}
+		} else {
+			if ($customer->primaryAddress->state_id) {
+				if (($customer->primaryAddress->state_id == 3) && ($outlet->state_id == 3)) {
+					//3 FOR KERALA
+					//check customer state and outlet states are equal KL.  //add KFC tax
+					$gst_total += round((1 / 100) * ($request->qty * $request->amount), 2);
+					// $KFC_tax_amount = round($service_invoice_item->sub_total * 1 / 100, 2); //ONE PERCENTAGE FOR KFC
+					$service_item['KFC'] = [
+						'amount' => round((1 / 100) * ($request->qty * $request->amount), 2),
+						'percentage' => round(1, 2),
 					];
 				}
 			}
