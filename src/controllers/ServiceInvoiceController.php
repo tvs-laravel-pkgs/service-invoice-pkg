@@ -1390,8 +1390,8 @@ class ServiceInvoiceController extends Controller {
 		$date_range = explode(" to ", $request->invoice_date);
 		// $approved_status = ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
 
-		$query = ServiceInvoice::where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
-			->join('service_item_sub_categories as sc', 'sc.id', 'service_invoices.sub_category_id')
+		$query = ServiceInvoice::select('service_invoices.*')->join('service_item_sub_categories as sc', 'sc.id', 'service_invoices.sub_category_id')
+			->where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
 			->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
 			->where('service_invoices.company_id', Auth::user()->company_id)
 			->where('status_id', 4)

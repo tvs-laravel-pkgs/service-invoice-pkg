@@ -256,10 +256,20 @@ class ServiceInvoice extends Model {
 					$params['TVSHSNCode'] = '';
 					$params['TVSSACCode'] = $invoice_item->serviceItem->taxCode->code;
 				}
+				$this->exportRowToAxapta($params);
 			} else {
 				$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
+
+				$this->exportRowToAxapta($params);
+				//FOR KFC
+				$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
+
+				$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
+				$params['LedgerDimension'] = '2230' . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+				$this->exportRowToAxapta($params);
+
 			}
-			$this->exportRowToAxapta($params);
 		}
 
 		return [
