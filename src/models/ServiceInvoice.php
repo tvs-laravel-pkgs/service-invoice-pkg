@@ -256,19 +256,44 @@ class ServiceInvoice extends Model {
 					$params['TVSHSNCode'] = '';
 					$params['TVSSACCode'] = $invoice_item->serviceItem->taxCode->code;
 				}
-				$this->exportRowToAxapta($params);
 			} else {
 				$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
 
-				$this->exportRowToAxapta($params);
-				//FOR KFC
-				$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
+				// $this->exportRowToAxapta($params);
+				// //FOR KFC
+				// $params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
 
-				$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
-				$params['LedgerDimension'] = '2230' . '-' . $this->branch->code . '-' . $this->sbu->name;
+				// $params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
+				// $params['LedgerDimension'] = '2230' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-				$this->exportRowToAxapta($params);
+				// $this->exportRowToAxapta($params);
 
+			}
+			$this->exportRowToAxapta($params);
+
+			$service_invoice = $invoice_item->serviceInvoice()->with([
+				'customer',
+				'customer.primaryAddress',
+				'branch',
+				'branch.primaryAddress',
+			])
+				->first();
+
+			if (!empty($service_invoice)) {
+				if ($service_invoice->customer->primaryAddress->state_id) {
+					if ($service_invoice->customer->primaryAddress->state_id == 3 && $service_invoice->branch->primaryAddress->state_id == 3) {
+						if (empty($service_invoice->customer->gst_number)) {
+							if ($invoice_item->serviceItem->taxCode) {
+								$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
+
+								$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
+								$params['LedgerDimension'] = '2230' . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+								$this->exportRowToAxapta($params);
+							}
+						}
+					}
+				}
 			}
 		}
 
@@ -565,51 +590,59 @@ class ServiceInvoice extends Model {
 				$service_invoice_item->save();
 
 				//SAVE SERVICE INVOICE ITEM TAX
-				$total_tax_amount = 0;
-
-				// if ($service_invoice->customer->primaryAddress->state_id == $service_invoice->outlet->state_id) {
-				// 	$taxes = $service_invoice_item->serviceItem->taxCode->taxes()->where('type_id', 1160)->get();
-				// } else {
-				// 	$taxes = $service_invoice_item->serviceItem->taxCode->taxes()->where('type_id', 1161)->get();
-				// }
-				$tax_codes = TaxCode::with([
-					'taxes' => function ($query) use ($taxes) {
-						$query->whereIn('tax_id', $taxes['tax_ids']);
-					},
-				])
-					->where('id', $item_code->sac_code_id)
-					->get();
-
 				$item_taxes = [];
-				$KFC_tax_amount = 0;
+				$total_tax_amount = 0;
 				if (!empty($item_code->sac_code_id)) {
-					if (!empty($tax_codes)) {
-						foreach ($tax_codes as $tax_code) {
-							foreach ($tax_code->taxes as $tax) {
-								$tax_amount = round($service_invoice_item->sub_total * $tax->pivot->percentage / 100, 2);
-								$total_tax_amount += $tax_amount;
-								$item_taxes[$tax->id] = [
-									'percentage' => $tax->pivot->percentage,
-									'amount' => $tax_amount,
+
+					if ($service_invoice->customer->primaryAddress->state_id == $service_invoice->outlet->state_id) {
+						$taxes = $service_invoice_item->serviceItem->taxCode->taxes()->where('type_id', 1160)->get();
+					} else {
+						$taxes = $service_invoice_item->serviceItem->taxCode->taxes()->where('type_id', 1161)->get();
+					}
+
+					// $tax_codes = TaxCode::with([
+					// 	'taxes' => function ($query) use ($taxes) {
+					// 		$query->whereIn('tax_id', $taxes['tax_ids']);
+					// 	},
+					// ])
+					// 	->where('id', $item_code->sac_code_id)
+					// 	->get();
+
+					// if (!empty($tax_codes)) {
+					// foreach ($tax_codes as $tax_code) {
+					foreach ($taxes as $tax) {
+						$tax_amount = round($service_invoice_item->sub_total * $tax->pivot->percentage / 100, 2);
+						$total_tax_amount += $tax_amount;
+						$item_taxes[$tax->id] = [
+							'percentage' => $tax->pivot->percentage,
+							'amount' => $tax_amount,
+						];
+					}
+					$service_invoice_item->taxes()->sync($item_taxes);
+					// }
+				}
+				// }
+				// else {
+				$KFC_tax_amount = 0;
+				if ($service_invoice->customer->primaryAddress->state_id) {
+					if (($service_invoice->customer->primaryAddress->state_id == 3) && ($service_invoice->outlet->state_id == 3)) {
+						//3 FOR KERALA
+						//check customer state and outlet states are equal KL.  //add KFC tax
+						if (!$customer->gst_number) {
+							//customer dont't have GST
+							if (!empty($item_code->sac_code_id)) {
+								//customer have HSN and SAC Code
+								$KFC_tax_amount = round($service_invoice_item->sub_total * 1 / 100, 2); //ONE PERCENTAGE FOR KFC
+								$item_taxes[4] = [ //4 for KFC
+									'percentage' => 1,
+									'amount' => $KFC_tax_amount,
 								];
 							}
-						}
-						$service_invoice_item->taxes()->sync($item_taxes);
-					}
-				} else {
-					if ($service_invoice->customer->primaryAddress->state_id) {
-						if (($service_invoice->customer->primaryAddress->state_id == 3) && ($service_invoice->outlet->state_id == 3)) {
-							//3 FOR KERALA
-							//check customer state and outlet states are equal KL.  //add KFC tax
-							$KFC_tax_amount = round($service_invoice_item->sub_total * 1 / 100, 2); //ONE PERCENTAGE FOR KFC
-							$item_taxes[4] = [ //4 for KFC
-								'percentage' => 1,
-								'amount' => $KFC_tax_amount,
-							];
 						}
 					}
 					$service_invoice_item->taxes()->sync($item_taxes);
 				}
+				// }
 				$service_invoice->amount_total = $record['Amount'];
 				$service_invoice->tax_total = $item_code->sac_code_id ? $total_tax_amount : 0;
 				$service_invoice->sub_total = 1 * $record['Amount'];
@@ -624,7 +657,7 @@ class ServiceInvoice extends Model {
 					$job->save();
 				}
 			}
-
+			// dd(1);
 			//COMPLETED or completed with errors
 			$job->status_id = $job->error_count == 0 ? 7202 : 7205;
 			$job->save();

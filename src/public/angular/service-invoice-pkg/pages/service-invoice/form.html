@@ -473,7 +473,7 @@
                                         <span class="modal-footer-list-label">{{tax.name}} ({{tax.pivot.percentage}}%)</span>
                                         <span class="modal-footer-list-value">{{(tax.pivot.amount ? tax.pivot.amount : 0) | number : 2}}</span>
                                     </li>
-                                    <li ng-show="($ctrl.service_invoice.branch.primary_address.state_id == '3') && ($ctrl.service_invoice.customer.primary_address.state_id == '3') && ($ctrl.service_item_detail.tax_code == NULL)">
+                                    <li ng-show="($ctrl.service_invoice.branch.primary_address.state_id == '3') && ($ctrl.service_invoice.customer.primary_address.state_id == '3') && ($ctrl.service_item_detail.tax_code != NULL) && ($ctrl.service_invoice.customer.gst_number == NULL)">
                                         <span class="modal-footer-list-label">KFC (1%)</span>
                                         <span class="modal-footer-list-value">{{$ctrl.KFC_total | number : 2}}</span>
                                     </li>

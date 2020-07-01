@@ -220,6 +220,7 @@ class ServiceInvoiceController extends Controller {
 				'customer',
 				'customer.primaryAddress',
 				'branch',
+				'branch.primaryAddress',
 				'serviceInvoiceItems',
 				'serviceInvoiceItems.serviceItem',
 				'serviceInvoiceItems.eavVarchars',
@@ -672,17 +673,37 @@ class ServiceInvoiceController extends Controller {
 					];
 				}
 			}
-		} else {
-			if ($customer->primaryAddress->state_id) {
-				if (($customer->primaryAddress->state_id == 3) && ($outlet->state_id == 3)) {
-					//3 FOR KERALA
-					//check customer state and outlet states are equal KL.  //add KFC tax
-					$gst_total += round((1 / 100) * ($request->qty * $request->amount), 2);
-					// $KFC_tax_amount = round($service_invoice_item->sub_total * 1 / 100, 2); //ONE PERCENTAGE FOR KFC
-					$service_item['KFC'] = [
-						'amount' => round((1 / 100) * ($request->qty * $request->amount), 2),
-						'percentage' => round(1, 2),
-					];
+		}
+		// else {
+		// 	if ($customer->primaryAddress->state_id) {
+		// 		if (($customer->primaryAddress->state_id == 3) && ($outlet->state_id == 3)) {
+		// 			//3 FOR KERALA
+		// 			//check customer state and outlet states are equal KL.  //add KFC tax
+		// 			$gst_total += round((1 / 100) * ($request->qty * $request->amount), 2);
+		// 			// $KFC_tax_amount = round($service_invoice_item->sub_total * 1 / 100, 2); //ONE PERCENTAGE FOR KFC
+		// 			$service_item['KFC'] = [
+		// 				'amount' => round((1 / 100) * ($request->qty * $request->amount), 2),
+		// 				'percentage' => round(1, 2),
+		// 			];
+		// 		}
+		// }
+		// }
+		$KFC_tax_amount = 0;
+		if ($customer->primaryAddress->state_id) {
+			if (($customer->primaryAddress->state_id == 3) && ($outlet->state_id == 3)) {
+				//3 FOR KERALA
+				//check customer state and outlet states are equal KL.  //add KFC tax
+				if (!$customer->gst_number) {
+					//customer dont't have GST
+					if (!is_null($service_item->sac_code_id)) {
+						//customer have HSN and SAC Code
+						$gst_total += round((1 / 100) * ($request->qty * $request->amount), 2);
+						$KFC_tax_amount = round($request->amount * 1 / 100, 2); //ONE PERCENTAGE FOR KFC
+						$service_item['KFC'] = [ //4 for KFC
+							'percentage' => 1,
+							'amount' => $KFC_tax_amount,
+						];
+					}
 				}
 			}
 		}

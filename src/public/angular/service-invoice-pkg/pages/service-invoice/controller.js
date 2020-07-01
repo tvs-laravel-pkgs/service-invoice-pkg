@@ -573,7 +573,7 @@ app.component('serviceInvoiceForm', {
                 startDate: min_offset,
                 endDate: max_offset
             });
-        }, 1000);
+        }, 7000);
 
         // //ATTACHMENT REMOVE
         // $(document).on('click', ".main-wrap .imageuploadify-container .imageuploadify-btn-remove button", function() {
@@ -898,13 +898,22 @@ app.component('serviceInvoiceForm', {
                         });
                     }
                 }
-                else{
-                    if(self.service_invoice.branch.primary_address.state_id){
-                        if(self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.customer.primary_address.state_id == 3){
-                            self.KFC_total = self.sub_total/100;
+                if(self.service_invoice.branch.primary_address.state_id){
+                    if(self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.customer.primary_address.state_id == 3){
+                        if(self.service_invoice.customer.gst_number == null){
+                            if(self.service_item_detail.tax_code != null){
+                                self.KFC_total = self.sub_total/100;
+                            }
                         }
                     }
                 }
+                // else{
+                //     if(self.service_invoice.branch.primary_address.state_id){
+                    // if(self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.customer.primary_address.state_id == 3){
+                //             self.KFC_total = self.sub_total/100;
+                //         }
+                //     }
+                // }
                 self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total);
             }
         };
@@ -1226,13 +1235,23 @@ app.component('serviceInvoiceView', {
                             self.gst_total += parseFloat($scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2));
                         });
                     }
-                }else{
-                    if(self.service_invoice.branch.primary_address.state_id){
-                        if(self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.customer.primary_address.state_id == 3){
-                            self.KFC_total = self.sub_total/100;
+                }
+                 if(self.service_invoice.branch.primary_address.state_id){
+                    if(self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.customer.primary_address.state_id == 3){
+                        if(self.service_invoice.customer.gst_number == null){
+                            if(self.service_item_detail.tax_code != null){
+                                self.KFC_total = self.sub_total/100;
+                            }
                         }
                     }
                 }
+                // else{
+                //     if(self.service_invoice.branch.primary_address.state_id){
+                //         if(self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.customer.primary_address.state_id == 3){
+                //             self.KFC_total = self.sub_total/100;
+                //         }
+                //     }
+                // }
                 self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total);
             }
         };
