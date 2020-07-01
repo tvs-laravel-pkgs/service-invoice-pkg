@@ -198,8 +198,8 @@ class ServiceInvoiceController extends Controller {
 				if ($service_invoice_list->status_id == '1') {
 					$next_status = 2; //ApprovalLevel::where('approval_type_id', 1)->pluck('current_status_id')->first();
 					$output .= '<a href="javascript:;" data-toggle="modal" data-target="#send-to-approval"
-					onclick="angular.element(this).scope().sendApproval(' . $service_invoice_list->id . ',' . $next_status . ')" title="Approval">
-					<img src="' . $img_approval . '" alt="Approval" class="img-responsive">
+					onclick="angular.element(this).scope().sendApproval(' . $service_invoice_list->id . ',' . $next_status . ')" title="Send for Approval">
+					<img src="' . $img_approval . '" alt="Send for Approval" class="img-responsive">
 					</a>';
 				}
 				return $output;
