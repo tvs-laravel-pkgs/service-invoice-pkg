@@ -1161,6 +1161,7 @@ class ServiceInvoiceController extends Controller {
 			'attachments',
 			'customer',
 			'branch',
+			'branch.primaryAddress',
 			'sbu',
 			'serviceInvoiceItems',
 			'serviceInvoiceItems.serviceItem',

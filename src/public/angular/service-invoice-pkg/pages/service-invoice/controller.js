@@ -1214,6 +1214,7 @@ app.component('serviceInvoiceView', {
         $scope.totalAmountCalc = function() {
             self.sub_total = 0;
             self.total = 0;
+            self.KFC_total = 0;
             self.gst_total = 0;
             if (self.qty && self.rate) {
                 self.sub_total = self.qty * self.rate;
@@ -1225,8 +1226,14 @@ app.component('serviceInvoiceView', {
                             self.gst_total += parseFloat($scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2));
                         });
                     }
+                }else{
+                    if(self.service_invoice.branch.primary_address.state_id){
+                        if(self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.customer.primary_address.state_id == 3){
+                            self.KFC_total = self.sub_total/100;
+                        }
+                    }
                 }
-                self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total);
+                self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total);
             }
         };
 
