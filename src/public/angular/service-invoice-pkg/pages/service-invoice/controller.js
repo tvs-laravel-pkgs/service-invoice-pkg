@@ -329,22 +329,9 @@ app.component('serviceInvoiceList', {
                 $('#parent').prop('checked', false);
             }
         });
-        $('.align-left.daterange').daterangepicker({
-            autoUpdateInput: false,
-            "opens": "left",
-            locale: {
-                cancelLabel: 'Clear',
-                format: "DD-MM-YYYY"
-            }
-        });
-
-        $('.daterange').on('apply.daterangepicker', function(ev, picker) {
-            $(this).val(picker.startDate.format('DD-MM-YYYY') + ' to ' + picker.endDate.format('DD-MM-YYYY'));
-        });
-
-        $('.daterange').on('cancel.daterangepicker', function(ev, picker) {
-            $(this).val('');
-        });
+        
+        dateRangePicker();
+        
         //SEARCH BRANCH
         self.searchBranchFilter = function(query) {
             if (query) {
