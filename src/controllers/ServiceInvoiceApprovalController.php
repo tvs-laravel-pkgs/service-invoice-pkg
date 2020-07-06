@@ -157,11 +157,12 @@ class ServiceInvoiceApprovalController extends Controller {
 				->pluck('users.id as user_id')->toArray();
 			$sub_employee_based[] = Auth::user()->id;
 			$cn_dn_approval_list = $cn_dn_approval_list->whereIn('service_invoices.created_by_id', $sub_employee_based);
-		} elseif (Entrust::can('vims-service-cn')) {
-			// Vims Service CN List BY Karthik kumar on 02-07-2020
-			$cn_dn_approval_list = $cn_dn_approval_list->where('service_invoices.config_id',7223);
 		} else {
 			$cn_dn_approval_list = [];
+		}
+		// Vims Service CN List BY Karthik kumar on 02-07-2020
+		if (Entrust::can('vims-service-cn-dn')) {
+			$cn_dn_approval_list = $cn_dn_approval_list->where('service_invoices.config_id',7223);
 		}
 		return Datatables::of($cn_dn_approval_list)
 			->addColumn('child_checkbox', function ($cn_dn_approval_list) {
