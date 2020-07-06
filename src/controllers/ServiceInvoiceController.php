@@ -160,7 +160,7 @@ class ServiceInvoiceController extends Controller {
 		}
 		// Vims Service CN List BY Karthik kumar on 02-07-2020
 		if (Entrust::can('vims-service-cn-dn')) {
-			$service_invoice_list = $service_invoice_list->where('service_invoices.config_id',7223);
+			$service_invoice_list = $service_invoice_list->where('service_invoices.config_id',7223)->get();
 		} 
 		return Datatables::of($service_invoice_list)
 			->addColumn('child_checkbox', function ($service_invoice_list) {
