@@ -110,10 +110,11 @@ app.component('serviceInvoiceApprovalList', {
                 $mdSelect.hide();
             }
         });
+
         function RefreshTable() {
             $('#cn-dn-approval-table').DataTable().ajax.reload();
         }
-        
+
         $('#invoice_number').keyup(function() {
             setTimeout(function() {
                 dataTable.draw();
@@ -207,30 +208,40 @@ app.component('serviceInvoiceApprovalList', {
                 .search(this.value)
                 .draw();
         });
-        
+
+        var bulk_approve = 0;
         $('#send_for_approval').on('click', function() { //alert('dsf');
             if ($('.service_invoice_checkbox:checked').length > 0) {
-                var send_for_approval = []
-                $('input[name="child_boxes"]:checked').each(function() {
-                    send_for_approval.push(this.value);
-                });
-                // console.log(send_for_approval);
-                $http.post(
-                    laravel_routes['updateMultipleApproval'], {
-                        send_for_approval: send_for_approval,
-                    }
-                ).then(function(response) {
-                    if (response.data.success == true) {
-                        custom_noty('success', response.data.message);
-                        $timeout(function() {
-                            // $('#cn-dn-approval-table').DataTable().ajax.reload();
-                            RefreshTable();
-                            // $scope.$apply();
-                        }, 1000);
-                    } else {
-                        custom_noty('error', response.data.errors);
-                    }
-                });
+                if (bulk_approve == 0) {
+                    bulk_approve = 1;
+                    var send_for_approval = []
+                    $('input[name="child_boxes"]:checked').each(function() {
+                        send_for_approval.push(this.value);
+                    });
+                    // console.log(send_for_approval);
+                    // $('.bulk_approve').bind('click', false);
+                    $http.post(
+                        laravel_routes['updateMultipleApproval'], {
+                            send_for_approval: send_for_approval,
+                        }
+                    ).then(function(response) {
+                        if (response.data.success == true) {
+                            custom_noty('success', response.data.message);
+                            $timeout(function() {
+                                // $('#cn-dn-approval-table').DataTable().ajax.reload();
+                                RefreshTable();
+                                bulk_approve = 0;
+                                // $('.bulk_approve').unbind('click', false);
+                                // $("#send_for_approval").attr('disabled', false);
+                                // $scope.$apply();
+                            }, 1000);
+                        } else {
+                            custom_noty('error', response.data.errors);
+                        }
+                    });
+                }else{
+                    custom_noty('error', 'Please wait..Already Invoice Approval Inprogress!');
+                }
             } else {
                 custom_noty('error', 'Please Select Checkbox');
             }
