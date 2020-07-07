@@ -155,13 +155,13 @@ class ServiceInvoiceController extends Controller {
 				->pluck('employee_outlet.outlet_id')
 				->toArray();
 			$service_invoice_list = $service_invoice_list->whereIn('service_invoices.branch_id', $view_user_outlets_only);
-		}else {
+		} // Vims Service CN List BY Karthik kumar on 02-07-2020
+		elseif (Entrust::can('vims-service-cn-dn')) {
+			$service_invoice_list = $service_invoice_list->where('service_invoices.config_id', 7223);
+		} else {
 			$service_invoice_list = [];
 		}
-		// Vims Service CN List BY Karthik kumar on 02-07-2020
-		if (Entrust::can('vims-service-cn-dn')) {
-			$service_invoice_list = $service_invoice_list->where('service_invoices.config_id',7223)->get();
-		} 
+
 		return Datatables::of($service_invoice_list)
 			->addColumn('child_checkbox', function ($service_invoice_list) {
 				$checkbox = "<td><div class='table-checkbox'><input type='checkbox' id='child_" . $service_invoice_list->id . "' name='child_boxes' value='" . $service_invoice_list->id . "' class='service_invoice_checkbox'/><label for='child_" . $service_invoice_list->id . "'></label></div></td>";
