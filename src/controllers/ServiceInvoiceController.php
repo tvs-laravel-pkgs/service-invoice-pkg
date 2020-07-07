@@ -155,8 +155,8 @@ class ServiceInvoiceController extends Controller {
 				->pluck('employee_outlet.outlet_id')
 				->toArray();
 			$service_invoice_list = $service_invoice_list->whereIn('service_invoices.branch_id', $view_user_outlets_only);
-		} // Vims Service CN List BY Karthik kumar on 02-07-2020
-		elseif (Entrust::can('vims-service-cn-dn')) {
+		} elseif (Entrust::can('vims-service-cn-dn')) {
+			// Vims Service CN List BY Karthik kumar on 02-07-2020
 			$service_invoice_list = $service_invoice_list->where('service_invoices.config_id', 7223);
 		} else {
 			$service_invoice_list = [];
