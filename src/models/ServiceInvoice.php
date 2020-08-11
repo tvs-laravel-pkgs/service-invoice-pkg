@@ -185,6 +185,7 @@ class ServiceInvoice extends Model {
 		$item_codes = [];
 		$total_amount_with_gst['debit'] = 0;
 		$total_amount_with_gst['credit'] = 0;
+		$KFC_IN = 0;
 		foreach ($this->serviceInvoiceItems as $invoice_item) {
 			$service_invoice = $invoice_item->serviceInvoice()->with([
 				'customer',
@@ -198,6 +199,7 @@ class ServiceInvoice extends Model {
 					if ($service_invoice->customer->primaryAddress->state_id == 3 && $service_invoice->branch->primaryAddress->state_id == 3) {
 						if (empty($service_invoice->customer->gst_number)) {
 							if (!empty($invoice_item->serviceItem->taxCode)) {
+								$KFC_IN = 1;
 								foreach ($invoice_item->serviceItem->taxCode->taxes as $tax) {
 									if ($tax->name == 'CGST') {
 										$total_amount_with_gst['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
@@ -300,7 +302,7 @@ class ServiceInvoice extends Model {
 				// 'TVSSACCode' => ($invoice_item->serviceItem->taxCode != null) ? $invoice_item->serviceItem->taxCode->code : NULL,
 			];
 
-			if ($invoice_item->serviceItem->taxCode) {
+			if ($invoice_item->serviceItem->taxCode && $KFC_IN == 0) {
 				if ($invoice_item->serviceItem->taxCode->type_id == 1020) {
 					//HSN Code
 					$params['TVSHSNCode'] = $invoice_item->serviceItem->taxCode->code;
@@ -322,6 +324,7 @@ class ServiceInvoice extends Model {
 			])
 				->first();
 			// dump('start');
+			// dd(1);
 			if (!empty($service_invoice)) {
 				if ($service_invoice->customer->primaryAddress->state_id) {
 					if ($service_invoice->customer->primaryAddress->state_id == 3 && $service_invoice->branch->primaryAddress->state_id == 3) {
@@ -336,6 +339,9 @@ class ServiceInvoice extends Model {
 										$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 										$params['LedgerDimension'] = '7132' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
+										//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
+										$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
+
 										$this->exportRowToAxapta($params);
 									}
 									//FOR CGST
@@ -344,6 +350,9 @@ class ServiceInvoice extends Model {
 
 										$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 										$params['LedgerDimension'] = '7432' . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+										//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
+										$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
 
 										$this->exportRowToAxapta($params);
 									}
@@ -354,6 +363,9 @@ class ServiceInvoice extends Model {
 
 									$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
 									$params['LedgerDimension'] = '2230' . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+									//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
+									$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
 
 									$this->exportRowToAxapta($params);
 								}
