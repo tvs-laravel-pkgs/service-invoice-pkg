@@ -1,23 +1,26 @@
 <!-- Content Wrap -->
-<div class="content-wrap cndn-wrap">
-    <!-- Page Header -->
-    <div class="page-header">
-        <div class="page-header-inner">
-            <div class="page-header-content-left">
-                <div class="page-header-content button-block">
-                    <a href="#!/service-invoice-pkg/cn-dn/approval/approval-level/{{$ctrl.approval_type_id}}/list/" type="button" class="btn-back btn-img my-tooltip" ng-shortcut="'meta+shift+left'" ng-shortcut-click data-title="ctrl+shift+left"><img class="img-responsive" src="./public/theme/img/content/previous.svg" alt="Back" /></a>
-                </div><!-- Page Header Content -->
-                <div class="page-header-content title-block">
-                    <h1 class="title" ng-show="$ctrl.type_id == 1060"><b>{{$ctrl.action}} Credit Note</b></h1>
-                    <h1 class="title" ng-show="$ctrl.type_id == 1061"><b>{{$ctrl.action}} Invoice</b></h1>
-                    <!-- <p class="subtitle">Service Item category List / Form</p> -->
-                </div><!-- Page Header Content -->
-            </div><!-- Page Header Content Left -->
-        </div><!-- Page Header Inner -->
-    </div><!-- Page Header -->
-    <form id="form" enctype="multipart-formdata" autocomplete="off">
-        <input type="hidden" name="id" id="service_invoice_id" value="{{$ctrl.service_invoice.id}}">
+<form id="form" enctype="multipart-formdata" autocomplete="off">
+    <div class="content-wrap cndn-wrap">
+        <!-- Page Header -->
+        <div class="page-header">
+            <div class="page-header-inner">
+                <div class="page-header-content-left">
+                    <div class="page-header-content button-block">
+                        <a href="#!/service-invoice-pkg/cn-dn/approval/approval-level/{{$ctrl.approval_type_id}}/list/" type="button" class="btn-back btn-img my-tooltip" ng-shortcut="'meta+shift+left'" ng-shortcut-click data-title="ctrl+shift+left"><img class="img-responsive" src="./public/theme/img/content/previous.svg" alt="Back" /></a>
+                    </div><!-- Page Header Content -->
+                    <div class="page-header-content title-block">
+                        <h1 class="title" ng-show="$ctrl.type_id == 1060"><b>{{$ctrl.action}} Credit Note</b></h1>
+                        <h1 class="title" ng-show="$ctrl.type_id == 1061"><b>{{$ctrl.action}} Invoice</b></h1>
+                        <!-- <p class="subtitle">Service Item category List / Form</p> -->
+                    </div><!-- Page Header Content -->
+                </div><!-- Page Header Content Left -->
+            </div><!-- Page Header Inner -->
+        </div><!-- Page Header -->
+        <!-- <form id="form" enctype="multipart-formdata" autocomplete="off"> -->
+        <input type="hidden" name="id" id="id" value="{{$ctrl.service_invoice.id}}">
         <input type="hidden" name="type_id" value="{{$ctrl.type_id}}">
+        <input type="hidden" name="approval_type_id" id="approval_type_id" value="{{$ctrl.approval_type_id}}">
+        <input type="hidden" name="current_status" id="current_status" value="{{$ctrl.service_invoice.status_id}}">
         <!-- Page Main Content -->
         <div class="page-main-content form-content type2">
             <div class="container">
@@ -28,16 +31,6 @@
                                 <ul class="flex-list bordered">
                                     <li class="flex-md-4">
                                         <ul class="table-form-list">
-                                            <li>
-                                                <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">
-                                                        Invoice #
-                                                    </label>
-                                                    <div class="table-form-list-control">
-                                                        <input type="text" class="form-control" name="number" value="{{$ctrl.service_invoice.number}}" readonly>
-                                                    </div><!-- Table Form List Control -->
-                                                </div><!-- Table Form List Wrap -->
-                                            </li>
                                             <li>
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Branch</label>
@@ -70,23 +63,6 @@
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
-                                            <li>
-                                                <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Reverse Charge Applicability <span class="mandatory">*</span></label>
-                                                    <div class="table-form-list-control type-sm" style="min-width:130px !important;">
-                                                        <span class="type-sm"> {{$ctrl.service_invoice.is_e_reverse_charge_applicable == 1 ? 'Yes' : 'No'}}
-                                                        </span>
-                                                    </div><!-- Table Form List Control -->
-                                                </div><!-- Table Form List Wrap -->
-                                            </li>
-                                            <li>
-                                                <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">PO Ref Number <span class="mandatory">*</span></label>
-                                                    <div class="table-form-list-control">
-                                                        <input type="text" ng-model="$ctrl.service_invoice.e_po_reference_number" name="e_po_reference_number" class="type-sm form-control required" placeholder="Enter PO Ref Number" readonly>
-                                                    </div><!-- Table Form List Control -->
-                                                </div><!-- Table Form List Wrap -->
-                                            </li>
                                         </ul><!-- Table Form List -->
                                     </li>
                                     <li class="flex-md-4">
@@ -98,32 +74,6 @@
                                                         <input name="status" type="text" class="form-control" placeholder="" ng-model="$ctrl.service_invoice_status.status" readonly />
                                                     </div>
                                                 </div>
-                                            </li>
-                                            <li>
-                                                <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Invoice Number <span class="mandatory">*</span></label>
-                                                    <div class="table-form-list-control">
-                                                        <input type="text" ng-model="$ctrl.service_invoice.e_invoice_number" name="e_invoice_number" class="type-sm form-control required" placeholder="Enter Invoice Number" readonly>
-                                                    </div><!-- Table Form List Control -->
-                                                </div><!-- Table Form List Wrap -->
-                                            </li>
-                                            <li>
-                                                <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Round Off amount <span class="mandatory">*</span></label>
-                                                    <div class="table-form-list-control">
-                                                        <input type="text" ng-model="$ctrl.service_invoice.e_round_off_amount" name="e_round_off_amount" class="type-sm form-control required" placeholder="Enter Round Off amount" readonly>
-                                                    </div><!-- Table Form List Control -->
-                                                </div><!-- Table Form List Wrap -->
-                                            </li>
-                                            <li>
-                                                <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Invoice Date <span class="mandatory">*</span></label>
-                                                    <div class="table-form-list-control invoice_date_error">
-                                                        <div class="input-group date type-sm invoiceDatePicker">
-                                                            <input name="e_invoice_date" ng-model="$ctrl.service_invoice.e_invoice_date" type="text" class="form-control e_invoice_date" placeholder="Select Doc Date" value="{{$ctrl.service_invoice.e_invoice_date}}" readonly />
-                                                        </div><!-- Input Group -->
-                                                    </div><!-- Table Form List Control -->
-                                                </div><!-- Table Form List Wrap -->
                                             </li>
                                             <li>
                                                 <div class="table-form-list-wrap">
@@ -166,14 +116,6 @@
                                             <p class="info-content">{{$ctrl.service_invoice.customer.address}}</p>
                                             <div class="info-space"></div>
                                             <p class="info-content">GST # {{$ctrl.service_invoice.customer.gst_number ? $ctrl.service_invoice.customer.gst_number : 'NA'}}</p>
-                                            <div class="info-space"></div>
-                                            <div class="table-form-list-wrap" ng-if="$ctrl.service_invoice.status_id == 5">
-                                                <label class="table-form-list-label">Remarks</label>
-                                                <div class="table-form-list-control">
-                                                    <p class="info-content color-red">{{$ctrl.service_invoice.comments}}</p>
-                                                </div>
-                                            </div>
-                                            <!-- <p class="info-content color-red" ng-if="$ctrl.service_invoice.status_id == 5"><b>Remarks:</b> {{$ctrl.service_invoice.comments}}</p> -->
                                         </div><!-- Info Wrap -->
                                     </li>
                                 </ul><!-- Flex List -->
@@ -194,7 +136,6 @@
                                                 <th>Item Code</th>
                                                 <th>Item Name</th>
                                                 <th>Reference</th>
-                                                <th>E-Invoice UOM</th>
                                                 <th class="text-right" style="display: none;">Quantity</th>
                                                 <th class="text-right" style="display: none;">Rate</th>
                                                 <th class="text-right">Amount</th>
@@ -221,15 +162,16 @@
                                                     </span>
                                                 </td>
                                                 <td class="action">
-                                                    <a href="javascript:void(0)" ng-click="editServiceItem(service_invoice_item.service_item_id, service_invoice_item.description,
-                                                     service_invoice_item.qty,  service_invoice_item.rate, index, service_invoice_item.e_invoice_uom_id)">
+                                                    <!-- <a href="javascript:void(0)" ng-click="editServiceItem(service_invoice_item.service_item_id, service_invoice_item.description, service_invoice_item.qty, service_invoice_item.rate,index)"> -->
+                                                    <a href="javascript:void(0)" ng-click="editServiceItem(service_invoice_item.service_item_id, service_invoice_item.description, 
+                                                    service_invoice_item.qty, 
+                                                    service_invoice_item.rate,index)">
                                                         <img class="img-responsive" src="./public/theme/img/table/cndn/view.svg" alt="View" />
                                                     </a>
                                                 </td>
                                                 <td>{{service_invoice_item.code}}</td>
                                                 <td>{{service_invoice_item.name}}</td>
                                                 <td>{{service_invoice_item.description}}</td>
-                                                <td>{{service_invoice_item.e_invoice_uom.code}}</td>
                                                 <td class="text-right" style="display: none;">{{$ctrl.parseInt(service_invoice_item.qty)}}</td>
                                                 <td class="text-right" style="display: none;">{{service_invoice_item.rate | number : 2}}</td>
                                                 <td class="text-right">{{service_invoice_item.sub_total | number : 2}}</td>
@@ -244,7 +186,7 @@
                                         </tbody>
                                         <tfoot>
                                             <tr>
-                                                <th colspan="4"></th>
+                                                <th colspan="3"></th>
                                                 <th>Total</th>
                                                 <th class="text-right" style="display: none;">{{$ctrl.table_qty}}</th>
                                                 <th class="text-right" style="display: none;">{{$ctrl.table_rate | number : 2}}</th>
@@ -278,8 +220,9 @@
                                         </ul>
                                     </div>
                                     <div class="col-md-4">
-                                        <a href="#!/service-invoice-pkg/cn-dn/approval/approval-level/{{$ctrl.approval_type_id}}/list/" class="btn btn-white my-tooltip" id="back_button" ng-shortcut="'meta+shift+b'" ng-shortcut-click data-title="ctrl+shift+b">Back</a>
-                                        <button type="button" class="btn btn-primary my-tooltip" ng-if="$ctrl.service_invoice.status_id == 2" ng-shortcut="'meta+shift+a'" ng-shortcut-click data-title="ctrl+shift+a" data-target="#cn-dn-approval-modal" data-toggle="modal" ng-click="sendApproval($ctrl.service_invoice_id,$ctrl.next_status)">Approve</button>
+                                        <button type="button" class="btn btn-bordered my-tooltip" data-toggle="modal" data-target="#cancel_request_reject_modal" ng-if="$ctrl.service_invoice.status_id == 2" ng-shortcut="'meta+shift+r'" ng-shortcut-click data-title="ctrl+shift+r">Reject</button>
+                                        <!-- <button type="submit" id="approve" class="btn btn-primary">Approve</button> -->
+                                        <button type="button" class="btn btn-primary my-tooltip" data-toggle="modal" data-target="#cn_dn_approval_modal" ng-if="$ctrl.service_invoice.status_id == 2" ng-shortcut="'meta+shift+a'" ng-shortcut-click data-title="ctrl+shift+a">Approve</button>
                                     </div>
                                 </div>
                             </div><!-- Page Form Footer -->
@@ -288,8 +231,48 @@
                 </div><!-- Row -->
             </div><!-- Container -->
         </div><!-- Page Main Content -->
-    </form>
-</div><!-- Content Wrap -->
+        <!-- </form> -->
+    </div><!-- Content Wrap -->
+    <script src="./public/theme/js/imageuploadify.min.js"></script>
+    <!-- Modal -->
+    <div class="modal fade filter" id="cancel_request_reject_modal" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close ripple reject_close" data-dismiss="modal" aria-label="Close"><i class="icon ion-md-close"></i></button>
+                    <h5 class="modal-title" id="myModalLabel">Reject</h5>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label>Rejection Remarks<span class="mandatory">*</span></label>
+                            <textarea rows="5" class="form-control rejection_remarks" placeholder="Enter Rejection Remarks" name="comments" value="" id="comments" autocomplete="off" minlength="3" maxlength="191"></textarea>
+                        </div><!-- Field -->
+                    </div><!-- Column -->
+                    <div class="col-md-12 text-right mb-15">
+                        <button type="button" data-dismiss="modal" class="btn btn-primary btn-bordered cancel_modal_btn">Cancel</button>
+                        <button type="submit" id="reject" class="btn btn-bordered btn-red reject_btn">Reject</button>
+                    </div><!-- Column -->
+                </div><!-- Row -->
+            </div><!-- Modal Content -->
+        </div><!-- Modal Dialog -->
+    </div><!-- Modal -->
+    <div class="modal fade alert-modal failure" id="cn_dn_approval_modal" role="dialog" aria-labelledby="myModalLabel">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="myModalLabel">ARE YOU SURE?</h4>
+                </div>
+                <div class="modal-body">
+                    <h5>Approve</h5>
+                    <p>Are you sure you want to update? </p>
+                    <button type="button" class="btn btn-grey" data-dismiss="modal" aria-label="Close">Cancel</button>
+                    <button type="submit" id="approve" class="btn btn-rose">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
 <!-- Modal -->
 <div class="modal fade" id="modal-cn-addnew" role="dialog" aria-labelledby="myModalLabel">
     <div class="modal-dialog modal-md fixed" role="document">
@@ -323,26 +306,11 @@
                                                 <span class="table-form-view-value">{{$ctrl.service_item_detail.coa_code.code}}</span>
                                             </li>
                                             <li class="list-6">
-                                                <span class="table-form-view-label">HSN/SAC Code</span>
+                                                <span class="table-form-view-label">SAC Code</span>
                                                 <span class="table-form-view-value">{{$ctrl.service_item_detail.tax_code.code}}</span>
                                             </li>
                                         </ul>
                                     </div>
-                                </li>
-                                <li>
-                                    <div class="table-form-list-wrap">
-                                        <label class="table-form-list-label">E-Invoice UOM </label>
-                                        <div class="table-form-list-control">
-                                            <md-select class="type-sm" ng-model="$ctrl.e_invoice_uom.id" placeholder="Select E-Invoice UOM" md-on-close="clearSearchUom()" data-md-container-class="selectdemoSelectHeader" ng-disabled="true">
-                                                <md-select-header class="demo-select-header">
-                                                    <input ng-model="searchUom" type="search" placeholder="Search for a E-Invoice UOM.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
-                                                </md-select-header>
-                                                <md-optgroup label="e_invoice_uom">
-                                                    <md-option ng-value="uom.id" ng-repeat="uom in $ctrl.extras.uom_list | filter:searchUom">{{uom.code}} / {{uom.description}}</md-option>
-                                                </md-optgroup>
-                                            </md-select>
-                                        </div><!-- Table Form List Control -->
-                                    </div><!-- Table Form List Wrap -->
                                 </li>
                             </ul><!-- Table Form List -->
                         </div><!-- Column -->
@@ -499,10 +467,6 @@
                                         <span class="modal-footer-list-label">{{tax.name}} ({{tax.pivot.percentage}}%)</span>
                                         <span class="modal-footer-list-value">{{(tax.pivot.amount ? tax.pivot.amount : 0) | number : 2}}</span>
                                     </li>
-                                    <li ng-show="($ctrl.service_invoice.branch.primary_address.state_id == '3') && ($ctrl.service_invoice.customer.primary_address.state_id == '3') && ($ctrl.service_item_detail.tax_code != NULL) && ($ctrl.service_invoice.customer.gst_number == NULL)">
-                                        <span class="modal-footer-list-label">KFC (1%)</span>
-                                        <span class="modal-footer-list-value">{{$ctrl.KFC_total | number : 2}}</span>
-                                    </li>
                                     <li class="color-red">
                                         <span class="modal-footer-list-label">Total</span>
                                         <span class="modal-footer-list-value">{{($ctrl.total ? $ctrl.total : 0) | number : 2}}</span>
@@ -511,7 +475,7 @@
                             </div><!-- Modal Footer List Wrap -->
                         </div><!-- Column -->
                         <div class="col-md-3">
-                            <button type="button" class="btn btn-white my-tooltip" data-dismiss="modal" ng-shortcut="'meta+shift+m'" ng-shortcut-click data-title="ctrl+shift+m">Cancel</button>
+                            <button type="button" class="btn btn-white my-tooltip" data-dismiss="modal" ng-shortcut="'meta+shift+c'" ng-shortcut-click data-title="ctrl+shift+c">Cancel</button>
                         </div><!-- Column -->
                     </div><!-- Row -->
                 </div><!-- Modal Footer -->
@@ -519,23 +483,3 @@
         </form>
     </div><!-- Modal Dialog -->
 </div><!-- Modal -->
-<!-- Modal -->
-<div class="modal fade alert-modal failure" id="cn-dn-approval-modal" role="dialog" aria-labelledby="myModalLabel">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="myModalLabel">ARE YOU SURE?</h4>
-            </div>
-            <div class="modal-body">
-                <h5>Approve</h5>
-                <p>Are you sure you want to approve? </p>
-                <input type="hidden" name="approval_id" id="approval_id" value="">
-                <input type="hidden" name="next_status" id="next_status" value="">
-                <button type="button" class="btn btn-grey" data-dismiss="modal" aria-label="Close">No</button>
-                <button class="btn btn-rose refresh_table" ng-click="approvalConfirm()" type="button" data-dismiss="modal" aria-label="Close" id="approve">Yes</button>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Modal -->
-<script src="./public/theme/js/imageuploadify.min.js"></script>

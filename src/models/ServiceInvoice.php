@@ -38,11 +38,6 @@ class ServiceInvoice extends Model {
 		'tax_total',
 		'sub_total',
 		'total',
-		'is_e_reverse_charge_applicable',
-		'e_po_reference_number',
-		'e_invoice_number',
-		'e_round_off_amount',
-		'e_invoice_date',
 		'created_by_id',
 		'updated_by_id',
 		'deleted_by_id',
@@ -65,12 +60,6 @@ class ServiceInvoice extends Model {
 	}
 	public function setDocumentDateAttribute($date) {
 		return $this->attributes['document_date'] = empty($date) ? date('Y-m-d') : date('Y-m-d', strtotime($date));
-	}
-	public function setEInvoiceDateAttribute($date) {
-		return $this->attributes['e_invoice_date'] = empty($date) ? date('Y-m-d') : date('Y-m-d', strtotime($date));
-	}
-	public function getEInvoiceDateAttribute($value) {
-		return empty($value) ? '' : date('d-m-Y', strtotime($value));
 	}
 
 	public function serviceItemSubCategory() {

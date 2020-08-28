@@ -9,7 +9,6 @@ class ServiceInvoiceItem extends Model {
 	protected $fillable = [
 		'service_invoice_id',
 		'service_item_id',
-		'e_invoice_uom_id',
 		'description',
 		'qty',
 		'rate',
@@ -36,10 +35,6 @@ class ServiceInvoiceItem extends Model {
 
 	public function serviceItem() {
 		return $this->belongsTo('Abs\ServiceInvoicePkg\ServiceItem', 'service_item_id', 'id');
-	}
-
-	public function eInvoiceUom() {
-		return $this->belongsTo('App\EInvoiceUom', 'e_invoice_uom_id', 'id');
 	}
 
 	public function taxes() {

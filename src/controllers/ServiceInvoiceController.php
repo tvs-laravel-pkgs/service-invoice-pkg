@@ -18,7 +18,6 @@ use App\Attachment;
 use App\Company;
 use App\Config;
 use App\Customer;
-use App\EInvoiceUom;
 use App\Entity;
 use App\FinancialYear;
 use App\Http\Controllers\Controller;
@@ -223,7 +222,6 @@ class ServiceInvoiceController extends Controller {
 				'branch',
 				'branch.primaryAddress',
 				'serviceInvoiceItems',
-				'serviceInvoiceItems.eInvoiceUom',
 				'serviceInvoiceItems.serviceItem',
 				'serviceInvoiceItems.eavVarchars',
 				'serviceInvoiceItems.eavInts',
@@ -371,7 +369,6 @@ class ServiceInvoiceController extends Controller {
 			'tax_list' => Tax::select('name', 'id')->where('company_id', Auth::user()->company_id)->get(),
 			'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
 			'sub_category_list' => [],
-			'uom_list' => EInvoiceUom::getList(),
 		];
 		$this->data['config_values'] = Entity::where('company_id', Auth::user()->company_id)->whereIn('entity_type_id', [15, 16])->get();
 		$this->data['service_invoice'] = $service_invoice;
@@ -412,7 +409,7 @@ class ServiceInvoiceController extends Controller {
 	}
 
 	public function getServiceItemDetails(Request $request) {
-		// dd($request->all());
+
 		//GET TAXES BY CONDITIONS
 		$taxes = Tax::getTaxes($request->service_item_id, $request->branch_id, $request->customer_id);
 		if (!$taxes['success']) {
@@ -643,7 +640,6 @@ class ServiceInvoiceController extends Controller {
 	}
 
 	public function getServiceItem(Request $request) {
-		// dd($request->all());
 		//GET TAXES BY CONDITIONS
 		$taxes = Tax::getTaxes($request->service_item_id, $request->branch_id, $request->customer_id);
 		if (!$taxes['success']) {
@@ -719,13 +715,9 @@ class ServiceInvoiceController extends Controller {
 			}
 		}
 
-		//GET E-INVOICE UOM
-		$e_invoice_uom = EInvoiceUom::find($request->e_invoice_uom_id);
-
 		$service_item->service_item_id = $service_item->id;
 		$service_item->id = null;
 		$service_item->description = $request->description;
-		$service_item->e_invoice_uom = $e_invoice_uom;
 		$service_item->qty = $request->qty;
 		$service_item->rate = $request->amount;
 		$service_item->sub_total = round(($request->qty * $request->amount), 2);
@@ -759,12 +751,6 @@ class ServiceInvoiceController extends Controller {
 				'proposal_attachments.*.required' => 'Please upload an image',
 				'proposal_attachments.*.mimes' => 'Only jpeg,png and bmp images are allowed',
 				'number.unique' => 'Service invoice number has already been taken',
-				'is_e_reverse_charge_applicable.required' => 'Reverse Charge Applicale is required',
-				'e_po_reference_number.required' => 'PO Reference Number is required',
-				'e_invoice_number.required' => 'Invoice Number is required',
-				'e_invoice_date.required' => 'Invoice Date is required',
-				'e_invoice_date.required' => 'Invoice Date is required',
-				'e_round_off_amount.required' => 'Round Off Amount is required',
 			];
 
 			$validator = Validator::make($request->all(), [
@@ -792,21 +778,6 @@ class ServiceInvoiceController extends Controller {
 				'proposal_attachments.*' => [
 					'required:true',
 					// 'mimes:jpg,jpeg,png,bmp',
-				],
-				'is_e_reverse_charge_applicable' => [
-					'required:true',
-				],
-				'e_po_reference_number' => [
-					'required:true',
-				],
-				'e_invoice_number' => [
-					'required:true',
-				],
-				'e_round_off_amount' => [
-					'required:true',
-				],
-				'e_invoice_date' => [
-					'required:true',
 				],
 			], $error_messages);
 
@@ -1214,7 +1185,6 @@ class ServiceInvoiceController extends Controller {
 			'branch.primaryAddress',
 			'sbu',
 			'serviceInvoiceItems',
-			'serviceInvoiceItems.eInvoiceUom',
 			'serviceInvoiceItems.serviceItem',
 			'serviceInvoiceItems.eavVarchars',
 			'serviceInvoiceItems.eavInts',
@@ -1356,7 +1326,6 @@ class ServiceInvoiceController extends Controller {
 			'tax_list' => Tax::select('name', 'id')->where('company_id', Auth::user()->company_id)->get(),
 			'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
 			'sub_category_list' => [],
-			'uom_list' => EInvoiceUom::getList(),
 		];
 		$this->data['approval_status'] = ApprovalLevel::find(1);
 		$this->data['service_invoice_status'] = ApprovalTypeStatus::join('service_invoices', 'service_invoices.status_id', 'approval_type_statuses.id')->where('service_invoices.company_id', Auth::user()->company_id)->where('service_invoices.id', $id)->first();
