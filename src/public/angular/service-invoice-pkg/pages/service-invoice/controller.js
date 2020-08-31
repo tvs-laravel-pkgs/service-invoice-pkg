@@ -1048,8 +1048,10 @@ app.component('serviceInvoiceForm', {
             errorPlacement: function(error, element) {
                 if (element.hasClass("doc_date")) {
                     error.appendTo('.doc_date_error');
-                } else if (element.hasClass("invoice_date")) {
+                } else if (element.hasClass("e_invoice_date")) {
                     error.appendTo('.invoice_date_error');
+                } else if (element.hasClass("is_reverse_charge")) {
+                    error.appendTo('.reverse_charge_error');
                 } else {
                     error.insertAfter(element);
                 }
@@ -1057,6 +1059,12 @@ app.component('serviceInvoiceForm', {
             ignore: '',
             rules: {
                 'document_date': {
+                    required: true,
+                },
+                'e_invoice_date': {
+                    required: true,
+                },
+                'is_e_reverse_charge_applicable': {
                     required: true,
                 },
                 'proposal_attachments[]': {

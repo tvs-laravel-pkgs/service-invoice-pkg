@@ -97,13 +97,13 @@
                                             <li>
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Reverse Charge Applicability <span class="mandatory">*</span></label>
-                                                    <div class="table-form-list-control" style="float: left!important;">
+                                                    <div class="table-form-list-control reverse_charge_error" style="float: left!important;">
                                                         <div class="common-radio-button type-4">
-                                                            <input type="radio" id="yes" name="is_e_reverse_charge_applicable" ng-value="1" value="1" ng-model="$ctrl.service_invoice.is_e_reverse_charge_applicable" ng-checked="$ctrl.service_invoice.is_e_reverse_charge_applicable">
+                                                            <input type="radio" id="yes" name="is_e_reverse_charge_applicable" ng-value="1" value="1" ng-model="$ctrl.service_invoice.is_e_reverse_charge_applicable" ng-checked="$ctrl.service_invoice.is_e_reverse_charge_applicable" class="is_reverse_charge">
                                                             <label for="yes">
                                                                 Yes
                                                             </label>
-                                                            <input type="radio" id="no" name="is_e_reverse_charge_applicable" ng-value="0" value="0" ng-model="$ctrl.service_invoice.is_e_reverse_charge_applicable" ng-checked="!$ctrl.service_invoice.is_e_reverse_charge_applicable">
+                                                            <input type="radio" id="no" name="is_e_reverse_charge_applicable" ng-value="0" value="0" ng-model="$ctrl.service_invoice.is_e_reverse_charge_applicable" ng-checked="!$ctrl.service_invoice.is_e_reverse_charge_applicable" class="is_reverse_charge">
                                                             <label for="no">
                                                                 No
                                                             </label>
