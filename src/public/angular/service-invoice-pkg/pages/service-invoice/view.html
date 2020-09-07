@@ -81,7 +81,7 @@
                                             </li>
                                             <li>
                                                 <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">PO Ref Number <span class="mandatory">*</span></label>
+                                                    <label class="table-form-list-label">PO Reference # </label>
                                                     <div class="table-form-list-control">
                                                         <input type="text" ng-model="$ctrl.service_invoice.e_po_reference_number" name="e_po_reference_number" class="type-sm form-control required" placeholder="Enter PO Ref Number" readonly>
                                                     </div><!-- Table Form List Control -->
@@ -99,32 +99,7 @@
                                                     </div>
                                                 </div>
                                             </li>
-                                            <li>
-                                                <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Invoice Number <span class="mandatory">*</span></label>
-                                                    <div class="table-form-list-control">
-                                                        <input type="text" ng-model="$ctrl.service_invoice.e_invoice_number" name="e_invoice_number" class="type-sm form-control required" placeholder="Enter Invoice Number" readonly>
-                                                    </div><!-- Table Form List Control -->
-                                                </div><!-- Table Form List Wrap -->
-                                            </li>
-                                            <li>
-                                                <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Round Off amount <span class="mandatory">*</span></label>
-                                                    <div class="table-form-list-control">
-                                                        <input type="text" ng-model="$ctrl.service_invoice.e_round_off_amount" name="e_round_off_amount" class="type-sm form-control required" placeholder="Enter Round Off amount" readonly>
-                                                    </div><!-- Table Form List Control -->
-                                                </div><!-- Table Form List Wrap -->
-                                            </li>
-                                            <li>
-                                                <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Invoice Date <span class="mandatory">*</span></label>
-                                                    <div class="table-form-list-control invoice_date_error">
-                                                        <div class="input-group date type-sm invoiceDatePicker">
-                                                            <input name="e_invoice_date" ng-model="$ctrl.service_invoice.e_invoice_date" type="text" class="form-control e_invoice_date" placeholder="Select Doc Date" value="{{$ctrl.service_invoice.e_invoice_date}}" readonly />
-                                                        </div><!-- Input Group -->
-                                                    </div><!-- Table Form List Control -->
-                                                </div><!-- Table Form List Wrap -->
-                                            </li>
+                                            
                                             <li>
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Doc. Date</label>
@@ -141,6 +116,32 @@
                                                     <div class="table-form-list-control">
                                                         <input type="text" class="form-control" name="customer_id" value="{{$ctrl.service_invoice.customer.code}}" readonly>
                                                     </div>
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                            <li>
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Invoice Number</label>
+                                                    <div class="table-form-list-control">
+                                                        <input type="text" ng-model="$ctrl.service_invoice.e_invoice_number" name="e_invoice_number" class="type-sm form-control required" placeholder="Enter Invoice Number" readonly>
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                            <!-- <li>
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Round Off amount <span class="mandatory">*</span></label>
+                                                    <div class="table-form-list-control">
+                                                        <input type="text" ng-model="$ctrl.service_invoice.e_round_off_amount" name="e_round_off_amount" class="type-sm form-control required" placeholder="Enter Round Off amount" readonly>
+                                                    </div>
+                                                </div>
+                                            </li> -->
+                                            <li>
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Invoice Date </label>
+                                                    <div class="table-form-list-control invoice_date_error">
+                                                        <div class="input-group date type-sm invoiceDatePicker">
+                                                            <input name="e_invoice_date" ng-model="$ctrl.service_invoice.e_invoice_date" type="text" class="form-control e_invoice_date" placeholder="Select Doc Date" value="{{$ctrl.service_invoice.e_invoice_date}}" readonly />
+                                                        </div><!-- Input Group -->
+                                                    </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
                                             <li>
@@ -194,7 +195,7 @@
                                                 <th>Item Code</th>
                                                 <th>Item Name</th>
                                                 <th>Reference</th>
-                                                <th>E-Invoice UOM</th>
+                                                <th>UOM</th>
                                                 <th class="text-right" style="display: none;">Quantity</th>
                                                 <th class="text-right" style="display: none;">Rate</th>
                                                 <th class="text-right">Amount</th>
@@ -244,13 +245,25 @@
                                         </tbody>
                                         <tfoot>
                                             <tr>
-                                                <th colspan="4"></th>
-                                                <th>Total</th>
+                                                <th colspan="5"></th>
+                                                <!-- <th>Total</th> -->
                                                 <th class="text-right" style="display: none;">{{$ctrl.table_qty}}</th>
                                                 <th class="text-right" style="display: none;">{{$ctrl.table_rate | number : 2}}</th>
                                                 <th class="text-right">{{$ctrl.table_sub_total | number : 2}}</th>
                                                 <th class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list">{{$ctrl.tax_wise_total[tax.name+'_amount'] | number : 2}}</th>
                                                 <th class="text-right">{{$ctrl.minus_value}}{{$ctrl.table_total | number : 2}}</th>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="5"></td>
+                                                <td class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list"></td>
+                                                <th>Round Off</th>
+                                                <th class="text-right">{{$ctrl.service_invoice.round_off | number : 2}}</th>
+                                            </tr>
+                                            <tr>
+                                                <th colspan="5"></th>
+                                                <th class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list"></th>
+                                                <th>Total</th>
+                                                <th class="text-right"><span ng-show="$ctrl.type_id == 1060">-</span>{{$ctrl.service_invoice.e_round_off_amount | number : 2}}</th>
                                             </tr>
                                         </tfoot>
                                     </table>

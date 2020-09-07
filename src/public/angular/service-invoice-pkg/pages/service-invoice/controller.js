@@ -504,6 +504,8 @@ app.component('serviceInvoiceForm', {
                         $('.imageuploadify-images-list').append(design);
                     });
                 }
+            } else {
+                self.service_invoice.is_e_reverse_charge_applicable = 1;
             }
             $rootScope.loading = false;
         });
@@ -952,6 +954,7 @@ app.component('serviceInvoiceForm', {
                 };
                 self.table_total = parseFloat(self.table_total) + parseFloat(service_invoice_item.total); // parseFloat(self.table_sub_total) + parseFloat(self.table_gst_total);
                 self.service_invoice.e_round_off_amount = Math.round(self.table_total).toFixed(2);
+                self.service_invoice.round_off = self.service_invoice.e_round_off_amount - self.table_total; // parseFloat(self.table_sub_total) + parseFloat(self.table_gst_total);
             });
             $scope.$apply()
         }
@@ -1048,11 +1051,13 @@ app.component('serviceInvoiceForm', {
             errorPlacement: function(error, element) {
                 if (element.hasClass("doc_date")) {
                     error.appendTo('.doc_date_error');
-                } else if (element.hasClass("e_invoice_date")) {
-                    error.appendTo('.invoice_date_error');
-                } else if (element.hasClass("is_reverse_charge")) {
-                    error.appendTo('.reverse_charge_error');
-                } else {
+                }
+                // else if (element.hasClass("e_invoice_date")) {
+                //     error.appendTo('.invoice_date_error');
+                // } else if (element.hasClass("is_reverse_charge")) {
+                //     error.appendTo('.reverse_charge_error');
+                // }
+                else {
                     error.insertAfter(element);
                 }
             },
@@ -1061,12 +1066,12 @@ app.component('serviceInvoiceForm', {
                 'document_date': {
                     required: true,
                 },
-                'e_invoice_date': {
-                    required: true,
-                },
-                'is_e_reverse_charge_applicable': {
-                    required: true,
-                },
+                // 'e_invoice_date': {
+                //     required: true,
+                // },
+                // 'is_e_reverse_charge_applicable': {
+                //     required: true,
+                // },
                 'proposal_attachments[]': {
                     // required: true,
                 },
@@ -1304,6 +1309,7 @@ app.component('serviceInvoiceView', {
                 // console.log(parseFloat(self.table_sub_total));
                 self.table_total = parseFloat(self.table_total) + parseFloat(service_invoice_item.total); // parseFloat(self.table_sub_total) + parseFloat(self.table_gst_total);
                 self.service_invoice.e_round_off_amount = Math.round(self.table_total).toFixed(2); // parseFloat(self.table_sub_total) + parseFloat(self.table_gst_total);
+                self.service_invoice.round_off = self.service_invoice.e_round_off_amount - self.table_total; // parseFloat(self.table_sub_total) + parseFloat(self.table_gst_total);
             });
             $scope.$apply()
         }

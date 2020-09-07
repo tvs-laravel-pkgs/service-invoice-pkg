@@ -67,7 +67,7 @@ class ServiceInvoice extends Model {
 		return $this->attributes['document_date'] = empty($date) ? date('Y-m-d') : date('Y-m-d', strtotime($date));
 	}
 	public function setEInvoiceDateAttribute($date) {
-		return $this->attributes['e_invoice_date'] = empty($date) ? date('Y-m-d') : date('Y-m-d', strtotime($date));
+		return $this->attributes['e_invoice_date'] = empty($date) ? NULL : date('Y-m-d', strtotime($date));
 	}
 	public function getEInvoiceDateAttribute($value) {
 		return empty($value) ? '' : date('d-m-Y', strtotime($value));
@@ -767,6 +767,7 @@ class ServiceInvoice extends Model {
 	}
 
 	public function createPdf() {
+		// dd('test');
 		$r = $this->exportToAxapta();
 		if (!$r['success']) {
 			return $r;
@@ -908,6 +909,9 @@ class ServiceInvoice extends Model {
 		} else {
 			$this->sac_code_status = 'Tax Invoice';
 		}
+
+		// $this->QR_image_name = '142010000302902.png';
+
 		//dd($this->sac_code_status);
 		//dd($serviceInvoiceItem->field_groups);
 		$data = [];
