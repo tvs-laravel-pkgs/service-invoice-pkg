@@ -37,9 +37,10 @@ class ServiceItem extends Model {
 		$key = $r->key;
 		$type_id = $r->type_id;
 		$category_id = $r->category_id;
-		$sub_category_id = $r->sub_category_id;
+		// $sub_category_id = $r->sub_category_id;
 		$list = self::join('service_item_sub_categories', 'service_item_sub_categories.id', 'service_items.sub_category_id')
-			->where(['service_items.company_id' => Auth::user()->company_id, 'service_item_sub_categories.category_id' => $category_id, 'service_items.sub_category_id' => $sub_category_id])
+			->where(['service_items.company_id' => Auth::user()->company_id, 'service_item_sub_categories.category_id' => $category_id])
+		// ->where(['service_items.company_id' => Auth::user()->company_id, 'service_item_sub_categories.category_id' => $category_id, 'service_items.sub_category_id' => $sub_category_id])
 			->select(
 				'service_items.id',
 				'service_items.name',

@@ -29,6 +29,7 @@ class ServiceInvoice extends Model {
 		'number',
 		'branch_id',
 		'sbu_id',
+		'category_id',
 		'sub_category_id',
 		'invoice_date',
 		'document_date',
@@ -64,6 +65,10 @@ class ServiceInvoice extends Model {
 
 	public function serviceItemSubCategory() {
 		return $this->belongsTo('Abs\ServiceInvoicePkg\ServiceItemSubCategory', 'sub_category_id', 'id');
+	}
+
+	public function serviceItemCategory() {
+		return $this->belongsTo('Abs\ServiceInvoicePkg\ServiceItemCategory', 'category_id', 'id');
 	}
 
 	public function customer() {

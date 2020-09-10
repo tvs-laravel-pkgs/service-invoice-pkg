@@ -72,7 +72,7 @@ app.component('serviceInvoiceApprovalList', {
                         d.branch_id = $('#branch_id').val();
                         d.sbu_id = $('#sbu_id').val();
                         d.category_id = $('#category_id').val();
-                        d.sub_category_id = $('#sub_category_id').val();
+                        // d.sub_category_id = $('#sub_category_id').val();
                         d.customer_id = $('#customer_id').val();
                         d.status_id = $('#status_id').val();
                     }
@@ -88,7 +88,7 @@ app.component('serviceInvoiceApprovalList', {
                     { data: 'branch', name: 'outlets.code', searchable: true },
                     { data: 'sbu', name: 'sbus.name', searchable: true },
                     { data: 'category', name: 'service_item_categories.name', searchable: true },
-                    { data: 'sub_category', name: 'service_item_sub_categories.name', searchable: true },
+                    // { data: 'sub_category', name: 'service_item_sub_categories.name', searchable: true },
                     { data: 'customer_code', name: 'customers.code', searchable: true },
                     { data: 'customer_name', name: 'customers.name', searchable: true },
                     { data: 'invoice_amount', searchable: false, class: 'text-right' },
@@ -168,35 +168,35 @@ app.component('serviceInvoiceApprovalList', {
             dataTable.draw();
         }
         //GET SERVICE ITEM SUB CATEGORY BY CATEGORY
-        $scope.getServiceItemSubCategory = function(category_id) {
-            self.extras.sub_category_list = [];
-            if (category_id == '') {
-                $('#sub_category_id').val('');
-            }
-            $('#category_id').val(category_id);
-            dataTable.draw();
-            if (category_id) {
-                $.ajax({
-                        url: get_service_item_sub_category_url + '/' + category_id,
-                        method: "GET",
-                    })
-                    .done(function(res) {
-                        if (!res.success) {
-                            new Noty({
-                                type: 'error',
-                                layout: 'topRight',
-                                text: res.error
-                            }).show();
-                        } else {
-                            self.extras.sub_category_list = res.sub_category_list;
-                            $scope.$apply()
-                        }
-                    })
-                    .fail(function(xhr) {
-                        console.log(xhr);
-                    });
-            }
-        }
+        // $scope.getServiceItemSubCategory = function(category_id) {
+        //     self.extras.sub_category_list = [];
+        //     if (category_id == '') {
+        //         $('#sub_category_id').val('');
+        //     }
+        //     $('#category_id').val(category_id);
+        //     dataTable.draw();
+        //     if (category_id) {
+        //         $.ajax({
+        //                 url: get_service_item_sub_category_url + '/' + category_id,
+        //                 method: "GET",
+        //             })
+        //             .done(function(res) {
+        //                 if (!res.success) {
+        //                     new Noty({
+        //                         type: 'error',
+        //                         layout: 'topRight',
+        //                         text: res.error
+        //                     }).show();
+        //                 } else {
+        //                     self.extras.sub_category_list = res.sub_category_list;
+        //                     $scope.$apply()
+        //                 }
+        //             })
+        //             .fail(function(xhr) {
+        //                 console.log(xhr);
+        //             });
+        //     }
+        // }
 
         $(".search_clear").on("click", function() {
             $('#search').val('');

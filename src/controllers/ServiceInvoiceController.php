@@ -12,7 +12,6 @@ use Abs\ServiceInvoicePkg\ServiceInvoice;
 use Abs\ServiceInvoicePkg\ServiceInvoiceItem;
 use Abs\ServiceInvoicePkg\ServiceItem;
 use Abs\ServiceInvoicePkg\ServiceItemCategory;
-use Abs\ServiceInvoicePkg\ServiceItemSubCategory;
 use Abs\TaxPkg\Tax;
 use App\Attachment;
 use App\Company;
@@ -85,8 +84,8 @@ class ServiceInvoiceController extends Controller {
 			)
 			->join('outlets', 'outlets.id', 'service_invoices.branch_id')
 			->join('sbus', 'sbus.id', 'service_invoices.sbu_id')
-			->join('service_item_sub_categories', 'service_item_sub_categories.id', 'service_invoices.sub_category_id')
-			->join('service_item_categories', 'service_item_categories.id', 'service_item_sub_categories.category_id')
+			->leftJoin('service_item_sub_categories', 'service_item_sub_categories.id', 'service_invoices.sub_category_id')
+			->leftJoin('service_item_categories', 'service_item_categories.id', 'service_invoices.category_id')
 			->join('customers', 'customers.id', 'service_invoices.customer_id')
 			->join('configs', 'configs.id', 'service_invoices.type_id')
 			->join('approval_type_statuses', 'approval_type_statuses.id', 'service_invoices.status_id')
@@ -122,11 +121,11 @@ class ServiceInvoiceController extends Controller {
 					$query->where('service_item_sub_categories.category_id', $request->category_id);
 				}
 			})
-			->where(function ($query) use ($request) {
-				if (!empty($request->sub_category_id)) {
-					$query->where('service_invoices.sub_category_id', $request->sub_category_id);
-				}
-			})
+		// ->where(function ($query) use ($request) {
+		// 	if (!empty($request->sub_category_id)) {
+		// 		$query->where('service_invoices.sub_category_id', $request->sub_category_id);
+		// 	}
+		// })
 			->where(function ($query) use ($request) {
 				if (!empty($request->customer_id)) {
 					$query->where('service_invoices.customer_id', $request->customer_id);
@@ -228,6 +227,7 @@ class ServiceInvoiceController extends Controller {
 				'serviceInvoiceItems.eavDatetimes',
 				'serviceInvoiceItems.taxes',
 				'serviceItemSubCategory',
+				'serviceItemCategory',
 			])->find($id);
 			if (!$service_invoice) {
 				return response()->json(['success' => false, 'error' => 'Service Invoice not found']);
@@ -368,7 +368,7 @@ class ServiceInvoiceController extends Controller {
 			'sbu_list' => [],
 			'tax_list' => Tax::select('name', 'id')->where('company_id', Auth::user()->company_id)->get(),
 			'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
-			'sub_category_list' => [],
+			// 'sub_category_list' => [],
 		];
 		$this->data['config_values'] = Entity::where('company_id', Auth::user()->company_id)->whereIn('entity_type_id', [15, 16])->get();
 		$this->data['service_invoice'] = $service_invoice;
@@ -376,9 +376,9 @@ class ServiceInvoiceController extends Controller {
 		return response()->json($this->data);
 	}
 
-	public function getServiceItemSubCategories($service_item_category_id) {
-		return ServiceItemSubCategory::getServiceItemSubCategories($service_item_category_id);
-	}
+	// public function getServiceItemSubCategories($service_item_category_id) {
+	// 	return ServiceItemSubCategory::getServiceItemSubCategories($service_item_category_id);
+	// }
 
 	public function getSbus($outlet_id) {
 		return Sbu::getSbus($outlet_id);
@@ -744,7 +744,7 @@ class ServiceInvoiceController extends Controller {
 				'branch_id.required' => 'Branch is required',
 				'sbu_id.required' => 'Sbu is required',
 				'category_id.required' => 'Category is required',
-				'sub_category_id.required' => 'Sub Category is required',
+				// 'sub_category_id.required' => 'Sub Category is required',
 				// 'invoice_date.required' => 'Invoice date is required',
 				'document_date.required' => 'Document date is required',
 				'customer_id.required' => 'Customer is required',
@@ -763,9 +763,9 @@ class ServiceInvoiceController extends Controller {
 				'category_id' => [
 					'required:true',
 				],
-				'sub_category_id' => [
-					'required:true',
-				],
+				// 'sub_category_id' => [
+				// 	'required:true',
+				// ],
 				// 'invoice_date' => [
 				// 	'required:true',
 				// ],
@@ -1191,6 +1191,7 @@ class ServiceInvoiceController extends Controller {
 			'serviceInvoiceItems.eavDatetimes',
 			'serviceInvoiceItems.taxes',
 			'serviceItemSubCategory',
+			'serviceItemCategory',
 			'serviceItemSubCategory.serviceItemCategory',
 		])->find($id);
 		if (!$service_invoice) {
