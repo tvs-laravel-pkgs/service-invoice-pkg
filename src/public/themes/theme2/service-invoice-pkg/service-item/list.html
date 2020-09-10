@@ -1,0 +1,173 @@
+<div class="content-wrap cndn-wrap">
+    <div class="page-header">
+        <div class="page-header-inner">
+            <div class="page-header-content-left">
+                <div class="page-header-content title-block">
+                    <h1 class="title type-2">Service Items</h1>
+                </div><!-- Page Header Content -->
+                <div class="page-header-content button-block">
+                    <button class="btn btn-bordered" data-toggle="modal" data-target="#filter"><i class="icon ion-md-funnel"></i>Filter</button>
+                </div><!-- Page Header Content -->
+            </div><!-- Page Header Content Left -->
+            <div class="page-header-content-right">
+                <div class="page-header-content indicator-block">
+                    <ul class="indicator-list">
+                        <li class="green">Active</li>
+                        <li class="red">In Active</li>
+                    </ul>
+                </div><!-- Page Header Content -->
+                <div class="page-header-content search-block">
+                    <div class="search_filter">
+                        <label>
+                            <input type="search" id="search_box" class="form-control" placeholder="Search" />
+                            <button class="btn-clear search_clear">Clear</button>
+                        </label>
+                    </div><!-- Search Filter -->
+                </div><!-- Page Header Content -->
+                <div class="page-header-content button-block">
+                    <button type="button" class="btn btn-refresh refresh_table">
+                        <img src="./public/theme/img/content/refresh-arrow.png" class="img-responsive btn-refresh-icon">
+                    </button>
+                </div>
+                <div class="page-header-content button-block">
+                    <a href="#!/service-invoice-pkg/service-item/add" class="btn btn-primary">Add New</a>
+                </div><!-- Page Header Content -->
+            </div><!-- Page Header Content Right -->
+        </div><!-- Page Header Inner -->
+    </div><!-- Page Header -->
+    <div class="page-main-content list-page-content">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <table class="table" id="service-item-table" style="width: 100% !important;">
+                        <thead>
+                            <tr>
+                                <th class="action">Action</th>
+                                <th>Item code</th>
+                                <th>Name</th>
+                                <th>Main Category</th>
+                                <th>Sub Category</th>
+                                <th>COA code</th>
+                                <th>HSN/SAC code</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div><!-- Column -->
+            </div><!-- Row -->
+        </div><!-- Container -->
+    </div><!-- Page Main Content -->
+</div><!-- Content Wrap -->
+<!-- Modal -->
+<div class="modal fade alert-modal failure" id="delete_service_item" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">ARE YOU SURE?</h4>
+            </div>
+            <div class="modal-body">
+                <h5>Delete</h5>
+                <p>You can’t retrive the data again, Are you sure you want to delete? </p>
+                <input type="hidden" name="service_item_id" id="service_item_id" value="">
+                <button class="btn btn-grey" data-dismiss="modal" aria-label="Close">Cancel</button>
+                <button class="btn btn-rose" ng-click="deleteConfirmServiceItem()" type="button" data-dismiss="modal" aria-label="Close">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal -->
+<div class="modal fade filter" id="filter" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close ripple" data-dismiss="modal" aria-label="Close"><i class="icon ion-md-close"></i></button>
+                <h5 class="modal-title" id="myModalLabel">Filter</h5>
+            </div><!-- Modal Header -->
+            <div class="modal-body">
+                <form id="filter-form" action="{{$ctrl.exportServiceInvoicesToExcelUrl}}" method="post">
+                    <input type="hidden" name="_token" value="{{$ctrl.csrf_token}}">
+                    <div class="modal-form mb-30">
+                        <div class="row modal-row">
+                            <div class="col-md-6">
+                                <div class="input-text form-group">
+                                    <label>Item Code</label>
+                                    <input type="text" class="form-control" name="item_code" id="item_code" value="" placeholder="Enter Item Code" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-text form-group">
+                                    <label>Item Name</label>
+                                    <input type="text" class="form-control" name="item_name" id="item_name" value="" placeholder="Enter Item Name" autocomplete="off">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-text form-group">
+                                    <label>Category</label>
+                                    <md-select ng-model="$ctrl.service_item.main_category_id" ng-change="onSelectedCategory($ctrl.service_item.main_category_id); $ctrl.extras.sub_category_list = ''; $ctrl.service_item.sub_category_id=''" placeholder="Select Category" md-on-close="clearSearchCategory()" data-md-container-class="selectdemoSelectHeader">
+                                        <md-select-header class="demo-select-header">
+                                            <input ng-model="searchCategory" type="search" placeholder="Search for a category.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                        </md-select-header>
+                                        <md-optgroup label="category">
+                                            <md-option ng-value="category.id" ng-repeat="category in $ctrl.extras.main_category_list | filter:searchCategory">{{category.name}}</md-option>
+                                        </md-optgroup>
+                                    </md-select>
+                                    <input type="hidden" name="main_category_id" id="main_category_id" value="{{$ctrl.service_item.main_category_id}}">
+                                </div><!-- Feild -->
+                            </div><!-- Column -->
+                            <div class="col-md-6">
+                                <div class="input-text form-group">
+                                    <label>Sub Category</label>
+                                    <md-select ng-model="$ctrl.service_item.sub_category_id" ng-change="getSubCategory($ctrl.service_item.sub_category_id)" placeholder="Select sub category" md-on-close="clearSearchSubCategory()" data-md-container-class="selectdemoSelectHeader">
+                                        <md-select-header class="demo-select-header">
+                                            <input ng-model="searchSubCategory" type="search" placeholder="Search for a sub category.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                        </md-select-header>
+                                        <md-optgroup label="sub_category">
+                                            <md-option ng-value="sub_category.id" ng-repeat="sub_category in $ctrl.extras.sub_category_list | filter:searchSubCategory">{{sub_category.name}}</md-option>
+                                        </md-optgroup>
+                                    </md-select>
+                                    <input type="hidden" name="sub_category_id" id="sub_category_id" value="{{$ctrl.service_item.sub_category_id}}">
+                                </div><!-- Feild -->
+                            </div><!-- Column -->
+                            <div class="col-md-6">
+                                <div class="input-text form-group">
+                                    <label>COA Code</label>
+                                    <md-autocomplete md-items="option in $ctrl.searchCoaCodeFilter($ctrl.coaCodeSearchText)" md-selected-item="$ctrl.service_item.coa_code" md-search-text="$ctrl.coaCodeSearchText" md-item-text="option.code" md-min-length="3" placeholder="COA Code / Name" md-selected-item-change="getCoaCodeDetails($ctrl.service_item.coa_code.id)" md-search-text-change="$ctrl.branchChanged()" md-autofocus>
+                                        <md-item-template>
+                                            <span>
+                                                {{option.name}} - {{option.code}}
+                                            </span>
+                                        </md-item-template>
+                                        <md-not-found>
+                                            No COA Code matching "{{$ctrl.coaCodeSearchText}}" were found.
+                                        </md-not-found>
+                                    </md-autocomplete>
+                                    <input type="hidden" name="coa_code_id" id="coa_code_id" value="{{$ctrl.service_item.coa_code.id}}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-text form-group">
+                                    <label>SAC Code</label>
+                                    <md-autocomplete md-items="option in $ctrl.searchSacCodeFilter($ctrl.sacCodeSearchText)" md-selected-item="$ctrl.service_item.tax_code" md-search-text="$ctrl.sacCodeSearchText" md-item-text="option.code" md-min-length="3" placeholder="SAC Code" md-selected-item-change="getSacCodeDetails($ctrl.service_item.tax_code.id)" md-search-text-change="$ctrl.customerChanged()">
+                                        <md-item-template>
+                                            <span>
+                                                {{option.code}}
+                                            </span>
+                                        </md-item-template>
+                                        <md-not-found>
+                                            No SAC Code matching "{{$ctrl.sacCodeSearchText}}" were found.
+                                        </md-not-found>
+                                    </md-autocomplete>
+                                    <input type="hidden" name="sac_code_id" id="sac_code_id" value="{{$ctrl.service_item.tax_code.id}}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row modal-row">
+                            <div class="col-md-6">
+                                <button type="button" class="btn btn-rose" ng-click="reset_filter(); $ctrl.coaCodeSearchText=''; $ctrl.service_item.main_category_id=''; $ctrl.service_item.sub_category_id=''; $ctrl.sacCodeSearchText=''">Reset Filter</button>
+                            </div>
+                        </div><!-- Row -->
+                    </div><!-- Modal Form -->
+                </form>
+            </div><!-- Modal Body -->
+        </div><!-- Modal Content -->
+    </div><!-- Modal Dialog -->
+</div><!-- Modal Content -->

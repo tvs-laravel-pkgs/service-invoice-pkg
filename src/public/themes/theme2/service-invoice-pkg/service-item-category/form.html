@@ -1,0 +1,129 @@
+<!-- Content Wrap -->
+<div class="content-wrap cndn-wrap">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-inner">
+            <div class="page-header-content-left">
+                <div class="page-header-content button-block">
+                    <a href="#!/service-invoice-pkg/service-item-category/list" type="button" class="btn-back btn-img"><img class="img-responsive" src="./public/theme/img/content/previous.svg" alt="Back" /></a>
+                </div><!-- Page Header Content -->
+                <div class="page-header-content title-block">
+                    <h1 class="title"><b>{{$ctrl.action}} Service Item category</b></h1>
+                    <p class="subtitle"><a href="#!/service-invoice-pkg/service-item-category/list">Service Item category List </a>/ {{$ctrl.action}}</p>
+                </div><!-- Page Header Content -->
+            </div><!-- Page Header Content Left -->
+        </div><!-- Page Header Inner -->
+    </div><!-- Page Header -->
+    <!-- Page Main Content -->
+    <div class="page-main-content form-content type2">
+        <div class="page-tab-form pb-70">
+            <div class="tab-form-wrap">
+                <div class="tab-form-header">
+                    <div class="tab-header">
+                        <!-- Filters -->
+                        <div class="isotope-filters animated" data-animation="fadeInLeft" data-animation-delay="300">
+                            <ul class="nav nav-pills cndn-tabs">
+                                <li class="active"><a class="filter active" data-target="#category-information" data-toggle="tab" aria-expanded="true">Category</a></li>
+                                <li><a data-target="#sub-category-information" data-toggle="tab" aria-expanded="true" class="filter">Sub Categories</a></li>
+                            </ul>
+                        </div><!-- Filters -->
+                    </div><!-- Tab Header -->
+                </div><!-- Tab Form Header -->
+                <form id="form">
+                    <input type="hidden" name="id" value="{{$ctrl.service_item_category.id}}">
+                    <div class="tab-form-body">
+                        <div class="tab-content">
+                            <!-- TAB PANEL -->
+                            <div class="tab-pane fade in active" id="category-information" data-animation="fadeInUp" data-animation-delay="300">
+                                <div class="tab-pane-wrap">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <div class="input-text form-group">
+                                                <label>Category name <sup class="mandatory">*</sup></label>
+                                                <input name="name" class="form-control" placeholder="Enter Category" autocomplete="off" ng-model="$ctrl.service_item_category.name" value="{{$ctrl.service_item_category.name}}" />
+                                                <div class="category_name_error"></div>
+                                            </div><!-- Feild -->
+                                        </div><!-- Column -->
+                                        <div class="col-md-3">
+                                            <div class="input-text form-group">
+                                                <label>Status <sup class="mandatory">*</sup></label>
+                                                <div class="tab-switch">
+                                                    <md-switch ng-model="$ctrl.switch_value" aria-label="Switch 1" ng-true-value="'Inactive'" ng-false-value="'Active'" class="md-warn">
+                                                        {{ $ctrl.switch_value }}
+                                                    </md-switch>
+                                                    <input type="hidden" name="status" class="form-control" autocomplete="off" value="{{$ctrl.switch_value}}" />
+                                                </div>
+                                            </div><!-- Form Group -->
+                                        </div><!-- Column -->
+                                        <div class="tab-pane-footer">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <a class="btn btn-primary btn-nxt">Next</a>
+                                                </div>
+                                            </div>
+                                        </div><!-- Tab Footer -->
+                                    </div><!-- Row -->
+                                </div><!-- Tab Pane Wrap -->
+                            </div><!-- Tabe Pane -->
+                            <div class="tab-pane fade" id="sub-category-information" data-animation="fadeInUp" data-animation-delay="300">
+                                <div class="tab-pane-wrap">
+                                    <div class="row">
+                                        <div class="col-lg-6 col-md-8">
+                                            <h6 class="tab-pane-title">Category : <span class="color-primary-light">{{$ctrl.service_item_category.name}}</span></h6>
+                                            <div class="table-responsive">
+                                                <table class="table table-form">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Sub Category Name<sup class="mandatory">*</sup></th>
+                                                            <th>Active Status<sup class="mandatory">*</sup></th>
+                                                            <th></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr ng-repeat="(index, sub_category) in $ctrl.service_item_category.sub_category">
+                                                            <input type="hidden" ng-model="sub_category.id" name="sub_category[{{index}}][id]" value="{{sub_category.id}}">
+                                                            <td>
+                                                                <input type="text" class="form-control type-sm sub_category_name required" ng-model="sub_category.name" name="sub_category[{{index}}][name]" placeholder="Enter Sub Category Name" maxlength="191" autocomplete="off" />
+                                                            </td>
+                                                            <td>
+                                                                <div class="tab-switch">
+                                                                    <md-switch ng-model="sub_category.switch_value" aria-label="Switch {{index}}" ng-true-value="'Inactive'" ng-false-value="'Active'" class="md-warn type-sm">
+                                                                        {{ sub_category.switch_value }}
+                                                                    </md-switch>
+                                                                </div>
+                                                                <input type="hidden" name="sub_category[{{index}}][status]" value="{{sub_category.switch_value}}">
+                                                            </td>
+                                                            <td>
+                                                                <a href="javascript:;" ng-click="removeSubCategory(index,sub_category.id)"><img class="img-responsive" src="./public/theme/img/table/cndn/delete.svg" alt="Delete" /></a>
+                                                            </td>
+                                                        </tr>
+                                                        <input type="hidden" name="sub_category_removal_id" id="sub_category_removal_id" value="">
+                                                    </tbody>
+                                                    <tfoot>
+                                                        <tr>
+                                                            <td colspan="3">
+                                                                <button type="button" class="btn btn-primary-light btn-square" ng-click="addNewSubCategory()">+ Add Sub Category</button>
+                                                            </td>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div><!-- Table Responsive -->
+                                        </div><!-- Column -->
+                                        <div class="tab-pane-footer">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <a class="btn btn-secondary btn-prev">Previous</a>
+                                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                                </div>
+                                            </div>
+                                        </div><!-- Tab Footer -->
+                                    </div><!-- Row -->
+                                </div><!-- Tab Pane Wrap -->
+                            </div><!-- Tabe Pane -->
+                        </div><!-- Tab Content -->
+                    </div><!-- Tab Form Body -->
+                </form>
+            </div><!-- Tab Form Wrap -->
+        </div><!-- Page Form -->
+    </div><!-- Page Main Content -->
+</div><!-- Content Wrap -->
