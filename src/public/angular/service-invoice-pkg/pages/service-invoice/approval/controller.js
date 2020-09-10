@@ -15,7 +15,7 @@ app.component('serviceInvoiceApprovalList', {
                 $location.path('/service-invoice-pkg/service-invoice/list')
                 $scope.$apply()
             }
-            self.approval_type_id = response.data.approval_level.current_status_id;
+            // self.approval_type_id = response.data.approval_level.current_status_id;
             $rootScope.loading = false;
         });
         $http.get(
