@@ -17,6 +17,7 @@ use App\Attachment;
 use App\Company;
 use App\Config;
 use App\Customer;
+use App\EInvoiceUom;
 use App\Entity;
 use App\FinancialYear;
 use App\Http\Controllers\Controller;
@@ -224,6 +225,7 @@ class ServiceInvoiceController extends Controller {
 				'branch',
 				'branch.primaryAddress',
 				'serviceInvoiceItems',
+				'serviceInvoiceItems.eInvoiceUom',
 				'serviceInvoiceItems.serviceItem',
 				'serviceInvoiceItems.eavVarchars',
 				'serviceInvoiceItems.eavInts',
@@ -721,10 +723,14 @@ class ServiceInvoiceController extends Controller {
 			}
 		}
 
+		//GET E-INVOICE UOM
+		$e_invoice_uom = EInvoiceUom::find($request->e_invoice_uom_id);
+
 		$service_item->service_item_id = $service_item->id;
 		$service_item->id = null;
 		$service_item->description = $request->description;
 		$service_item->qty = $request->qty;
+		$service_item->e_invoice_uom = $e_invoice_uom;
 		$service_item->rate = $request->amount;
 		$service_item->sub_total = round(($request->qty * $request->amount), 2);
 		$service_item->total = round($request->qty * $request->amount, 2) + $gst_total;
@@ -1828,6 +1834,7 @@ class ServiceInvoiceController extends Controller {
 			'branch.primaryAddress',
 			'sbu',
 			'serviceInvoiceItems',
+			'serviceInvoiceItems.eInvoiceUom',
 			'serviceInvoiceItems.serviceItem',
 			'serviceInvoiceItems.eavVarchars',
 			'serviceInvoiceItems.eavInts',
@@ -1970,6 +1977,7 @@ class ServiceInvoiceController extends Controller {
 			'tax_list' => Tax::select('name', 'id')->where('company_id', Auth::user()->company_id)->get(),
 			'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
 			'sub_category_list' => [],
+			'uom_list' => EInvoiceUom::getList(),
 		];
 		$this->data['approval_status'] = ApprovalLevel::find(1);
 		$this->data['service_invoice_status'] = ApprovalTypeStatus::join('service_invoices', 'service_invoices.status_id', 'approval_type_statuses.id')->where('service_invoices.company_id', Auth::user()->company_id)->where('service_invoices.id', $id)->first();

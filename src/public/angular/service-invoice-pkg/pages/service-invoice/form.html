@@ -284,7 +284,7 @@
                                                 <td class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list">{{$ctrl.tax_wise_total[tax.name+'_amount'] | number : 2}}</td>
                                                 <td class="text-right"><span ng-show="$ctrl.type_id == 1060">-</span>{{$ctrl.table_total | number : 2}}</td>
                                             </tr>
-                                             <tr>
+                                            <tr>
                                                 <td colspan="5"></td>
                                                 <td class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list"></td>
                                                 <th>Round Off</th>
@@ -294,8 +294,7 @@
                                             <tr>
                                                 <th colspan="5"></th>
                                                 <th class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list"></th>
-                                                <input type="hidden" ng-model="$ctrl.service_invoice.final_amount" name="final_amount" class="type-sm form-control" placeholder="Enter Round Off amount" readonly value="{{$ctrl.service_invoice.final_amount}}">
-                                                <th colspan="3"></th>
+                                                <input type="hidden" ng-model="$ctrl.service_invoice.final_amount" name="final_amount" class="type-sm form-control" placeholder="Enter Final amount" readonly value="{{$ctrl.service_invoice.final_amount}}">
                                                 <th>Total</th>
                                                 <th class="text-right"><span ng-show="$ctrl.type_id == 1060">-</span>{{$ctrl.service_invoice.final_amount | number : 2}}</th>
                                             </tr>
