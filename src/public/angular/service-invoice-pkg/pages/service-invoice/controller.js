@@ -192,6 +192,12 @@ app.component('serviceInvoiceList', {
                 dataTable.draw();
             }, 900);
         }
+        $scope.getSelectedCategory = function(selected_category_id) {
+            setTimeout(function() {
+                $('#category_id').val(selected_category_id);
+                dataTable.draw();
+            }, 900);
+        }
         // $scope.getSubCategory = function(selected_sub_category_id) {
         //     setTimeout(function() {
         //         $('#sub_category_id').val(selected_sub_category_id);

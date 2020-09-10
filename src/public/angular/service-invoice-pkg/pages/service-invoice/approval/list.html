@@ -149,7 +149,8 @@
                         <div class="col-md-6">
                             <div class="input-text form-group">
                                 <label>Category</label>
-                                <md-select ng-model="$ctrl.service_invoice.service_item_sub_category.category_id" ng-change="getServiceItemSubCategory($ctrl.service_invoice.service_item_sub_category.category_id); $ctrl.extras.sub_category_list=''; $ctrl.service_invoice.sub_category_id=''" placeholder="Select Category" md-on-close="clearSearchCategory()" data-md-container-class="selectdemoSelectHeader">
+                                <!-- <md-select ng-model="$ctrl.service_invoice.service_item_sub_category.category_id" ng-change="getServiceItemSubCategory($ctrl.service_invoice.service_item_sub_category.category_id); $ctrl.extras.sub_category_list=''; $ctrl.service_invoice.sub_category_id=''" placeholder="Select Category" md-on-close="clearSearchCategory()" data-md-container-class="selectdemoSelectHeader"> -->
+                                <md-select ng-model="$ctrl.service_invoice.category_id" ng-change="getSelectedCategory($ctrl.service_invoice.category_id)" placeholder="Select Category" md-on-close="clearSearchCategory()" data-md-container-class="selectdemoSelectHeader">
                                     <md-select-header class="demo-select-header">
                                         <input ng-model="searchCategory" type="search" placeholder="Search for a category.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
                                     </md-select-header>
@@ -157,10 +158,11 @@
                                         <md-option ng-value="category.id" ng-repeat="category in $ctrl.extras.category_list | filter:searchCategory">{{category.name}}</md-option>
                                     </md-optgroup>
                                 </md-select>
-                                <input type="hidden" name="category_id" id="category_id" value="{{$ctrl.service_invoice.service_item_sub_category.category_id}}">
+                                <input type="hidden" name="category_id" id="category_id" value="{{$ctrl.service_invoice.category_id}}">
+                                <!-- <input type="hidden" name="category_id" id="category_id" value="{{$ctrl.service_invoice.service_item_sub_category.category_id}}"> -->
                             </div><!-- Feild -->
                         </div><!-- Column -->
-                        <div class="col-md-6">
+                        <!-- <div class="col-md-6">
                             <div class="input-text form-group">
                                 <label>Sub Category</label>
                                 <md-select ng-model="$ctrl.service_invoice.sub_category_id" ng-change="getSubCategory($ctrl.service_invoice.sub_category_id)" placeholder="Select sub category" md-on-close="clearSearchSubCategory()" data-md-container-class="selectdemoSelectHeader">
@@ -172,8 +174,8 @@
                                     </md-optgroup>
                                 </md-select>
                                 <input type="hidden" name="sub_category_id" id="sub_category_id" value="{{$ctrl.service_invoice.sub_category_id}}">
-                            </div><!-- Feild -->
-                        </div><!-- Column -->
+                            </div>
+                        </div> -->
                         <div class="col-md-6">
                             <div class="input-text form-group">
                                 <label>Customer</label>
@@ -207,7 +209,7 @@
                     </div>
                     <div class="row modal-row">
                         <div class="col-md-6">
-                            <button type="button" class="btn btn-rose my-tooltip" ng-click="reset_filter(); $ctrl.type_id=''; $ctrl.branchSearchText=''; $ctrl.service_invoice.sbu_id=''; $ctrl.service_invoice.service_item_sub_category.category_id=''; $ctrl.service_invoice.sub_category_id=''; $ctrl.customerSearchText=''; $ctrl.status_id=''" ng-shortcut="'meta+shift+t'" ng-shortcut-click data-title="ctrl+shift+t">Reset Filter</button>
+                            <button type="button" class="btn btn-rose my-tooltip" ng-click="reset_filter(); $ctrl.type_id=''; $ctrl.branchSearchText=''; $ctrl.service_invoice.sbu_id=''; $ctrl.service_invoice.category_id=''; $ctrl.service_invoice.sub_category_id=''; $ctrl.customerSearchText=''; $ctrl.status_id=''" ng-shortcut="'meta+shift+t'" ng-shortcut-click data-title="ctrl+shift+t">Reset Filter</button>
                         </div>
                     </div><!-- Row -->
                 </div><!-- Modal Form -->

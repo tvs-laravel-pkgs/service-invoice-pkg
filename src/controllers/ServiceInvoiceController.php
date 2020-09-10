@@ -118,7 +118,8 @@ class ServiceInvoiceController extends Controller {
 			})
 			->where(function ($query) use ($request) {
 				if (!empty($request->category_id)) {
-					$query->where('service_item_sub_categories.category_id', $request->category_id);
+					// $query->where('service_item_sub_categories.category_id', $request->category_id);
+					$query->where('service_invoices.category_id', $request->category_id);
 				}
 			})
 		// ->where(function ($query) use ($request) {
@@ -1413,7 +1414,8 @@ class ServiceInvoiceController extends Controller {
 		$date_range = explode(" to ", $request->invoice_date);
 		// $approved_status = ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
 
-		$query = ServiceInvoice::select('service_invoices.*')->join('service_item_sub_categories as sc', 'sc.id', 'service_invoices.sub_category_id')
+		$query = ServiceInvoice::select('service_invoices.*')
+		// ->join('service_item_sub_categories as sc', 'sc.id', 'service_invoices.sub_category_id')
 			->where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
 			->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
 			->where('service_invoices.company_id', Auth::user()->company_id)
@@ -1440,14 +1442,15 @@ class ServiceInvoiceController extends Controller {
 			})
 			->where(function ($query) use ($request) {
 				if (!empty($request->category_id)) {
-					$query->where('sc.category_id', $request->category_id);
+					$query->where('service_invoices.category_id', $request->category_id);
+					// $query->where('sc.category_id', $request->category_id);
 				}
 			})
-			->where(function ($query) use ($request) {
-				if (!empty($request->sub_category_id)) {
-					$query->where('service_invoices.sub_category_id', $request->sub_category_id);
-				}
-			})
+		// ->where(function ($query) use ($request) {
+		// 	if (!empty($request->sub_category_id)) {
+		// 		$query->where('service_invoices.sub_category_id', $request->sub_category_id);
+		// 	}
+		// })
 			->where(function ($query) use ($request) {
 				if (!empty($request->customer_id)) {
 					$query->where('service_invoices.customer_id', $request->customer_id);
