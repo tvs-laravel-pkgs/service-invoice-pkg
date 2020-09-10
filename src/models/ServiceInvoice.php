@@ -29,6 +29,7 @@ class ServiceInvoice extends Model {
 		'number',
 		'branch_id',
 		'sbu_id',
+		'category_id',
 		'sub_category_id',
 		'invoice_date',
 		'document_date',
@@ -71,15 +72,13 @@ class ServiceInvoice extends Model {
 	public function setDocumentDateAttribute($date) {
 		return $this->attributes['document_date'] = empty($date) ? date('Y-m-d') : date('Y-m-d', strtotime($date));
 	}
-	public function setEInvoiceDateAttribute($date) {
-		return $this->attributes['e_invoice_date'] = empty($date) ? NULL : date('Y-m-d', strtotime($date));
-	}
-	public function getEInvoiceDateAttribute($value) {
-		return empty($value) ? '' : date('d-m-Y', strtotime($value));
-	}
 
 	public function serviceItemSubCategory() {
 		return $this->belongsTo('Abs\ServiceInvoicePkg\ServiceItemSubCategory', 'sub_category_id', 'id');
+	}
+
+	public function serviceItemCategory() {
+		return $this->belongsTo('Abs\ServiceInvoicePkg\ServiceItemCategory', 'category_id', 'id');
 	}
 
 	public function customer() {
@@ -533,20 +532,21 @@ class ServiceInvoice extends Model {
 					])->first();
 					if (!$category) {
 						$status['errors'][] = 'Invalid Category';
-					} else {
-						if (empty($record['Sub Category'])) {
-							$status['errors'][] = 'Sub Category is empty';
-						} else {
-							$sub_category = ServiceItemSubCategory::where([
-								'company_id' => $job->company_id,
-								'category_id' => $category->id,
-								'name' => $record['Sub Category'],
-							])->first();
-							if (!$sub_category) {
-								$status['errors'][] = 'Invalid Sub Category Or Sub Category is not mapped for this Category';
-							}
-						}
 					}
+					// else {
+					// 	if (empty($record['Sub Category'])) {
+					// 		$status['errors'][] = 'Sub Category is empty';
+					// 	} else {
+					// 		$sub_category = ServiceItemSubCategory::where([
+					// 			'company_id' => $job->company_id,
+					// 			'category_id' => $category->id,
+					// 			'name' => $record['Sub Category'],
+					// 		])->first();
+					// 		if (!$sub_category) {
+					// 			$status['errors'][] = 'Invalid Sub Category Or Sub Category is not mapped for this Category';
+					// 		}
+					// 	}
+					// }
 				}
 
 				if (empty($record['Customer Code'])) {
@@ -663,7 +663,8 @@ class ServiceInvoice extends Model {
 				$service_invoice->type_id = $type->id;
 				$service_invoice->branch_id = $branch->id;
 				$service_invoice->sbu_id = $sbu->id;
-				$service_invoice->sub_category_id = $sub_category->id;
+				$service_invoice->category_id = $category->id;
+				// $service_invoice->sub_category_id = $sub_category->id;
 				$service_invoice->invoice_date = date('Y-m-d', PHPExcel_Shared_Date::ExcelToPHP($record['Doc Date']));
 				$service_invoice->document_date = date('Y-m-d', PHPExcel_Shared_Date::ExcelToPHP($record['Doc Date']));
 				$service_invoice->customer_id = $customer->id;

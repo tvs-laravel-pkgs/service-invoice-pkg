@@ -10,7 +10,6 @@ use Abs\ServiceInvoicePkg\ServiceItemCategory;
 use Abs\TaxPkg\Tax;
 use App\Config;
 use App\Customer;
-use App\EInvoiceUom;
 use App\Employee;
 use App\Entity;
 use App\Http\Controllers\Controller;
@@ -80,8 +79,8 @@ class ServiceInvoiceApprovalController extends Controller {
 			)
 			->join('outlets', 'outlets.id', 'service_invoices.branch_id')
 			->join('sbus', 'sbus.id', 'service_invoices.sbu_id')
-			->join('service_item_sub_categories', 'service_item_sub_categories.id', 'service_invoices.sub_category_id')
-			->join('service_item_categories', 'service_item_categories.id', 'service_item_sub_categories.category_id')
+			->leftJoin('service_item_sub_categories', 'service_item_sub_categories.id', 'service_invoices.sub_category_id')
+			->leftJoin('service_item_categories', 'service_item_categories.id', 'service_invoices.category_id')
 			->join('customers', 'customers.id', 'service_invoices.customer_id')
 			->join('configs', 'configs.id', 'service_invoices.type_id')
 			->join('approval_type_statuses', 'approval_type_statuses.id', 'service_invoices.status_id')
@@ -116,14 +115,15 @@ class ServiceInvoiceApprovalController extends Controller {
 			})
 			->where(function ($query) use ($request) {
 				if (!empty($request->category_id)) {
-					$query->where('service_item_sub_categories.category_id', $request->category_id);
+					$query->where('service_invoices.category_id', $request->category_id);
+					// $query->where('service_item_sub_categories.category_id', $request->category_id);
 				}
 			})
-			->where(function ($query) use ($request) {
-				if (!empty($request->sub_category_id)) {
-					$query->where('service_invoices.sub_category_id', $request->sub_category_id);
-				}
-			})
+		// ->where(function ($query) use ($request) {
+		// 	if (!empty($request->sub_category_id)) {
+		// 		$query->where('service_invoices.sub_category_id', $request->sub_category_id);
+		// 	}
+		// })
 			->where(function ($query) use ($request) {
 				if (!empty($request->customer_id)) {
 					$query->where('service_invoices.customer_id', $request->customer_id);
@@ -175,8 +175,8 @@ class ServiceInvoiceApprovalController extends Controller {
 				}
 
 			})
-			->addColumn('action', function ($cn_dn_approval_list) use ($approval_status_id) {
-				// $approval_type_id = $cn_dn_approval_list->approval_type_id;
+			->addColumn('action', function ($cn_dn_approval_list) {
+				$approval_type_id = $cn_dn_approval_list->approval_type_id;
 				$type_id = $cn_dn_approval_list->si_type_id == '1060' ? 1060 : 1061;
 				$img_view = asset('public/theme/img/table/cndn/view.svg');
 				$img_approval = asset('public/theme/img/table/cndn/approval.svg');
@@ -184,14 +184,11 @@ class ServiceInvoiceApprovalController extends Controller {
 				/*<a href="#!/service-invoice-pkg/cn-dn/approval/approval-level/' . $approval_type_id . '/view/' . $type_id . '/' . $cn_dn_approval_list->id . '" class="">
 	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
 	                    	</a>*/
-				return '<a href="#!/service-invoice-pkg/cn-dn/approval/approval-level/' . $approval_status_id . '/view/' . $type_id . '/' . $cn_dn_approval_list->id . '" class="">
-				                    <img class="img-responsive" src="' . $img_view . '" alt="View" />
-				                	</a>
+				return '
 	                    	<a href="javascript:;" data-toggle="modal" data-target="#cn-dn-approval-modal"
 					onclick="angular.element(this).scope().sendApproval(' . $cn_dn_approval_list->id . ',' . $next_status . ')" title="Approval">
 					<img src="' . $img_approval . '" alt="Approval" class="img-responsive">
 					</a>';
-
 			})
 			->rawColumns(['child_checkbox', 'action'])
 			->make(true);
@@ -205,7 +202,6 @@ class ServiceInvoiceApprovalController extends Controller {
 			'branch',
 			'sbu',
 			'serviceInvoiceItems',
-			'serviceInvoiceItems.eInvoiceUom',
 			'serviceInvoiceItems.serviceItem',
 			'serviceInvoiceItems.eavVarchars',
 			'serviceInvoiceItems.eavInts',
@@ -347,18 +343,15 @@ class ServiceInvoiceApprovalController extends Controller {
 			'tax_list' => Tax::select('name', 'id')->where('company_id', Auth::user()->company_id)->get(),
 			'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
 			'sub_category_list' => [],
-			'uom_list' => EInvoiceUom::getList(),
 		];
 		$this->data['service_invoice_status'] = ApprovalTypeStatus::join('service_invoices', 'service_invoices.status_id', 'approval_type_statuses.id')->where('service_invoices.company_id', Auth::user()->company_id)->where('service_invoices.id', $id)->first();
 		$this->data['action'] = 'View';
 		$this->data['success'] = true;
-		$this->data['next_status'] = 4;
 		$this->data['service_invoice'] = $service_invoice;
 		return response()->json($this->data);
 	}
 
 	public function updateApprovalStatus(Request $request) {
-		// dd($request->all());
 		DB::beginTransaction();
 		try {
 			$approval_status = ServiceInvoice::find($request->id);

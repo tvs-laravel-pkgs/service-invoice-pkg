@@ -58,18 +58,18 @@
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Category</label>
                                                     <div class="table-form-list-control">
-                                                        <input type="text" class="form-control" name="category_id" id="category_id" value="{{$ctrl.service_invoice.service_item_sub_category.service_item_category.name}}" readonly>
+                                                        <input type="text" class="form-control" name="category_id" id="category_id" value="{{$ctrl.service_invoice.service_item_category.name}}" readonly>
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
-                                            <li>
+                                            <!-- <li>
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Sub Category</label>
                                                     <div class="table-form-list-control">
                                                         <input type="text" class="form-control" name="sub_category_id" id="sub_category_id" value="{{$ctrl.service_invoice.service_item_sub_category.name}}" readonly>
-                                                    </div><!-- Table Form List Control -->
-                                                </div><!-- Table Form List Wrap -->
-                                            </li>
+                                                        </div>
+                                                </div>
+                                            </li> -->
                                             <li>
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Reverse Charge Applicability <span class="mandatory">*</span></label>
@@ -223,14 +223,13 @@
                                                 </td>
                                                 <td class="action">
                                                     <a href="javascript:void(0)" ng-click="editServiceItem(service_invoice_item.service_item_id, service_invoice_item.description,
-                                                     service_invoice_item.qty,  service_invoice_item.rate, index, service_invoice_item.e_invoice_uom_id)">
+                                                     service_invoice_item.qty,  service_invoice_item.rate,index)">
                                                         <img class="img-responsive" src="./public/theme/img/table/cndn/view.svg" alt="View" />
                                                     </a>
                                                 </td>
                                                 <td>{{service_invoice_item.code}}</td>
                                                 <td>{{service_invoice_item.name}}</td>
                                                 <td>{{service_invoice_item.description}}</td>
-                                                <td>{{service_invoice_item.e_invoice_uom.code}}</td>
                                                 <td class="text-right" style="display: none;">{{$ctrl.parseInt(service_invoice_item.qty)}}</td>
                                                 <td class="text-right" style="display: none;">{{service_invoice_item.rate | number : 2}}</td>
                                                 <td class="text-right">{{service_invoice_item.sub_total | number : 2}}</td>
@@ -257,13 +256,13 @@
                                                 <td colspan="5"></td>
                                                 <td class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list"></td>
                                                 <th>Round Off</th>
-                                                <th class="text-right">{{$ctrl.service_invoice.round_off | number : 2}}</th>
+                                                <th class="text-right">{{$ctrl.service_invoice.round_off_amount | number : 2}}</th>
                                             </tr>
                                             <tr>
                                                 <th colspan="5"></th>
                                                 <th class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list"></th>
                                                 <th>Total</th>
-                                                <th class="text-right"><span ng-show="$ctrl.type_id == 1060">-</span>{{$ctrl.service_invoice.e_round_off_amount | number : 2}}</th>
+                                                <th class="text-right"><span ng-show="$ctrl.type_id == 1060">-</span>{{$ctrl.service_invoice.final_amount | number : 2}}</th>
                                             </tr>
                                         </tfoot>
                                     </table>
@@ -343,21 +342,6 @@
                                             </li>
                                         </ul>
                                     </div>
-                                </li>
-                                <li>
-                                    <div class="table-form-list-wrap">
-                                        <label class="table-form-list-label">E-Invoice UOM </label>
-                                        <div class="table-form-list-control">
-                                            <md-select class="type-sm" ng-model="$ctrl.e_invoice_uom.id" placeholder="Select E-Invoice UOM" md-on-close="clearSearchUom()" data-md-container-class="selectdemoSelectHeader" ng-disabled="true">
-                                                <md-select-header class="demo-select-header">
-                                                    <input ng-model="searchUom" type="search" placeholder="Search for a E-Invoice UOM.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
-                                                </md-select-header>
-                                                <md-optgroup label="e_invoice_uom">
-                                                    <md-option ng-value="uom.id" ng-repeat="uom in $ctrl.extras.uom_list | filter:searchUom">{{uom.code}} / {{uom.description}}</md-option>
-                                                </md-optgroup>
-                                            </md-select>
-                                        </div><!-- Table Form List Control -->
-                                    </div><!-- Table Form List Wrap -->
                                 </li>
                             </ul><!-- Table Form List -->
                         </div><!-- Column -->
