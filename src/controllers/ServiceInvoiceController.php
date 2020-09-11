@@ -214,7 +214,7 @@ class ServiceInvoiceController extends Controller {
 	public function getFormData($type_id = NULL, $id = NULL) {
 		if (!$id) {
 			$service_invoice = new ServiceInvoice;
-			$service_invoice->invoice_date = date('d-m-Y');
+			// $service_invoice->invoice_date = date('d-m-Y');
 			$this->data['action'] = 'Add';
 			Session::put('sac_code_value', 'new');
 		} else {
@@ -237,6 +237,7 @@ class ServiceInvoiceController extends Controller {
 			if (!$service_invoice) {
 				return response()->json(['success' => false, 'error' => 'Service Invoice not found']);
 			}
+			$service_invoice->toAccount;
 			$fields = Field::withTrashed()->get()->keyBy('id');
 			if (count($service_invoice->serviceInvoiceItems) > 0) {
 				$gst_total = 0;
@@ -792,6 +793,9 @@ class ServiceInvoiceController extends Controller {
 				'customer_id' => [
 					'required:true',
 				],
+				'to_account_type_id' => [
+					'required:true',
+				],
 				'proposal_attachments.*' => [
 					'required:true',
 					// 'mimes:jpg,jpeg,png,bmp',
@@ -1196,7 +1200,7 @@ class ServiceInvoiceController extends Controller {
 			$service_invoice_pdf->sac_code_status = 'Tax Invoice';
 		}
 		// dd($service_invoice_pdf->sac_code_status);
-
+		dd($serviceInvoiceItem->serviceItem);
 		if ($service_invoice_pdf->customer->gst_number) {
 			//----------// ENCRYPTION START //----------//
 			// $service_invoice->irnCreate($service_invoice_id);
@@ -1361,6 +1365,11 @@ class ServiceInvoiceController extends Controller {
 							}
 						}
 					}
+				} else {
+					return [
+						'success' => false,
+						'errors' => 'Item Not Mapped with Tax code!. Item Code: ' . $service_item->code,
+					];
 				}
 				// dd($cgst_total, $sgst_total, $igst_total);
 
@@ -1972,6 +1981,7 @@ class ServiceInvoiceController extends Controller {
 				$serviceInvoiceItem->name = $serviceInvoiceItem->serviceItem->name;
 			}
 		}
+		$service_invoice->ack_date = $service_invoice->ack_date ? date("d-m-Y H:i:s", strtotime($service_invoice->ack_date)) : NULL;
 		$this->data['extras'] = [
 			'sbu_list' => [],
 			'tax_list' => Tax::select('name', 'id')->where('company_id', Auth::user()->company_id)->get(),

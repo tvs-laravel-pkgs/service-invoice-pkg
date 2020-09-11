@@ -81,6 +81,19 @@ class ServiceInvoice extends Model {
 		return $this->belongsTo('Abs\ServiceInvoicePkg\ServiceItemCategory', 'category_id', 'id');
 	}
 
+	public function toAccount() {
+		if ($this->to_account_type_id == 1440) {
+			//customer
+			return $this->belongsTo('Abs\CustomerPkg\Customer', 'customer_id');
+		} elseif ($this->to_account_type_id == 1441) {
+			//vendor
+			return $this->belongsTo('App\Vendor', 'customer_id');
+		} elseif ($this->to_account_type_id == 1442) {
+			//ledger
+			return $this->belongsTo('Abs\JVPkg\Ledger', 'customer_id');
+		}
+	}
+
 	public function customer() {
 		return $this->belongsTo('App\Customer', 'customer_id', 'id');
 	}

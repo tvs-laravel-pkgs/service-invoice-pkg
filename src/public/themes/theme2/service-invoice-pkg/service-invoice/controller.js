@@ -192,11 +192,11 @@ app.component('serviceInvoiceList', {
                 dataTable.draw();
             }, 900);
         }
-        $scope.getSelectedCategory = function(selected_category_id) {   
-            setTimeout(function() { 
-                $('#category_id').val(selected_category_id);    
-                dataTable.draw();   
-            }, 900);    
+        $scope.getSelectedCategory = function(selected_category_id) {
+            setTimeout(function() {
+                $('#category_id').val(selected_category_id);
+                dataTable.draw();
+            }, 900);
         }
         // $scope.getSubCategory = function(selected_sub_category_id) {
         //     setTimeout(function() {
@@ -491,6 +491,13 @@ app.component('serviceInvoiceForm', {
                 // $timeout(function() {
                 //     $scope.getServiceItemSubCategoryByServiceItemCategory(self.service_invoice.service_item_sub_category.category_id);
                 // }, 1000);
+                console.log(self.service_invoice.to_account_type_id);
+                if (self.service_invoice.to_account_type_id == 1440) { //CUSTOMER
+                    $timeout(function() {
+                        self.customer = self.service_invoice.to_account;
+                        // $rootScope.getCustomer(self.service_invoice.customer_id);
+                    }, 1200);
+                }
                 $timeout(function() {
                     $scope.getSbuByBranch(self.service_invoice.branch_id);
                 }, 1200);
@@ -653,7 +660,7 @@ app.component('serviceInvoiceForm', {
             }, 1000);
         }
 
-        $scope.getAccountType = function(id){
+        $scope.getAccountType = function(id) {
             console.log(id);
             self.CustomerSearchText = "";
             self.customer = {};
@@ -1244,6 +1251,8 @@ app.component('serviceInvoiceView', {
             $rootScope.loading = false;
         });
 
+        self.qr_image_url = base_url+ '/storage/app/public/service-invoice/IRN_images';
+
         /* Tab Funtion */
         $('.btn-nxt').on("click", function() {
             $('.cndn-tabs li.active').next().children('a').trigger("click");
@@ -1270,7 +1279,7 @@ app.component('serviceInvoiceView', {
         //EDIT SERVICE INVOICE ITEM
         $scope.editServiceItem = function(service_invoice_item_id, description, qty, rate, index, e_invoice_uom_id) {
             console.log(service_invoice_item_id, description, qty, rate, index, e_invoice_uom_id);
-                if (service_invoice_item_id) {
+            if (service_invoice_item_id) {
                 self.enable_service_item_md_change = false;
                 self.add_service_action = false;
                 self.action_title = 'View';

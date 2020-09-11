@@ -87,6 +87,32 @@
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
+                                            <li ng-if="$ctrl.service_invoice.irn_number">
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">IRN # </label>
+                                                    <div class="table-form-list-control">
+                                                        <textarea readonly cols="25" rows="3" style="background-color: #F3F3F3;color: #767676;" class="type-sm form-control">{{$ctrl.service_invoice.irn_number}}</textarea>
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                            <li ng-if="$ctrl.service_invoice.ack_no">
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Ack # </label>
+                                                    <div class="table-form-list-control">
+                                                        <input type="text" ng-model="$ctrl.service_invoice.ack_no" name="ack_no" class="type-sm form-control" placeholder="Enter Ack No" readonly>
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                            <li ng-if="$ctrl.service_invoice.ack_date">
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Ack Date</label>
+                                                    <div class="table-form-list-control">
+                                                        <div class="input-group date type-sm">
+                                                            <input name="ack_date" ng-model="$ctrl.service_invoice.ack_date" type="text" class="form-control" placeholder="Select Ack Date" value="{{$ctrl.service_invoice.ack_date}}" readonly />
+                                                        </div><!-- Input Group -->
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
                                         </ul><!-- Table Form List -->
                                     </li>
                                     <li class="flex-md-4">
@@ -99,7 +125,6 @@
                                                     </div>
                                                 </div>
                                             </li>
-                                            
                                             <li>
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Doc. Date</label>
@@ -152,6 +177,12 @@
                                                             <span class="imageuploadify-file-name"><a href="{{$ctrl.ref_attachements_url_link}}/{{service_invoice_attachment.name}}" download>{{service_invoice_attachment.name}}</a></span>
                                                         </div>
                                                     </div>
+                                                </div>
+                                            </li>
+                                            <li ng-if="$ctrl.service_invoice.qr_image">
+                                                <label class="table-form-list-label">QR Image </label>
+                                                <div class="table-form-list-control">
+                                                    <img src="{{$ctrl.qr_image_url}}/{{$ctrl.service_invoice.qr_image}}" style="width: 100px;" alt="Qr Image">
                                                 </div>
                                             </li>
                                         </ul><!-- Table Form List -->

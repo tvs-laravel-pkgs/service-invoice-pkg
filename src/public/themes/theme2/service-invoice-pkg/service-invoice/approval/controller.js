@@ -66,8 +66,8 @@ app.component('serviceInvoiceApprovalList', {
                     type: "GET",
                     dataType: "json",
                     data: function(d) {
-                        // d.approval_status_id = self.approval_type_id; //NO DATE AVILABLE FOR APPROVAL TYPE ITS STATIC APPROVAL
-                        // d.approval_status_id = $routeParams.approval_level_id;
+                        // d.approval_status_id = self.approval_type_id; //NO DATA AVILABLE FOR APPROVAL TYPE ITS STATIC APPROVAL
+                        d.approval_status_id = $routeParams.approval_level_id;
                         d.invoice_number = $('#invoice_number').val();
                         d.invoice_date = $('#invoice_date').val();
                         d.type_id = $('#type_id').val();
