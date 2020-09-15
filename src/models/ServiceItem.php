@@ -34,22 +34,30 @@ class ServiceItem extends Model {
 	}
 
 	public static function searchServiceItem($r) {
+		// dd($r);
 		$key = $r->key;
 		$type_id = $r->type_id;
 		$category_id = $r->category_id;
+		$is_service = $r->is_service;
 		// $sub_category_id = $r->sub_category_id;
-		$list = self::join('service_item_sub_categories', 'service_item_sub_categories.id', 'service_items.sub_category_id')
+		$list = self::join('service_item_sub_categories', 'service_item_sub_categories.id', 'service_items.sub_category_id')->join('tax_codes', 'tax_codes.id', 'service_items.sac_code_id')
 			->where(['service_items.company_id' => Auth::user()->company_id, 'service_item_sub_categories.category_id' => $category_id])
 		// ->where(['service_items.company_id' => Auth::user()->company_id, 'service_item_sub_categories.category_id' => $category_id, 'service_items.sub_category_id' => $sub_category_id])
 			->select(
 				'service_items.id',
 				'service_items.name',
-				'service_items.code'
+				'service_items.code',
+				'tax_codes.type_id'
 			);
 		// if ($type_id == 1061) {
 		//DN
 		// 	$list = $list->whereNotNull('sac_code_id');
 		// }
+		if ($is_service == 1) {
+			$list = $list->where('tax_codes.type_id', 1020); //HSN CODE
+		} else {
+			$list = $list->where('tax_codes.type_id', 1021); //SAC CODE
+		}
 		if ($type_id == 1060 && session('sac_code_value') != 'new') {
 			if (session('sac_code_value') == NULL) {
 				$list = $list->whereNull('sac_code_id');

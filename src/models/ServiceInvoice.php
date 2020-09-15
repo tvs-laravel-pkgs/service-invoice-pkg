@@ -40,15 +40,19 @@ class ServiceInvoice extends Model {
 		'tax_total',
 		'sub_total',
 		'total',
+		'is_service',
 		'is_reverse_charge_applicable',
 		'po_reference_number',
 		'invoice_number',
 		'round_off_amount',
 		'final_amount',
 		'irn_number',
+		'qr_image',
+		'ack_no',
+		'ack_date',
+		'version',
 		'irn_request',
 		'irn_response',
-		'qr_image',
 		'created_by_id',
 		'updated_by_id',
 		'deleted_by_id',
@@ -67,10 +71,14 @@ class ServiceInvoice extends Model {
 	}
 
 	public function setInvoiceDateAttribute($date) {
-		return $this->attributes['invoice_date'] = empty($date) ? date('Y-m-d') : date('Y-m-d', strtotime($date));
+		return $this->attributes['invoice_date'] = empty($date) ? NULL : date('Y-m-d', strtotime($date));
 	}
 	public function setDocumentDateAttribute($date) {
 		return $this->attributes['document_date'] = empty($date) ? date('Y-m-d') : date('Y-m-d', strtotime($date));
+	}
+
+	public function getAckDateAttribute($date) {
+		return $this->attributes['ack_date'] = empty($date) ? NULL : date('Y-m-d', strtotime($date));
 	}
 
 	public function serviceItemSubCategory() {
@@ -811,6 +819,9 @@ class ServiceInvoice extends Model {
 			//Field values
 			$gst_total = 0;
 			foreach ($this->serviceInvoiceItems as $key => $serviceInvoiceItem) {
+				// dd($serviceInvoiceItem);
+				$serviceInvoiceItem->eInvoiceUom;
+
 				//FIELD GROUPS AND FIELDS INTEGRATION
 				if (count($serviceInvoiceItem->eavVarchars) > 0) {
 					$eav_varchar_field_group_ids = $serviceInvoiceItem->eavVarchars()->pluck('field_group_id')->toArray();
@@ -922,17 +933,23 @@ class ServiceInvoice extends Model {
 		//dd($this->type_id);
 		$type = $serviceInvoiceItem->serviceItem;
 		if (!empty($type->sac_code_id) && ($this->type_id == 1060)) {
-			$this->sac_code_status = 'CREDIT NOTE';
+			$this->sac_code_status = 'CREDIT NOTE(CRN)';
+			$this->document_type = 'CRN';
 		} elseif (empty($type->sac_code_id) && ($this->type_id == 1060)) {
 			$this->sac_code_status = 'FINANCIAL CREDIT NOTE';
+			$this->document_type = 'CRN';
+		} elseif ($this->type_id == 1061) {
+			$this->sac_code_status = 'Tax Invoice(DEN)';
+			$this->document_type = 'DEN';
 		} else {
-			$this->sac_code_status = 'Tax Invoice';
+			$this->sac_code_status = 'Invoice(INV)';
+			$this->document_type = 'INV';
 		}
 
-		$this->qr_image = base_path('storage/app/public/service-invoice/IRN_images/' . $this->qr_image);
-		$this->irn_number = $this->irn_number;
-		$this->ack_no = $this->ack_no;
-		$this->ack_date = $this->ack_date;
+		$this->qr_image = $this->qr_image ? base_path('storage/app/public/service-invoice/IRN_images/' . $this->qr_image) : NULL;
+		$this->irn_number = $this->irn_number ? $this->irn_number : NULL;
+		$this->ack_no = $this->ack_no ? $this->ack_no : NULL;
+		$this->ack_date = $this->ack_date ? $this->ack_date : NULL;
 
 		// dd($this->sac_code_status);
 		//dd($serviceInvoiceItem->field_groups);

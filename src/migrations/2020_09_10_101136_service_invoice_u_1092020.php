@@ -27,8 +27,9 @@ class ServiceInvoiceU1092020 extends Migration {
 	 * @return void
 	 */
 	public function down() {
-		$table->dropForeign('service_invoices_category_id_foreign');
-
-		$table->dropColumn('category_id');
+		Schema::table('service_invoices', function (Blueprint $table) {
+			$table->dropForeign('service_invoices_category_id_foreign');
+			$table->dropColumn('category_id');
+		});
 	}
 }

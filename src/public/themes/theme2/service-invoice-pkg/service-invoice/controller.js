@@ -68,6 +68,7 @@ app.component('serviceInvoiceList', {
         self.hasPermission = HelperService.hasPermission;
         self.create_cn = self.hasPermission('create-cn');
         self.create_dn = self.hasPermission('create-dn');
+        self.create_inv = self.hasPermission('create-inv');
         self.import_cn_dn = self.hasPermission('import-cn-dn');
         $http.get(
             get_service_invoice_filter_url
@@ -456,7 +457,7 @@ app.component('serviceInvoiceList', {
 app.component('serviceInvoiceForm', {
     templateUrl: service_invoice_form_template_url,
     controller: function($http, $location, HelperService, $routeParams, $rootScope, $scope, $timeout, $mdSelect, $window) {
-        if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061) {} else {
+        if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061 || $routeParams.type_id == 1062) {} else {
             $location.path('/page-not-found')
             return;
         }
@@ -483,6 +484,7 @@ app.component('serviceInvoiceForm', {
             self.list_url = service_invoice_list_url;
             self.service_invoice = response.data.service_invoice;
             self.customer = {};
+            self.e_invoice_uom = {};
             self.extras = response.data.extras;
             self.config_values = response.data.config_values;
             self.action = response.data.action;
@@ -519,6 +521,7 @@ app.component('serviceInvoiceForm', {
                 }
             } else {
                 self.service_invoice.is_reverse_charge_applicable = 1;
+                self.service_invoice.is_service = 1;
             }
             $rootScope.loading = false;
         });
@@ -579,7 +582,7 @@ app.component('serviceInvoiceForm', {
                 format: "dd-mm-yyyy",
                 autoclose: "true",
                 todayHighlight: true,
-                startDate: min_offset,
+                // startDate: min_offset,
                 endDate: max_offset
             });
         }, 7000);
@@ -785,6 +788,7 @@ app.component('serviceInvoiceForm', {
                                 type_id: self.type_id,
                                 category_id: $('#category_id').val(),
                                 sub_category_id: $('#sub_category_id').val(),
+                                is_service: $("input[name='is_service']:checked").val(),
                             }
                         )
                         .then(function(response) {
@@ -905,6 +909,7 @@ app.component('serviceInvoiceForm', {
             self.total = '';
             self.service_item = '';
             self.service_item_detail = '';
+            self.e_invoice_uom = {};
             // console.log(' == add btn ==');
             // console.log(self.service_item_detail);
         }
@@ -1129,10 +1134,11 @@ app.component('serviceInvoiceForm', {
             errorPlacement: function(error, element) {
                 if (element.hasClass("doc_date")) {
                     error.appendTo('.doc_date_error');
-                }
-                // else if (element.hasClass("e_invoice_date")) {
-                //     error.appendTo('.invoice_date_error');
-                // } else if (element.hasClass("is_reverse_charge")) {
+                } 
+                // else if (element.hasClass("inv_date")) {
+                //     error.appendTo('.inv_date_error');
+                // }
+                // else if (element.hasClass("is_reverse_charge")) {
                 //     error.appendTo('.reverse_charge_error');
                 // }
                 else {
@@ -1144,9 +1150,21 @@ app.component('serviceInvoiceForm', {
                 'document_date': {
                     required: true,
                 },
-                // 'e_invoice_date': {
-                //     required: true,
+                // 'invoice_date': {
+                    // required: true,
+                    // required: function(){
+                    //     if($routeParams.type_id == 1060 || $routeParams.type_id == 1061){
+                    //         return true;
+                    //     }
+                    // },
                 // },
+                'invoice_number': {
+                    required: function() {
+                        if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061) {
+                            return true;
+                        }
+                    },
+                },
                 // 'is_e_reverse_charge_applicable': {
                 //     required: true,
                 // },
@@ -1195,7 +1213,7 @@ app.component('serviceInvoiceForm', {
 app.component('serviceInvoiceView', {
     templateUrl: service_invoice_view_template_url,
     controller: function($http, $location, HelperService, $routeParams, $rootScope, $scope, $timeout, $mdSelect, $window) {
-        if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061) {} else {
+        if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061 || $routeParams.type_id == 1062) {} else {
             $location.path('/page-not-found')
             return;
         }
@@ -1251,7 +1269,7 @@ app.component('serviceInvoiceView', {
             $rootScope.loading = false;
         });
 
-        self.qr_image_url = base_url+ '/storage/app/public/service-invoice/IRN_images';
+        self.qr_image_url = base_url + '/storage/app/public/service-invoice/IRN_images';
 
         /* Tab Funtion */
         $('.btn-nxt').on("click", function() {

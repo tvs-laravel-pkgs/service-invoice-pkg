@@ -132,6 +132,12 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 				'name' => 'import-cn-dn',
 				'display_name' => 'Import',
 			],
+			3051 => [
+				'display_order' => 10,
+				'parent_id' => 3040,
+				'name' => 'create-inv',
+				'display_name' => 'Create INV',
+			],
 
 		];
 

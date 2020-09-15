@@ -24,9 +24,15 @@ class ServiceInvoicesU27aug2020 extends Migration {
 			$table->unsignedDecimal('round_off_amount', 12, 2)->nullable()->after('total');
 			$table->unsignedDecimal('final_amount', 12, 2)->nullable()->after('round_off_amount');
 
-			$table->string('irn_number', 191)->nullable()->after('final_amount');
+			$table->boolean('is_service')->nullable()->after('final_amount');
+
+			$table->string('irn_number', 191)->nullable()->after('is_service');
 			$table->string('qr_image', 191)->nullable()->after('irn_number');
-			$table->text('irn_request')->nullable()->after('qr_image');
+
+			$table->string('ack_no', 191)->nullable()->after('qr_image');
+			$table->datetime('ack_date')->nullable()->after('ack_no');
+			$table->string('version', 191)->nullable()->after('ack_date');
+			$table->text('irn_request')->nullable()->after('version');
 			$table->text('irn_response')->nullable()->after('irn_request');
 
 			$table->foreign('to_account_type_id')->references('id')->on('configs')->onDelete('CASCADE')->onUpdate('cascade');
@@ -48,8 +54,12 @@ class ServiceInvoicesU27aug2020 extends Migration {
 			$table->dropColumn('final_amount');
 			$table->dropColumn('irn_number');
 			$table->dropColumn('qr_image');
+			$table->dropColumn('ack_no');
+			$table->dropColumn('ack_date');
 			$table->dropColumn('irn_request');
 			$table->dropColumn('irn_response');
+			$table->dropColumn('is_service');
+			$table->dropColumn('version');
 		});
 	}
 }

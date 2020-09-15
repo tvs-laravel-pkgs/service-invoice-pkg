@@ -97,6 +97,23 @@
                                             </li> -->
                                             <li>
                                                 <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Is Service </label>
+                                                    <div class="table-form-list-control is_service_error">
+                                                        <div class="common-radio-button type-4">
+                                                            <input type="radio" id="yes" name="is_service" ng-value="1" value="1" ng-model="$ctrl.service_invoice.is_service" ng-checked="$ctrl.service_invoice.is_service" class="is_service">
+                                                            <label for="yes">
+                                                                Yes
+                                                            </label>
+                                                            <input type="radio" id="no" name="is_service" ng-value="0" value="0" ng-model="$ctrl.service_invoice.is_service" ng-checked="!$ctrl.service_invoice.is_service" class="is_service">
+                                                            <label for="no">
+                                                                No
+                                                            </label>
+                                                        </div>
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                            <li>
+                                                <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Reverse Charge Applicability </label>
                                                     <div class="table-form-list-control reverse_charge_error" style="float: left!important;">
                                                         <div class="common-radio-button type-4">
@@ -158,7 +175,7 @@
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">{{$ctrl.service_invoice.to_account_type_id == 1440 ? 'Customer': '' }}{{$ctrl.service_invoice.to_account_type_id == 1441 ? 'Vendor': '' }}{{$ctrl.service_invoice.to_account_type_id == 1442 ? 'Ledger': '' }} Code <span class="mandatory">*</span></label>
                                                     <div class="table-form-list-control">
-                                                        <md-autocomplete ng-if="$ctrl.service_invoice.to_account_type_id == 1440" md-items="option in $ctrl.searchCustomer($ctrl.CustomerSearchText)" md-selected-item="$ctrl.service_invoice.customer" md-search-text="$ctrl.CustomerSearchText" md-selected-item-change="customerSelected()" md-item-text="option.code" md-min-length="3" md-escape-options="clear" placeholder="Customer code / name" input-aria-labelledby="favoriteStateLabel" md-no-cache="false" ng-model-options="{trackBy: '$value.id' }">
+                                                        <md-autocomplete class="type-sm" ng-if="$ctrl.service_invoice.to_account_type_id == 1440" md-items="option in $ctrl.searchCustomer($ctrl.CustomerSearchText)" md-selected-item="$ctrl.service_invoice.customer" md-search-text="$ctrl.CustomerSearchText" md-selected-item-change="customerSelected()" md-item-text="option.code" md-min-length="3" md-escape-options="clear" placeholder="Customer code / name" input-aria-labelledby="favoriteStateLabel" md-no-cache="false" ng-model-options="{trackBy: '$value.id' }">
                                                             <md-item-template>
                                                                 <span>
                                                                     {{option.code}} - {{option.name}}
@@ -169,7 +186,7 @@
                                                             </md-not-found>
                                                         </md-autocomplete>
                                                          <!-- FOR VENDOR SEARCH -->
-                                                        <md-autocomplete ng-if="$ctrl.service_invoice.to_account_type_id == 1441" md-items="option in $ctrl.searchVendor($ctrl.VendorSearchText)" md-selected-item="$ctrl.service_invoice.vendor" md-search-text="$ctrl.VendorSearchText" md-selected-item-change="vendorSelected()" md-item-text="option.code" md-min-length="3" md-escape-options="clear" placeholder="Vendor code / name" input-aria-labelledby="favoriteStateLabel" md-no-cache="false" ng-model-options="{trackBy: '$value.id' }">
+                                                        <md-autocomplete class="type-sm" ng-if="$ctrl.service_invoice.to_account_type_id == 1441" md-items="option in $ctrl.searchVendor($ctrl.VendorSearchText)" md-selected-item="$ctrl.service_invoice.vendor" md-search-text="$ctrl.VendorSearchText" md-selected-item-change="vendorSelected()" md-item-text="option.code" md-min-length="3" md-escape-options="clear" placeholder="Vendor code / name" input-aria-labelledby="favoriteStateLabel" md-no-cache="false" ng-model-options="{trackBy: '$value.id' }">
                                                             <md-item-template>
                                                                 <span>
                                                                     {{option.code}} - {{option.name}}
@@ -180,7 +197,7 @@
                                                             </md-not-found>
                                                         </md-autocomplete>
                                                         <!-- FOR LEDGER SEARCH -->
-                                                        <md-autocomplete ng-if="$ctrl.service_invoice.to_account_type_id == 1442" md-items="option in $ctrl.searchLedger($ctrl.LedgerSearchText)" md-selected-item="$ctrl.service_invoice.ledger" md-search-text="$ctrl.LedgerSearchText" md-selected-item-change="ledgerSelected()" md-item-text="option.code" md-min-length="3" md-escape-options="clear" placeholder="Ledger code / name" input-aria-labelledby="favoriteStateLabel" md-no-cache="false" ng-model-options="{trackBy: '$value.id' }">
+                                                        <md-autocomplete class="type-sm" ng-if="$ctrl.service_invoice.to_account_type_id == 1442" md-items="option in $ctrl.searchLedger($ctrl.LedgerSearchText)" md-selected-item="$ctrl.service_invoice.ledger" md-search-text="$ctrl.LedgerSearchText" md-selected-item-change="ledgerSelected()" md-item-text="option.code" md-min-length="3" md-escape-options="clear" placeholder="Ledger code / name" input-aria-labelledby="favoriteStateLabel" md-no-cache="false" ng-model-options="{trackBy: '$value.id' }">
                                                             <md-item-template>
                                                                 <span>
                                                                     {{option.code}} - {{option.name}}
@@ -207,7 +224,7 @@
                                             </li>
                                             <li>
                                                 <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Invoice # </label>
+                                                    <label class="table-form-list-label">Invoice # <span class="mandatory" ng-if="$ctrl.type_id == 1060 || $ctrl.type_id == 1061">*</span></label>
                                                     <div class="table-form-list-control">
                                                         <input type="text" ng-model="$ctrl.service_invoice.invoice_number" name="invoice_number" class="type-sm form-control" placeholder="Enter Invoice Number">
                                                     </div><!-- Table Form List Control -->
@@ -223,10 +240,10 @@
                                             </li> -->
                                             <li>
                                                 <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Invoice Date </label>
-                                                    <div class="table-form-list-control invoice_date_error">
+                                                    <label class="table-form-list-label">Invoice Date <span class="mandatory" ng-if="$ctrl.type_id == 1060 || $ctrl.type_id == 1061">*</span></label>
+                                                    <div class="table-form-list-control inv_date_error">
                                                         <div class="input-group date type-sm invoiceDatePicker">
-                                                            <input name="invoice_date" ng-model="$ctrl.service_invoice.invoice_date" type="text" class="form-control invoice_date" placeholder="Select Invoice Date" value="{{$ctrl.service_invoice.invoice_date}}" />
+                                                            <input name="invoice_date" ng-model="$ctrl.service_invoice.invoice_date" type="text" class="form-control inv_date" placeholder="Select Invoice Date" value="{{$ctrl.service_invoice.invoice_date}}" />
                                                             <div class="input-group-addon">
                                                                 <img class="img-responsive" src="public/theme/img/content/calender-gray-icon.svg" alt="Calendar Image" />
                                                             </div>
