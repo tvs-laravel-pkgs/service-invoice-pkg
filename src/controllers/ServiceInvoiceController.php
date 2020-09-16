@@ -31,6 +31,7 @@ use Excel;
 use File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rules\RequiredIf;
 use PDF;
 use phpseclib\Crypt\RSA as Crypt_RSA;
 use QRCode;
@@ -93,7 +94,7 @@ class ServiceInvoiceController extends Controller {
 			->join('configs', 'configs.id', 'service_invoices.type_id')
 			->join('approval_type_statuses', 'approval_type_statuses.id', 'service_invoices.status_id')
 		// ->where('service_invoices.company_id', Auth::user()->company_id)
-			->where('approval_type_statuses.approval_type_id', 1)
+			->whereIn('approval_type_statuses.approval_type_id', [1, 3])
 			->where(function ($query) use ($first_date_this_month, $last_date_this_month) {
 				if (!empty($first_date_this_month) && !empty($last_date_this_month)) {
 					$query->whereRaw("DATE(service_invoices.document_date) BETWEEN '" . $first_date_this_month . "' AND '" . $last_date_this_month . "'");
@@ -176,7 +177,8 @@ class ServiceInvoiceController extends Controller {
 
 			})
 			->addColumn('action', function ($service_invoice_list) {
-				$type_id = $service_invoice_list->si_type_id == '1060' ? 1060 : 1061;
+				// $type_id = $service_invoice_list->si_type_id == '1060' ? 1060 : 1061;
+				$type_id = $service_invoice_list->si_type_id;
 				$img_edit = asset('public/theme/img/table/cndn/edit.svg');
 				$img_view = asset('public/theme/img/table/cndn/view.svg');
 				$img_download = asset('public/theme/img/table/cndn/download.svg');
@@ -190,12 +192,16 @@ class ServiceInvoiceController extends Controller {
 	                    	</a>
 	                    	<a href="' . $path . '/' . $service_invoice_list->number . '.pdf" class="" target="_blank"><img class="img-responsive" src="' . $img_download . '" alt="Download" />
 	                        </a>';
-				} elseif ($service_invoice_list->status_id != '4') {
+				} elseif ($service_invoice_list->status_id != '4' && $service_invoice_list->status_id != '3') {
 					$output .= '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
 	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
 	                    	</a>
 	                    	<a href="#!/service-invoice-pkg/service-invoice/edit/' . $type_id . '/' . $service_invoice_list->id . '" class="">
 	                        <img class="img-responsive" src="' . $img_edit . '" alt="Edit" />
+	                    	</a>';
+				} elseif ($service_invoice_list->status_id == '3') {
+					$output .= '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
+	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
 	                    	</a>';
 				}
 				if ($service_invoice_list->status_id == '1') {
@@ -758,7 +764,7 @@ class ServiceInvoiceController extends Controller {
 				'sbu_id.required' => 'Sbu is required',
 				'category_id.required' => 'Category is required',
 				// 'sub_category_id.required' => 'Sub Category is required',
-				// 'invoice_date.required' => 'Invoice date is required',
+				'invoice_date.required_if' => 'Invoice date is required',
 				'document_date.required' => 'Document date is required',
 				'customer_id.required' => 'Customer is required',
 				'proposal_attachments.*.required' => 'Please upload an image',
@@ -766,7 +772,7 @@ class ServiceInvoiceController extends Controller {
 				'number.unique' => 'Service invoice number has already been taken',
 				// 'is_reverse_charge_applicable.required' => 'Reverse Charge Applicale is required',
 				// 'po_reference_number.required' => 'PO Reference Number is required',
-				// 'invoice_number.required' => 'Invoice Number is required',
+				'invoice_number.required_if' => 'Invoice Number is required',
 				// 'invoice_date.required' => 'Invoice Date is required',
 				// 'round_off_amount.required' => 'Round Off Amount is required',
 			];
@@ -784,9 +790,11 @@ class ServiceInvoiceController extends Controller {
 				// 'sub_category_id' => [
 				// 	'required:true',
 				// ],
-				// 'invoice_date' => [
-				// 	'required:true',
-				// ],
+				'invoice_date' => [
+					// 'required:true',
+					new RequiredIf($request->type_id == 1060 || $request->type_id == 1061),
+					// 'required_if:' . $request->type_id, ==, 1060 || $request->type_id == 1060,
+				],
 				'document_date' => [
 					'required:true',
 				],
@@ -806,9 +814,11 @@ class ServiceInvoiceController extends Controller {
 				// 'po_reference_number' => [
 				// 	'required:true',
 				// ],
-				// 'invoice_number' => [
-				// 	'required:true',
-				// ],
+				'invoice_number' => [
+					new RequiredIf($request->type_id == 1060 || $request->type_id == 1061),
+					// 'required_if:' . $request->type_id == 1060 || $request->type_id == 1060,
+					// 'required:true',
+				],
 				// 'round_off_amount' => [
 				// 	'required:true',
 				// ],
@@ -843,6 +853,9 @@ class ServiceInvoiceController extends Controller {
 				} elseif ($request->type_id == 1060) {
 					//CN
 					$serial_number_category = 4;
+				} elseif ($request->type_id == 1062) {
+					//INV
+					$serial_number_category = 121;
 				}
 
 				$sbu = Sbu::find($request->sbu_id);
@@ -907,6 +920,7 @@ class ServiceInvoiceController extends Controller {
 
 			$service_invoice->type_id = $request->type_id;
 			$service_invoice->fill($request->all());
+			$service_invoice->round_off_amount = abs($request->round_off_amount);
 			$service_invoice->invoice_date = date('Y-m-d H:i:s');
 			$service_invoice->company_id = Auth::user()->company_id;
 			$service_invoice->save();
@@ -1080,6 +1094,8 @@ class ServiceInvoiceController extends Controller {
 				//dd($type->sac_code_id);
 			}
 			//Field values
+			$item_count = 0;
+			$item_count_with_tax_code = 0;
 			$gst_total = 0;
 			foreach ($service_invoice_pdf->serviceInvoiceItems as $key => $serviceInvoiceItem) {
 				//FIELD GROUPS AND FIELDS INTEGRATION
@@ -1186,22 +1202,53 @@ class ServiceInvoiceController extends Controller {
 						];
 					}
 				}
+				if ($serviceInvoiceItem->serviceItem->sac_code_id) {
+					$item_count_with_tax_code++;
+				}
 				//PUSH TOTAL FIELD GROUPS
 				$serviceInvoiceItem->field_groups = $field_group_val;
+				$item_count++;
 			}
 		}
+		// dd($item_count, $item_count_with_tax_code);
 		//dd($service_invoice_pdf->type_id);
 		$type = $serviceInvoiceItem->serviceItem;
 		if (!empty($type->sac_code_id) && ($service_invoice_pdf->type_id == 1060)) {
-			$service_invoice_pdf->sac_code_status = 'CREDIT NOTE';
+			$service_invoice_pdf->sac_code_status = 'CREDIT NOTE(CRN)';
+			$service_invoice_pdf->document_type = 'CRN';
 		} elseif (empty($type->sac_code_id) && ($service_invoice_pdf->type_id == 1060)) {
 			$service_invoice_pdf->sac_code_status = 'FINANCIAL CREDIT NOTE';
+			$service_invoice_pdf->document_type = 'CRN';
+		} elseif ($service_invoice_pdf->type_id == 1061) {
+			$service_invoice_pdf->sac_code_status = 'Tax Invoice(DBN)';
+			$service_invoice_pdf->document_type = 'DBN';
 		} else {
-			$service_invoice_pdf->sac_code_status = 'Tax Invoice';
+			$service_invoice_pdf->sac_code_status = 'Invoice(INV)';
+			$service_invoice_pdf->document_type = 'INV';
 		}
+
+		if ($service_invoice->type_id == 1060) {
+			$service_invoice_pdf->type = 'CRN';
+		} elseif ($service_invoice->type_id == 1061) {
+			$service_invoice_pdf->type = 'DBN';
+		} elseif ($service_invoice->type_id == 1062) {
+			$service_invoice_pdf->type = 'INV';
+		}
+
+		if ($service_invoice->total > $service_invoice->final_amount) {
+			$service_invoice->round_off_amount = number_format(($service_invoice->final_amount - $service_invoice->total), 2);
+		} elseif ($service_invoice->total < $service_invoice->final_amount) {
+			$service_invoice->round_off_amount;
+		} else {
+			$service_invoice->round_off_amount = 0;
+		}
+
+		// dd($service_invoice_pdf->type);
+
 		// dd($service_invoice_pdf->sac_code_status);
-		dd($serviceInvoiceItem->serviceItem);
-		if ($service_invoice_pdf->customer->gst_number) {
+
+		if ($service_invoice_pdf->customer->gst_number && ($item_count == $item_count_with_tax_code)) {
+			// dd('in');
 			//----------// ENCRYPTION START //----------//
 			// $service_invoice->irnCreate($service_invoice_id);
 			// RSA ENCRYPTION
@@ -1371,6 +1418,8 @@ class ServiceInvoiceController extends Controller {
 						'errors' => 'Item Not Mapped with Tax code!. Item Code: ' . $service_item->code,
 					];
 				}
+				// dump($serviceInvoiceItem->sub_total ? $serviceInvoiceItem->sub_total : 0);
+				// dump(number_format($igst_total));
 				// dd($cgst_total, $sgst_total, $igst_total);
 
 				$item['SlNo'] = $sno; //Statically assumed
@@ -1387,7 +1436,7 @@ class ServiceInvoiceController extends Controller {
 				$item['Qty'] = 1; //ALWAYS 1
 				$item['FreeQty'] = 0;
 				$item['Unit'] = $serviceInvoiceItem->eInvoiceUom ? $serviceInvoiceItem->eInvoiceUom->code : "NOS";
-				$item['UnitPrice'] = number_format($serviceInvoiceItem->rate ? $serviceInvoiceItem->rate : 0); //NEED TO CLARIFY
+				$item['UnitPrice'] = number_format($serviceInvoiceItem->sub_total ? $serviceInvoiceItem->sub_total : 0); //NEED TO CLARIFY
 				$item['TotAmt'] = number_format($serviceInvoiceItem->sub_total ? $serviceInvoiceItem->sub_total : 0);
 				$item['Discount'] = 0; //Always value will be "0"
 				$item['PreTaxVal'] = number_format($serviceInvoiceItem->rate ? $serviceInvoiceItem->rate : 0);
@@ -1465,15 +1514,15 @@ class ServiceInvoiceController extends Controller {
 				array(
 					'TranDtls' => array(
 						'TaxSch' => "GST",
-						'SupTyp' => "B2B",
+						'SupTyp' => "B2B", //ALWAYS B2B FOR REGISTER IRN
 						'RegRev' => $service_invoice->is_reverse_charge_applicable == 1 ? "Y" : "N",
 						'EcmGstin' => null,
 						'IgstonIntra' => null, //NEED TO CLARIFY
 					),
 					'DocDtls' => array(
-						"Typ" => $service_invoice->type_id == 1060 ? 'CRN' : 'DBN',
+						"Typ" => $service_invoice_pdf->type,
 						"No" => $service_invoice->number,
-						// "No" => '23AUG2020SN132',
+						// "No" => '23AUG2020SN136',
 						"Dt" => date('d-m-Y', strtotime($service_invoice->document_date)),
 					),
 					'SellerDtls' => array(
@@ -1533,14 +1582,14 @@ class ServiceInvoiceController extends Controller {
 					),
 					'ValDtls' => array(
 						"AssVal" => number_format($service_invoice->amount_total ? $service_invoice->amount_total : 0),
-						"CgstVal" => number_format($cgst_total),
-						"SgstVal" => number_format($sgst_total),
-						"IgstVal" => number_format($igst_total),
+						"CgstVal" => number_format($cgst_total, 2),
+						"SgstVal" => number_format($sgst_total, 2),
+						"IgstVal" => number_format($igst_total, 2),
 						"CesVal" => 0,
 						"StCesVal" => 0,
 						"Discount" => 0,
 						"OthChrg" => 0,
-						"RndOffAmt" => number_format($service_invoice->round_off_amount),
+						"RndOffAmt" => number_format($service_invoice->final_amount - $service_invoice->total, 2),
 						// "RndOffAmt" => 0, // Invalid invoice round off amount ,should be  + or - RS 10.
 						"TotInvVal" => number_format($service_invoice->final_amount),
 						"TotInvValFc" => null,
@@ -1596,7 +1645,8 @@ class ServiceInvoiceController extends Controller {
 				)
 			);
 
-			dump($json_encoded_data);
+			// dump($json_encoded_data);
+			// dd(1);
 
 			//AES ENCRYPT
 			$aes_encrypt_url = 'https://www.devglan.com/online-tools/aes-encryption';
@@ -1787,8 +1837,8 @@ class ServiceInvoiceController extends Controller {
 			} else {
 				$service_invoice_pdf->qr_image = '';
 			}
-			// dump($service_invoice_pdf->qr_image);
-			// dd('out');
+			$get_version = json_decode($final_json_decode->Invoice);
+			$get_version = json_decode($get_version->data);
 
 			// $image = '<img src="storage/app/public/service-invoice/IRN_images/' . $final_json_decode->AckNo . '.png" title="IRN QR Image">';
 			$service_invoice_save = ServiceInvoice::find($service_invoice_id);
@@ -1796,16 +1846,20 @@ class ServiceInvoiceController extends Controller {
 			$service_invoice_save->qr_image = $service_invoice->number . '.png' . '.jpg';
 			$service_invoice_save->ack_no = $final_json_decode->AckNo;
 			$service_invoice_save->ack_date = $final_json_decode->AckDt;
+			$service_invoice_save->version = $get_version->Version;
 			$service_invoice_save->irn_request = $json_encoded_data;
 			$service_invoice_save->irn_response = $aes_final_decoded_plain_text;
 			$service_invoice_save->save();
 
 			//SEND TO PDF
+			$service_invoice_pdf->version = $get_version->Version;
+			$service_invoice_pdf->round_off_amount = $service_invoice->round_off_amount;
 			$service_invoice_pdf->irn_number = $final_json_decode->Irn;
 			$service_invoice_pdf->ack_no = $final_json_decode->AckNo;
 			$service_invoice_pdf->ack_date = $final_json_decode->AckDt;
 
 		}
+		// dd('out');
 		// dd($service_invoice_pdf);
 		// dd('stop Encryption');
 		//----------// ENCRYPTION END //----------//
