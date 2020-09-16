@@ -178,6 +178,16 @@
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
+                                            <li ng-if="$ctrl.service_invoice.version">
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Version </label>
+                                                    <div class="table-form-list-control invoice_date_error">
+                                                        <div class="input-group date type-sm invoiceDatePicker">
+                                                            <input name="version" ng-model="$ctrl.service_invoice.version" type="text" class="form-control version" placeholder="Select Doc Date" value="{{$ctrl.service_invoice.version}}" readonly />
+                                                        </div><!-- Input Group -->
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
                                             <li>
                                                 <label class="table-form-list-label">Ref Attachments</label>
                                                 <div ng-repeat="(index, service_invoice_attachment) in $ctrl.service_invoice.attachments">

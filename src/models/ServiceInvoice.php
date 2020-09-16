@@ -939,11 +939,19 @@ class ServiceInvoice extends Model {
 			$this->sac_code_status = 'FINANCIAL CREDIT NOTE';
 			$this->document_type = 'CRN';
 		} elseif ($this->type_id == 1061) {
-			$this->sac_code_status = 'Tax Invoice(DEN)';
-			$this->document_type = 'DEN';
+			$this->sac_code_status = 'Tax Invoice(DBN)';
+			$this->document_type = 'DBN';
 		} else {
 			$this->sac_code_status = 'Invoice(INV)';
 			$this->document_type = 'INV';
+		}
+
+		if ($this->total > $this->final_amount) {
+			$this->round_off_amount = number_format(($this->final_amount - $this->total), 2);
+		} elseif ($this->total < $this->final_amount) {
+			$this->round_off_amount;
+		} else {
+			$this->round_off_amount = 0;
 		}
 
 		$this->qr_image = $this->qr_image ? base_path('storage/app/public/service-invoice/IRN_images/' . $this->qr_image) : NULL;
