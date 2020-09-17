@@ -14,6 +14,7 @@ use Abs\ServiceInvoicePkg\ServiceItem;
 use Abs\ServiceInvoicePkg\ServiceItemCategory;
 use Abs\TaxPkg\Tax;
 use App\Attachment;
+use App\City;
 use App\Company;
 use App\Config;
 use App\Customer;
@@ -23,6 +24,7 @@ use App\FinancialYear;
 use App\Http\Controllers\Controller;
 use App\Outlet;
 use App\Sbu;
+use App\State;
 use App\User;
 use Auth;
 use DB;
@@ -382,7 +384,7 @@ class ServiceInvoiceController extends Controller {
 			'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
 			'sub_category_list' => [],
 			'uom_list' => EInvoiceUom::getList(),
-			'to_account_type_list' => Config::select('name', 'id')->where('config_type_id', 27)->get(), //ACCOUNT TYPES
+			'to_account_type_list' => Config::select('name', 'id')->where('config_type_id', 27)->whereIn('id', [1440, 1441])->get(), //ACCOUNT TYPES
 			// 'sub_category_list' => [],
 		];
 		$this->data['config_values'] = Entity::where('company_id', Auth::user()->company_id)->whereIn('entity_type_id', [15, 16])->get();
@@ -1081,6 +1083,10 @@ class ServiceInvoiceController extends Controller {
 		// $service_invoice_pdf->outlets->formatted_address = $service_invoice_pdf->outlets->primaryAddress ? $service_invoice_pdf->outlets->primaryAddress->getFormattedAddress() : 'NA';
 		$service_invoice_pdf->outlets = $service_invoice_pdf->outlets ? $service_invoice_pdf->outlets : 'NA';
 		$service_invoice_pdf->customer->formatted_address = $service_invoice_pdf->customer->primaryAddress ? $service_invoice_pdf->customer->primaryAddress->address_line1 : 'NA';
+		$city = City::where('name', $service_invoice_pdf->customer->city)->first();
+		// dd($city);
+		$state = State::find($city->state_id);
+		$service_invoice_pdf->customer->state_code = $state->e_invoice_state_code ? $state->e_invoice_state_code : '-';
 		// dd($service_invoice_pdf->outlets->formatted_address);
 		$fields = Field::withTrashed()->get()->keyBy('id');
 		if (count($service_invoice_pdf->serviceInvoiceItems) > 0) {
@@ -1876,6 +1882,8 @@ class ServiceInvoiceController extends Controller {
 		$name = $service_invoice_pdf->number . '.pdf';
 		File::isDirectory($path) or File::makeDirectory($path, 0777, true, true);
 
+		$pdf = app('dompdf.wrapper');
+		$pdf->getDomPDF()->set_option("enable_php", true);
 		$pdf = PDF::loadView('service-invoices/pdf/index', $this->data);
 		// return $pdf->stream('service_invoice.pdf');
 		// dd($pdf);

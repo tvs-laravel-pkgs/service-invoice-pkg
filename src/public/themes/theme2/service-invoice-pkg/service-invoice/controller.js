@@ -576,14 +576,15 @@ app.component('serviceInvoiceForm', {
                 autoclose: "true",
                 todayHighlight: true,
                 startDate: min_offset,
-                endDate: max_offset
+                // endDate: max_offset
+                endDate: 'today'
             });
             $('.invoiceDatePicker').bootstrapDP({
                 format: "dd-mm-yyyy",
                 autoclose: "true",
                 todayHighlight: true,
                 // startDate: min_offset,
-                endDate: max_offset
+                endDate: 'today'
             });
         }, 7000);
 
@@ -671,18 +672,20 @@ app.component('serviceInvoiceForm', {
         }
 
         self.searchCustomer = $rootScope.searchCustomer;
+        // console.log(self.searchCustomer);
 
         //GET CUSTOMER DETAILS
-        $scope.customerSelected = function() {
+        $scope.customerSelected = function(code) {
+            console.log(code);
             if (self.service_invoice.customer || self.service_invoice.customer != null) {
-                var res = $rootScope.getCustomer(self.service_invoice.customer.id).then(function(res) {
+                var res = $rootScope.getCustomer(self.service_invoice.customer.code).then(function(res) {
                     console.log(res);
                     if (!res.data.success) {
                         custom_noty('error', res.data.error);
                         return;
                     }
                     self.customer = res.data.customer
-                    // self.service_invoice.customer = res.data.customer
+                    self.service_invoice.customer = res.data.customer
                 });
             } else {
                 self.customer = {};
@@ -710,24 +713,24 @@ app.component('serviceInvoiceForm', {
         }
 
 
-        self.searchLedger = $rootScope.searchLedger;
+        // self.searchLedger = $rootScope.searchLedger;
 
         //GET VENDOR DETAILS
-        $scope.ledgerSelected = function() {
-            if (self.service_invoice.ledger || self.service_invoice.ledger != null) {
-                var res = $rootScope.getLedger(self.service_invoice.legder.id).then(function(res) {
-                    console.log(res);
-                    if (!res.data.success) {
-                        custom_noty('error', res.data.error);
-                        return;
-                    }
-                    self.customer = res.data.ledger;
-                });
-            } else {
-                self.customer = {};
-                self.service_invoice.service_invoice_items = [];
-            }
-        }
+        // $scope.ledgerSelected = function() {
+        //     if (self.service_invoice.ledger || self.service_invoice.ledger != null) {
+        //         var res = $rootScope.getLedger(self.service_invoice.legder.id).then(function(res) {
+        //             console.log(res);
+        //             if (!res.data.success) {
+        //                 custom_noty('error', res.data.error);
+        //                 return;
+        //             }
+        //             self.customer = res.data.ledger;
+        //         });
+        //     } else {
+        //         self.customer = {};
+        //         self.service_invoice.service_invoice_items = [];
+        //     }
+        // }
 
         //SEARCH CUSTOMER
         // self.searchCustomer = function(query) {

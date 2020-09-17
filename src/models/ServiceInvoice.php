@@ -18,7 +18,6 @@ use DB;
 use File;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use PDF;
 use PHPExcel_Shared_Date;
 
 class ServiceInvoice extends Model {
@@ -96,10 +95,11 @@ class ServiceInvoice extends Model {
 		} elseif ($this->to_account_type_id == 1441) {
 			//vendor
 			return $this->belongsTo('App\Vendor', 'customer_id');
-		} elseif ($this->to_account_type_id == 1442) {
-			//ledger
-			return $this->belongsTo('Abs\JVPkg\Ledger', 'customer_id');
 		}
+		// elseif ($this->to_account_type_id == 1442) {
+		// 	//ledger
+		// 	return $this->belongsTo('Abs\JVPkg\Ledger', 'customer_id');
+		// }
 	}
 
 	public function customer() {
@@ -269,10 +269,14 @@ class ServiceInvoice extends Model {
 		if ($this->type_id == 1060) {
 			//CN
 			$Txt .= ' - Credit note for ';
-		} else {
+		} elseif ($this->type_id == 1061) {
 			//DN
 			$Txt .= ' - Debit note for ';
 		}
+		// else {
+		// 	//DN
+		// 	$Txt .= ' - Invoice for ';
+		// }
 		$Txt .= implode(',', $item_codes);
 
 		if ($total_amount_with_gst['debit'] == 0 && $total_amount_with_gst['credit'] == 0) {
@@ -971,7 +975,9 @@ class ServiceInvoice extends Model {
 		$pathToFile = $path . '/' . $this->number . '.pdf';
 		File::isDirectory($path) or File::makeDirectory($path, 0777, true, true);
 
-		$pdf = PDF::loadView('service-invoices/pdf/index', $data);
+		$pdf = app('dompdf.wrapper');
+		$pdf->getDomPDF()->set_option("enable_php", true);
+		$pdf = $pdf->loadView('service-invoices/pdf/index', $data);
 		// $po_file_name = 'Invoice-' . $this->number . '.pdf';
 		File::delete($pathToFile);
 		File::put($pathToFile, $pdf->output());
