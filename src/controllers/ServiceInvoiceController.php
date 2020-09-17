@@ -34,7 +34,6 @@ use File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\RequiredIf;
-use PDF;
 use phpseclib\Crypt\RSA as Crypt_RSA;
 use QRCode;
 use Session;
@@ -1884,7 +1883,7 @@ class ServiceInvoiceController extends Controller {
 
 		$pdf = app('dompdf.wrapper');
 		$pdf->getDomPDF()->set_option("enable_php", true);
-		$pdf = PDF::loadView('service-invoices/pdf/index', $this->data);
+		$pdf = $pdf->loadView('service-invoices/pdf/index', $this->data);
 		// return $pdf->stream('service_invoice.pdf');
 		// dd($pdf);
 		// $po_file_name = 'Invoice-' . $service_invoice_pdf->number . '.pdf';
