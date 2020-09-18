@@ -770,7 +770,14 @@ class ServiceInvoice extends Model {
 
 		$this->company->formatted_address = $this->company->primaryAddress ? $this->company->primaryAddress->getFormattedAddress() : 'NA';
 		// $this->outlets->formatted_address = $this->outlets->primaryAddress ? $this->outlets->primaryAddress->getFormattedAddress() : 'NA';
-		$this->outlets = $this->outlets ? $this->outlets : 'NA';
+		if ($this->number == 'F21MDSDN0001') {
+			dump('static outlet');
+			$this['branch_id'] = 134; //TRY - Trichy
+			$this->outlets = $this->outlets ? $this->outlets : 'NA';
+		} else {
+			$this->outlets = $this->outlets ? $this->outlets : 'NA';
+		}
+
 		$this->customer->formatted_address = $this->customer->primaryAddress ? $this->customer->primaryAddress->address_line1 : 'NA';
 		// dd($this->outlets->formatted_address);
 		$fields = Field::withTrashed()->get()->keyBy('id');
@@ -906,6 +913,7 @@ class ServiceInvoice extends Model {
 		}
 		//dd($this->sac_code_status);
 		//dd($serviceInvoiceItem->field_groups);
+
 		$data = [];
 		$data['service_invoice_pdf'] = $this;
 
