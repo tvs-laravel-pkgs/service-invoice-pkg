@@ -19,6 +19,7 @@ use App\Company;
 use App\Config;
 use App\Customer;
 use App\EInvoiceUom;
+use App\Employee;
 use App\Entity;
 use App\FinancialYear;
 use App\Http\Controllers\Controller;
@@ -160,6 +161,15 @@ class ServiceInvoiceController extends Controller {
 				->pluck('employee_outlet.outlet_id')
 				->toArray();
 			$service_invoice_list = $service_invoice_list->whereIn('service_invoices.branch_id', $view_user_outlets_only);
+		} elseif (Entrust::can('view-sbu-based-cn-dn')) {
+			$view_employee_sbu_only = Employee::leftJoin('users', 'users.entity_id', 'employees.id')
+				->leftJoin('employee_sbu', 'employee_sbu.employee_id', 'employees.id')
+				->where('employee_sbu.employee_id', Auth::user()->entity_id)
+				->where('employees.company_id', Auth::user()->company_id)
+				->where('users.user_type_id', 1)
+				->pluck('employee_sbu.sbu_id')
+				->toArray();
+			$service_invoice_list = $service_invoice_list->whereIn('service_invoices.sbu_id', $view_employee_sbu_only);
 		} else {
 			$service_invoice_list = [];
 		}
