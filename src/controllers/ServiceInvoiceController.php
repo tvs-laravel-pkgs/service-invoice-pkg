@@ -13,6 +13,7 @@ use Abs\ServiceInvoicePkg\ServiceInvoiceItem;
 use Abs\ServiceInvoicePkg\ServiceItem;
 use Abs\ServiceInvoicePkg\ServiceItemCategory;
 use Abs\TaxPkg\Tax;
+use App\ApiLog;
 use App\Attachment;
 use App\City;
 use App\Company;
@@ -34,7 +35,6 @@ use Excel;
 use File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rules\RequiredIf;
 use phpseclib\Crypt\RSA as Crypt_RSA;
 use QRCode;
 use Session;
@@ -81,10 +81,21 @@ class ServiceInvoiceController extends Controller {
 				'sbus.name as sbu',
 				'service_item_categories.name as category',
 				'service_item_sub_categories.name as sub_category',
-				'customers.code as customer_code',
-				'customers.name as customer_name',
+				// DB::raw('IF(service_invoices.to_account_type_id=1440,customers.code,vendors.code) as customer_code'),
+				// DB::raw('IF(service_invoices.to_account_type_id=1440,customers.name,vendors.name) as customer_name'),
+				DB::raw('CASE
+                    WHEN service_invoices.to_account_type_id = "1440" THEN customers.code
+                    WHEN service_invoices.to_account_type_id = "1441" THEN vendors.code
+                    ELSE customers.code END AS customer_code'),
+				DB::raw('CASE
+                    WHEN service_invoices.to_account_type_id = "1440" THEN customers.name
+                    WHEN service_invoices.to_account_type_id = "1441" THEN vendors.name
+                    ELSE customers.name END AS customer_name'),
+				// 'customers.code as customer_code',
+				// 'customers.name as customer_name',
 				'configs.name as type_name',
 				'configs.id as si_type_id',
+				DB::raw('IF(to_account_type.name IS NULL,"Customer",to_account_type.name) as to_account_type'),
 				'approval_type_statuses.status',
 				'service_invoices.created_by_id'
 			)
@@ -92,11 +103,17 @@ class ServiceInvoiceController extends Controller {
 			->join('sbus', 'sbus.id', 'service_invoices.sbu_id')
 			->leftJoin('service_item_sub_categories', 'service_item_sub_categories.id', 'service_invoices.sub_category_id')
 			->leftJoin('service_item_categories', 'service_item_categories.id', 'service_invoices.category_id')
-			->join('customers', 'customers.id', 'service_invoices.customer_id')
+			->leftJoin('customers', function ($join) {
+				$join->on('customers.id', 'service_invoices.customer_id');
+			})
+			->leftJoin('vendors', function ($join) {
+				$join->on('vendors.id', 'service_invoices.customer_id');
+			})
 			->join('configs', 'configs.id', 'service_invoices.type_id')
+			->leftJoin('configs as to_account_type', 'to_account_type.id', 'service_invoices.to_account_type_id')
 			->join('approval_type_statuses', 'approval_type_statuses.id', 'service_invoices.status_id')
 		// ->where('service_invoices.company_id', Auth::user()->company_id)
-			->whereIn('approval_type_statuses.approval_type_id', [1, 3])
+			->whereIn('approval_type_statuses.approval_type_id', [1, 3, 5])
 			->where(function ($query) use ($first_date_this_month, $last_date_this_month) {
 				if (!empty($first_date_this_month) && !empty($last_date_this_month)) {
 					$query->whereRaw("DATE(service_invoices.document_date) BETWEEN '" . $first_date_this_month . "' AND '" . $last_date_this_month . "'");
@@ -237,8 +254,9 @@ class ServiceInvoiceController extends Controller {
 		} else {
 			$service_invoice = ServiceInvoice::with([
 				'attachments',
-				'customer',
-				'customer.primaryAddress',
+				'toAccountType',
+				// 'customer',
+				// 'customer.primaryAddress',
 				'branch',
 				'branch.primaryAddress',
 				'serviceInvoiceItems',
@@ -254,7 +272,7 @@ class ServiceInvoiceController extends Controller {
 			if (!$service_invoice) {
 				return response()->json(['success' => false, 'error' => 'Service Invoice not found']);
 			}
-			$service_invoice->toAccount;
+			$service_invoice->customer; //ADDED FOR CUSTOMER AND VENDOR BOTH
 			$fields = Field::withTrashed()->get()->keyBy('id');
 			if (count($service_invoice->serviceInvoiceItems) > 0) {
 				$gst_total = 0;
@@ -435,9 +453,10 @@ class ServiceInvoiceController extends Controller {
 	}
 
 	public function getServiceItemDetails(Request $request) {
+		// dd($request->all());
 
 		//GET TAXES BY CONDITIONS
-		$taxes = Tax::getTaxes($request->service_item_id, $request->branch_id, $request->customer_id);
+		$taxes = Tax::getTaxes($request->service_item_id, $request->branch_id, $request->customer_id, $request->to_account_type_id);
 		if (!$taxes['success']) {
 			return response()->json(['success' => false, 'error' => $taxes['error']]);
 		}
@@ -801,11 +820,9 @@ class ServiceInvoiceController extends Controller {
 				// 'sub_category_id' => [
 				// 	'required:true',
 				// ],
-				'invoice_date' => [
-					// 'required:true',
-					new RequiredIf($request->type_id == 1060 || $request->type_id == 1061),
-					// 'required_if:' . $request->type_id, ==, 1060 || $request->type_id == 1060,
-				],
+				// 'invoice_date' => [
+				// new RequiredIf($request->type_id == 1060 || $request->type_id == 1061),
+				// ],
 				'document_date' => [
 					'required:true',
 				],
@@ -825,11 +842,9 @@ class ServiceInvoiceController extends Controller {
 				// 'po_reference_number' => [
 				// 	'required:true',
 				// ],
-				'invoice_number' => [
-					new RequiredIf($request->type_id == 1060 || $request->type_id == 1061),
-					// 'required_if:' . $request->type_id == 1060 || $request->type_id == 1060,
-					// 'required:true',
-				],
+				// 'invoice_number' => [
+				// new RequiredIf($request->type_id == 1060 || $request->type_id == 1061),
+				// ],
 				// 'round_off_amount' => [
 				// 	'required:true',
 				// ],
@@ -932,7 +947,7 @@ class ServiceInvoiceController extends Controller {
 			$service_invoice->type_id = $request->type_id;
 			$service_invoice->fill($request->all());
 			$service_invoice->round_off_amount = abs($request->round_off_amount);
-			$service_invoice->invoice_date = date('Y-m-d H:i:s');
+			// $service_invoice->invoice_date = date('Y-m-d H:i:s');
 			$service_invoice->company_id = Auth::user()->company_id;
 			$service_invoice->save();
 			$approval_levels = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 19)->first();
@@ -1066,7 +1081,8 @@ class ServiceInvoiceController extends Controller {
 		// dd($service_invoice_id);
 		$service_invoice = $service_invoice_pdf = ServiceInvoice::with([
 			'company',
-			'customer',
+			// 'customer',
+			'toAccountType',
 			'outlets',
 			'outlets.primaryAddress',
 			'outlets.region',
@@ -1081,12 +1097,15 @@ class ServiceInvoiceController extends Controller {
 			'serviceInvoiceItems.taxes',
 		])->find($service_invoice_id);
 
+		// $service_invoice->customer;
+		// $service_invoice_pdf->customer;
+
 		$r = $service_invoice->exportToAxapta();
 		if (!$r['success']) {
 			return $r;
 		}
 		// dd($service_invoice->outlets->primaryAddress->country);
-		// dump($service_invoice);
+		// dd('in');
 
 		$service_invoice_pdf->company->formatted_address = $service_invoice_pdf->company->primaryAddress ? $service_invoice_pdf->company->primaryAddress->getFormattedAddress() : 'NA';
 		// $service_invoice_pdf->outlets->formatted_address = $service_invoice_pdf->outlets->primaryAddress ? $service_invoice_pdf->outlets->primaryAddress->getFormattedAddress() : 'NA';
@@ -1095,7 +1114,7 @@ class ServiceInvoiceController extends Controller {
 		$city = City::where('name', $service_invoice_pdf->customer->city)->first();
 		// dd($city);
 		$state = State::find($city->state_id);
-		$service_invoice_pdf->customer->state_code = $state->e_invoice_state_code ? $state->e_invoice_state_code : '-';
+		$service_invoice_pdf->customer->state_code = $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-';
 		// dd($service_invoice_pdf->outlets->formatted_address);
 		$fields = Field::withTrashed()->get()->keyBy('id');
 		if (count($service_invoice_pdf->serviceInvoiceItems) > 0) {
@@ -1258,10 +1277,7 @@ class ServiceInvoiceController extends Controller {
 			$service_invoice->round_off_amount = 0;
 		}
 
-		// dd($service_invoice_pdf->type);
-
 		// dd($service_invoice_pdf->sac_code_status);
-
 		if ($service_invoice_pdf->customer->gst_number && ($item_count == $item_count_with_tax_code)) {
 			// dd('in');
 			//----------// ENCRYPTION START //----------//
@@ -1325,6 +1341,19 @@ class ServiceInvoiceController extends Controller {
 				// 	'errors' => ["response " . $server_output . ", curl_error " . curl_error($ch) . ", curl_errno " . curl_errno($ch)],
 				// ]);
 			}
+
+			$api_log = new ApiLog;
+			$api_log->type_id = $service_invoice->type_id;
+			$api_log->entity_number = $service_invoice->number;
+			$api_log->entity_id = $service_invoice->id;
+			$api_log->url = $bdo_login_url;
+			$api_log->src_data = $params;
+			$api_log->response_data = $server_output;
+			$api_log->user_id = Auth::user()->id;
+			$api_log->status_id = $status != 200 ? 11272 : 11271;
+			$api_log->errors = curl_errno($ch);
+			$api_log->created_by_id = Auth::user()->id;
+			$api_log->save();
 
 			curl_close($ch);
 
@@ -1739,6 +1768,19 @@ class ServiceInvoiceController extends Controller {
 			$generate_irn_output = curl_exec($ch);
 			// dd($generate_irn_output);
 
+			$api_log = new ApiLog;
+			$api_log->type_id = $service_invoice->type_id;
+			$api_log->entity_number = $service_invoice->number;
+			$api_log->entity_id = $service_invoice->id;
+			$api_log->url = $bdo_generate_irn_url;
+			$api_log->src_data = $params;
+			$api_log->response_data = $generate_irn_output;
+			$api_log->user_id = Auth::user()->id;
+			$api_log->status_id = $status != 200 ? 11272 : 11271;
+			$api_log->errors = curl_errno($ch);
+			$api_log->created_by_id = Auth::user()->id;
+			$api_log->save();
+
 			curl_close($ch);
 
 			$generate_irn_output = json_decode($generate_irn_output, true);
@@ -1910,7 +1952,8 @@ class ServiceInvoiceController extends Controller {
 	public function viewServiceInvoice($type_id, $id) {
 		$service_invoice = ServiceInvoice::with([
 			'attachments',
-			'customer',
+			// 'customer',
+			'toAccountType',
 			'branch',
 			'branch.primaryAddress',
 			'sbu',
@@ -1925,6 +1968,7 @@ class ServiceInvoiceController extends Controller {
 			'serviceItemCategory',
 			'serviceItemSubCategory.serviceItemCategory',
 		])->find($id);
+		$service_invoice->customer;
 		if (!$service_invoice) {
 			return response()->json(['success' => false, 'error' => 'Service Invoice not found']);
 		}

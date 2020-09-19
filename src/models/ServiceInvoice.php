@@ -90,7 +90,11 @@ class ServiceInvoice extends Model {
 		return $this->belongsTo('Abs\ServiceInvoicePkg\ServiceItemCategory', 'category_id', 'id');
 	}
 
-	public function toAccount() {
+	public function toAccountType() {
+		return $this->belongsTo('App\Config', 'to_account_type_id');
+	}
+
+	public function customer() {
 		if ($this->to_account_type_id == 1440) {
 			//customer
 			return $this->belongsTo('Abs\CustomerPkg\Customer', 'customer_id');
@@ -104,9 +108,9 @@ class ServiceInvoice extends Model {
 		// }
 	}
 
-	public function customer() {
-		return $this->belongsTo('App\Customer', 'customer_id', 'id');
-	}
+	// public function customer() {
+	// return $this->belongsTo('App\Customer', 'customer_id', 'id');
+	// }
 
 	public function branch() {
 		return $this->belongsTo('App\Outlet', 'branch_id', 'id');
@@ -223,15 +227,21 @@ class ServiceInvoice extends Model {
 		$item_codes = [];
 		$total_amount_with_gst['debit'] = 0;
 		$total_amount_with_gst['credit'] = 0;
+		$total_amount_with_gst['invoice'] = 0;
 		$KFC_IN = 0;
 		foreach ($this->serviceInvoiceItems as $invoice_item) {
 			$service_invoice = $invoice_item->serviceInvoice()->with([
-				'customer',
-				'customer.primaryAddress',
+				'toAccountType',
+				// 'customer',
+				// 'customer.primaryAddress',
 				'branch',
 				'branch.primaryAddress',
 			])
 				->first();
+
+			$service_invoice->customer;
+			$service_invoice->customer->primaryAddress;
+
 			if (!empty($service_invoice)) {
 				if ($service_invoice->customer->primaryAddress->state_id) {
 					if ($service_invoice->customer->primaryAddress->state_id == 3 && $service_invoice->branch->primaryAddress->state_id == 3) {
@@ -244,12 +254,16 @@ class ServiceInvoice extends Model {
 
 										$total_amount_with_gst['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
+										$total_amount_with_gst['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+
 									}
 									//FOR CGST
 									if ($tax->name == 'SGST') {
 										$total_amount_with_gst['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
 										$total_amount_with_gst['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+
+										$total_amount_with_gst['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									}
 								}
 								//FOR KFC
@@ -257,6 +271,8 @@ class ServiceInvoice extends Model {
 									$total_amount_with_gst['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
 
 									$total_amount_with_gst['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
+
+									$total_amount_with_gst['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
 								}
 							}
 						}
@@ -274,34 +290,46 @@ class ServiceInvoice extends Model {
 		} elseif ($this->type_id == 1061) {
 			//DN
 			$Txt .= ' - Debit note for ';
+		} elseif ($this->type_id == 1062) {
+			//INV
+			$Txt .= ' - Invoice for ';
 		}
-		// else {
-		// 	//DN
-		// 	$Txt .= ' - Invoice for ';
-		// }
 		$Txt .= implode(',', $item_codes);
 
-		if ($total_amount_with_gst['debit'] == 0 && $total_amount_with_gst['credit'] == 0) {
+		if ($total_amount_with_gst['debit'] == 0 && $total_amount_with_gst['credit'] == 0 && $total_amount_with_gst['invoice'] == 0) {
 			$params = [
 				'Voucher' => 'V',
 				'AccountType' => 'Customer',
 				'LedgerDimension' => $this->customer->code,
 				'Txt' => $Txt . '-' . $this->number,
-				'AmountCurDebit' => $this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') : 0,
+				// 'AmountCurDebit' => ($this->type_id == 1061 || $this->type_id == 1062) ? $this->serviceInvoiceItems()->sum('sub_total') : 0,
 				'AmountCurCredit' => $this->type_id == 1060 ? $this->serviceInvoiceItems()->sum('sub_total') : 0,
 				'TaxGroup' => '',
 			];
+			if ($this->type_id == 1061) {
+				$params['AmountCurDebit'] = $this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') : 0;
+
+			} elseif ($this->type_id == 1062) {
+				$params['AmountCurDebit'] = $this->type_id == 1062 ? $this->serviceInvoiceItems()->sum('sub_total') : 0;
+			}
 		} else {
 			$params = [
 				'Voucher' => 'V',
 				'AccountType' => 'Customer',
 				'LedgerDimension' => $this->customer->code,
 				'Txt' => $Txt . '-' . $this->number,
-				'AmountCurDebit' => ($total_amount_with_gst['debit'] + ($this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') : 0)),
+				// 'AmountCurDebit' => $this->type_id == 1061 ? ($total_amount_with_gst['debit'] + ($this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') : 0)) : 0,
 				'AmountCurCredit' => ($total_amount_with_gst['credit'] + ($this->type_id == 1060 ? $this->serviceInvoiceItems()->sum('sub_total') : 0)),
 				'TaxGroup' => '',
 			];
+			if ($this->type_id == 1061) {
+				$params['AmountCurDebit'] = $this->type_id == 1061 ? ($total_amount_with_gst['debit'] + ($this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') : 0)) : 0;
+
+			} elseif ($this->type_id == 1062) {
+				$params['AmountCurDebit'] = $this->type_id == 1062 ? ($total_amount_with_gst['invoice'] + ($this->type_id == 1062 ? $this->serviceInvoiceItems()->sum('sub_total') : 0)) : 0;
+			}
 		}
+		// dd($params);
 
 		if ($this->serviceInvoiceItems[0]->taxCode) {
 			if ($this->serviceInvoiceItems[0]->taxCode->type_id == 1020) {
@@ -339,10 +367,16 @@ class ServiceInvoice extends Model {
 				'LedgerDimension' => $invoice_item->serviceItem->coaCode->code . '-' . $this->branch->code . '-' . $this->sbu->name,
 				'Txt' => $invoice_item->serviceItem->code . ' ' . $invoice_item->serviceItem->description . ' ' . $invoice_item->description . '-' . $this->number . '-' . $this->customer->code,
 				'AmountCurDebit' => $this->type_id == 1060 ? $invoice_item->sub_total : 0,
-				'AmountCurCredit' => $this->type_id == 1061 ? $invoice_item->sub_total : 0,
+				// 'AmountCurCredit' => $this->type_id == 1061 ? $invoice_item->sub_total : 0,
 				'TaxGroup' => '',
 				// 'TVSSACCode' => ($invoice_item->serviceItem->taxCode != null) ? $invoice_item->serviceItem->taxCode->code : NULL,
 			];
+			if ($this->type_id == 1061) {
+				$params['AmountCurCredit'] = $this->type_id == 1061 ? $invoice_item->sub_total : 0;
+
+			} elseif ($this->type_id == 1062) {
+				$params['AmountCurCredit'] = $this->type_id == 1062 ? $invoice_item->sub_total : 0;
+			}
 
 			if ($invoice_item->serviceItem->taxCode && $KFC_IN == 0) {
 				if ($invoice_item->serviceItem->taxCode->type_id == 1020) {
@@ -359,13 +393,17 @@ class ServiceInvoice extends Model {
 			$this->exportRowToAxapta($params);
 
 			$service_invoice = $invoice_item->serviceInvoice()->with([
-				'customer',
-				'customer.primaryAddress',
+				'toAccountType',
+				// 'customer',
+				// 'customer.primaryAddress',
 				'branch',
 				'branch.primaryAddress',
 			])
 				->first();
-			// dump('start');
+
+			$service_invoice->customer;
+			$service_invoice->customer->primaryAddress;
+			// dump($service_invoice);
 			// dd(1);
 			if (!empty($service_invoice)) {
 				if ($service_invoice->customer->primaryAddress->state_id) {
@@ -376,7 +414,11 @@ class ServiceInvoice extends Model {
 								foreach ($invoice_item->serviceItem->taxCode->taxes as $tax) {
 									//FOR CGST
 									if ($tax->name == 'CGST') {
-										$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+										if ($this->type_id == 1061) {
+											$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+										} else {
+											$params['AmountCurCredit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+										}
 
 										$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 										$params['LedgerDimension'] = '7132' . '-' . $this->branch->code . '-' . $this->sbu->name;
@@ -388,7 +430,11 @@ class ServiceInvoice extends Model {
 									}
 									//FOR CGST
 									if ($tax->name == 'SGST') {
-										$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+										if ($this->type_id == 1061) {
+											$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+										} else {
+											$params['AmountCurCredit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+										}
 
 										$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 										$params['LedgerDimension'] = '7432' . '-' . $this->branch->code . '-' . $this->sbu->name;
@@ -402,8 +448,11 @@ class ServiceInvoice extends Model {
 								//FOR KFC
 								if ($invoice_item->serviceItem->taxCode) {
 									$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
-
-									$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
+									if ($this->type_id == 1061) {
+										$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
+									} else {
+										$params['AmountCurCredit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
+									}
 									$params['LedgerDimension'] = '2230' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
 									//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
@@ -971,7 +1020,8 @@ class ServiceInvoice extends Model {
 			$this->round_off_amount = 0;
 		}
 
-		$this->customer->state_code = $state->e_invoice_state_code ? $state->e_invoice_state_code : '-';
+		$this->customer->state_code = $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-';
+
 		$this->qr_image = $this->qr_image ? base_path('storage/app/public/service-invoice/IRN_images/' . $this->qr_image) : NULL;
 		$this->irn_number = $this->irn_number ? $this->irn_number : NULL;
 		$this->ack_no = $this->ack_no ? $this->ack_no : NULL;

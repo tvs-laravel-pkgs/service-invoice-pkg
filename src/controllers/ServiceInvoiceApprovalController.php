@@ -70,10 +70,19 @@ class ServiceInvoiceApprovalController extends Controller {
 				'sbus.name as sbu',
 				'service_item_categories.name as category',
 				'service_item_sub_categories.name as sub_category',
-				'customers.code as customer_code',
-				'customers.name as customer_name',
+				DB::raw('CASE
+                    WHEN service_invoices.to_account_type_id = "1440" THEN customers.code
+                    WHEN service_invoices.to_account_type_id = "1441" THEN vendors.code
+                    ELSE customers.code END AS customer_code'),
+				DB::raw('CASE
+                    WHEN service_invoices.to_account_type_id = "1440" THEN customers.name
+                    WHEN service_invoices.to_account_type_id = "1441" THEN vendors.name
+                    ELSE customers.name END AS customer_name'),
+				// 'customers.code as customer_code',
+				// 'customers.name as customer_name',
 				'configs.name as type_name',
 				'configs.id as si_type_id',
+				DB::raw('IF(to_account_type.name IS NULL,"Customer",to_account_type.name) as to_account_type'),
 				// 'approval_levels.approval_type_id',
 				'approval_type_statuses.status',
 				'service_invoices.created_by_id'
@@ -82,8 +91,15 @@ class ServiceInvoiceApprovalController extends Controller {
 			->join('sbus', 'sbus.id', 'service_invoices.sbu_id')
 			->leftJoin('service_item_sub_categories', 'service_item_sub_categories.id', 'service_invoices.sub_category_id')
 			->leftJoin('service_item_categories', 'service_item_categories.id', 'service_invoices.category_id')
-			->join('customers', 'customers.id', 'service_invoices.customer_id')
+		// ->join('customers', 'customers.id', 'service_invoices.customer_id')
+			->leftJoin('customers', function ($join) {
+				$join->on('customers.id', 'service_invoices.customer_id');
+			})
+			->leftJoin('vendors', function ($join) {
+				$join->on('vendors.id', 'service_invoices.customer_id');
+			})
 			->join('configs', 'configs.id', 'service_invoices.type_id')
+			->leftJoin('configs as to_account_type', 'to_account_type.id', 'service_invoices.to_account_type_id')
 			->join('approval_type_statuses', 'approval_type_statuses.id', 'service_invoices.status_id')
 			->join('approval_types', 'approval_types.id', 'approval_type_statuses.approval_type_id')
 		// ->join('approval_levels', 'approval_levels.approval_type_id', 'approval_types.id')
@@ -178,7 +194,8 @@ class ServiceInvoiceApprovalController extends Controller {
 			})
 			->addColumn('action', function ($cn_dn_approval_list) use ($approval_status_id) {
 				// $approval_type_id = $cn_dn_approval_list->approval_type_id;
-				$type_id = $cn_dn_approval_list->si_type_id == '1060' ? 1060 : 1061;
+				// $type_id = $cn_dn_approval_list->si_type_id == '1060' ? 1060 : 1061;
+				$type_id = $cn_dn_approval_list->si_type_id;
 				$img_view = asset('public/theme/img/table/cndn/view.svg');
 				$img_approval = asset('public/theme/img/table/cndn/approval.svg');
 				$next_status = 4; //ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
@@ -203,7 +220,8 @@ class ServiceInvoiceApprovalController extends Controller {
 		// dd('sdfsdf');
 		$service_invoice = ServiceInvoice::with([
 			'attachments',
-			'customer',
+			// 'customer',
+			'toAccountType',
 			'branch',
 			'sbu',
 			'serviceInvoiceItems',
@@ -217,6 +235,7 @@ class ServiceInvoiceApprovalController extends Controller {
 			'serviceItemSubCategory',
 			'serviceItemSubCategory.serviceItemCategory',
 		])->find($id);
+		$service_invoice->customer;
 		if (!$service_invoice) {
 			return response()->json(['success' => false, 'error' => 'Service Invoice not found']);
 		}
