@@ -7,6 +7,7 @@ use Abs\ImportCronJobPkg\ImportCronJob;
 use Abs\SerialNumberPkg\SerialNumberGroup;
 use Abs\TaxPkg\Tax;
 use Abs\TaxPkg\TaxCode;
+use App\City;
 use App\Company;
 use App\Config;
 use App\Customer;
@@ -14,6 +15,7 @@ use App\Entity;
 use App\FinancialYear;
 use App\Outlet;
 use App\Sbu;
+use App\State;
 use DB;
 use File;
 use Illuminate\Database\Eloquent\Model;
@@ -88,7 +90,11 @@ class ServiceInvoice extends Model {
 		return $this->belongsTo('Abs\ServiceInvoicePkg\ServiceItemCategory', 'category_id', 'id');
 	}
 
-	public function toAccount() {
+	public function toAccountType() {
+		return $this->belongsTo('App\Config', 'to_account_type_id');
+	}
+
+	public function customer() {
 		if ($this->to_account_type_id == 1440) {
 			//customer
 			return $this->belongsTo('Abs\CustomerPkg\Customer', 'customer_id');
@@ -102,9 +108,9 @@ class ServiceInvoice extends Model {
 		// }
 	}
 
-	public function customer() {
-		return $this->belongsTo('App\Customer', 'customer_id', 'id');
-	}
+	// public function customer() {
+	// return $this->belongsTo('App\Customer', 'customer_id', 'id');
+	// }
 
 	public function branch() {
 		return $this->belongsTo('App\Outlet', 'branch_id', 'id');
@@ -221,15 +227,21 @@ class ServiceInvoice extends Model {
 		$item_codes = [];
 		$total_amount_with_gst['debit'] = 0;
 		$total_amount_with_gst['credit'] = 0;
+		$total_amount_with_gst['invoice'] = 0;
 		$KFC_IN = 0;
 		foreach ($this->serviceInvoiceItems as $invoice_item) {
 			$service_invoice = $invoice_item->serviceInvoice()->with([
-				'customer',
-				'customer.primaryAddress',
+				'toAccountType',
+				// 'customer',
+				// 'customer.primaryAddress',
 				'branch',
 				'branch.primaryAddress',
 			])
 				->first();
+
+			$service_invoice->customer;
+			$service_invoice->customer->primaryAddress;
+
 			if (!empty($service_invoice)) {
 				if ($service_invoice->customer->primaryAddress->state_id) {
 					if ($service_invoice->customer->primaryAddress->state_id == 3 && $service_invoice->branch->primaryAddress->state_id == 3) {
@@ -242,12 +254,16 @@ class ServiceInvoice extends Model {
 
 										$total_amount_with_gst['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
+										$total_amount_with_gst['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+
 									}
 									//FOR CGST
 									if ($tax->name == 'SGST') {
 										$total_amount_with_gst['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
 										$total_amount_with_gst['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+
+										$total_amount_with_gst['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									}
 								}
 								//FOR KFC
@@ -255,6 +271,8 @@ class ServiceInvoice extends Model {
 									$total_amount_with_gst['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
 
 									$total_amount_with_gst['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
+
+									$total_amount_with_gst['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
 								}
 							}
 						}
@@ -272,34 +290,46 @@ class ServiceInvoice extends Model {
 		} elseif ($this->type_id == 1061) {
 			//DN
 			$Txt .= ' - Debit note for ';
+		} elseif ($this->type_id == 1062) {
+			//INV
+			$Txt .= ' - Invoice for ';
 		}
-		// else {
-		// 	//DN
-		// 	$Txt .= ' - Invoice for ';
-		// }
 		$Txt .= implode(',', $item_codes);
 
-		if ($total_amount_with_gst['debit'] == 0 && $total_amount_with_gst['credit'] == 0) {
+		if ($total_amount_with_gst['debit'] == 0 && $total_amount_with_gst['credit'] == 0 && $total_amount_with_gst['invoice'] == 0) {
 			$params = [
 				'Voucher' => 'V',
 				'AccountType' => 'Customer',
 				'LedgerDimension' => $this->customer->code,
 				'Txt' => $Txt . '-' . $this->number,
-				'AmountCurDebit' => $this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') : 0,
+				// 'AmountCurDebit' => ($this->type_id == 1061 || $this->type_id == 1062) ? $this->serviceInvoiceItems()->sum('sub_total') : 0,
 				'AmountCurCredit' => $this->type_id == 1060 ? $this->serviceInvoiceItems()->sum('sub_total') : 0,
 				'TaxGroup' => '',
 			];
+			if ($this->type_id == 1061) {
+				$params['AmountCurDebit'] = $this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') : 0;
+
+			} elseif ($this->type_id == 1062) {
+				$params['AmountCurDebit'] = $this->type_id == 1062 ? $this->serviceInvoiceItems()->sum('sub_total') : 0;
+			}
 		} else {
 			$params = [
 				'Voucher' => 'V',
 				'AccountType' => 'Customer',
 				'LedgerDimension' => $this->customer->code,
 				'Txt' => $Txt . '-' . $this->number,
-				'AmountCurDebit' => ($total_amount_with_gst['debit'] + ($this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') : 0)),
+				// 'AmountCurDebit' => $this->type_id == 1061 ? ($total_amount_with_gst['debit'] + ($this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') : 0)) : 0,
 				'AmountCurCredit' => ($total_amount_with_gst['credit'] + ($this->type_id == 1060 ? $this->serviceInvoiceItems()->sum('sub_total') : 0)),
 				'TaxGroup' => '',
 			];
+			if ($this->type_id == 1061) {
+				$params['AmountCurDebit'] = $this->type_id == 1061 ? ($total_amount_with_gst['debit'] + ($this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') : 0)) : 0;
+
+			} elseif ($this->type_id == 1062) {
+				$params['AmountCurDebit'] = $this->type_id == 1062 ? ($total_amount_with_gst['invoice'] + ($this->type_id == 1062 ? $this->serviceInvoiceItems()->sum('sub_total') : 0)) : 0;
+			}
 		}
+		// dd($params);
 
 		if ($this->serviceInvoiceItems[0]->taxCode) {
 			if ($this->serviceInvoiceItems[0]->taxCode->type_id == 1020) {
@@ -337,10 +367,16 @@ class ServiceInvoice extends Model {
 				'LedgerDimension' => $invoice_item->serviceItem->coaCode->code . '-' . $this->branch->code . '-' . $this->sbu->name,
 				'Txt' => $invoice_item->serviceItem->code . ' ' . $invoice_item->serviceItem->description . ' ' . $invoice_item->description . '-' . $this->number . '-' . $this->customer->code,
 				'AmountCurDebit' => $this->type_id == 1060 ? $invoice_item->sub_total : 0,
-				'AmountCurCredit' => $this->type_id == 1061 ? $invoice_item->sub_total : 0,
+				// 'AmountCurCredit' => $this->type_id == 1061 ? $invoice_item->sub_total : 0,
 				'TaxGroup' => '',
 				// 'TVSSACCode' => ($invoice_item->serviceItem->taxCode != null) ? $invoice_item->serviceItem->taxCode->code : NULL,
 			];
+			if ($this->type_id == 1061) {
+				$params['AmountCurCredit'] = $this->type_id == 1061 ? $invoice_item->sub_total : 0;
+
+			} elseif ($this->type_id == 1062) {
+				$params['AmountCurCredit'] = $this->type_id == 1062 ? $invoice_item->sub_total : 0;
+			}
 
 			if ($invoice_item->serviceItem->taxCode && $KFC_IN == 0) {
 				if ($invoice_item->serviceItem->taxCode->type_id == 1020) {
@@ -357,13 +393,17 @@ class ServiceInvoice extends Model {
 			$this->exportRowToAxapta($params);
 
 			$service_invoice = $invoice_item->serviceInvoice()->with([
-				'customer',
-				'customer.primaryAddress',
+				'toAccountType',
+				// 'customer',
+				// 'customer.primaryAddress',
 				'branch',
 				'branch.primaryAddress',
 			])
 				->first();
-			// dump('start');
+
+			$service_invoice->customer;
+			$service_invoice->customer->primaryAddress;
+			// dump($service_invoice);
 			// dd(1);
 			if (!empty($service_invoice)) {
 				if ($service_invoice->customer->primaryAddress->state_id) {
@@ -374,7 +414,11 @@ class ServiceInvoice extends Model {
 								foreach ($invoice_item->serviceItem->taxCode->taxes as $tax) {
 									//FOR CGST
 									if ($tax->name == 'CGST') {
-										$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+										if ($this->type_id == 1061) {
+											$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+										} else {
+											$params['AmountCurCredit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+										}
 
 										$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 										$params['LedgerDimension'] = '7132' . '-' . $this->branch->code . '-' . $this->sbu->name;
@@ -386,7 +430,11 @@ class ServiceInvoice extends Model {
 									}
 									//FOR CGST
 									if ($tax->name == 'SGST') {
-										$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+										if ($this->type_id == 1061) {
+											$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+										} else {
+											$params['AmountCurCredit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+										}
 
 										$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 										$params['LedgerDimension'] = '7432' . '-' . $this->branch->code . '-' . $this->sbu->name;
@@ -400,8 +448,11 @@ class ServiceInvoice extends Model {
 								//FOR KFC
 								if ($invoice_item->serviceItem->taxCode) {
 									$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
-
-									$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
+									if ($this->type_id == 1061) {
+										$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
+									} else {
+										$params['AmountCurCredit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
+									}
 									$params['LedgerDimension'] = '2230' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
 									//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
@@ -806,8 +857,19 @@ class ServiceInvoice extends Model {
 
 		$this->company->formatted_address = $this->company->primaryAddress ? $this->company->primaryAddress->getFormattedAddress() : 'NA';
 		// $this->outlets->formatted_address = $this->outlets->primaryAddress ? $this->outlets->primaryAddress->getFormattedAddress() : 'NA';
-		$this->outlets = $this->outlets ? $this->outlets : 'NA';
+		if ($this->number == 'F21MDSDN0001') {
+			dump('static outlet');
+			$this['branch_id'] = 134; //TRY - Trichy
+			$this->outlets = $this->outlets ? $this->outlets : 'NA';
+		} else {
+			$this->outlets = $this->outlets ? $this->outlets : 'NA';
+		}
+
 		$this->customer->formatted_address = $this->customer->primaryAddress ? $this->customer->primaryAddress->address_line1 : 'NA';
+		$city = City::where('name', $this->customer->city)->first();
+		// dd($city);
+		$state = State::find($city->state_id);
+
 		// dd($this->outlets->formatted_address);
 		$fields = Field::withTrashed()->get()->keyBy('id');
 		if (count($this->serviceInvoiceItems) > 0) {
@@ -958,6 +1020,8 @@ class ServiceInvoice extends Model {
 			$this->round_off_amount = 0;
 		}
 
+		$this->customer->state_code = $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-';
+
 		$this->qr_image = $this->qr_image ? base_path('storage/app/public/service-invoice/IRN_images/' . $this->qr_image) : NULL;
 		$this->irn_number = $this->irn_number ? $this->irn_number : NULL;
 		$this->ack_no = $this->ack_no ? $this->ack_no : NULL;
@@ -965,6 +1029,7 @@ class ServiceInvoice extends Model {
 
 		// dd($this->sac_code_status);
 		//dd($serviceInvoiceItem->field_groups);
+
 		$data = [];
 		$data['service_invoice_pdf'] = $this;
 
@@ -1105,9 +1170,10 @@ class ServiceInvoice extends Model {
 		$aes_decoded_plain_text = base64_decode($server_output->output);
 
 		//ITEm
-		$item = [];
+		$items = [];
 		$sno = 1;
-		foreach ($this->serviceInvoiceItems as $serviceInvoiceItem) {
+		foreach ($this->serviceInvoiceItems as $key => $serviceInvoiceItem) {
+			$item = [];
 			// dd($serviceInvoiceItem);
 
 			//GET TAXES
@@ -1149,7 +1215,15 @@ class ServiceInvoice extends Model {
 						}
 					}
 				}
+			} else {
+				return [
+					'success' => false,
+					'errors' => 'Item Not Mapped with Tax code!. Item Code: ' . $service_item->code,
+				];
 			}
+			// dump($serviceInvoiceItem->sub_total ? $serviceInvoiceItem->sub_total : 0);
+			// dump(number_format($igst_total));
+			// dd($cgst_total, $sgst_total, $igst_total);
 
 			$item['SlNo'] = $sno; //Statically assumed
 			$item['PrdDesc'] = $serviceInvoiceItem->serviceItem->name;
@@ -1165,7 +1239,7 @@ class ServiceInvoice extends Model {
 			$item['Qty'] = 1; //ALWAYS 1
 			$item['FreeQty'] = 0;
 			$item['Unit'] = $serviceInvoiceItem->eInvoiceUom ? $serviceInvoiceItem->eInvoiceUom->code : "NOS";
-			$item['UnitPrice'] = number_format($serviceInvoiceItem->rate ? $serviceInvoiceItem->rate : 0); //NEED TO CLARIFY
+			$item['UnitPrice'] = number_format($serviceInvoiceItem->sub_total ? $serviceInvoiceItem->sub_total : 0); //NEED TO CLARIFY
 			$item['TotAmt'] = number_format($serviceInvoiceItem->sub_total ? $serviceInvoiceItem->sub_total : 0);
 			$item['Discount'] = 0; //Always value will be "0"
 			$item['PreTaxVal'] = number_format($serviceInvoiceItem->rate ? $serviceInvoiceItem->rate : 0);
@@ -1194,28 +1268,29 @@ class ServiceInvoice extends Model {
 				"Val" => null,
 			];
 
+			//EGST
+			//NO DATA GIVEN IN WORD DOC START
+			$item['EGST']['nilrated_amt'] = null;
+			$item['EGST']['exempted_amt'] = null;
+			$item['EGST']['non_gst_amt'] = null;
+			$item['EGST']['reason'] = null;
+			$item['EGST']['debit_gl_id'] = null;
+			$item['EGST']['debit_gl_name'] = null;
+			$item['EGST']['credit_gl_id'] = null;
+			$item['EGST']['credit_gl_name'] = null;
+			$item['EGST']['sublocation'] = null;
+			//NO DATA GIVEN IN WORD DOC END
+
 			$sno++;
+			$items[] = $item;
 
 		}
-
-		//EGST
-		//NO DATA GIVEN IN WORD DOC START
-		$item['EGST']['nilrated_amt'] = null;
-		$item['EGST']['exempted_amt'] = null;
-		$item['EGST']['non_gst_amt'] = null;
-		$item['EGST']['reason'] = null;
-		$item['EGST']['debit_gl_id'] = null;
-		$item['EGST']['debit_gl_name'] = null;
-		$item['EGST']['credit_gl_id'] = null;
-		$item['EGST']['credit_gl_name'] = null;
-		$item['EGST']['sublocation'] = null;
-		//NO DATA GIVEN IN WORD DOC END
 
 		//RefDtls BELLOW
 		//PrecDocDtls
 		$prodoc_detail = [];
-		$prodoc_detail['InvNo'] = $this->e_invoice_date ? $this->e_invoice_date : null; //no DATA ?
-		$prodoc_detail['InvDt'] = null; //no DATA ?
+		$prodoc_detail['InvNo'] = $this->invoice_number ? $this->invoice_number : null;
+		$prodoc_detail['InvDt'] = $this->invoice_date ? date('d-m-Y', strtotime($this->invoice_date)) : null;
 		$prodoc_detail['OthRefNo'] = null; //no DATA ?
 		//ContrDtls
 		$control_detail = [];
@@ -1242,15 +1317,15 @@ class ServiceInvoice extends Model {
 			array(
 				'TranDtls' => array(
 					'TaxSch' => "GST",
-					'SupTyp' => "B2B",
-					'RegRev' => $this->is_e_reverse_charge_applicable == 1 ? "Y" : "N",
+					'SupTyp' => "B2B", //ALWAYS B2B FOR REGISTER IRN
+					'RegRev' => $this->is_reverse_charge_applicable == 1 ? "Y" : "N",
 					'EcmGstin' => null,
 					'IgstonIntra' => null, //NEED TO CLARIFY
 				),
 				'DocDtls' => array(
-					"Typ" => $this->type_id == 1060 ? 'CRN' : 'DBN',
-					// "No" => $this->number,
-					"No" => '23AUG2020SN90',
+					"Typ" => $this_pdf->type,
+					"No" => $this->number,
+					// "No" => '23AUG2020SN136',
 					"Dt" => date('d-m-Y', strtotime($this->document_date)),
 				),
 				'SellerDtls' => array(
@@ -1306,22 +1381,20 @@ class ServiceInvoice extends Model {
 					"Stcd" => null,
 				),
 				'ItemList' => array(
-					'Item' => array(
-						$item,
-					),
+					'Item' => $items,
 				),
 				'ValDtls' => array(
 					"AssVal" => number_format($this->amount_total ? $this->amount_total : 0),
-					"CgstVal" => number_format($cgst_total),
-					"SgstVal" => number_format($sgst_total),
-					"IgstVal" => number_format($igst_total),
+					"CgstVal" => number_format($cgst_total, 2),
+					"SgstVal" => number_format($sgst_total, 2),
+					"IgstVal" => number_format($igst_total, 2),
 					"CesVal" => 0,
 					"StCesVal" => 0,
 					"Discount" => 0,
 					"OthChrg" => 0,
-					"RndOffAmt" => number_format($this->e_round_off_amount - $this->total),
+					"RndOffAmt" => number_format($this->final_amount - $this->total, 2),
 					// "RndOffAmt" => 0, // Invalid invoice round off amount ,should be  + or - RS 10.
-					"TotInvVal" => number_format($this->e_round_off_amount),
+					"TotInvVal" => number_format($this->final_amount),
 					"TotInvValFc" => null,
 				),
 				"PayDtls" => array(
@@ -1375,7 +1448,8 @@ class ServiceInvoice extends Model {
 			)
 		);
 
-		// dd($json_encoded_data);
+		// dump($json_encoded_data);
+		// dd(1);
 
 		//AES ENCRYPT
 		$aes_encrypt_url = 'https://www.devglan.com/online-tools/aes-encryption';
@@ -1451,7 +1525,7 @@ class ServiceInvoice extends Model {
 
 		// Execute the POST request
 		$generate_irn_output = curl_exec($ch);
-		// dump($generate_irn_output);
+		// dd($generate_irn_output);
 
 		curl_close($ch);
 
@@ -1539,15 +1613,52 @@ class ServiceInvoice extends Model {
 		$IRN_images_des = storage_path('app/public/service-invoice/IRN_images');
 		File::makeDirectory($IRN_images_des, $mode = 0777, true, true);
 
-		$url = QRCode::text($final_json_decode->SignedQRCode)->setSize(4)->setOutfile('storage/app/public/service-invoice/IRN_images/' . $this->number . '.png')->png();
+		$url = QRCode::text($final_json_decode->QRCode)->setSize(4)->setOutfile('storage/app/public/service-invoice/IRN_images/' . $this->number . '.png')->png();
+
+		// $file_name = $this->number . '.png';
+
+		$qr_attachment_path = base_path("storage/app/public/service-invoice/IRN_images/" . $this->number . '.png');
+		// dump($qr_attachment_path);
+		if (file_exists($qr_attachment_path)) {
+			$ext = pathinfo(base_path("storage/app/public/service-invoice/IRN_images/" . $this->number . '.png'), PATHINFO_EXTENSION);
+			// dump($ext);
+			if ($ext == 'png') {
+				$image = imagecreatefrompng($qr_attachment_path);
+				// dump($image);
+				$bg = imagecreatetruecolor(imagesx($image), imagesy($image));
+				// dump($bg);
+				imagefill($bg, 0, 0, imagecolorallocate($bg, 255, 255, 255));
+				imagealphablending($bg, TRUE);
+				imagecopy($bg, $image, 0, 0, 0, 0, imagesx($image), imagesy($image));
+				// imagedestroy($image);
+				$quality = 70; // 0 = worst / smaller file, 100 = better / bigger file
+				imagejpeg($bg, $qr_attachment_path . ".jpg", $quality);
+				// imagedestroy($bg);
+
+				$service_invoice_pdf->qr_image = base_path("storage/app/public/service-invoice/IRN_images/" . $service_invoice->number . '.png') . '.jpg';
+			}
+		} else {
+			$service_invoice_pdf->qr_image = '';
+		}
+		$get_version = json_decode($final_json_decode->Invoice);
+		$get_version = json_decode($get_version->data);
 
 		// $image = '<img src="storage/app/public/service-invoice/IRN_images/' . $final_json_decode->AckNo . '.png" title="IRN QR Image">';
-		$service_invoice_update = self::find($this_id);
-		$service_invoice_update->irn_number = $final_json_decode->Irn;
-		$service_invoice_update->qr_image = $this->number . '.png';
-		$service_invoice_update->irn_response = $server_output;
-		$service_invoice_update->save();
+		$service_invoice_save = self::find($id);
+		$service_invoice_save->irn_number = $final_json_decode->Irn;
+		$service_invoice_save->qr_image = $service_invoice->number . '.png' . '.jpg';
+		$service_invoice_save->ack_no = $final_json_decode->AckNo;
+		$service_invoice_save->ack_date = $final_json_decode->AckDt;
+		$service_invoice_save->version = $get_version->Version;
+		$service_invoice_save->irn_request = $json_encoded_data;
+		$service_invoice_save->irn_response = $aes_final_decoded_plain_text;
+		$service_invoice_save->save();
 
-		// $this_pdf->qr_image = $this->number . '.png';
+		//SEND TO PDF
+		$service_invoice_pdf->version = $get_version->Version;
+		$service_invoice_pdf->round_off_amount = $service_invoice->round_off_amount;
+		$service_invoice_pdf->irn_number = $final_json_decode->Irn;
+		$service_invoice_pdf->ack_no = $final_json_decode->AckNo;
+		$service_invoice_pdf->ack_date = $final_json_decode->AckDt;
 	}
 }

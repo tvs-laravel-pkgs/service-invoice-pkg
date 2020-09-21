@@ -139,6 +139,7 @@ app.component('serviceInvoiceList', {
                     { data: 'sbu', name: 'sbus.name', searchable: true },
                     { data: 'category', name: 'service_item_categories.name', searchable: true },
                     // { data: 'sub_category', name: 'service_item_sub_categories.name', searchable: true },
+                    { data: 'to_account_type', name: 'to_account_type.name', searchable: true },
                     { data: 'customer_code', name: 'customers.code', searchable: true },
                     { data: 'customer_name', name: 'customers.name', searchable: true },
                     { data: 'invoice_amount', searchable: false, class: 'text-right' },
@@ -493,11 +494,12 @@ app.component('serviceInvoiceForm', {
                 // $timeout(function() {
                 //     $scope.getServiceItemSubCategoryByServiceItemCategory(self.service_invoice.service_item_sub_category.category_id);
                 // }, 1000);
-                console.log(self.service_invoice.to_account_type_id);
-                if (self.service_invoice.to_account_type_id == 1440) { //CUSTOMER
+                // console.log(self.service_invoice.to_account_type_id);
+                if (self.service_invoice.to_account_type_id == 1440 || self.service_invoice.to_account_type_id == 1441) { //CUSTOMER || VENDOE
                     $timeout(function() {
-                        self.customer = self.service_invoice.to_account;
+                        self.customer = self.service_invoice.customer;
                         // $rootScope.getCustomer(self.service_invoice.customer_id);
+                        $scope.vendorSelected(); //USED FOR GET FULL ADDRESS
                     }, 1200);
                 }
                 $timeout(function() {
@@ -676,16 +678,16 @@ app.component('serviceInvoiceForm', {
 
         //GET CUSTOMER DETAILS
         $scope.customerSelected = function(code) {
-            console.log(code);
+            // console.log(code);
             if (self.service_invoice.customer || self.service_invoice.customer != null) {
                 var res = $rootScope.getCustomer(self.service_invoice.customer.code).then(function(res) {
-                    console.log(res);
+                    // console.log(res);
                     if (!res.data.success) {
                         custom_noty('error', res.data.error);
                         return;
                     }
-                    self.customer = res.data.customer
-                    self.service_invoice.customer = res.data.customer
+                    self.customer = res.data.customer;
+                    self.service_invoice.customer.id = res.data.customer.id;
                 });
             } else {
                 self.customer = {};
@@ -697,14 +699,17 @@ app.component('serviceInvoiceForm', {
 
         //GET VENDOR DETAILS
         $scope.vendorSelected = function() {
-            if (self.service_invoice.vendor || self.service_invoice.vendor != null) {
-                var res = $rootScope.getVendor(self.service_invoice.vendor.id).then(function(res) {
-                    console.log(res);
+            // console.log('vendor');
+            if (self.service_invoice.customer || self.service_invoice.customer != null) {
+                var res = $rootScope.getVendor(self.service_invoice.customer.id).then(function(res) {
+                    // console.log(res);
                     if (!res.data.success) {
                         custom_noty('error', res.data.error);
                         return;
                     }
                     self.customer = res.data.vendor;
+                    self.service_invoice.customer.id = res.data.vendor.id;
+                    // console.log(self.service_invoice.customer.id);
                 });
             } else {
                 self.customer = {};
@@ -781,7 +786,7 @@ app.component('serviceInvoiceForm', {
         // }
 
         //SEARCH SERVICE ITEM
-        self.searchServiceItem = function(query, type_id) {
+        self.searchServiceItem = function(query, $to_account_type_id) {
             if (query) {
                 return new Promise(function(resolve, reject) {
                     $http
@@ -796,6 +801,23 @@ app.component('serviceInvoiceForm', {
                         )
                         .then(function(response) {
                             resolve(response.data);
+                            if ($to_account_type_id == undefined || $to_account_type_id == null) {
+                                custom_noty('error', 'Select Account Type!');
+                                return;
+                            } else {
+                                if ($to_account_type_id == 1440) { //CUSTOMER
+                                    if (!self.service_invoice.customer) {
+                                        custom_noty('error', 'Select Customer!');
+                                        return;
+                                    }
+                                }
+                                if ($to_account_type_id == 1441) { //VENDOR
+                                    if (!self.service_invoice.vendor) {
+                                        custom_noty('error', 'Select Vendor!');
+                                        return;
+                                    }
+                                }
+                            }
                             self.enable_service_item_md_change = true;
                         });
                     //reject(response);
@@ -806,7 +828,7 @@ app.component('serviceInvoiceForm', {
         }
 
         //GET SERVICE ITEM DETAILS
-        self.getServiceItemDetails = function() {
+        self.getServiceItemDetails = function($to_account_type_id) {
             if (!self.service_item) {
                 return
             }
@@ -817,6 +839,7 @@ app.component('serviceInvoiceForm', {
                         btn_action: 'add',
                         branch_id: self.service_invoice.branch.id,
                         customer_id: self.service_invoice.customer.id,
+                        to_account_type_id: $to_account_type_id,
                     }
                 ).then(function(response) {
                     if (response.data.success) {
@@ -1138,7 +1161,7 @@ app.component('serviceInvoiceForm', {
             errorPlacement: function(error, element) {
                 if (element.hasClass("doc_date")) {
                     error.appendTo('.doc_date_error');
-                } 
+                }
                 // else if (element.hasClass("inv_date")) {
                 //     error.appendTo('.inv_date_error');
                 // }
@@ -1155,20 +1178,20 @@ app.component('serviceInvoiceForm', {
                     required: true,
                 },
                 // 'invoice_date': {
-                    // required: true,
-                    // required: function(){
-                    //     if($routeParams.type_id == 1060 || $routeParams.type_id == 1061){
-                    //         return true;
-                    //     }
-                    // },
+                // required: true,
+                // required: function(){
+                //     if($routeParams.type_id == 1060 || $routeParams.type_id == 1061){
+                //         return true;
+                //     }
                 // },
-                'invoice_number': {
-                    required: function() {
-                        if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061) {
-                            return true;
-                        }
-                    },
-                },
+                // },
+                // 'invoice_number': {
+                // required: function() {
+                // if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061) {
+                // return true;
+                // }
+                // },
+                // },
                 // 'is_e_reverse_charge_applicable': {
                 //     required: true,
                 // },
@@ -1233,6 +1256,8 @@ app.component('serviceInvoiceView', {
         } else if (self.type_id == 1061) {
             self.minus_value = '';
         }
+        $scope.attachment_url = base_url + '/storage/app/public/service-invoice-pdf';
+        console.log($scope.attachment_url);
         $http.get(
             $form_data_url
         ).then(function(response) {
@@ -1257,6 +1282,15 @@ app.component('serviceInvoiceView', {
                 $timeout(function() {
                     $scope.serviceInvoiceItemCalc();
                 }, 1500);
+                if (self.service_invoice.to_account_type_id == 1440 || self.service_invoice.to_account_type_id == 1441) { //CUSTOMER || VENDOE
+                    $timeout(function() {
+                        self.customer = self.service_invoice.customer;
+                        // $rootScope.getCustomer(self.service_invoice.customer_id);
+                        if (self.service_invoice.to_account_type_id == 1441) {
+                            $scope.vendorSelected(); //USED FOR GET FULL ADDRESS
+                        }
+                    }, 1200);
+                }
 
                 //ATTACHMENTS
                 // if (self.service_invoice.attachments.length) {
@@ -1272,6 +1306,25 @@ app.component('serviceInvoiceView', {
             }
             $rootScope.loading = false;
         });
+
+        $scope.vendorSelected = function() {
+            // console.log('vendor');
+            if (self.service_invoice.customer || self.service_invoice.customer != null) {
+                var res = $rootScope.getVendor(self.service_invoice.customer.id).then(function(res) {
+                    console.log(res);
+                    if (!res.data.success) {
+                        custom_noty('error', res.data.error);
+                        return;
+                    }
+                    self.customer = res.data.vendor;
+                    self.service_invoice.customer.id = res.data.vendor.id;
+                    // console.log(self.service_invoice.customer.id);
+                });
+            } else {
+                self.customer = {};
+                self.service_invoice.service_invoice_items = [];
+            }
+        }
 
         self.qr_image_url = base_url + '/storage/app/public/service-invoice/IRN_images';
 

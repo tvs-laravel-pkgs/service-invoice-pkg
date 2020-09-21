@@ -54,9 +54,9 @@ class ServiceItem extends Model {
 		// 	$list = $list->whereNotNull('sac_code_id');
 		// }
 		if ($is_service == 1) {
-			$list = $list->where('tax_codes.type_id', 1020); //HSN CODE
-		} else {
 			$list = $list->where('tax_codes.type_id', 1021); //SAC CODE
+		} else {
+			$list = $list->where('tax_codes.type_id', 1020); //HSN CODE
 		}
 		if ($type_id == 1060 && session('sac_code_value') != 'new') {
 			if (session('sac_code_value') == NULL) {

@@ -138,6 +138,12 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 				'name' => 'create-inv',
 				'display_name' => 'Create INV',
 			],
+			3052 => [
+				'display_order' => 11,
+				'parent_id' => 3040,
+				'name' => 'view-sbu-based-cn-dn',
+				'display_name' => 'View SBU Based',
+			],
 
 		];
 

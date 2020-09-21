@@ -91,6 +91,7 @@ app.component('serviceInvoiceApprovalList', {
                     { data: 'sbu', name: 'sbus.name', searchable: true },
                     { data: 'category', name: 'service_item_categories.name', searchable: true },
                     // { data: 'sub_category', name: 'service_item_sub_categories.name', searchable: true },
+                    { data: 'to_account_type', name: 'to_account_type.name', searchable: true },
                     { data: 'customer_code', name: 'customers.code', searchable: true },
                     { data: 'customer_name', name: 'customers.name', searchable: true },
                     { data: 'invoice_amount', searchable: false, class: 'text-right' },
@@ -145,11 +146,11 @@ app.component('serviceInvoiceApprovalList', {
                 dataTable.draw();
             }, 900);
         }
-        $scope.getSelectedCategory = function(selected_category_id) {   
-            setTimeout(function() { 
-                $('#category_id').val(selected_category_id);    
-                dataTable.draw();   
-            }, 900);    
+        $scope.getSelectedCategory = function(selected_category_id) {
+            setTimeout(function() {
+                $('#category_id').val(selected_category_id);
+                dataTable.draw();
+            }, 900);
         }
         // $scope.getSubCategory = function(selected_sub_category_id) {
         //     setTimeout(function() {
@@ -247,7 +248,7 @@ app.component('serviceInvoiceApprovalList', {
                             custom_noty('error', response.data.errors);
                         }
                     });
-                }else{
+                } else {
                     custom_noty('error', 'Please wait..Already Invoice Approval Inprogress!');
                 }
             } else {
@@ -455,10 +456,38 @@ app.component('serviceInvoiceApprovalView', {
                 $timeout(function() {
                     $scope.serviceInvoiceItemCalc();
                 }, 1500);
+                if (self.service_invoice.to_account_type_id == 1440 || self.service_invoice.to_account_type_id == 1441) { //CUSTOMER || VENDOE
+                    $timeout(function() {
+                        self.customer = self.service_invoice.customer;
+                        // $rootScope.getCustomer(self.service_invoice.customer_id);
+                        if (self.service_invoice.to_account_type_id == 1441) {
+                            $scope.vendorSelected(); //USED FOR GET FULL ADDRESS
+                        }
+                    }, 1200);
+                }
             }
             $rootScope.loading = false;
         });
         self.service_invoice_id = $routeParams.id;
+        
+        $scope.vendorSelected = function() {
+            // console.log('vendor');
+            if (self.service_invoice.customer || self.service_invoice.customer != null) {
+                var res = $rootScope.getVendor(self.service_invoice.customer.id).then(function(res) {
+                    console.log(res);
+                    if (!res.data.success) {
+                        custom_noty('error', res.data.error);
+                        return;
+                    }
+                    self.customer = res.data.vendor;
+                    self.service_invoice.customer.id = res.data.vendor.id;
+                    // console.log(self.service_invoice.customer.id);
+                });
+            } else {
+                self.customer = {};
+                self.service_invoice.service_invoice_items = [];
+            }
+        }
 
         /* Tab Funtion */
         $('.btn-nxt').on("click", function() {
