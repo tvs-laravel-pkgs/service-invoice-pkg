@@ -1097,13 +1097,13 @@ class ServiceInvoiceController extends Controller {
 			'serviceInvoiceItems.taxes',
 		])->find($service_invoice_id);
 
-		// $service_invoice->customer;
-		// $service_invoice_pdf->customer;
-
 		$r = $service_invoice->exportToAxapta();
 		if (!$r['success']) {
 			return $r;
 		}
+
+		$service_invoice_pdf->customer;
+		$service_invoice->customer;
 		// dd($service_invoice->outlets->primaryAddress->country);
 		// dd('in');
 
