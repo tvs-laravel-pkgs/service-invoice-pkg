@@ -309,6 +309,7 @@
                                                 <input type="hidden" name="service_invoice_items[{{index}}][rate]" value="{{service_invoice_item.rate}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][sub_total]" value="{{service_invoice_item.sub_total}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][e_invoice_uom_id]" value="{{service_invoice_item.e_invoice_uom.id}}">
+                                                
                                                 <!-- FIELD GROUPS -->
                                                 <td style="display: none;">
                                                     <span ng-repeat="(index_fg, field_group) in service_invoice_item.field_groups">
@@ -410,6 +411,7 @@
 <div class="modal fade" id="modal-cn-addnew" role="dialog" aria-labelledby="myModalLabel">
     <div class="modal-dialog modal-md fixed" role="document">
         <form id="service-invoice-item-form" enctype="multipart-formdata" autocomplete="off">
+            <input type="hidden" name="to_account_type_id" value="{{$ctrl.service_invoice.to_account_type_id}}">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" class="icon ion-md-close"></span></button>
