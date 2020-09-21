@@ -29,6 +29,7 @@ use App\Outlet;
 use App\Sbu;
 use App\State;
 use App\User;
+use App\Vendor;
 use Auth;
 use DB;
 use Entrust;
@@ -686,6 +687,7 @@ class ServiceInvoiceController extends Controller {
 	}
 
 	public function getServiceItem(Request $request) {
+		// dd($request->all());
 		//GET TAXES BY CONDITIONS
 		$taxes = Tax::getTaxes($request->service_item_id, $request->branch_id, $request->customer_id, $request->to_account_type_id);
 		if (!$taxes['success']) {
@@ -693,7 +695,11 @@ class ServiceInvoiceController extends Controller {
 		}
 
 		$outlet = Outlet::find($request->branch_id);
-		$customer = Customer::with(['primaryAddress'])->find($request->customer_id);
+		if ($request->to_account_type_id == 1440) {
+			$customer = Customer::with(['primaryAddress'])->find($request->customer_id);
+		} else {
+			$customer = Vendor::with(['primaryAddress'])->find($request->customer_id);
+		}
 
 		$service_item = ServiceItem::with([
 			'coaCode',
