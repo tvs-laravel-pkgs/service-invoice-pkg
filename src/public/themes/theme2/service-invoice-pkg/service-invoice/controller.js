@@ -812,7 +812,7 @@ app.component('serviceInvoiceForm', {
                                     }
                                 }
                                 if ($to_account_type_id == 1441) { //VENDOR
-                                    if (!self.service_invoice.vendor) {
+                                    if (!self.service_invoice.customer) {
                                         custom_noty('error', 'Select Vendor!');
                                         return;
                                     }
