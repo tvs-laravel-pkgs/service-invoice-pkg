@@ -311,6 +311,8 @@ class ServiceInvoice extends Model {
 
 			} elseif ($this->type_id == 1062) {
 				$params['AmountCurDebit'] = $this->type_id == 1062 ? $this->serviceInvoiceItems()->sum('sub_total') : 0;
+			} else {
+				$params['AmountCurDebit'] = '';
 			}
 		} else {
 			$params = [
@@ -327,6 +329,8 @@ class ServiceInvoice extends Model {
 
 			} elseif ($this->type_id == 1062) {
 				$params['AmountCurDebit'] = $this->type_id == 1062 ? ($total_amount_with_gst['invoice'] + ($this->type_id == 1062 ? $this->serviceInvoiceItems()->sum('sub_total') : 0)) : 0;
+			} else {
+				$params['AmountCurDebit'] = '';
 			}
 		}
 		// dd($params);
@@ -376,6 +380,8 @@ class ServiceInvoice extends Model {
 
 			} elseif ($this->type_id == 1062) {
 				$params['AmountCurCredit'] = $this->type_id == 1062 ? $invoice_item->sub_total : 0;
+			} else {
+				$params['AmountCurCredit'] = '';
 			}
 
 			if ($invoice_item->serviceItem->taxCode && $KFC_IN == 0) {
@@ -416,8 +422,10 @@ class ServiceInvoice extends Model {
 									if ($tax->name == 'CGST') {
 										if ($this->type_id == 1061) {
 											$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-										} else {
+										} elseif ($this->type_id == 1062) {
 											$params['AmountCurCredit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+										} else {
+											$params['AmountCurCredit'] = '';
 										}
 
 										$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
@@ -432,8 +440,10 @@ class ServiceInvoice extends Model {
 									if ($tax->name == 'SGST') {
 										if ($this->type_id == 1061) {
 											$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-										} else {
+										} elseif ($this->type_id == 1062) {
 											$params['AmountCurCredit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+										} else {
+											$params['AmountCurCredit'] = '';
 										}
 
 										$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
@@ -450,8 +460,10 @@ class ServiceInvoice extends Model {
 									$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
 									if ($this->type_id == 1061) {
 										$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
-									} else {
+									} elseif ($this->type_id == 1062) {
 										$params['AmountCurCredit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
+									} else {
+										$params['AmountCurCredit'] = '';
 									}
 									$params['LedgerDimension'] = '2230' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
