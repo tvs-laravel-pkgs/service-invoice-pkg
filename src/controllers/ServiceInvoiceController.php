@@ -686,7 +686,7 @@ class ServiceInvoiceController extends Controller {
 
 	public function getServiceItem(Request $request) {
 		//GET TAXES BY CONDITIONS
-		$taxes = Tax::getTaxes($request->service_item_id, $request->branch_id, $request->customer_id);
+		$taxes = Tax::getTaxes($request->service_item_id, $request->branch_id, $request->customer_id, $request->to_account_type_id);
 		if (!$taxes['success']) {
 			return response()->json(['success' => false, 'error' => $taxes['error']]);
 		}
