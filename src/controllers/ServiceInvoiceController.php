@@ -13,6 +13,7 @@ use Abs\ServiceInvoicePkg\ServiceInvoiceItem;
 use Abs\ServiceInvoicePkg\ServiceItem;
 use Abs\ServiceInvoicePkg\ServiceItemCategory;
 use Abs\TaxPkg\Tax;
+use App\Address;
 use App\ApiLog;
 use App\Attachment;
 use App\City;
@@ -1103,7 +1104,9 @@ class ServiceInvoiceController extends Controller {
 		}
 
 		$service_invoice_pdf->customer;
+		$service_invoice_pdf->customer->primaryAddress;
 		$service_invoice->customer;
+		$service_invoice->customer->primaryAddress;
 		// dd($service_invoice->outlets->primaryAddress->country);
 		// dd('in');
 
@@ -1111,10 +1114,27 @@ class ServiceInvoiceController extends Controller {
 		// $service_invoice_pdf->outlets->formatted_address = $service_invoice_pdf->outlets->primaryAddress ? $service_invoice_pdf->outlets->primaryAddress->getFormattedAddress() : 'NA';
 		$service_invoice_pdf->outlets = $service_invoice_pdf->outlets ? $service_invoice_pdf->outlets : 'NA';
 		$service_invoice_pdf->customer->formatted_address = $service_invoice_pdf->customer->primaryAddress ? $service_invoice_pdf->customer->primaryAddress->address_line1 : 'NA';
-		$city = City::where('name', $service_invoice_pdf->customer->city)->first();
-		// dd($city);
-		$state = State::find($city->state_id);
-		$service_invoice_pdf->customer->state_code = $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-';
+
+		if ($service_invoice->to_account_type_id == 1440 || $service_invoice->to_account_type_id == 1440) {
+			$city = City::where('name', $service_invoice_pdf->customer->city)->first();
+			// dd($city);
+			$state = State::find($city->state_id);
+			$service_invoice_pdf->customer->state_code = $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-';
+		} else {
+			$state = State::find($service_invoice->customer->primaryAddress ? $service_invoice->customer->primaryAddress->state_id : NULL);
+			$service_invoice_pdf->customer->state_code = $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-';
+			$address = Address::with(['city', 'state', 'country'])->where('address_of_id', 21)->where('entity_id', $service_invoice->customer_id)->first();
+			if ($address) {
+				$service_invoice_pdf->customer->address .= $address->address_line1 ? $address->address_line1 . ', ' : '';
+				$service_invoice_pdf->customer->address .= $address->address_line2 ? $address->address_line2 . ', ' : '';
+				$service_invoice_pdf->customer->address .= $address->city ? $address->city->name . ', ' : '';
+				$service_invoice_pdf->customer->address .= $address->state ? $address->state->name . ', ' : '';
+				$service_invoice_pdf->customer->address .= $address->country ? $address->country->name . ', ' : '';
+				$service_invoice_pdf->customer->address .= $address->pincode ? $address->pincode . '.' : '';
+			} else {
+				$service_invoice_pdf->customer->address = '';
+			}
+		}
 		// dd($service_invoice_pdf->outlets->formatted_address);
 		$fields = Field::withTrashed()->get()->keyBy('id');
 		if (count($service_invoice_pdf->serviceInvoiceItems) > 0) {
@@ -1909,6 +1929,7 @@ class ServiceInvoiceController extends Controller {
 			$service_invoice_save->save();
 
 			//SEND TO PDF
+			$service_invoice_pdf->type_id = $service_invoice->type_id;
 			$service_invoice_pdf->version = $get_version->Version;
 			$service_invoice_pdf->round_off_amount = $service_invoice->round_off_amount;
 			$service_invoice_pdf->irn_number = $final_json_decode->Irn;
