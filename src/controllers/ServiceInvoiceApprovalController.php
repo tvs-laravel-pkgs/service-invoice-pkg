@@ -156,6 +156,8 @@ class ServiceInvoiceApprovalController extends Controller {
 		// dd($cn_dn_approval_list);
 		if (Entrust::can('CN/DN Approval 1 View All')) {
 			$cn_dn_approval_list = $cn_dn_approval_list->where('service_invoices.company_id', Auth::user()->company_id);
+		} elseif (Entrust::can('view-own-cn-dn-approval')) {
+			$service_invoice_list = $service_invoice_list->where('service_invoices.created_by_id', Auth::user()->id);
 		} elseif (Entrust::can('CN/DN Approval 1 Outlet Based')) {
 			$view_user_outlets_only = User::leftJoin('employees', 'employees.id', 'users.entity_id')
 				->leftJoin('employee_outlet', 'employee_outlet.employee_id', 'employees.id')
