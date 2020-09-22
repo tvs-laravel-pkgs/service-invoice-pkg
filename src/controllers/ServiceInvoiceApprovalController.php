@@ -387,7 +387,8 @@ class ServiceInvoiceApprovalController extends Controller {
 			// $approval_levels = ApprovalLevel::where('approval_type_id', 1)->first();
 
 			if ($request->status_name == 'approve') {
-				$approval_status->status_id = 4; //$approval_levels->next_status_id;
+				// $approval_status->status_id = 4; //$approval_levels->next_status_id;
+				$approval_status->status_id = 3;
 				$approval_status->comments = NULL;
 				$message = 'Approved';
 			} elseif ($request->status_name == 'reject') {
@@ -401,7 +402,7 @@ class ServiceInvoiceApprovalController extends Controller {
 
 			$approved_status = new ServiceInvoiceController();
 			$approval_levels = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 19)->first();
-
+			// dd($approval_levels);
 			if ($approval_levels != '') {
 				if ($approval_status->status_id == $approval_levels->name) {
 					$r = $approved_status->createPdf($approval_status->id);
@@ -424,7 +425,8 @@ class ServiceInvoiceApprovalController extends Controller {
 
 	public function updateMultipleApproval(Request $request) {
 		$send_for_approvals = ServiceInvoice::whereIn('id', $request->send_for_approval)->where('status_id', 2)->pluck('id')->toArray();
-		$next_status = 4; //ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
+		$next_status = 3; //ADDED FOR QUEUE
+		// $next_status = 4; //ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
 		// dd($send_for_approvals);
 		if (count($send_for_approvals) == 0) {
 			return response()->json(['success' => false, 'errors' => ['No Approval 1 Pending Status in the list!']]);
@@ -440,7 +442,7 @@ class ServiceInvoiceApprovalController extends Controller {
 					$send_approval->save();
 
 					$approved_status = new ServiceInvoiceController();
-					$approval_levels = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 19)->first();
+					$approval_levels = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 19)->first(); //ENTITIES ALSO CHANGES FOR 3; FOR QUEUE PROCESS
 					if ($approval_levels != '') {
 						if ($send_approval->status_id == $approval_levels->name) {
 							$r = $approved_status->createPdf($send_approval->id);

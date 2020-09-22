@@ -225,9 +225,9 @@
                                             </li>
                                             <li ng-if="$ctrl.type_id == 1060 || $ctrl.type_id == 1061">
                                                 <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Invoice # </label>
+                                                    <label class="table-form-list-label">Ref. Invoice # </label>
                                                     <div class="table-form-list-control">
-                                                        <input type="text" ng-model="$ctrl.service_invoice.invoice_number" name="invoice_number" class="type-sm form-control" placeholder="Enter Invoice Number">
+                                                        <input type="text" ng-model="$ctrl.service_invoice.invoice_number" name="invoice_number" class="type-sm form-control" placeholder="Enter Ref. Invoice Number">
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
@@ -241,10 +241,10 @@
                                             </li> -->
                                             <li ng-if="$ctrl.type_id == 1060 || $ctrl.type_id == 1061">
                                                 <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Invoice Date </label>
+                                                    <label class="table-form-list-label">Ref. Invoice Date </label>
                                                     <div class="table-form-list-control inv_date_error">
                                                         <div class="input-group date type-sm invoiceDatePicker">
-                                                            <input name="invoice_date" ng-model="$ctrl.service_invoice.invoice_date" type="text" class="form-control inv_date" placeholder="Select Invoice Date" value="{{$ctrl.service_invoice.invoice_date}}" />
+                                                            <input name="invoice_date" ng-model="$ctrl.service_invoice.invoice_date" type="text" class="form-control inv_date" placeholder="Select Ref. Invoice Date" value="{{$ctrl.service_invoice.invoice_date}}" />
                                                             <div class="input-group-addon">
                                                                 <img class="img-responsive" src="public/theme/img/content/calender-gray-icon.svg" alt="Calendar Image" />
                                                             </div>
