@@ -155,7 +155,7 @@
                                             </li>
                                             <li>
                                                 <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Invoice Number</label>
+                                                    <label class="table-form-list-label">Ref. Invoice Number</label>
                                                     <div class="table-form-list-control">
                                                         <input type="text" ng-model="$ctrl.service_invoice.invoice_number" name="invoice_number" class="type-sm form-control" placeholder="Enter Invoice Number" readonly>
                                                     </div><!-- Table Form List Control -->
@@ -171,7 +171,7 @@
                                             </li> -->
                                             <li>
                                                 <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Invoice Date </label>
+                                                    <label class="table-form-list-label">Ref. Invoice Date </label>
                                                     <div class="table-form-list-control invoice_date_error">
                                                         <div class="input-group date type-sm invoiceDatePicker">
                                                             <input name="invoice_date" ng-model="$ctrl.service_invoice.invoice_date" type="text" class="form-control invoice_date" placeholder="Select Doc Date" value="{{$ctrl.service_invoice.invoice_date}}" readonly />
@@ -203,6 +203,12 @@
                                                 <label class="table-form-list-label">QR Image </label>
                                                 <div class="table-form-list-control">
                                                     <img src="{{$ctrl.qr_image_url}}/{{$ctrl.service_invoice.qr_image}}" style="width: 100px;" alt="Qr Image">
+                                                </div>
+                                            </li>
+                                            <li ng-if="$ctrl.service_invoice.cancel_irn" style="margin-top: 100px;">
+                                                <!-- <label class="table-form-list-label">QR Image </label> -->
+                                                <div class="table-form-list-control" style="margin-left: 30px !important;">
+                                                    <button id="cancel_irn" data-toggle="modal" data-target="#cancel-irn-modal" type="button" class="btn btn-primary my-tooltip" ng-if="$ctrl.service_invoice.status_id == 4">Cancel IRN</button>
                                                 </div>
                                             </li>
                                         </ul><!-- Table Form List -->
@@ -587,4 +593,21 @@
         </form>
     </div><!-- Modal Dialog -->
 </div><!-- Modal -->
+<!-- Modal -->
+<div class="modal fade alert-modal failure" id="cancel-irn-modal" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">ARE YOU SURE?</h4>
+            </div>
+            <div class="modal-body">
+                <h5>Cancel</h5>
+                <p>Are you sure you want to Cancel IRN? </p>
+                <button type="button" class="btn btn-grey" data-dismiss="modal" aria-label="Close">No</button>
+                <button class="btn btn-rose" ng-click="cancelIRN()" type="button" data-dismiss="modal" aria-label="Close" id="cancen_irn">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal -->
 <script src="./public/theme/js/imageuploadify.min.js"></script>

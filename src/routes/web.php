@@ -56,4 +56,6 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 	Route::get('/service-items/filter', 'ServiceItemController@getServiceItemFilter')->name('getServiceItemFilter');
 	Route::post('/service-items/search-coa-code', 'ServiceItemController@searchCoaCode')->name('searchCoaCode');
 	Route::post('/service-items/search-sac-code', 'ServiceItemController@searchSacCode')->name('searchSacCode');
+
+	Route::get('/service-invoice/cancel-irn/{id}', 'ServiceInvoiceController@cancelIrn')->name('cancelIrn');
 });
