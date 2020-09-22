@@ -75,7 +75,9 @@
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Is Service </label>
                                                     <div class="table-form-list-control type-sm" style="min-width:130px !important;">
-                                                        <span class="type-sm"> {{$ctrl.service_invoice.is_service == 1 ? 'Yes' : 'No'}}
+                                                        <span class="type-sm"> {{$ctrl.service_invoice.is_service == 1 ? 'Yes' : ''}}
+                                                        {{$ctrl.service_invoice.is_service == 0 ? 'No' : ''}}
+                                                        {{$ctrl.service_invoice.is_service == 2 ? 'Non-Taxable' : ''}}
                                                         </span>
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
