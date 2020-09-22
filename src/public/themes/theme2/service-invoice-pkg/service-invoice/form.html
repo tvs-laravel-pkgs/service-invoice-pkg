@@ -105,12 +105,12 @@
                                                             <label for="is_yes">
                                                                 Yes
                                                             </label>
-                                                            <input type="radio" id="is_no" name="is_service" ng-value="0" value="0" ng-model="$ctrl.service_invoice.is_service" ng-checked="!$ctrl.service_invoice.is_service" class="is_service">
+                                                            <input type="radio" id="is_no" name="is_service" ng-value="0" value="0" ng-model="$ctrl.service_invoice.is_service" ng-checked="$ctrl.service_invoice.is_service" class="is_service">
                                                             <label for="is_no">
                                                                 No
                                                             </label>
-                                                             <input type="radio" id="is_non" name="is_service" ng-value="2" value="2" ng-model="$ctrl.service_invoice.is_service" ng-checked="!$ctrl.service_invoice.is_service" class="is_service">
-                                                            <label for="is_non">
+                                                             <input type="radio" id="is_nontax" name="is_service" ng-value="2" value="2" ng-model="$ctrl.service_invoice.is_service" ng-checked="$ctrl.service_invoice.is_service" class="is_service">
+                                                            <label for="is_nontax">
                                                                 Non-Taxable
                                                             </label>
                                                         </div>
