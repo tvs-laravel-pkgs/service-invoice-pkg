@@ -79,6 +79,7 @@ class ServiceInvoiceController extends Controller {
 				'service_invoices.total as invoice_amount',
 				'service_invoices.is_cn_created',
 				'service_invoices.status_id',
+				'service_invoices.ack_date',
 				'outlets.code as branch',
 				'sbus.name as sbu',
 				'service_item_categories.name as category',
@@ -222,7 +223,27 @@ class ServiceInvoiceController extends Controller {
 	                    	</a>
 	                    	<a href="' . $path . '/' . $service_invoice_list->number . '.pdf" class="" target="_blank"><img class="img-responsive" src="' . $img_download . '" alt="Download" />
 	                        </a>';
-				} elseif ($service_invoice_list->status_id != '4' && $service_invoice_list->status_id != '3') {
+					if ($service_invoice_list->ack_date) {
+						$current_date_time = date('d-m-Y H:i:s');
+						if (!empty($service_invoice_list->ack_date)) {
+							$t1 = strtotime($service_invoice_list->ack_date);
+							$t2 = strtotime($current_date_time);
+							$diff = $t2 - $t1;
+							$hours = $diff / (60 * 60);
+							if ($hours < 24) {
+								$output .= '<a href="javascript:;" data-toggle="modal" data-target="#delete_irn"
+									onclick="angular.element(this).scope().deleteIRN(' . $service_invoice_list->id . ')" dusk = "delete-btn" title="Cancel IRN">
+									<img src="' . $img_delete . '" alt="Cancel IRN" class="img-responsive">
+									</a>';
+							} else {
+								$output .= '';
+							}
+						} else {
+							$output .= '';
+						}
+
+					}
+				} elseif ($service_invoice_list->status_id != '4' && $service_invoice_list->status_id != '3' && $service_invoice_list->status_id != '7') {
 					$output .= '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
 	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
 	                    	</a>
@@ -233,6 +254,32 @@ class ServiceInvoiceController extends Controller {
 					$output .= '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
 	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
 	                    	</a>';
+				} elseif ($service_invoice_list->status_id == '7') {
+					$output .= '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
+	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
+	                    	</a>
+	                    	<a href="' . $path . '/' . $service_invoice_list->number . '.pdf" class="" target="_blank"><img class="img-responsive" src="' . $img_download . '" alt="Download" />
+	                        </a>';
+					if ($service_invoice_list->ack_date) {
+						$current_date_time = date('d-m-Y H:i:s');
+						if (!empty($service_invoice_list->ack_date)) {
+							$t1 = strtotime($service_invoice_list->ack_date);
+							$t2 = strtotime($current_date_time);
+							$diff = $t2 - $t1;
+							$hours = $diff / (60 * 60);
+							if ($hours < 24 && $service_invoice_list->state_id == 7) {
+								$output .= '<a href="javascript:;" data-toggle="modal" data-target="#delete_irn"
+									onclick="angular.element(this).scope().deleteIRN(' . $service_invoice_list->id . ')" dusk = "delete-btn" title="Cancel IRN">
+									<img src="' . $img_delete . '" alt="Cancel IRN" class="img-responsive">
+									</a>';
+							} else {
+								$output .= '';
+							}
+						} else {
+							$output .= '';
+						}
+					}
+
 				}
 				if ($service_invoice_list->status_id == '1') {
 					$next_status = 2; //ApprovalLevel::where('approval_type_id', 1)->pluck('current_status_id')->first();
@@ -275,6 +322,7 @@ class ServiceInvoiceController extends Controller {
 				return response()->json(['success' => false, 'error' => 'Service Invoice not found']);
 			}
 			$service_invoice->customer; //ADDED FOR CUSTOMER AND VENDOR BOTH
+			$service_invoice->customer->primaryAddress; //ADDED FOR CUSTOMER AND VENDOR BOTH
 			$fields = Field::withTrashed()->get()->keyBy('id');
 			if (count($service_invoice->serviceInvoiceItems) > 0) {
 				$gst_total = 0;
@@ -750,7 +798,7 @@ class ServiceInvoiceController extends Controller {
 					if (!is_null($service_item->sac_code_id)) {
 						//customer have HSN and SAC Code
 						$gst_total += round((1 / 100) * ($request->qty * $request->amount), 2);
-						$KFC_tax_amount = round($request->amount * 1 / 100, 2); //ONE PERCENTAGE FOR KFC
+						$KFC_tax_amount = round($request->qty * $request->amount * 1 / 100, 2); //ONE PERCENTAGE FOR KFC
 						$service_item['KFC'] = [ //4 for KFC
 							'percentage' => 1,
 							'amount' => $KFC_tax_amount,
@@ -1086,6 +1134,8 @@ class ServiceInvoiceController extends Controller {
 
 	public function createPdf($service_invoice_id) {
 		// dd($service_invoice_id);
+		$errors = [];
+
 		$service_invoice = $service_invoice_pdf = ServiceInvoice::with([
 			'company',
 			// 'customer',
@@ -1103,49 +1153,56 @@ class ServiceInvoiceController extends Controller {
 			'serviceInvoiceItems.serviceItem.taxCode',
 			'serviceInvoiceItems.taxes',
 		])->find($service_invoice_id);
-
+		// dd($service_invoice);
 		$r = $service_invoice->exportToAxapta();
 		if (!$r['success']) {
 			return $r;
 		}
+		// dd('stop');
+		//ADDED FOR QUEUE METHOD STRAT
+		// CreatePdfCnDn::dispatch($service_invoice_id, Auth::user()->company_id, Auth::user()->id);
+		// $service_invoice = ServiceInvoice::find($service_invoice_id);
+		// $service_invoice->status_id = 3; //IN PROGRESS
+		// $service_invoice->save();
+		//ADDED FOR QUEUE METHOD END
 
-		$service_invoice_pdf->customer;
-		$service_invoice_pdf->customer->primaryAddress;
 		$service_invoice->customer;
 		$service_invoice->customer->primaryAddress;
 		// dd($service_invoice->outlets->primaryAddress->country);
-		// dd('in');
+		$service_invoice->company->formatted_address = $service_invoice->company->primaryAddress ? $service_invoice->company->primaryAddress->getFormattedAddress() : 'NA';
+		// $service_invoice->outlets->formatted_address = $service_invoice->outlets->primaryAddress ? $service_invoice->outlets->primaryAddress->getFormattedAddress() : 'NA';
+		$service_invoice->outlets = $service_invoice->outlets ? $service_invoice->outlets : 'NA';
+		$service_invoice->customer->formatted_address = $service_invoice->customer->primaryAddress ? $service_invoice->customer->primaryAddress->address_line1 : 'NA';
 
-		$service_invoice_pdf->company->formatted_address = $service_invoice_pdf->company->primaryAddress ? $service_invoice_pdf->company->primaryAddress->getFormattedAddress() : 'NA';
-		// $service_invoice_pdf->outlets->formatted_address = $service_invoice_pdf->outlets->primaryAddress ? $service_invoice_pdf->outlets->primaryAddress->getFormattedAddress() : 'NA';
-		$service_invoice_pdf->outlets = $service_invoice_pdf->outlets ? $service_invoice_pdf->outlets : 'NA';
-		$service_invoice_pdf->customer->formatted_address = $service_invoice_pdf->customer->primaryAddress ? $service_invoice_pdf->customer->primaryAddress->address_line1 : 'NA';
-
-		if ($service_invoice->to_account_type_id == 1440 || $service_invoice->to_account_type_id == 1440) {
-			$city = City::where('name', $service_invoice_pdf->customer->city)->first();
+		if ($service_invoice->to_account_type_id == 1440) {
+			$city = City::where('name', $service_invoice->customer->city)->first();
 			// dd($city);
 			$state = State::find($city->state_id);
-			$service_invoice_pdf->customer->state_code = $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-';
+			$service_invoice->customer->state_code = $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-';
 		} else {
 			$state = State::find($service_invoice->customer->primaryAddress ? $service_invoice->customer->primaryAddress->state_id : NULL);
-			$service_invoice_pdf->customer->state_code = $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-';
+			$service_invoice->customer->state_code = $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-';
+			// dd($service_invoice->customer_id);
 			$address = Address::with(['city', 'state', 'country'])->where('address_of_id', 21)->where('entity_id', $service_invoice->customer_id)->first();
+			// dd($address);
 			if ($address) {
-				$service_invoice_pdf->customer->address .= $address->address_line1 ? $address->address_line1 . ', ' : '';
-				$service_invoice_pdf->customer->address .= $address->address_line2 ? $address->address_line2 . ', ' : '';
-				$service_invoice_pdf->customer->address .= $address->city ? $address->city->name . ', ' : '';
-				$service_invoice_pdf->customer->address .= $address->state ? $address->state->name . ', ' : '';
-				$service_invoice_pdf->customer->address .= $address->country ? $address->country->name . ', ' : '';
-				$service_invoice_pdf->customer->address .= $address->pincode ? $address->pincode . '.' : '';
+				$service_invoice->customer->address .= $address->address_line1 ? $address->address_line1 . ', ' : '';
+				$service_invoice->customer->address .= $address->address_line2 ? $address->address_line2 . ', ' : '';
+				$service_invoice->customer->address .= $address->city ? $address->city->name . ', ' : '';
+				$service_invoice->customer->address .= $address->state ? $address->state->name . ', ' : '';
+				$service_invoice->customer->address .= $address->country ? $address->country->name . ', ' : '';
+				$service_invoice->customer->address .= $address->pincode ? $address->pincode . '.' : '';
 			} else {
-				$service_invoice_pdf->customer->address = '';
+				$service_invoice->customer->address = '';
 			}
 		}
-		// dd($service_invoice_pdf->outlets->formatted_address);
+		// dd(1);
+		// dd($service_invoice->outlets->formatted_address);
 		$fields = Field::withTrashed()->get()->keyBy('id');
-		if (count($service_invoice_pdf->serviceInvoiceItems) > 0) {
+
+		if (count($service_invoice->serviceInvoiceItems) > 0) {
 			$array_key_replace = [];
-			foreach ($service_invoice_pdf->serviceInvoiceItems as $key => $serviceInvoiceItem) {
+			foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
 				$taxes = $serviceInvoiceItem->taxes;
 				$type = $serviceInvoiceItem->serviceItem;
 				foreach ($taxes as $array_key_replace => $tax) {
@@ -1157,7 +1214,7 @@ class ServiceInvoiceController extends Controller {
 			$item_count = 0;
 			$item_count_with_tax_code = 0;
 			$gst_total = 0;
-			foreach ($service_invoice_pdf->serviceInvoiceItems as $key => $serviceInvoiceItem) {
+			foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
 				//FIELD GROUPS AND FIELDS INTEGRATION
 				if (count($serviceInvoiceItem->eavVarchars) > 0) {
 					$eav_varchar_field_group_ids = $serviceInvoiceItem->eavVarchars()->pluck('field_group_id')->toArray();
@@ -1271,28 +1328,28 @@ class ServiceInvoiceController extends Controller {
 			}
 		}
 		// dd($item_count, $item_count_with_tax_code);
-		//dd($service_invoice_pdf->type_id);
+		//dd($service_invoice->type_id);
 		$type = $serviceInvoiceItem->serviceItem;
-		if (!empty($type->sac_code_id) && ($service_invoice_pdf->type_id == 1060)) {
-			$service_invoice_pdf->sac_code_status = 'CREDIT NOTE(CRN)';
-			$service_invoice_pdf->document_type = 'CRN';
-		} elseif (empty($type->sac_code_id) && ($service_invoice_pdf->type_id == 1060)) {
-			$service_invoice_pdf->sac_code_status = 'FINANCIAL CREDIT NOTE';
-			$service_invoice_pdf->document_type = 'CRN';
-		} elseif ($service_invoice_pdf->type_id == 1061) {
-			$service_invoice_pdf->sac_code_status = 'Tax Invoice(DBN)';
-			$service_invoice_pdf->document_type = 'DBN';
+		if (!empty($type->sac_code_id) && ($service_invoice->type_id == 1060)) {
+			$service_invoice->sac_code_status = 'CREDIT NOTE(CRN)';
+			$service_invoice->document_type = 'CRN';
+		} elseif (empty($type->sac_code_id) && ($service_invoice->type_id == 1060)) {
+			$service_invoice->sac_code_status = 'FINANCIAL CREDIT NOTE';
+			$service_invoice->document_type = 'CRN';
+		} elseif ($service_invoice->type_id == 1061) {
+			$service_invoice->sac_code_status = 'Tax Invoice(DBN)';
+			$service_invoice->document_type = 'DBN';
 		} else {
-			$service_invoice_pdf->sac_code_status = 'Invoice(INV)';
-			$service_invoice_pdf->document_type = 'INV';
+			$service_invoice->sac_code_status = 'Invoice(INV)';
+			$service_invoice->document_type = 'INV';
 		}
 
 		if ($service_invoice->type_id == 1060) {
-			$service_invoice_pdf->type = 'CRN';
+			$service_invoice->type = 'CRN';
 		} elseif ($service_invoice->type_id == 1061) {
-			$service_invoice_pdf->type = 'DBN';
+			$service_invoice->type = 'DBN';
 		} elseif ($service_invoice->type_id == 1062) {
-			$service_invoice_pdf->type = 'INV';
+			$service_invoice->type = 'INV';
 		}
 
 		if ($service_invoice->total > $service_invoice->final_amount) {
@@ -1302,10 +1359,9 @@ class ServiceInvoiceController extends Controller {
 		} else {
 			$service_invoice->round_off_amount = 0;
 		}
+		// dd($service_invoice->round_off_amount);
 
-		// dd($service_invoice_pdf->sac_code_status);
-		if ($service_invoice_pdf->customer->gst_number && ($item_count == $item_count_with_tax_code)) {
-			// dd('in');
+		if ($service_invoice->customer->gst_number && ($item_count == $item_count_with_tax_code)) {
 			//----------// ENCRYPTION START //----------//
 			// $service_invoice->irnCreate($service_invoice_id);
 			// RSA ENCRYPTION
@@ -1361,10 +1417,11 @@ class ServiceInvoiceController extends Controller {
 					'success' => false,
 					'errors' => curl_errno($ch),
 				];
+				$errors[] = curl_errno($ch);
 				// return response()->json([
-				// 	'success' => false,
-				// 	'error' => 'call to URL $bdo_login_url failed with status $status',
-				// 	'errors' => ["response " . $server_output . ", curl_error " . curl_error($ch) . ", curl_errno " . curl_errno($ch)],
+				//  'success' => false,
+				//  'error' => 'call to URL $bdo_login_url failed with status $status',
+				//  'errors' => ["response " . $server_output . ", curl_error " . curl_error($ch) . ", curl_errno " . curl_errno($ch)],
 				// ]);
 			}
 
@@ -1384,7 +1441,6 @@ class ServiceInvoiceController extends Controller {
 			curl_close($ch);
 
 			$server_output = json_decode($server_output);
-
 			$expiry = $server_output->expiry;
 			$bdo_authtoken = $server_output->bdo_authtoken;
 			$status = $server_output->status;
@@ -1423,10 +1479,11 @@ class ServiceInvoiceController extends Controller {
 					'success' => false,
 					'errors' => curl_errno($ch),
 				];
+				$errors[] = curl_errno($ch);
 				// return response()->json([
-				// 	'success' => false,
-				// 	'error' => 'call to URL $bdo_login_url failed with status $status',
-				// 	'errors' => ["response " . $server_output . ", curl_error " . curl_error($ch) . ", curl_errno " . curl_errno($ch)],
+				//  'success' => false,
+				//  'error' => 'call to URL $bdo_login_url failed with status $status',
+				//  'errors' => ["response " . $server_output . ", curl_error " . curl_error($ch) . ", curl_errno " . curl_errno($ch)],
 				// ]);
 			}
 
@@ -1435,7 +1492,7 @@ class ServiceInvoiceController extends Controller {
 			$server_output = json_decode($server_output);
 
 			$aes_decoded_plain_text = base64_decode($server_output->output);
-
+			// dd($aes_decoded_plain_text);
 			//ITEm
 			$items = [];
 			$sno = 1;
@@ -1447,9 +1504,10 @@ class ServiceInvoiceController extends Controller {
 				$cgst_total = 0;
 				$sgst_total = 0;
 				$igst_total = 0;
-				$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id);
+				$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id);
 				if (!$taxes['success']) {
-					return response()->json(['success' => false, 'error' => $taxes['error']]);
+					$errors[] = $taxes['error'];
+					// return response()->json(['success' => false, 'error' => $taxes['error']]);
 				}
 
 				$service_item = ServiceItem::with([
@@ -1461,7 +1519,8 @@ class ServiceInvoiceController extends Controller {
 				])
 					->find($serviceInvoiceItem->service_item_id);
 				if (!$service_item) {
-					return response()->json(['success' => false, 'error' => 'Service Item not found']);
+					$errors[] = 'Service Item not found';
+					// return response()->json(['success' => false, 'error' => 'Service Item not found']);
 				}
 
 				//TAX CALC AND PUSH
@@ -1487,7 +1546,9 @@ class ServiceInvoiceController extends Controller {
 						'success' => false,
 						'errors' => 'Item Not Mapped with Tax code!. Item Code: ' . $service_item->code,
 					];
+					$errors[] = 'Item Not Mapped with Tax code!. Item Code: ' . $service_item->code;
 				}
+
 				// dump($serviceInvoiceItem->sub_total ? $serviceInvoiceItem->sub_total : 0);
 				// dump(number_format($igst_total));
 				// dd($cgst_total, $sgst_total, $igst_total);
@@ -1503,7 +1564,7 @@ class ServiceInvoiceController extends Controller {
 				$item['BchDtls']["wrDt"] = null;
 
 				$item['Barcde'] = null;
-				$item['Qty'] = 1; //ALWAYS 1
+				$item['Qty'] = $serviceInvoiceItem->qty;
 				$item['FreeQty'] = 0;
 				$item['Unit'] = $serviceInvoiceItem->eInvoiceUom ? $serviceInvoiceItem->eInvoiceUom->code : "NOS";
 				$item['UnitPrice'] = number_format($serviceInvoiceItem->sub_total ? $serviceInvoiceItem->sub_total : 0); //NEED TO CLARIFY
@@ -1576,8 +1637,6 @@ class ServiceInvoiceController extends Controller {
 			$additionaldoc_detail['Docs'] = null;
 			$additionaldoc_detail['Info'] = null;
 
-			$positive_negative_sign = $service_invoice->type_id == 1060 ? '+' : '-';
-
 			// dd($cgst_total, $sgst_total, $igst_total);
 			$json_encoded_data =
 				json_encode(
@@ -1590,9 +1649,9 @@ class ServiceInvoiceController extends Controller {
 						'IgstonIntra' => null, //NEED TO CLARIFY
 					),
 					'DocDtls' => array(
-						"Typ" => $service_invoice_pdf->type,
+						"Typ" => $service_invoice->type,
 						"No" => $service_invoice->number,
-						// "No" => '23AUG2020SN136',
+						// "No" => '23AUG2020SN146',
 						"Dt" => date('d-m-Y', strtotime($service_invoice->document_date)),
 					),
 					'SellerDtls' => array(
@@ -1611,7 +1670,7 @@ class ServiceInvoiceController extends Controller {
 						"Em" => null, //need to clarify
 					),
 					"BuyerDtls" => array(
-						// 	// "Gstin" => $service_invoice->customer->gst_number ? $service_invoice->customer->gst_number : 'N/A', //need to clarify if available ok otherwise ?
+						//  // "Gstin" => $service_invoice->customer->gst_number ? $service_invoice->customer->gst_number : 'N/A', //need to clarify if available ok otherwise ?
 						"Gstin" => "27AABCT3518Q1ZW",
 						"LglNm" => $service_invoice->customer ? $service_invoice->customer->name : 'N/A',
 						"TrdNm" => $service_invoice->customer ? $service_invoice->customer->name : null,
@@ -1754,12 +1813,8 @@ class ServiceInvoiceController extends Controller {
 					'success' => false,
 					'errors' => curl_errno($ch),
 				];
-				// return response()->json([
-				// 	'error' => 'call to URL $aes_encrypt_url failed with status $status',
-				// 	'errors' => ["response " . $server_output . ", curl_error " . curl_error($ch) . ", curl_errno " . curl_errno($ch)],
-				// ]);
+				$errors[] = curl_errno($ch);
 			}
-
 			// dd(storage_path('app/public/service-invoice/IRN_images/'));
 
 			curl_close($ch);
@@ -1820,6 +1875,7 @@ class ServiceInvoiceController extends Controller {
 				foreach ($generate_irn_output['Error'] as $key => $error) {
 					// dump($rearrange_key, $error);
 					$bdo_errors[$rearrange_key] = $error;
+					$errors[] = $error;
 					$rearrange_key++;
 				}
 				// dump($bdo_errors);
@@ -1831,6 +1887,7 @@ class ServiceInvoiceController extends Controller {
 				// dd('Error: ' . $generate_irn_output['Error']['E2000']);
 			} elseif (!is_array($generate_irn_output['Error'])) {
 				if ($generate_irn_output['Status'] != 1) {
+					$errors[] = $generate_irn_output['Error'];
 					return [
 						'success' => false,
 						'errors' => $generate_irn_output['Error'],
@@ -1871,14 +1928,15 @@ class ServiceInvoiceController extends Controller {
 			// dump('final status check: ' . $status);
 			// If header status is not Created or not OK, return error message
 			if ($status != 200) {
+				$errors[] = curl_errno($ch);
 				return [
 					'success' => false,
 					'errors' => curl_errno($ch),
 				];
 				// return response()->json([
-				// 	'success' => false,
-				// 	'error' => 'call to URL $bdo_generate_irn_url failed with status $status',
-				// 	'errors' => ["response " . $server_output . ", curl_error " . curl_error($ch) . ", curl_errno " . curl_errno($ch)],
+				//  'success' => false,
+				//  'error' => 'call to URL $bdo_generate_irn_url failed with status $status',
+				//  'errors' => ["response " . $server_output . ", curl_error " . curl_error($ch) . ", curl_errno " . curl_errno($ch)],
 				// ]);
 			}
 
@@ -1889,7 +1947,7 @@ class ServiceInvoiceController extends Controller {
 			$aes_final_decoded_plain_text = base64_decode($final_encrypt_output->output);
 			// dump($aes_final_decoded_plain_text);
 			$final_json_decode = json_decode($aes_final_decoded_plain_text);
-
+			// dd($final_json_decode);
 			$IRN_images_des = storage_path('app/public/service-invoice/IRN_images');
 			File::makeDirectory($IRN_images_des, $mode = 0777, true, true);
 
@@ -1915,10 +1973,10 @@ class ServiceInvoiceController extends Controller {
 					imagejpeg($bg, $qr_attachment_path . ".jpg", $quality);
 					// imagedestroy($bg);
 
-					$service_invoice_pdf->qr_image = base_path("storage/app/public/service-invoice/IRN_images/" . $service_invoice->number . '.png') . '.jpg';
+					$service_invoice->qr_image = base_path("storage/app/public/service-invoice/IRN_images/" . $service_invoice->number . '.png') . '.jpg';
 				}
 			} else {
-				$service_invoice_pdf->qr_image = '';
+				$service_invoice->qr_image = '';
 			}
 			$get_version = json_decode($final_json_decode->Invoice);
 			$get_version = json_decode($get_version->data);
@@ -1932,32 +1990,56 @@ class ServiceInvoiceController extends Controller {
 			$service_invoice_save->version = $get_version->Version;
 			$service_invoice_save->irn_request = $json_encoded_data;
 			$service_invoice_save->irn_response = $aes_final_decoded_plain_text;
+			$service_invoice_save->status_id = 4; //APPROVED
+
+			if (count($errors) > 0) {
+				$service_invoice->errors = json_encode($errors);
+				$service_invoice->status_id = 6; //E-Invoice Fail
+				$service_invoice->save();
+				// return;
+			}
+
 			$service_invoice_save->save();
 
 			//SEND TO PDF
-			$service_invoice_pdf->type_id = $service_invoice->type_id;
-			$service_invoice_pdf->version = $get_version->Version;
-			$service_invoice_pdf->round_off_amount = $service_invoice->round_off_amount;
-			$service_invoice_pdf->irn_number = $final_json_decode->Irn;
-			$service_invoice_pdf->ack_no = $final_json_decode->AckNo;
-			$service_invoice_pdf->ack_date = $final_json_decode->AckDt;
+			$service_invoice->version = $get_version->Version;
+			$service_invoice->round_off_amount = $service_invoice->round_off_amount;
+			$service_invoice->irn_number = $final_json_decode->Irn;
+			$service_invoice->ack_no = $final_json_decode->AckNo;
+			$service_invoice->ack_date = $final_json_decode->AckDt;
+
+			// dd('no error');
 
 		}
+		//  else {
+		// 	$service_invoice_save = ServiceInvoice::find($service_invoice_id);
+
+		// 	if (count($errors) > 0) {
+		// 		$service_invoice->errors = json_encode($errors);
+		// 		$service_invoice->status_id = 6; //E-Invoice Fail
+		// 		$service_invoice->save();
+		// 		// return;
+		// 	}
+		// 	$service_invoice_save->status_id = 4; //APPROVED
+		// 	$service_invoice_save->save();
+
+		// }
+
 		// dd('out');
-		// dd($service_invoice_pdf);
+		// dd($service_invoice);
 		// dd('stop Encryption');
 		//----------// ENCRYPTION END //----------//
 
 		//dd($serviceInvoiceItem->field_groups);
-		$this->data['service_invoice_pdf'] = $service_invoice_pdf;
+		$this->data['service_invoice_pdf'] = $service_invoice;
 		// dd($this->data['service_invoice_pdf']);
 
 		$tax_list = Tax::where('company_id', Auth::user()->company_id)->get();
 		$this->data['tax_list'] = $tax_list;
-		// dd($this->data['service_invoice_pdf']);
+		// dd($this->data['tax_list']);
 		$path = storage_path('app/public/service-invoice-pdf/');
-		$pathToFile = $path . '/' . $service_invoice_pdf->number . '.pdf';
-		$name = $service_invoice_pdf->number . '.pdf';
+		$pathToFile = $path . '/' . $service_invoice->number . '.pdf';
+		$name = $service_invoice->number . '.pdf';
 		File::isDirectory($path) or File::makeDirectory($path, 0777, true, true);
 
 		$pdf = app('dompdf.wrapper');
@@ -1966,14 +2048,14 @@ class ServiceInvoiceController extends Controller {
 
 		// return $pdf->stream('service_invoice.pdf');
 		// dd($pdf);
-		// $po_file_name = 'Invoice-' . $service_invoice_pdf->number . '.pdf';
+		// $po_file_name = 'Invoice-' . $service_invoice->number . '.pdf';
 
 		File::put($pathToFile, $pdf->output());
-		// $pdf->save(storage_path('app/public/service-invoice-pdf/' . $name));
 
+		// return [
+		// 	'success' => true,
+		// ];
 		return $r;
-
-		// return $pdf->download($pathToFile, $headers);
 	}
 
 	public function viewServiceInvoice($type_id, $id) {
@@ -2125,6 +2207,24 @@ class ServiceInvoiceController extends Controller {
 			}
 		}
 		$service_invoice->ack_date = $service_invoice->ack_date ? date("d-m-Y H:i:s", strtotime($service_invoice->ack_date)) : NULL;
+
+		$current_date_time = date('d-m-Y H:i:s');
+
+		if (!empty($service_invoice->ack_date)) {
+			$t1 = strtotime($service_invoice->ack_date);
+			$t2 = strtotime($current_date_time);
+			$diff = $t2 - $t1;
+			$hours = $diff / (60 * 60);
+			if ($hours < 24) {
+				$service_invoice->cancel_irn = true;
+			} else {
+				$service_invoice->cancel_irn = false;
+			}
+		} else {
+			$service_invoice->cancel_irn = true;
+		}
+		// dd($service_invoice->cancel_irn);
+
 		$this->data['extras'] = [
 			'sbu_list' => [],
 			'tax_list' => Tax::select('name', 'id')->where('company_id', Auth::user()->company_id)->get(),
@@ -2311,5 +2411,273 @@ class ServiceInvoiceController extends Controller {
 
 		// dd($r->all(), $date_range, $service_invoice_ids, $axapta_records);
 
+	}
+
+	public function cancelIrn(Request $request) {
+		// dd($request->all());
+		$service_invoice = ServiceInvoice::find($request->id);
+
+		$rsa = new Crypt_RSA;
+
+		$public_key = 'MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAxqHazGS4OkY/bDp0oklL+Ser7EpTpxyeMop8kfBlhzc8dzWryuAECwu8i/avzL4f5XG/DdSgMz7EdZCMrcxtmGJlMo2tUqjVlIsUslMG6Cmn46w0u+pSiM9McqIvJgnntKDHg90EIWg1BNnZkJy1NcDrB4O4ea66Y6WGNdb0DxciaYRlToohv8q72YLEII/z7W/7EyDYEaoSlgYs4BUP69LF7SANDZ8ZuTpQQKGF4TJKNhJ+ocmJ8ahb2HTwH3Ol0THF+0gJmaigs8wcpWFOE2K+KxWfyX6bPBpjTzC+wQChCnGQREhaKdzawE/aRVEVnvWc43dhm0janHp29mAAVv+ngYP9tKeFMjVqbr8YuoT2InHWFKhpPN8wsk30YxyDvWkN3mUgj3Q/IUhiDh6fU8GBZ+iIoxiUfrKvC/XzXVsCE2JlGVceuZR8OzwGrxk+dvMnVHyauN1YWnJuUTYTrCw3rgpNOyTWWmlw2z5dDMpoHlY0WmTVh0CrMeQdP33D3LGsa+7JYRyoRBhUTHepxLwk8UiLbu6bGO1sQwstLTTmk+Z9ZSk9EUK03Bkgv0hOmSPKC4MLD5rOM/oaP0LLzZ49jm9yXIrgbEcn7rv82hk8ghqTfChmQV/q+94qijf+rM2XJ7QX6XBES0UvnWnV6bVjSoLuBi9TF1ttLpiT3fkCAwEAAQ=='; //PROVIDE FROM BDO COMPANY
+
+		$clientid = "prakashr@featsolutions.in"; //PROVIDE FROM BDO COMPANY
+		// dump('clientid ' . $clientid);
+
+		$rsa->loadKey($public_key);
+		$rsa->setEncryptionMode(2);
+		$data = 'BBAkBDB0YzZiYThkYTg4ZDZBBDJjZBUyBGFkBBB0BWB='; // CLIENT SECRET KEY
+		$ClientSecret = $rsa->encrypt($data);
+		$clientsecretencrypted = base64_encode($ClientSecret);
+		// dump('ClientSecret ' . $clientsecretencrypted);
+
+		$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		$data = substr(str_shuffle($characters), 0, 32); // RANDOM KEY GENERATE
+		// $data = 'Rdp5EB5w756dVph0C3jCXY1K6RPC6RCD'; // RANDOM KEY GENERATE
+		$AppSecret = $rsa->encrypt($data);
+		$appsecretkey = base64_encode($AppSecret);
+		// dump('appsecretkey ' . $appsecretkey);
+
+		$bdo_login_url = 'https://sandboxeinvoiceapi.bdo.in/bdoauth/bdoauthenticate';
+
+		$ch = curl_init($bdo_login_url);
+		// Setup request to send json via POST`
+		$params = json_encode(array(
+			'clientid' => $clientid,
+			'clientsecretencrypted' => $clientsecretencrypted,
+			'appsecretkey' => $appsecretkey,
+		));
+
+		// Attach encoded JSON string to the POST fields
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+
+		// Set the content type to application/json
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+
+		// Return response instead of outputting
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+		// Execute the POST request
+		$server_output = curl_exec($ch);
+
+		// Get the POST request header status
+		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+		// If header status is not Created or not OK, return error message
+		if ($status != 200) {
+			// $errors[] = curl_errno($ch);
+			return [
+				'success' => false,
+				'errors' => curl_errno($ch),
+			];
+			// return response()->json([
+			//  'success' => false,
+			//  'error' => 'call to URL $bdo_login_url failed with status $status',
+			//  'errors' => ["response " . $server_output . ", curl_error " . curl_error($ch) . ", curl_errno " . curl_errno($ch)],
+			// ]);
+		}
+
+		$api_log = new ApiLog;
+		$api_log->type_id = $service_invoice->type_id;
+		$api_log->entity_number = $service_invoice->number;
+		$api_log->entity_id = $service_invoice->id;
+		$api_log->url = $bdo_login_url;
+		$api_log->src_data = $params;
+		$api_log->response_data = $server_output;
+		$api_log->user_id = Auth::user()->id;
+		$api_log->status_id = $status != 200 ? 11272 : 11271;
+		$api_log->errors = curl_errno($ch);
+		$api_log->created_by_id = Auth::user()->id;
+		$api_log->save();
+
+		curl_close($ch);
+
+		$server_output = json_decode($server_output);
+		$expiry = $server_output->expiry;
+		$bdo_authtoken = $server_output->bdo_authtoken;
+		$status = $server_output->status;
+		$bdo_sek = $server_output->bdo_sek;
+
+		$aes_decrypt_url = 'https://www.devglan.com/online-tools/aes-decryption';
+
+		$ch = curl_init($aes_decrypt_url);
+
+		// Setup request to send json via POST`
+		$params = json_encode(array(
+			'textToDecrypt' => $bdo_sek,
+			'secretKey' => $data,
+			'mode' => 'ECB',
+			'keySize' => '256',
+			'dataFormat' => 'Base64',
+		));
+
+		// Attach encoded JSON string to the POST fields
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+
+		// Set the content type to application/json
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+		// Return response instead of outputting
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+		// Execute the POST request
+		$server_output = curl_exec($ch);
+
+		// Get the POST request header status
+		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+		// If header status is not Created or not OK, return error message
+		if ($status != 200) {
+			// $errors[] = curl_errno($ch);
+			return [
+				'success' => false,
+				'errors' => curl_errno($ch),
+			];
+			// return response()->json([
+			//  'success' => false,
+			//  'error' => 'call to URL $bdo_login_url failed with status $status',
+			//  'errors' => ["response " . $server_output . ", curl_error " . curl_error($ch) . ", curl_errno " . curl_errno($ch)],
+			// ]);
+		}
+
+		curl_close($ch);
+
+		$server_output = json_decode($server_output);
+
+		$aes_decoded_plain_text = base64_decode($server_output->output);
+
+		$json_encoded_data =
+			json_encode(
+			array(
+				"supplier_gstin" => "09ADDPT0274H009", //FOR TESTING
+				"doc_no" => $service_invoice->number,
+				// "doc_no" => "23AUG2020SN146",
+				"irn_no" => $service_invoice->irn_number,
+				"doc_date" => date("d-m-Y", strtotime($service_invoice->document_date)),
+				"reason" => "1",
+				"remark" => "Wrong Data",
+			)
+		);
+		// dd($json_encoded_data);
+
+		//AES ENCRYPT
+		$aes_encrypt_url = 'https://www.devglan.com/online-tools/aes-encryption';
+
+		$ch = curl_init($aes_encrypt_url);
+
+		$data = array(
+			'data' => json_encode(array(
+				'textToEncrypt' => $json_encoded_data,
+				'secretKey' => $aes_decoded_plain_text,
+				'mode' => 'ECB',
+				'keySize' => '256',
+				'dataFormat' => 'Base64',
+			)),
+		);
+
+		// Attach encoded JSON string to the POST fields
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+
+		// Set the content type to application/json
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:multipart/form-data'));
+		// curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+
+		// Return response instead of outputting
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+		$server_output = curl_exec($ch);
+
+		// Get the POST request header status
+		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+		// If header status is not Created or not OK, return error message
+		if ($status != 200) {
+			// $errors[] = curl_errno($ch);
+			return [
+				'success' => false,
+				'errors' => curl_errno($ch),
+			];
+		}
+		// dd(storage_path('app/public/service-invoice/IRN_images/'));
+
+		curl_close($ch);
+
+		$aes_output = json_decode($server_output);
+
+		// dd($aes_output);
+
+		$bdo_cancel_irn_url = 'https://sandboxeinvoiceapi.bdo.in/bdoapi/public/cancelIRN';
+
+		$ch = curl_init($bdo_cancel_irn_url);
+		// Setup request to send json via POST`
+		$params = json_encode(array(
+			'Data' => $aes_output->output,
+		));
+
+		// Attach encoded JSON string to the POST fields
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+
+		// Set the content type to application/json
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+			'Content-Type: application/json',
+			'client_id: ' . $clientid,
+			'bdo_authtoken: ' . $bdo_authtoken,
+			'action: CANIRN',
+		));
+
+		// Return response instead of outputting
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+		// Execute the POST request
+		$cancel_irn_output = curl_exec($ch);
+		// dd($cancel_irn_output);
+
+		$api_log = new ApiLog;
+		$api_log->type_id = $service_invoice->type_id;
+		$api_log->entity_number = $service_invoice->number;
+		$api_log->entity_id = $service_invoice->id;
+		$api_log->url = $bdo_cancel_irn_url;
+		$api_log->src_data = $params;
+		$api_log->response_data = $cancel_irn_output;
+		$api_log->user_id = Auth::user()->id;
+		$api_log->status_id = $status != 200 ? 11272 : 11271;
+		$api_log->errors = curl_errno($ch);
+		$api_log->created_by_id = Auth::user()->id;
+		$api_log->save();
+
+		curl_close($ch);
+
+		$cancel_irn_output_encode = json_decode($cancel_irn_output, true);
+		// dd($cancel_irn_output_encode['irnStatus']);
+		// If header status is not Created or not OK, return error message
+		if ($cancel_irn_output_encode['irnStatus'] != 1) {
+			return response()->json([
+				'success' => false,
+				'errors' => [$cancel_irn_output_encode['ErrorMsg']],
+			]);
+		}
+		// dump($aes_final_decoded_plain_text);
+
+		$service_invoice_save = ServiceInvoice::find($request->id);
+		$service_invoice_save->cancel_irn_number = $cancel_irn_output_encode['Irn'];
+		$service_invoice_save->cancel_irn_number = $cancel_irn_output_encode['CancelDate'];
+		$service_invoice_save->cancel_irn_request = $json_encoded_data;
+		$service_invoice_save->cancel_irn_response = $cancel_irn_output;
+		$service_invoice_save->status_id = 7; //CANCELED
+
+		$service_invoice_save->save();
+
+		if ($service_invoice->type_id == 1060) {
+			$service_invoice->type = 'CREDIT NOTE(CRN)';
+		} elseif ($service_invoice->type_id == 1061) {
+			$service_invoice->type = 'DEBIT NOTE(DBN)';
+		} elseif ($service_invoice->type_id == 1062) {
+			$service_invoice->type = 'INVOICE(INV)';
+		}
+
+		return response()->json([
+			'success' => true,
+			'service_invoice' => $service_invoice_save,
+			'message' => $service_invoice->type . ' Cancened Successfully!',
+		]);
 	}
 }

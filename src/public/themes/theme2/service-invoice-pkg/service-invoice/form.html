@@ -1,5 +1,11 @@
 <!-- Content Wrap -->
 <div class="content-wrap cndn-wrap">
+<div class="pace" style="display: none;" id="pace">
+    <div class="pace-progress" data-progress-text="100%" data-progress="99" style="transform: translate3d(100%, 0px, 0px);">
+        <div class="pace-progress-inner"></div>
+    </div>
+    <div class="pace-activity"></div>
+</div>
     <!-- Page Header -->
     <div class="page-header">
         <div class="page-header-inner">
@@ -109,7 +115,7 @@
                                                             <label for="is_no">
                                                                 No
                                                             </label>
-                                                             <input type="radio" id="is_nontax" name="is_service" ng-value="2" value="2" ng-model="$ctrl.service_invoice.is_service" ng-checked="$ctrl.service_invoice.is_service" class="is_service">
+                                                            <input type="radio" id="is_nontax" name="is_service" ng-value="2" value="2" ng-model="$ctrl.service_invoice.is_service" ng-checked="$ctrl.service_invoice.is_service" class="is_service">
                                                             <label for="is_nontax">
                                                                 Non-Taxable
                                                             </label>
@@ -190,7 +196,7 @@
                                                                 No Customers matching "{{$ctrl.CustomerSearchText}}" were found.
                                                             </md-not-found>
                                                         </md-autocomplete>
-                                                         <!-- FOR VENDOR SEARCH -->
+                                                        <!-- FOR VENDOR SEARCH -->
                                                         <md-autocomplete class="type-sm" ng-if="$ctrl.service_invoice.to_account_type_id == 1441" md-items="option in $ctrl.searchVendor($ctrl.VendorSearchText)" md-selected-item="$ctrl.service_invoice.customer" md-search-text="$ctrl.VendorSearchText" md-selected-item-change="vendorSelected()" md-item-text="option.code" md-min-length="3" md-escape-options="clear" placeholder="Vendor code / name" input-aria-labelledby="favoriteStateLabel" md-no-cache="false" ng-model-options="{trackBy: '$value.id' }">
                                                             <md-item-template>
                                                                 <span>
@@ -212,7 +218,7 @@
                                                                 No Ledger matching "{{$ctrl.LedgerSearchText}}" were found.
                                                             </md-not-found>
                                                         </md-autocomplete>
-                                                        <input type="hidden" name="customer_id" value="{{$ctrl.service_invoice.customer.id}}" class="required"> 
+                                                        <input type="hidden" name="customer_id" value="{{$ctrl.service_invoice.customer.id}}" class="required">
                                                         <!-- <md-autocomplete class="type-sm" md-items="option in $ctrl.searchCustomer($ctrl.customerSearchText)" md-selected-item="$ctrl.service_invoice.customer" md-search-text="$ctrl.customerSearchText" md-item-text="option.code" md-min-length="3" placeholder="Customer code / name" md-selected-item-change="$ctrl.getCustomerDetails()" md-search-text-change="$ctrl.customerChanged()">
                                                             <md-item-template>
                                                                 <span>
@@ -272,7 +278,7 @@
                                             <p class="info-content">{{$ctrl.customer.address}}</p>
                                             <div class="info-space"></div>
                                             <p class="info-content">GST # {{$ctrl.customer.gst_number ? $ctrl.customer.gst_number : 'NA'}}
-                                            {{$ctrl.customer.gstin ? $ctrl.customer.gstin : 'NA'}} </p>
+                                                {{$ctrl.customer.gstin ? $ctrl.customer.gstin : 'NA'}} </p>
                                         </div><!-- Info Wrap -->
                                     </li>
                                 </ul><!-- Flex List -->
@@ -297,8 +303,8 @@
                                                 <th>Item Name</th>
                                                 <th>Reference</th>
                                                 <th>UOM</th>
-                                                <th class="text-right" style="display: none;">Quantity</th>
-                                                <th class="text-right" style="display: none;">Rate</th>
+                                                <th class="text-right">Quantity</th>
+                                                <th class="text-right">Rate</th>
                                                 <th class="text-right">Amount</th>
                                                 <th class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list">{{tax.name}}</th>
                                                 <th class="text-right">Total Amount</th>
@@ -313,7 +319,6 @@
                                                 <input type="hidden" name="service_invoice_items[{{index}}][rate]" value="{{service_invoice_item.rate}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][sub_total]" value="{{service_invoice_item.sub_total}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][e_invoice_uom_id]" value="{{service_invoice_item.e_invoice_uom.id}}">
-                                                
                                                 <!-- FIELD GROUPS -->
                                                 <td style="display: none;">
                                                     <span ng-repeat="(index_fg, field_group) in service_invoice_item.field_groups">
@@ -336,8 +341,8 @@
                                                 <td>{{service_invoice_item.name}}</td>
                                                 <td>{{service_invoice_item.description}}</td>
                                                 <td>{{service_invoice_item.e_invoice_uom.code}}</td>
-                                                <td class="text-right" style="display: none;">{{$ctrl.parseInt(service_invoice_item.qty)}}</td>
-                                                <td class="text-right" style="display: none;">{{service_invoice_item.rate | number : 2}}</td>
+                                                <td class="text-right">{{$ctrl.parseInt(service_invoice_item.qty)}}</td>
+                                                <td class="text-right">{{service_invoice_item.rate | number : 2}}</td>
                                                 <td class="text-right">{{service_invoice_item.sub_total | number : 2}}</td>
                                                 <td class="text-right" ng-repeat="(tax_index, tax) in $ctrl.extras.tax_list">
                                                     {{(service_invoice_item[tax.name] ? (service_invoice_item[tax.name].amount | number : 2) : 0.00)}}
@@ -353,21 +358,21 @@
                                             <tr>
                                                 <td colspan="5"></td>
                                                 <!-- <td>Total</td> -->
-                                                <td class="text-right" style="display: none;">{{$ctrl.table_qty}}</td>
-                                                <td class="text-right" style="display: none;">{{$ctrl.table_rate | number : 2}}</td>
+                                                <td class="text-right">{{$ctrl.table_qty}}</td>
+                                                <td class="text-right">{{$ctrl.table_rate | number : 2}}</td>
                                                 <td class="text-right">{{$ctrl.table_sub_total | number : 2}}</td>
                                                 <td class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list">{{$ctrl.tax_wise_total[tax.name+'_amount'] | number : 2}}</td>
                                                 <td class="text-right"><span ng-show="$ctrl.type_id == 1060">-</span>{{$ctrl.table_total | number : 2}}</td>
                                             </tr>
-                                             <tr>
-                                                <td colspan="5"></td>
+                                            <tr>
+                                                <td colspan="7"></td>
                                                 <td class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list"></td>
                                                 <th>Round Off</th>
                                                 <input type="hidden" ng-model="$ctrl.service_invoice.round_off_amount" name="round_off_amount" class="type-sm form-control" placeholder="Enter Round Off amount" readonly value="{{$ctrl.service_invoice.round_off_amount}}">
                                                 <th class="text-right">{{$ctrl.service_invoice.round_off_amount | number : 2}}</th>
                                             </tr>
                                             <tr>
-                                                <th colspan="5"></th>
+                                                <th colspan="7"></th>
                                                 <th class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list"></th>
                                                 <input type="hidden" ng-model="$ctrl.service_invoice.final_amount" name="final_amount" class="type-sm form-control" placeholder="Enter Final amount" readonly value="{{$ctrl.service_invoice.final_amount}}">
                                                 <th>Total</th>
@@ -388,7 +393,7 @@
                                 <div class="row">
                                     <div class="col-md-8 text-left">
                                         <ul class="form-footer-list">
-                                            <li style="display: none;">
+                                            <li>
                                                 <span class="form-footer-label">Total Quantity</span>
                                                 <span class="form-footer-value" ng-if="$ctrl.table_qty">{{$ctrl.table_qty}}</span>
                                             </li>
@@ -492,7 +497,7 @@
                                         </div>
                                     </div><!-- Table Form List Wrap -->
                                 </li>
-                                <li style="display: none;">
+                                <li>
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">Quantity <span class="mandatory">*</span></label>
                                         <div class="table-form-list-control">
@@ -502,7 +507,7 @@
                                 </li>
                                 <li>
                                     <div class="table-form-list-wrap">
-                                        <label class="table-form-list-label">Amount <span class="mandatory">*</span></label>
+                                        <label class="table-form-list-label">Rate <span class="mandatory">*</span></label>
                                         <div class="table-form-list-control">
                                             <input name="amount" ng-model="$ctrl.rate" type="text" class="form-control type-sm required" placeholder="Enter Amount" ng-change="totalAmountCalc()" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');" />
                                         </div><!-- Table Form List Control -->
