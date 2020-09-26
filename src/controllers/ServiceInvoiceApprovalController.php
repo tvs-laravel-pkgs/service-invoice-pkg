@@ -458,7 +458,8 @@ class ServiceInvoiceApprovalController extends Controller {
 					}
 				}
 				DB::commit();
-				return response()->json(['success' => true, 'message' => 'CN/DN Approved successfully']);
+				// return response()->json(['success' => true, 'message' => 'CN/DN Approved successfully']);
+				return response()->json(['success' => true, 'message' => 'Approved successfully']);
 			} catch (Exception $e) {
 				DB::rollBack();
 				return response()->json(['success' => false, 'errors' => ['Exception Error' => $e->getMessage()]]);
