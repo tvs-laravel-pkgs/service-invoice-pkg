@@ -1,4 +1,10 @@
 <div class="content-wrap cndn-wrap">
+    <div class="pace" style="display: none;" id="pace">
+        <div class="pace-progress" data-progress-text="100%" data-progress="99" style="transform: translate3d(100%, 0px, 0px);">
+            <div class="pace-progress-inner"></div>
+        </div>
+        <div class="pace-activity"></div>
+    </div>
     <div class="page-header">
         <div class="page-header-inner">
             <div class="page-header-content-left">
@@ -43,7 +49,7 @@
                     </div>
                     <a href="#!/service-invoice-pkg/service-invoice/add/1060" ng-if="$ctrl.create_cn == true" class="btn btn-primary my-tooltip" ng-shortcut="'meta+shift+c'" ng-shortcut-click data-title="ctrl+shift+c">Add CN</a>
                     <a href="#!/service-invoice-pkg/service-invoice/add/1061" ng-if="$ctrl.create_dn == true" class="btn btn-primary my-tooltip" ng-shortcut="'meta+shift+d'" ng-shortcut-click data-title="ctrl+shift+d">Add DN</a>
-                    <a href="#!/service-invoice-pkg/service-invoice/add/1062" ng-if="$ctrl.create_inv == true" class="btn btn-primary my-tooltip" >Add INV</a>
+                    <a href="#!/service-invoice-pkg/service-invoice/add/1062" ng-if="$ctrl.create_inv == true" class="btn btn-primary my-tooltip">Add INV</a>
                 </div><!-- Page Header Content -->
             </div><!-- Page Header Content Right -->
         </div><!-- Page Header Inner -->
@@ -158,22 +164,22 @@
                                 </div><!-- Feild -->
                             </div><!-- Column -->
                             <div class="col-md-6">
-                            <div class="input-text form-group">
-                                <label>Category</label>
-                                <!-- <md-select ng-model="$ctrl.service_invoice.service_item_sub_category.category_id" ng-change="getServiceItemSubCategory($ctrl.service_invoice.service_item_sub_category.category_id); $ctrl.extras.sub_category_list=''; $ctrl.service_invoice.sub_category_id=''" placeholder="Select Category" md-on-close="clearSearchCategory()" data-md-container-class="selectdemoSelectHeader"> -->
-                                <md-select ng-model="$ctrl.service_invoice.category_id" ng-change="getSelectedCategory($ctrl.service_invoice.category_id)" placeholder="Select Category" md-on-close="clearSearchCategory()" data-md-container-class="selectdemoSelectHeader">
-                                    <md-select-header class="demo-select-header">
-                                        <input ng-model="searchCategory" type="search" placeholder="Search for a category.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
-                                    </md-select-header>
-                                    <md-optgroup label="category">
-                                        <md-option ng-value="category.id" ng-repeat="category in $ctrl.extras.category_list | filter:searchCategory">{{category.name}}</md-option>
-                                    </md-optgroup>
-                                </md-select>
-                                <input type="hidden" name="category_id" id="category_id" value="{{$ctrl.service_invoice.category_id}}">
-                                <!-- <input type="hidden" name="category_id" id="category_id" value="{{$ctrl.service_invoice.service_item_sub_category.category_id}}"> -->
-                            </div><!-- Feild -->
-                        </div><!-- Column -->
-                        <!-- <div class="col-md-6">
+                                <div class="input-text form-group">
+                                    <label>Category</label>
+                                    <!-- <md-select ng-model="$ctrl.service_invoice.service_item_sub_category.category_id" ng-change="getServiceItemSubCategory($ctrl.service_invoice.service_item_sub_category.category_id); $ctrl.extras.sub_category_list=''; $ctrl.service_invoice.sub_category_id=''" placeholder="Select Category" md-on-close="clearSearchCategory()" data-md-container-class="selectdemoSelectHeader"> -->
+                                    <md-select ng-model="$ctrl.service_invoice.category_id" ng-change="getSelectedCategory($ctrl.service_invoice.category_id)" placeholder="Select Category" md-on-close="clearSearchCategory()" data-md-container-class="selectdemoSelectHeader">
+                                        <md-select-header class="demo-select-header">
+                                            <input ng-model="searchCategory" type="search" placeholder="Search for a category.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                        </md-select-header>
+                                        <md-optgroup label="category">
+                                            <md-option ng-value="category.id" ng-repeat="category in $ctrl.extras.category_list | filter:searchCategory">{{category.name}}</md-option>
+                                        </md-optgroup>
+                                    </md-select>
+                                    <input type="hidden" name="category_id" id="category_id" value="{{$ctrl.service_invoice.category_id}}">
+                                    <!-- <input type="hidden" name="category_id" id="category_id" value="{{$ctrl.service_invoice.service_item_sub_category.category_id}}"> -->
+                                </div><!-- Feild -->
+                            </div><!-- Column -->
+                            <!-- <div class="col-md-6">
                             <div class="input-text form-group">
                                 <label>Sub Category</label>
                                 <md-select ng-model="$ctrl.service_invoice.sub_category_id" ng-change="getSubCategory($ctrl.service_invoice.sub_category_id)" placeholder="Select sub category" md-on-close="clearSearchSubCategory()" data-md-container-class="selectdemoSelectHeader">
@@ -241,7 +247,7 @@
             </div>
             <div class="modal-body">
                 <h5>Approval</h5>
-                <p>Are you sure you want to approve? </p>
+                <p>Are you sure you want to send to approve? </p>
                 <input type="hidden" name="approval_id" id="approval_id" value="">
                 <input type="hidden" name="next_status" id="next_status" value="">
                 <button class="btn btn-grey" data-dismiss="modal" aria-label="Close">No</button>
@@ -250,3 +256,21 @@
         </div>
     </div>
 </div>
+<!-- Modal -->
+<div class="modal fade alert-modal failure" id="delete_irn" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="myModalLabel">ARE YOU SURE?</h4>
+            </div>
+            <div class="modal-body">
+                <h5>Cancel</h5>
+                <p>Are you sure you want to Cancel IRN? </p>
+                <input type="hidden" name="service_invoice_id" value="" id="cancel_irn_id">
+                <button type="button" class="btn btn-grey" data-dismiss="modal" aria-label="Close">No</button>
+                <button class="btn btn-rose" ng-click="cancelIRN()" type="button" data-dismiss="modal" aria-label="Close" id="cancen_irn">Yes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Modal -->

@@ -157,7 +157,7 @@ class ServiceInvoiceApprovalController extends Controller {
 		if (Entrust::can('CN/DN Approval 1 View All')) {
 			$cn_dn_approval_list = $cn_dn_approval_list->where('service_invoices.company_id', Auth::user()->company_id);
 		} elseif (Entrust::can('view-own-cn-dn-approval')) {
-			$service_invoice_list = $service_invoice_list->where('service_invoices.created_by_id', Auth::user()->id);
+			$cn_dn_approval_list = $cn_dn_approval_list->where('service_invoices.created_by_id', Auth::user()->id);
 		} elseif (Entrust::can('CN/DN Approval 1 Outlet Based')) {
 			$view_user_outlets_only = User::leftJoin('employees', 'employees.id', 'users.entity_id')
 				->leftJoin('employee_outlet', 'employee_outlet.employee_id', 'employees.id')
@@ -389,8 +389,8 @@ class ServiceInvoiceApprovalController extends Controller {
 			// $approval_levels = ApprovalLevel::where('approval_type_id', 1)->first();
 
 			if ($request->status_name == 'approve') {
-				// $approval_status->status_id = 4; //$approval_levels->next_status_id;
-				$approval_status->status_id = 3;
+				$approval_status->status_id = 4; //$approval_levels->next_status_id;
+				// $approval_status->status_id = 3;
 				$approval_status->comments = NULL;
 				$message = 'Approved';
 			} elseif ($request->status_name == 'reject') {
@@ -427,8 +427,8 @@ class ServiceInvoiceApprovalController extends Controller {
 
 	public function updateMultipleApproval(Request $request) {
 		$send_for_approvals = ServiceInvoice::whereIn('id', $request->send_for_approval)->where('status_id', 2)->pluck('id')->toArray();
-		$next_status = 3; //ADDED FOR QUEUE
-		// $next_status = 4; //ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
+		// $next_status = 3; //ADDED FOR QUEUE
+		$next_status = 4; //ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
 		// dd($send_for_approvals);
 		if (count($send_for_approvals) == 0) {
 			return response()->json(['success' => false, 'errors' => ['No Approval 1 Pending Status in the list!']]);

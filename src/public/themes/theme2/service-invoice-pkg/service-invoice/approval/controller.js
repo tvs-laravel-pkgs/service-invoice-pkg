@@ -221,6 +221,8 @@ app.component('serviceInvoiceApprovalList', {
         var bulk_approve = 0;
         $('#send_for_approval').on('click', function() { //alert('dsf');
             if ($('.service_invoice_checkbox:checked').length > 0) {
+                $('#pace').css("display", "block");
+                $('#pace').addClass('pace-active');
                 if (bulk_approve == 0) {
                     bulk_approve = 1;
                     var send_for_approval = []
@@ -234,6 +236,8 @@ app.component('serviceInvoiceApprovalList', {
                             send_for_approval: send_for_approval,
                         }
                     ).then(function(response) {
+                        $('#pace').css("display", "none");
+                        $('#pace').addClass('pace-inactive');
                         if (response.data.success == true) {
                             custom_noty('success', response.data.message);
                             $timeout(function() {
@@ -249,9 +253,13 @@ app.component('serviceInvoiceApprovalList', {
                         }
                     });
                 } else {
+                    $('#pace').css("display", "none");
+                    $('#pace').addClass('pace-inactive');
                     custom_noty('error', 'Please wait..Already Invoice Approval Inprogress!');
                 }
             } else {
+                $('#pace').css("display", "none");
+                $('#pace').addClass('pace-inactive');
                 custom_noty('error', 'Please Select Checkbox');
             }
         })
@@ -384,6 +392,8 @@ app.component('serviceInvoiceApprovalList', {
             $('#next_status').val($send_to_approval);
         }
         $scope.approvalConfirm = function() {
+            $('#pace').css("display", "block");
+            $('#pace').addClass('pace-active');
             $id = $('#approval_id').val();
             $send_to_approval = $('#next_status').val();
             var ButtonValue = $('#approve').attr("id");
@@ -394,6 +404,8 @@ app.component('serviceInvoiceApprovalList', {
                     status_name: ButtonValue,
                 }
             ).then(function(response) {
+                $('#pace').css("display", "none");
+                $('#pace').addClass('pace-inactive');
                 if (response.data.success == true) {
                     custom_noty('success', 'CN/DN ' + response.data.message + ' Successfully');
                     $('#cn-dn-approval-table').DataTable().ajax.reload();
@@ -469,7 +481,7 @@ app.component('serviceInvoiceApprovalView', {
             $rootScope.loading = false;
         });
         self.service_invoice_id = $routeParams.id;
-        
+
         $scope.vendorSelected = function() {
             // console.log('vendor');
             if (self.service_invoice.customer || self.service_invoice.customer != null) {

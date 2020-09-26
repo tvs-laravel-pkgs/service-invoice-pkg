@@ -448,6 +448,34 @@ app.component('serviceInvoiceList', {
             });
         }
 
+        $scope.deleteIRN = function($id) {
+            $("#cancel_irn_id").val($id);
+        }
+        $scope.cancelIRN = function() {
+            $('#pace').css("display", "block");
+            $('#pace').addClass('pace-active');
+            $id = $('#cancel_irn_id').val();
+            // console.log($id);
+            // return;
+            $http.get(
+                laravel_routes['cancelIrn'], {
+                    params: {
+                        id: $id,
+                    }
+                }
+            ).then(function(response) {
+                $('#pace').css("display", "none");
+                $('#pace').addClass('pace-inactive');
+                if (response.data.success == true) {
+                    custom_noty('success', response.data.message);
+                    $('#service-invoice-table').DataTable().ajax.reload();
+                    $scope.$apply();
+                } else {
+                    custom_noty('error', response.data.errors);
+                }
+            });
+        }
+
         // window.onpopstate = function(e) { window.history.forward(1); }
         $rootScope.loading = false;
     }
@@ -499,7 +527,9 @@ app.component('serviceInvoiceForm', {
                     $timeout(function() {
                         self.customer = self.service_invoice.customer;
                         // $rootScope.getCustomer(self.service_invoice.customer_id);
-                        $scope.vendorSelected(); //USED FOR GET FULL ADDRESS
+                        if (self.service_invoice.to_account_type_id == 1441) {
+                            $scope.vendorSelected(); //USED FOR GET FULL ADDRESS
+                        }
                     }, 1200);
                 }
                 $timeout(function() {
@@ -522,7 +552,7 @@ app.component('serviceInvoiceForm', {
                     });
                 }
             } else {
-                self.service_invoice.is_reverse_charge_applicable = 1;
+                self.service_invoice.is_reverse_charge_applicable = 0;
                 self.service_invoice.is_service = 1;
             }
             $rootScope.loading = false;
@@ -678,18 +708,25 @@ app.component('serviceInvoiceForm', {
 
         //GET CUSTOMER DETAILS
         $scope.customerSelected = function(code) {
-            // console.log(code);
+            console.log(code);
+            $('#pace').css("display", "block");
+            $('#pace').addClass('pace-active');
             if (self.service_invoice.customer || self.service_invoice.customer != null) {
                 var res = $rootScope.getCustomer(self.service_invoice.customer.code).then(function(res) {
                     // console.log(res);
                     if (!res.data.success) {
+                        $('#pace').css("display", "none");
+                        $('#pace').addClass('pace-inactive');
                         custom_noty('error', res.data.error);
                         return;
                     }
+                    $('#pace').addClass('pace-inactive');
+                    $('#pace').css("display", "none");
                     self.customer = res.data.customer;
                     self.service_invoice.customer.id = res.data.customer.id;
                 });
             } else {
+                $('#pace').css("display", "none");
                 self.customer = {};
                 self.service_invoice.service_invoice_items = [];
             }
@@ -717,7 +754,7 @@ app.component('serviceInvoiceForm', {
             }
         }
 
-
+        console.log(self.service_invoice);
         // self.searchLedger = $rootScope.searchLedger;
 
         //GET VENDOR DETAILS
@@ -921,15 +958,15 @@ app.component('serviceInvoiceForm', {
             return parseInt(num);
         }
 
-        $("#qty").val(1);
+        // $("#qty").val(1);
         //ADD SERVICE INVOICE ITEM
         $scope.addItem = function() {
             self.add_service_action = 'add';
             self.action_title = 'Add';
             self.update_item_key = '';
             self.description = '';
-            // self.qty = '';
-            self.qty = 1;
+            self.qty = '';
+            // self.qty = 1;
             self.rate = '';
             self.sub_total = '';
             self.total = '';
@@ -997,7 +1034,8 @@ app.component('serviceInvoiceForm', {
             self.gst_total = 0;
             if (self.qty && self.rate) {
                 self.sub_total = self.qty * self.rate;
-                self.sub_total = self.rate;
+                // self.sub_total = self.rate;
+                console.log(self.sub_total);
                 if (self.service_item_detail.tax_code != null) {
                     if (self.service_item_detail.tax_code.taxes.length > 0) {
                         $(self.service_item_detail.tax_code.taxes).each(function(key, tax) {
@@ -1011,6 +1049,8 @@ app.component('serviceInvoiceForm', {
                         if (self.service_invoice.customer.gst_number == null) {
                             if (self.service_item_detail.tax_code != null) {
                                 self.KFC_total = self.sub_total / 100;
+                                console.log(self.sub_total);
+                                console.log(self.KFC_total);
                             }
                         }
                     }
@@ -1023,6 +1063,7 @@ app.component('serviceInvoiceForm', {
                 //     }
                 // }
                 self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total);
+                console.log(self.total);
             }
         };
 
@@ -1043,9 +1084,12 @@ app.component('serviceInvoiceForm', {
             $(self.service_invoice.service_invoice_items).each(function(key, service_invoice_item) {
                 self.table_qty += parseInt(service_invoice_item.qty);
                 self.table_rate = (parseFloat(self.table_rate) + parseFloat(service_invoice_item.rate)).toFixed(2);
-                // st = parseFloat(service_invoice_item.sub_total).toFixed(2);
-                // console.log(parseFloat(self.table_sub_total));
-                self.table_sub_total = (parseFloat(self.table_rate)).toFixed(2); // + parseFloat(st)).toFixed(2);
+                st = parseFloat(service_invoice_item.sub_total).toFixed(2);
+
+                // self.table_sub_total = (parseFloat(self.table_rate)).toFixed(2); // + parseFloat(st)).toFixed(2);
+                console.log(service_invoice_item.rate);
+                console.log(self.table_qty);
+                self.table_sub_total += service_invoice_item.qty * service_invoice_item.rate;
                 // console.log(parseFloat(self.table_sub_total));
 
                 for (i = 0; i < self.extras.tax_list.length; i++) {
@@ -1326,6 +1370,32 @@ app.component('serviceInvoiceView', {
             }
         }
 
+        $scope.cancelIRN = function() {
+            $('#cancel_irn').button('loading');
+            $id = $("#service_invoice_id").val();
+            $http.get(
+                laravel_routes['cancelIrn'], {
+                    params: {
+                        id: $id,
+                    }
+                }
+            ).then(function(res) {
+                console.log(res);
+                if (!res.data.success) {
+                    $('#cancel_irn').button('reset');
+                    var errors = '';
+                    for (var i in res.data.errors) {
+                        errors += '<li>' + res.data.errors[i] + '</li>';
+                    }
+                    custom_noty('error', errors);
+                } else {
+                    custom_noty('success', res.data.message);
+                    $location.path('/service-invoice-pkg/service-invoice/list');
+                    $scope.$apply()
+                }
+            });
+        }
+
         self.qr_image_url = base_url + '/storage/app/public/service-invoice/IRN_images';
 
         /* Tab Funtion */
@@ -1396,7 +1466,7 @@ app.component('serviceInvoiceView', {
             self.gst_total = 0;
             if (self.qty && self.rate) {
                 self.sub_total = self.qty * self.rate;
-                self.sub_total = self.rate;
+                // self.sub_total = self.rate;
                 if (self.service_item_detail.tax_code != null) {
                     if (self.service_item_detail.tax_code.taxes.length > 0) {
                         $(self.service_item_detail.tax_code.taxes).each(function(key, tax) {
@@ -1427,7 +1497,7 @@ app.component('serviceInvoiceView', {
 
         //SERVICE INVOICE ITEMS CALCULATION
         $scope.serviceInvoiceItemCalc = function() {
-            // self.table_qty = 0;
+            self.table_qty = 0;
             self.table_rate = 0;
             self.table_sub_total = 0;
             self.table_total = 0;

@@ -250,8 +250,8 @@
                                                 <th>Item Name</th>
                                                 <th>Reference</th>
                                                 <th>UOM</th>
-                                                <th class="text-right" style="display: none;">Quantity</th>
-                                                <th class="text-right" style="display: none;">Rate</th>
+                                                <th class="text-right">Quantity</th>
+                                                <th class="text-right">Rate</th>
                                                 <th class="text-right">Amount</th>
                                                 <th class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list">{{tax.name}}</th>
                                                 <th class="text-right">Total Amount</th>
@@ -285,8 +285,8 @@
                                                 <td>{{service_invoice_item.name}}</td>
                                                 <td>{{service_invoice_item.description}}</td>
                                                 <td>{{service_invoice_item.e_invoice_uom.code}}</td>
-                                                <td class="text-right" style="display: none;">{{$ctrl.parseInt(service_invoice_item.qty)}}</td>
-                                                <td class="text-right" style="display: none;">{{service_invoice_item.rate | number : 2}}</td>
+                                                <td class="text-right">{{$ctrl.parseInt(service_invoice_item.qty)}}</td>
+                                                <td class="text-right">{{service_invoice_item.rate | number : 2}}</td>
                                                 <td class="text-right">{{service_invoice_item.sub_total | number : 2}}</td>
                                                 <td class="text-right" ng-repeat="(tax_index, tax) in $ctrl.extras.tax_list">
                                                     {{(service_invoice_item[tax.name] ? (service_invoice_item[tax.name].amount | number : 2) : 0.00)}}({{(service_invoice_item[tax.name] ? (service_invoice_item[tax.name].percentage) : 0)}}%)
@@ -301,20 +301,20 @@
                                             <tr>
                                                 <th colspan="5"></th>
                                                 <!-- <th>Total</th> -->
-                                                <th class="text-right" style="display: none;">{{$ctrl.table_qty}}</th>
-                                                <th class="text-right" style="display: none;">{{$ctrl.table_rate | number : 2}}</th>
+                                                <th class="text-right">{{$ctrl.table_qty}}</th>
+                                                <th class="text-right">{{$ctrl.table_rate | number : 2}}</th>
                                                 <th class="text-right">{{$ctrl.table_sub_total | number : 2}}</th>
                                                 <th class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list">{{$ctrl.tax_wise_total[tax.name+'_amount'] | number : 2}}</th>
                                                 <th class="text-right">{{$ctrl.minus_value}}{{$ctrl.table_total | number : 2}}</th>
                                             </tr>
                                             <tr>
-                                                <td colspan="5"></td>
+                                                <td colspan="7"></td>
                                                 <td class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list"></td>
                                                 <th>Round Off</th>
                                                 <th class="text-right">{{$ctrl.service_invoice.round_off_amount | number : 2}}</th>
                                             </tr>
                                             <tr>
-                                                <th colspan="5"></th>
+                                                <th colspan="7"></th>
                                                 <th class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list"></th>
                                                 <th>Total</th>
                                                 <th class="text-right"><span ng-show="$ctrl.type_id == 1060">-</span>{{$ctrl.service_invoice.final_amount | number : 2}}</th>
@@ -334,7 +334,7 @@
                                 <div class="row">
                                     <div class="col-md-8 text-left">
                                         <ul class="form-footer-list">
-                                            <li style="display: none;">
+                                            <li>
                                                 <span class="form-footer-label">Total Quantity</span>
                                                 <span class="form-footer-value" ng-if="$ctrl.table_qty">{{$ctrl.table_qty}}</span>
                                             </li>
@@ -424,7 +424,7 @@
                                         </div><!-- Table Form List Control -->
                                     </div><!-- Table Form List Wrap -->
                                 </li>
-                                <li style="display: none;">
+                                <li>
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">Quantity </label>
                                         <div class="table-form-list-control">
@@ -434,7 +434,7 @@
                                 </li>
                                 <li>
                                     <div class="table-form-list-wrap">
-                                        <label class="table-form-list-label">Amount </label>
+                                        <label class="table-form-list-label">Rate </label>
                                         <div class="table-form-list-control">
                                             <input name="amount" ng-model="$ctrl.rate" type="text" class="form-control type-sm" placeholder="Enter Amount" readonly />
                                         </div><!-- Table Form List Control -->
