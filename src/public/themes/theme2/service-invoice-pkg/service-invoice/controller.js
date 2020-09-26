@@ -552,6 +552,13 @@ app.component('serviceInvoiceForm', {
                     });
                 }
             } else {
+                //CURRENT DATE SELECTED IN DOC DATE
+                var d = new Date();
+                var val = ('0' + d.getDate()).slice(-2) + "-" + ('0' + (d.getMonth()+1)).slice(-2) + "-" + d.getFullYear();
+                // console.log(val);
+                setTimeout(function() {
+                     $("#doc_date").val(val);
+                }, 1000);
                 self.service_invoice.is_reverse_charge_applicable = 0;
                 self.service_invoice.is_service = 1;
             }
