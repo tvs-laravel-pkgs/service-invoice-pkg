@@ -840,7 +840,7 @@ class ServiceInvoice extends Model {
 							$serial_number_category = 4;
 						} elseif ($type->id == 1062) {
 							//INV
-							$serial_number_category = 121;
+							$serial_number_category = 125;
 						}
 
 						if ($branch && $sbu && $financial_year) {
