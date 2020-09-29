@@ -554,10 +554,10 @@ app.component('serviceInvoiceForm', {
             } else {
                 //CURRENT DATE SELECTED IN DOC DATE
                 var d = new Date();
-                var val = ('0' + d.getDate()).slice(-2) + "-" + ('0' + (d.getMonth()+1)).slice(-2) + "-" + d.getFullYear();
+                var val = ('0' + d.getDate()).slice(-2) + "-" + ('0' + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
                 // console.log(val);
                 setTimeout(function() {
-                     $("#doc_date").val(val);
+                    $("#doc_date").val(val);
                 }, 1000);
                 self.service_invoice.is_reverse_charge_applicable = 0;
                 self.service_invoice.is_service = 1;
@@ -714,12 +714,12 @@ app.component('serviceInvoiceForm', {
         // console.log(self.searchCustomer);
 
         //GET CUSTOMER DETAILS
-        $scope.customerSelected = function(code) {
-            console.log(code);
+        $scope.customerSelected = function() {
             $('#pace').css("display", "block");
             $('#pace').addClass('pace-active');
+            console.log(self.service_invoice.customer);
             if (self.service_invoice.customer || self.service_invoice.customer != null) {
-                var res = $rootScope.getCustomer(self.service_invoice.customer.code).then(function(res) {
+                var res = $rootScope.getCustomer(self.service_invoice.customer).then(function(res) {
                     // console.log(res);
                     if (!res.data.success) {
                         $('#pace').css("display", "none");
@@ -734,6 +734,7 @@ app.component('serviceInvoiceForm', {
                 });
             } else {
                 $('#pace').css("display", "none");
+                $('#pace').addClass('pace-inactive');
                 self.customer = {};
                 self.service_invoice.service_invoice_items = [];
             }
@@ -743,19 +744,27 @@ app.component('serviceInvoiceForm', {
 
         //GET VENDOR DETAILS
         $scope.vendorSelected = function() {
+            $('#pace').css("display", "block");
+            $('#pace').addClass('pace-active');
             // console.log('vendor');
             if (self.service_invoice.customer || self.service_invoice.customer != null) {
                 var res = $rootScope.getVendor(self.service_invoice.customer.id).then(function(res) {
                     // console.log(res);
                     if (!res.data.success) {
+                        $('#pace').css("display", "none");
+                        $('#pace').addClass('pace-inactive');
                         custom_noty('error', res.data.error);
                         return;
                     }
+                    $('#pace').css("display", "none");
+                    $('#pace').addClass('pace-inactive');
                     self.customer = res.data.vendor;
                     self.service_invoice.customer.id = res.data.vendor.id;
                     // console.log(self.service_invoice.customer.id);
                 });
             } else {
+                $('#pace').css("display", "none");
+                $('#pace').addClass('pace-inactive');
                 self.customer = {};
                 self.service_invoice.service_invoice_items = [];
             }
@@ -1035,6 +1044,7 @@ app.component('serviceInvoiceForm', {
 
         //ITEM TO INVOICE TOTAL AMOUNT CALC
         $scope.totalAmountCalc = function() {
+            console.log(self.service_invoice);
             self.sub_total = 0;
             self.total = 0;
             self.KFC_total = 0;
@@ -1051,7 +1061,7 @@ app.component('serviceInvoiceForm', {
                         });
                     }
                 }
-                if (self.service_invoice.branch.primary_address.state_id) {
+                if (self.service_invoice.branch.primary_address.state_id && self.service_invoice.customer.primary_address) {
                     if (self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.customer.primary_address.state_id == 3) {
                         if (self.service_invoice.customer.gst_number == null) {
                             if (self.service_item_detail.tax_code != null) {

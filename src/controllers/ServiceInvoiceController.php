@@ -1373,12 +1373,14 @@ class ServiceInvoiceController extends Controller {
 
 			$public_key = 'MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAxqHazGS4OkY/bDp0oklL+Ser7EpTpxyeMop8kfBlhzc8dzWryuAECwu8i/avzL4f5XG/DdSgMz7EdZCMrcxtmGJlMo2tUqjVlIsUslMG6Cmn46w0u+pSiM9McqIvJgnntKDHg90EIWg1BNnZkJy1NcDrB4O4ea66Y6WGNdb0DxciaYRlToohv8q72YLEII/z7W/7EyDYEaoSlgYs4BUP69LF7SANDZ8ZuTpQQKGF4TJKNhJ+ocmJ8ahb2HTwH3Ol0THF+0gJmaigs8wcpWFOE2K+KxWfyX6bPBpjTzC+wQChCnGQREhaKdzawE/aRVEVnvWc43dhm0janHp29mAAVv+ngYP9tKeFMjVqbr8YuoT2InHWFKhpPN8wsk30YxyDvWkN3mUgj3Q/IUhiDh6fU8GBZ+iIoxiUfrKvC/XzXVsCE2JlGVceuZR8OzwGrxk+dvMnVHyauN1YWnJuUTYTrCw3rgpNOyTWWmlw2z5dDMpoHlY0WmTVh0CrMeQdP33D3LGsa+7JYRyoRBhUTHepxLwk8UiLbu6bGO1sQwstLTTmk+Z9ZSk9EUK03Bkgv0hOmSPKC4MLD5rOM/oaP0LLzZ49jm9yXIrgbEcn7rv82hk8ghqTfChmQV/q+94qijf+rM2XJ7QX6XBES0UvnWnV6bVjSoLuBi9TF1ttLpiT3fkCAwEAAQ=='; //PROVIDE FROM BDO COMPANY
 
-			$clientid = "prakashr@featsolutions.in"; //PROVIDE FROM BDO COMPANY
+			// $clientid = "prakashr@featsolutions.in"; //PROVIDE FROM BDO COMPANY
+			$clientid = "amutha@sundarammotors.com"; //PROVIDE FROM BDO COMPANY
 			// dump('clientid ' . $clientid);
 
 			$rsa->loadKey($public_key);
 			$rsa->setEncryptionMode(2);
-			$data = 'BBAkBDB0YzZiYThkYTg4ZDZBBDJjZBUyBGFkBBB0BWB='; // CLIENT SECRET KEY
+			// $data = 'BBAkBDB0YzZiYThkYTg4ZDZBBDJjZBUyBGFkBBB0BWB='; // CLIENT SECRET KEY
+			$data = 'TQAkSDQ0YzZiYTTkYTg4ZDZSSDJjZSUySGFkSSQ0SWQ='; // CLIENT SECRET KEY
 			$ClientSecret = $rsa->encrypt($data);
 			$clientsecretencrypted = base64_encode($ClientSecret);
 			// dump('ClientSecret ' . $clientsecretencrypted);
@@ -1411,6 +1413,7 @@ class ServiceInvoiceController extends Controller {
 
 			// Execute the POST request
 			$server_output = curl_exec($ch);
+			// dd($server_output);
 
 			// Get the POST request header status
 			$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -1419,7 +1422,7 @@ class ServiceInvoiceController extends Controller {
 			if ($status != 200) {
 				return [
 					'success' => false,
-					'errors' => curl_errno($ch),
+					'errors' => "Connection error!",
 				];
 				$errors[] = curl_errno($ch);
 				// return response()->json([
@@ -1554,6 +1557,8 @@ class ServiceInvoiceController extends Controller {
 					$errors[] = 'Item Not Mapped with Tax code!. Item Code: ' . $service_item->code;
 				}
 
+				// dd(1);
+
 				// dump($serviceInvoiceItem->sub_total ? $serviceInvoiceItem->sub_total : 0);
 				// dump(number_format($igst_total));
 				// dd($cgst_total, $sgst_total, $igst_total);
@@ -1641,7 +1646,7 @@ class ServiceInvoiceController extends Controller {
 			$additionaldoc_detail['Url'] = null;
 			$additionaldoc_detail['Docs'] = null;
 			$additionaldoc_detail['Info'] = null;
-
+			// dd(preg_replace("/\r|\n/", "", $service_invoice->customer->primaryAddress->address_line1));
 			// dd($cgst_total, $sgst_total, $igst_total);
 			$json_encoded_data =
 				json_encode(
@@ -1661,35 +1666,35 @@ class ServiceInvoiceController extends Controller {
 						"Dt" => date('d-m-Y', strtotime($service_invoice->document_date)),
 					),
 					'SellerDtls' => array(
-						// "Gstin" => $service_invoice->outlets ? ($service_invoice->outlets->gst_number ? $service_invoice->outlets->gst_number : 'N/A') : 'N/A',
-						"Gstin" => "09ADDPT0274H009",
+						"Gstin" => $service_invoice->outlets ? ($service_invoice->outlets->gst_number ? $service_invoice->outlets->gst_number : 'N/A') : 'N/A',
+						// "Gstin" => $service_invoice->outlets->gst_number,
 						"LglNm" => $service_invoice->outlets ? $service_invoice->outlets->name : 'N/A',
 						"TrdNm" => $service_invoice->outlets ? $service_invoice->outlets->name : 'N/A',
-						"Addr1" => $service_invoice->outlets->primaryAddress ? $service_invoice->outlets->primaryAddress->address_line1 : 'N/A',
-						"Addr2" => $service_invoice->outlets->primaryAddress ? $service_invoice->outlets->primaryAddress->address_line2 : null,
+						"Addr1" => $service_invoice->outlets->primaryAddress ? preg_replace('/\r|\n|:|"/', ",", $service_invoice->outlets->primaryAddress->address_line1) : 'N/A',
+						"Addr2" => $service_invoice->outlets->primaryAddress ? preg_replace('/\r|\n|:|"/', ",", $service_invoice->outlets->primaryAddress->address_line2) : null,
 						"Loc" => $service_invoice->outlets->primaryAddress ? ($service_invoice->outlets->primaryAddress->state ? $service_invoice->outlets->primaryAddress->state->name : 'N/A') : 'N/A',
-						// "Pin" => $service_invoice->outlets->primaryAddress ? $service_invoice->outlets->primaryAddress->pincode : 'N/A',
-						// "Stcd" => $service_invoice->outlets->primaryAddress ? ($service_invoice->outlets->primaryAddress->state ? $service_invoice->outlets->primaryAddress->state->e_invoice_state_code : 'N/A') : 'N/A',
-						"Pin" => 561105,
-						"Stcd" => "09",
-						"Ph" => null, //need to clarify
+						"Pin" => $service_invoice->outlets->primaryAddress ? $service_invoice->outlets->primaryAddress->pincode : 'N/A',
+						"Stcd" => $service_invoice->outlets->primaryAddress ? ($service_invoice->outlets->primaryAddress->state ? $service_invoice->outlets->primaryAddress->state->e_invoice_state_code : 'N/A') : 'N/A',
+						// "Pin" => 637001,
+						// "Stcd" => "33",
+						"Ph" => '123456789', //need to clarify
 						"Em" => null, //need to clarify
 					),
 					"BuyerDtls" => array(
-						//  // "Gstin" => $service_invoice->customer->gst_number ? $service_invoice->customer->gst_number : 'N/A', //need to clarify if available ok otherwise ?
-						"Gstin" => "27AABCT3518Q1ZW",
+						// "Gstin" => $service_invoice->customer->gst_number ? $service_invoice->customer->gst_number : 'N/A', //need to clarify if available ok otherwise ?
+						"Gstin" => "32ATAPM8948G1ZK", //for TN TESTING
 						"LglNm" => $service_invoice->customer ? $service_invoice->customer->name : 'N/A',
 						"TrdNm" => $service_invoice->customer ? $service_invoice->customer->name : null,
 						"Pos" => $service_invoice->customer->primaryAddress ? ($service_invoice->customer->primaryAddress->state ? $service_invoice->customer->primaryAddress->state->e_invoice_state_code : 'N/A') : 'N/A',
 						// "Pos" => "27",
 						"Loc" => $service_invoice->customer->primaryAddress ? ($service_invoice->customer->primaryAddress->state ? $service_invoice->customer->primaryAddress->state->name : 'N/A') : 'N/A',
 
-						"Addr1" => $service_invoice->customer->primaryAddress ? $service_invoice->customer->primaryAddress->address_line1 : 'N/A',
-						"Addr2" => $service_invoice->customer->primaryAddress ? $service_invoice->customer->primaryAddress->address_line2 : null,
+						"Addr1" => $service_invoice->customer->primaryAddress ? preg_replace('/\r|\n|:|"/', ",", $service_invoice->customer->primaryAddress->address_line1) : 'N/A',
+						"Addr2" => $service_invoice->customer->primaryAddress ? preg_replace('/\r|\n|:|"/', ",", $service_invoice->customer->primaryAddress->address_line2) : null,
 						// "Pin" => $service_invoice->customer->primaryAddress ? $service_invoice->customer->primaryAddress->pincode : null,
-						// "Stcd" => $service_invoice->customer->primaryAddress ? ($service_invoice->customer->primaryAddress->state ? $service_invoice->customer->primaryAddress->state->e_invoice_state_code : null) : null,
-						"Pin" => 400099,
-						"Stcd" => "27",
+						"Stcd" => $service_invoice->customer->primaryAddress ? ($service_invoice->customer->primaryAddress->state ? $service_invoice->customer->primaryAddress->state->e_invoice_state_code : null) : null,
+						"Pin" => 680001,
+						// "Stcd" => "32",
 						"Ph" => $service_invoice->customer->mobile_no ? $service_invoice->customer->mobile_no : null,
 						"Em" => $service_invoice->customer->email ? $service_invoice->customer->email : null,
 					),
@@ -1817,7 +1822,7 @@ class ServiceInvoiceController extends Controller {
 			if ($status != 200) {
 				return [
 					'success' => false,
-					'errors' => curl_errno($ch),
+					'errors' => 'Connection error!',
 				];
 				$errors[] = curl_errno($ch);
 			}
