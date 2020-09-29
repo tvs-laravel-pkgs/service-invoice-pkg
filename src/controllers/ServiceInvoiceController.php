@@ -1177,8 +1177,12 @@ class ServiceInvoiceController extends Controller {
 		if ($service_invoice->to_account_type_id == 1440) {
 			$city = City::where('name', $service_invoice->customer->city)->first();
 			// dd($city);
-			$state = State::find($city->state_id);
-			$service_invoice->customer->state_code = $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-';
+			if ($city) {
+				$state = State::find($city->state_id);
+				$service_invoice->customer->state_code = $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-';
+			} else {
+				$service_invoice->customer->state_code = '-';
+			}
 		} else {
 			$state = State::find($service_invoice->customer->primaryAddress ? $service_invoice->customer->primaryAddress->state_id : NULL);
 			$service_invoice->customer->state_code = $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-';
@@ -1496,14 +1500,15 @@ class ServiceInvoiceController extends Controller {
 			//ITEm
 			$items = [];
 			$sno = 1;
+			$total_invoice_amount = 0;
+			$cgst_total = 0;
+			$sgst_total = 0;
+			$igst_total = 0;
 			foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
 				$item = [];
 				// dd($serviceInvoiceItem);
 
 				//GET TAXES
-				$cgst_total = 0;
-				$sgst_total = 0;
-				$igst_total = 0;
 				$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id);
 				if (!$taxes['success']) {
 					$errors[] = $taxes['error'];
@@ -1552,7 +1557,6 @@ class ServiceInvoiceController extends Controller {
 				// dump($serviceInvoiceItem->sub_total ? $serviceInvoiceItem->sub_total : 0);
 				// dump(number_format($igst_total));
 				// dd($cgst_total, $sgst_total, $igst_total);
-
 				$item['SlNo'] = $sno; //Statically assumed
 				$item['PrdDesc'] = $serviceInvoiceItem->serviceItem->name;
 				$item['IsServc'] = "Y"; //ALWAYS Y
@@ -1567,17 +1571,17 @@ class ServiceInvoiceController extends Controller {
 				$item['Qty'] = $serviceInvoiceItem->qty;
 				$item['FreeQty'] = 0;
 				$item['Unit'] = $serviceInvoiceItem->eInvoiceUom ? $serviceInvoiceItem->eInvoiceUom->code : "NOS";
-				$item['UnitPrice'] = number_format($serviceInvoiceItem->sub_total ? $serviceInvoiceItem->sub_total : 0); //NEED TO CLARIFY
+				$item['UnitPrice'] = number_format($serviceInvoiceItem->rate ? $serviceInvoiceItem->rate : 0); //NEED TO CLARIFY
 				$item['TotAmt'] = number_format($serviceInvoiceItem->sub_total ? $serviceInvoiceItem->sub_total : 0);
 				$item['Discount'] = 0; //Always value will be "0"
-				$item['PreTaxVal'] = number_format($serviceInvoiceItem->rate ? $serviceInvoiceItem->rate : 0);
+				$item['PreTaxVal'] = number_format($serviceInvoiceItem->sub_total ? $serviceInvoiceItem->sub_total : 0);
 				$item['AssAmt'] = number_format($serviceInvoiceItem->sub_total - 0);
-				$item['IgstRt'] = number_format($serviceInvoiceItem->IGST ? $serviceInvoiceItem->IGST->pivot->percentage : 0);
-				$item['IgstAmt'] = number_format($serviceInvoiceItem->sub_total * $serviceInvoiceItem->IGST->pivot->percentage / 100, 2);
-				$item['CgstRt'] = number_format($serviceInvoiceItem->CGST ? $serviceInvoiceItem->CGST->pivot->percentage : 0, 2);
-				$item['CgstAmt'] = number_format($serviceInvoiceItem->sub_total * $serviceInvoiceItem->CGST->pivot->percentage / 100);
-				$item['SgstRt'] = number_format($serviceInvoiceItem->SGST ? $serviceInvoiceItem->SGST->pivot->percentage : 0, 2);
-				$item['SgstAmt'] = number_format($serviceInvoiceItem->sub_total * $serviceInvoiceItem->SGST->pivot->percentage / 100);
+				$item['IgstRt'] = isset($serviceInvoiceItem->IGST) ? number_format($serviceInvoiceItem->IGST->pivot->percentage) : 0;
+				$item['IgstAmt'] = number_format(isset($serviceInvoiceItem->IGST) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->IGST->pivot->percentage / 100 : 0, 2);
+				$item['CgstRt'] = number_format(isset($serviceInvoiceItem->CGST) ? $serviceInvoiceItem->CGST->pivot->percentage : 0, 2);
+				$item['CgstAmt'] = number_format(isset($serviceInvoiceItem->CGST) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->CGST->pivot->percentage / 100 : 0, 2);
+				$item['SgstRt'] = number_format(isset($serviceInvoiceItem->SGST) ? $serviceInvoiceItem->SGST->pivot->percentage : 0, 2);
+				$item['SgstAmt'] = number_format(isset($serviceInvoiceItem->SGST) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->SGST->pivot->percentage / 100 : 0, 2);
 				$item['CesRt'] = 0;
 				$item['CesAmt'] = 0;
 				$item['CesNonAdvlAmt'] = 0;
@@ -1585,7 +1589,8 @@ class ServiceInvoiceController extends Controller {
 				$item['StateCesAmt'] = 0; //NEED TO CLARIFY IF KFC
 				$item['StateCesNonAdvlAmt'] = 0; //NEED TO CLARIFY IF KFC
 				$item['OthChrg'] = 0;
-				$item['TotItemVal'] = number_format(($serviceInvoiceItem->sub_total ? $serviceInvoiceItem->sub_total : 0) + ($serviceInvoiceItem->sub_total * $serviceInvoiceItem->IGST->pivot->percentage / 100) + ($serviceInvoiceItem->sub_total * $serviceInvoiceItem->CGST->pivot->percentage / 100) + ($serviceInvoiceItem->sub_total * $serviceInvoiceItem->SGST->pivot->percentage / 100), 2);
+				$item['TotItemVal'] = number_format(($serviceInvoiceItem->sub_total ? $serviceInvoiceItem->sub_total : 0) + (isset($serviceInvoiceItem->IGST) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->IGST->pivot->percentage / 100 : 0) + (isset($serviceInvoiceItem->CGST) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->CGST->pivot->percentage / 100 : 0) + (isset($serviceInvoiceItem->SGST) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->SGST->pivot->percentage / 100 : 0), 2);
+
 				$item['OrdLineRef'] = "0";
 				$item['OrgCntry'] = "IN"; //Always value will be "IND"
 				$item['PrdSlNo'] = null;
@@ -1647,6 +1652,7 @@ class ServiceInvoiceController extends Controller {
 						'RegRev' => $service_invoice->is_reverse_charge_applicable == 1 ? "Y" : "N",
 						'EcmGstin' => null,
 						'IgstonIntra' => null, //NEED TO CLARIFY
+						'supplydir' => null, //NULL ADDED 28-sep-2020 discussion
 					),
 					'DocDtls' => array(
 						"Typ" => $service_invoice->type,
@@ -1710,7 +1716,7 @@ class ServiceInvoiceController extends Controller {
 						'Item' => $items,
 					),
 					'ValDtls' => array(
-						"AssVal" => number_format($service_invoice->amount_total ? $service_invoice->amount_total : 0),
+						"AssVal" => number_format($service_invoice->sub_total ? $service_invoice->sub_total : 0, 2),
 						"CgstVal" => number_format($cgst_total, 2),
 						"SgstVal" => number_format($sgst_total, 2),
 						"IgstVal" => number_format($igst_total, 2),
@@ -1720,7 +1726,7 @@ class ServiceInvoiceController extends Controller {
 						"OthChrg" => 0,
 						"RndOffAmt" => number_format($service_invoice->final_amount - $service_invoice->total, 2),
 						// "RndOffAmt" => 0, // Invalid invoice round off amount ,should be  + or - RS 10.
-						"TotInvVal" => number_format($service_invoice->final_amount),
+						"TotInvVal" => number_format($service_invoice->final_amount, 2),
 						"TotInvValFc" => null,
 					),
 					"PayDtls" => array(
@@ -1861,6 +1867,7 @@ class ServiceInvoiceController extends Controller {
 			$api_log->errors = curl_errno($ch);
 			$api_log->created_by_id = Auth::user()->id;
 			$api_log->save();
+			// dd($api_log);
 
 			curl_close($ch);
 
@@ -1939,6 +1946,7 @@ class ServiceInvoiceController extends Controller {
 				//  'errors' => ["response " . $server_output . ", curl_error " . curl_error($ch) . ", curl_errno " . curl_errno($ch)],
 				// ]);
 			}
+			// dd(1);
 
 			curl_close($ch);
 
