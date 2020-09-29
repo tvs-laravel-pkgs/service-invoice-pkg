@@ -249,7 +249,13 @@ app.component('serviceInvoiceApprovalList', {
                                 // $scope.$apply();
                             }, 1000);
                         } else {
-                            custom_noty('error', response.data.errors);
+                            new Noty({
+                                type: 'error',
+                                layout: 'topRight',
+                                timeout: 10000,
+                                text: response.data.errors
+                            }).show();
+                            // custom_noty('error', response.data.errors);
                         }
                     });
                 } else {
@@ -411,7 +417,13 @@ app.component('serviceInvoiceApprovalList', {
                     $('#cn-dn-approval-table').DataTable().ajax.reload();
                     $scope.$apply();
                 } else {
-                    custom_noty('error', response.data.errors);
+                    new Noty({
+                        type: 'error',
+                        layout: 'topRight',
+                        timeout: 10000,
+                        text: response.data.errors
+                    }).show();
+                    // custom_noty('error', response.data.errors);
                 }
             });
         }

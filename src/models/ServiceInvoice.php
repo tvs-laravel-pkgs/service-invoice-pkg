@@ -12,15 +12,18 @@ use App\City;
 use App\Company;
 use App\Config;
 use App\Customer;
+use App\EInvoiceUom;
 use App\Entity;
 use App\FinancialYear;
 use App\Outlet;
 use App\Sbu;
 use App\State;
+use App\Vendor;
 use DB;
 use File;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use PHPExcel_IOFactory;
 use PHPExcel_Shared_Date;
 
 class ServiceInvoice extends Model {
@@ -616,6 +619,7 @@ class ServiceInvoice extends Model {
 			$header = $response['header'];
 
 			$all_error_records = [];
+			$i = 0;
 			foreach ($rows as $k => $row) {
 				$record = [];
 				foreach ($header as $key => $column) {
@@ -625,289 +629,484 @@ class ServiceInvoice extends Model {
 						$record[$column] = trim($row[$key]);
 					}
 				}
-				$original_record = $record;
-				$status = [];
-				$status['errors'] = [];
-				// if (empty($record['Reference Number'])) {
-				// 	$status['errors'][] = 'Type is empty';
-				// }
-
-				if (empty($record['Type'])) {
-					$status['errors'][] = 'Type is empty';
+				if (empty($record['SNO'])) {
+					// exit;
 				} else {
-					$type = Config::where([
-						'config_type_id' => 84,
-						'name' => $record['Type'],
-					])->first();
-					if (!$type) {
-						$status['errors'][] = 'Invalid Type';
-					}
-				}
+					// dump('first Sheet');
+					// dump($record['SNO']);
 
-				if (empty($record['Doc Date'])) {
-					$status['errors'][] = 'Doc Date is empty';
-				} else {
-					if (!is_numeric($record['Doc Date'])) {
-						$status['errors'][] = 'Invalid Date Format';
-					}
-				}
+					$original_record = $record;
+					$status = [];
+					$status['errors'] = [];
 
-				if (empty($record['Branch'])) {
-					$status['errors'][] = 'Branch is empty';
-				} else {
-					$branch = Outlet::where([
-						'company_id' => $job->company_id,
-						'code' => $record['Branch'],
-					])->first();
-					if (!$branch) {
-						$status['errors'][] = 'Invalid Branch';
-					}
-				}
-
-				if (empty($record['SBU'])) {
-					$status['errors'][] = 'SBU is empty';
-				} else {
-					$sbu = Sbu::where([
-						'company_id' => $job->company_id,
-						'name' => $record['SBU'],
-					])->first();
-					if (!$sbu) {
-						$status['errors'][] = 'Invalid SBU';
-					}
-					// $outlet_sbu = $branch->outlet_sbu;
-					// if (!$outlet_sbu) {
-					// 	$status['errors'][] = 'SBU is not mapped for this branch';
-					// }
-				}
-
-				if (empty($record['Category'])) {
-					$status['errors'][] = 'Category is empty';
-				} else {
-					$category = ServiceItemCategory::where([
-						'company_id' => $job->company_id,
-						'name' => $record['Category'],
-					])->first();
-					if (!$category) {
-						$status['errors'][] = 'Invalid Category';
-					}
-					// else {
-					// 	if (empty($record['Sub Category'])) {
-					// 		$status['errors'][] = 'Sub Category is empty';
-					// 	} else {
-					// 		$sub_category = ServiceItemSubCategory::where([
-					// 			'company_id' => $job->company_id,
-					// 			'category_id' => $category->id,
-					// 			'name' => $record['Sub Category'],
-					// 		])->first();
-					// 		if (!$sub_category) {
-					// 			$status['errors'][] = 'Invalid Sub Category Or Sub Category is not mapped for this Category';
-					// 		}
-					// 	}
-					// }
-				}
-
-				if (empty($record['Customer Code'])) {
-					$status['errors'][] = 'Customer Code is empty';
-				} else {
-					$customer = Customer::where([
-						'company_id' => $job->company_id,
-						'code' => trim($record['Customer Code']),
-					])->first();
-					if (!$customer) {
-						$status['errors'][] = 'Invalid Customer';
-					}
-				}
-
-				if (empty($record['Item Code'])) {
-					$status['errors'][] = 'Item Code is empty';
-				} else {
-					$item_code = ServiceItem::where([
-						'company_id' => $job->company_id,
-						'code' => trim($record['Item Code']),
-					])->first();
-					if (!$item_code) {
-						$status['errors'][] = 'Invalid Item Code';
-					}
-				}
-
-				if (empty($record['Reference'])) {
-					$status['errors'][] = 'Reference is empty';
-				}
-
-				if (empty($record['Amount'])) {
-					$status['errors'][] = 'Amount is empty';
-				} elseif (!is_numeric($record['Amount'])) {
-					$status['errors'][] = 'Invalid Amount';
-				}
-
-				//GET FINANCIAL YEAR ID BY DOCUMENT DATE
-				try {
-					$date = PHPExcel_Shared_Date::ExcelToPHP($record['Doc Date']);
-					if (date('m', $date) > 3) {
-						$document_date_year = date('Y', $date) + 1;
+					if (empty($record['SNO'])) {
+						$status['errors'][] = 'SNO is empty';
 					} else {
-						$document_date_year = date('Y', $date);
-					}
-
-					$financial_year = FinancialYear::where('from', $document_date_year)
-						->where('company_id', $job->company_id)
-						->first();
-					if (!$financial_year) {
-						$status['errors'][] = 'Fiancial Year Not Found';
-					}
-				} catch (\Exception $e) {
-					$status['errors'][] = 'Invalid Date Format';
-
-				}
-
-				if ($type) {
-					if ($type->id == 1061) {
-						//DN
-						$serial_number_category = 5;
-					} elseif ($type->id == 1060) {
-						//CN
-						$serial_number_category = 4;
-					}
-
-					if ($branch && $sbu && $financial_year) {
-						//GENERATE SERVICE INVOICE NUMBER
-						$generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, $branch->id, $sbu);
-						if (!$generateNumber['success']) {
-							$status['errors'][] = 'No Serial number found';
+						$sno = intval($record['SNO']);
+						if (!$sno) {
+							$status['errors'][] = 'Invalid SNO';
 						}
 					}
 
-				}
-
-				$approval_status = Entity::select('entities.name')->where('company_id', $job->company_id)->where('entity_type_id', 18)->first();
-				if ($approval_status) {
-					$status_id = $approval_status->name;
-				} else {
-					$status['errors'][] = 'Initial CN/DN Status has not mapped.!';
-				}
-
-				$taxes = [];
-				if ($item_code && $branch && $customer) {
-					$taxes = Tax::getTaxes($item_code->id, $branch->id, $customer->id);
-					if (!$taxes['success']) {
-						$status['errors'][] = $taxes['error'];
-					}
-				}
-
-				if (count($status['errors']) > 0) {
-					// dump($status['errors']);
-					$original_record['Record No'] = $k + 1;
-					$original_record['Error Details'] = implode(',', $status['errors']);
-					$all_error_records[] = $original_record;
-					$job->incrementError();
-					continue;
-				}
-
-				DB::beginTransaction();
-
-				// dd(Auth::user()->company_id);
-				$service_invoice = ServiceInvoice::firstOrNew([
-					'company_id' => $job->company_id,
-					'number' => $generateNumber['number'],
-				]);
-				if ($type->id == 1061) {
-					$service_invoice->is_cn_created = 0;
-				} elseif ($type->id == 1060) {
-					$service_invoice->is_cn_created = 1;
-				}
-
-				$service_invoice->company_id = $job->company_id;
-				$service_invoice->type_id = $type->id;
-				$service_invoice->branch_id = $branch->id;
-				$service_invoice->sbu_id = $sbu->id;
-				$service_invoice->category_id = $category->id;
-				// $service_invoice->sub_category_id = $sub_category->id;
-				$service_invoice->invoice_date = date('Y-m-d', PHPExcel_Shared_Date::ExcelToPHP($record['Doc Date']));
-				$service_invoice->document_date = date('Y-m-d', PHPExcel_Shared_Date::ExcelToPHP($record['Doc Date']));
-				$service_invoice->customer_id = $customer->id;
-				$message = 'Service invoice added successfully';
-				$service_invoice->items_count = 1;
-				$service_invoice->status_id = $status_id;
-				$service_invoice->created_by_id = $job->created_by_id;
-				$service_invoice->updated_at = NULL;
-				$service_invoice->save();
-
-				$service_invoice_item = ServiceInvoiceItem::firstOrNew([
-					'service_invoice_id' => $service_invoice->id,
-					'service_item_id' => $item_code->id,
-				]);
-				$service_invoice_item->description = $record['Reference'];
-				$service_invoice_item->qty = 1;
-				$service_invoice_item->rate = $record['Amount'];
-				$service_invoice_item->sub_total = 1 * $record['Amount'];
-				$service_invoice_item->save();
-
-				//SAVE SERVICE INVOICE ITEM TAX
-				$item_taxes = [];
-				$total_tax_amount = 0;
-				if (!empty($item_code->sac_code_id)) {
-
-					if ($service_invoice->customer->primaryAddress->state_id == $service_invoice->outlet->state_id) {
-						$taxes = $service_invoice_item->serviceItem->taxCode->taxes()->where('type_id', 1160)->get();
+					if (empty($record['Type'])) {
+						$status['errors'][] = 'Type is empty';
 					} else {
-						$taxes = $service_invoice_item->serviceItem->taxCode->taxes()->where('type_id', 1161)->get();
+						$type = Config::where([
+							'config_type_id' => 84,
+							'name' => $record['Type'],
+						])->first();
+						if (!$type) {
+							$status['errors'][] = 'Invalid Type';
+						}
 					}
 
-					// $tax_codes = TaxCode::with([
-					// 	'taxes' => function ($query) use ($taxes) {
-					// 		$query->whereIn('tax_id', $taxes['tax_ids']);
-					// 	},
-					// ])
-					// 	->where('id', $item_code->sac_code_id)
-					// 	->get();
-
-					// if (!empty($tax_codes)) {
-					// foreach ($tax_codes as $tax_code) {
-					foreach ($taxes as $tax) {
-						$tax_amount = round($service_invoice_item->sub_total * $tax->pivot->percentage / 100, 2);
-						$total_tax_amount += $tax_amount;
-						$item_taxes[$tax->id] = [
-							'percentage' => $tax->pivot->percentage,
-							'amount' => $tax_amount,
-						];
+					if (empty($record['Doc Date'])) {
+						$status['errors'][] = 'Doc Date is empty';
+					} else {
+						if (!is_numeric($record['Doc Date'])) {
+							$status['errors'][] = 'Invalid Date Format';
+						} else {
+							$doc_date = $record['Doc Date'];
+						}
 					}
-					$service_invoice_item->taxes()->sync($item_taxes);
-					// }
-				}
-				// }
-				// else {
-				$KFC_tax_amount = 0;
-				if ($service_invoice->customer->primaryAddress->state_id) {
-					if (($service_invoice->customer->primaryAddress->state_id == 3) && ($service_invoice->outlet->state_id == 3)) {
-						//3 FOR KERALA
-						//check customer state and outlet states are equal KL.  //add KFC tax
-						if (!$customer->gst_number) {
-							//customer dont't have GST
-							if (!empty($item_code->sac_code_id)) {
-								//customer have HSN and SAC Code
-								$KFC_tax_amount = round($service_invoice_item->sub_total * 1 / 100, 2); //ONE PERCENTAGE FOR KFC
-								$item_taxes[4] = [ //4 for KFC
-									'percentage' => 1,
-									'amount' => $KFC_tax_amount,
-								];
+
+					if (empty($record['Branch'])) {
+						$status['errors'][] = 'Branch is empty';
+					} else {
+						$branch = Outlet::where([
+							'company_id' => $job->company_id,
+							'code' => $record['Branch'],
+						])->first();
+						if (!$branch) {
+							$status['errors'][] = 'Invalid Branch';
+						}
+					}
+
+					if (empty($record['SBU'])) {
+						$status['errors'][] = 'SBU is empty';
+					} else {
+						$sbu = Sbu::where([
+							'company_id' => $job->company_id,
+							'name' => $record['SBU'],
+						])->first();
+						if (!$sbu) {
+							$status['errors'][] = 'Invalid SBU';
+						}
+						// $outlet_sbu = $branch->outlet_sbu;
+						// if (!$outlet_sbu) {
+						// 	$status['errors'][] = 'SBU is not mapped for this branch';
+						// }
+					}
+
+					if (empty($record['Category'])) {
+						$status['errors'][] = 'Category is empty';
+					} else {
+						$category = ServiceItemCategory::where([
+							'company_id' => $job->company_id,
+							'name' => $record['Category'],
+						])->first();
+						if (!$category) {
+							$status['errors'][] = 'Invalid Category';
+						}
+						// else {
+						// 	if (empty($record['Sub Category'])) {
+						// 		$status['errors'][] = 'Sub Category is empty';
+						// 	} else {
+						// 		$sub_category = ServiceItemSubCategory::where([
+						// 			'company_id' => $job->company_id,
+						// 			'category_id' => $category->id,
+						// 			'name' => $record['Sub Category'],
+						// 		])->first();
+						// 		if (!$sub_category) {
+						// 			$status['errors'][] = 'Invalid Sub Category Or Sub Category is not mapped for this Category';
+						// 		}
+						// 	}
+						// }
+					}
+
+					if (empty($record['Is Service'])) {
+						$status['errors'][] = 'Is Service is empty';
+					} else {
+						if ($record['Is Service'] == 'Yes') {
+							$is_service = 1;
+						} elseif ($record['Is Service'] == 'No') {
+							$is_service = 0;
+						} elseif ($record['Is Service'] == 'Non-Taxable') {
+							$is_service = 2;
+						}
+						if (!$is_service) {
+							$status['errors'][] = 'Invalid Service';
+						}
+					}
+
+					if (empty($record['Reverse Charge Applicable'])) {
+						$status['errors'][] = 'Reverse Charge Applicable is empty';
+					} else {
+						if ($record['Reverse Charge Applicable'] == 'Yes') {
+							$is_reverse_charge_applicable = 1;
+						} else {
+							$is_reverse_charge_applicable = 0;
+						}
+						if (!$is_reverse_charge_applicable) {
+							$status['errors'][] = 'Invalid Reverse Charge Applicable';
+						}
+					}
+
+					if (empty($record['Reverse Charge Applicable'])) {
+						$status['errors'][] = 'Reverse Charge Applicable is empty';
+					} else {
+						if ($record['Reverse Charge Applicable'] == 'Yes') {
+							$is_reverse_charge_applicable = 1;
+						} else {
+							$is_reverse_charge_applicable = 0;
+						}
+						if (!$is_reverse_charge_applicable) {
+							$status['errors'][] = 'Invalid Reverse Charge Applicable';
+						}
+					}
+
+					$po_reference_number = !empty($record['PO Reference Number']) ? $record['PO Reference Number'] : NULL;
+					// dd($record);
+					$reference_invoice_number = !empty($record['Reference Invoice Number']) ? $record['Reference Invoice Number'] : NULL;
+					$reference_invoice_date = !empty($record['Reference Invoice Date']) ? date('Y-m-d', PHPExcel_Shared_Date::ExcelToPHP($reference_invoice_date)) : NULL;
+					// dump($po_reference_number, $reference_invoice_date, $reference_invoice_number);
+					// dd();
+
+					if (empty($record['To Account Type'])) {
+						$status['errors'][] = 'To Account Type is empty';
+					} else {
+						if ($record['To Account Type'] == 'Customer' || $record['To Account Type'] == 'customer') {
+							$to_account_type_id = 1440;
+						} elseif ($record['To Account Type'] == 'Vendor' || $record['To Account Type'] == 'vendor') {
+							$to_account_type_id = 1441;
+						}
+						if (!$to_account_type_id) {
+							$status['errors'][] = 'Invalid To Account Type';
+						}
+					}
+					// dump($to_account_type_id . 'to_account_type_id');
+					// dump($record);
+					// dump($record['Customer/Vendor Code']);
+					if (empty($record['Customer/Vendor Code'])) {
+						$status['errors'][] = 'Customer Code is empty';
+					} else {
+						$customer = '';
+						if ($to_account_type_id == 1440) {
+							$customer = Customer::where([
+								'company_id' => $job->company_id,
+								'code' => trim($record['Customer/Vendor Code']),
+							])->first();
+							if (!$customer) {
+								$status['errors'][] = 'Invalid Customer';
+							}
+						} elseif ($to_account_type_id == 1441) {
+							$customer = Vendor::where([
+								'company_id' => $job->company_id,
+								'code' => trim($record['Customer/Vendor Code']),
+							])->first();
+							if (!$customer) {
+								$status['errors'][] = 'Invalid Vendor';
 							}
 						}
 					}
-					$service_invoice_item->taxes()->sync($item_taxes);
-				}
-				// }
-				$service_invoice->amount_total = $record['Amount'];
-				$service_invoice->tax_total = $item_code->sac_code_id ? $total_tax_amount : 0;
-				$service_invoice->sub_total = 1 * $record['Amount'];
-				$service_invoice->total = $record['Amount'] + $total_tax_amount;
-				$service_invoice->save();
+					// dump($customer->id . 'customer_id');
 
-				$job->incrementNew();
+					//GET FINANCIAL YEAR ID BY DOCUMENT DATE
+					try {
+						$date = PHPExcel_Shared_Date::ExcelToPHP($record['Doc Date']);
+						if (date('m', $date) > 3) {
+							$document_date_year = date('Y', $date) + 1;
+						} else {
+							$document_date_year = date('Y', $date);
+						}
 
-				DB::commit();
-				//UPDATING PROGRESS FOR EVERY FIVE RECORDS
-				if (($k + 1) % 5 == 0) {
-					$job->save();
+						$financial_year = FinancialYear::where('from', $document_date_year)
+							->where('company_id', $job->company_id)
+							->first();
+						if (!$financial_year) {
+							$status['errors'][] = 'Fiancial Year Not Found';
+						}
+					} catch (\Exception $e) {
+						$status['errors'][] = 'Invalid Date Format';
+
+					}
+
+					if ($type) {
+						if ($type->id == 1061) {
+							//DN
+							$serial_number_category = 5;
+						} elseif ($type->id == 1060) {
+							//CN
+							$serial_number_category = 4;
+						} elseif ($type->id == 1062) {
+							//INV
+							$serial_number_category = 121;
+						}
+
+						if ($branch && $sbu && $financial_year) {
+							//GENERATE SERVICE INVOICE NUMBER
+							$generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, $branch->id, $sbu);
+							if (!$generateNumber['success']) {
+								$status['errors'][] = 'No Serial number found';
+							}
+						}
+
+					}
+
+					$approval_status = Entity::select('entities.name')->where('company_id', $job->company_id)->where('entity_type_id', 18)->first();
+					if ($approval_status) {
+						$status_id = $approval_status->name;
+					} else {
+						$status['errors'][] = 'Initial CN/DN Status has not mapped.!';
+					}
+					// dd($customer->id);
+
+					//STATICALLY GET SECOND SHEET FROM EXCEL
+					$objPHPExcel = PHPExcel_IOFactory::load(storage_path('app/' . $job->src_file));
+					$sheet = $objPHPExcel->getSheet(1);
+					$highestRow = $sheet->getHighestDataRow();
+
+					$header = $sheet->rangeToArray('A1:F1', NULL, TRUE, FALSE);
+					$header = $header[0];
+					$rows = $sheet->rangeToArray('A2:F2' . $highestRow, NULL, TRUE, FALSE);
+
+					$amount_total = 0;
+					$sub_total = 0;
+					$total = 0;
+					$invoice_amount = 0;
+
+					foreach ($rows as $k => $row) {
+						$item_record = [];
+						foreach ($header as $key => $column) {
+							if (!$column) {
+								continue;
+							} else {
+								$item_record[$column] = trim($row[$key]);
+							}
+						}
+						//Check Row Empty or not
+						if (count(array_filter($row)) == 0) {
+							// $status['errors'][] = 'Row is empty';
+							continue;
+
+						} else {
+							// dump($customer->id);
+							// dump('2 Sheet');
+
+							if ($item_record['SNO'] == $sno) {
+								// dump($item_record['SNO']);
+								// dump($sno);
+
+								$original_record = $item_record;
+								$status = [];
+								$status['errors'] = [];
+								// dd($item_record);
+								if (empty($item_record['SNO'])) {
+									$status['errors'][] = 'SNO is empty';
+								} else {
+									$item_sno = intval($item_record['SNO']);
+									if (!$item_sno) {
+										$status['errors'][] = 'Invalid SNO';
+									}
+								}
+
+								if (empty($item_record['Item Code'])) {
+									$status['errors'][] = 'Item Code is empty';
+								} else {
+									$item_code = ServiceItem::where([
+										'company_id' => $job->company_id,
+										'code' => trim($item_record['Item Code']),
+									])->first();
+									if (!$item_code) {
+										$status['errors'][] = 'Invalid Item Code';
+									}
+								}
+
+								if (empty($item_record['UOM'])) {
+									$status['errors'][] = 'UOM is empty';
+								} else {
+									$uom = EInvoiceUom::where([
+										'company_id' => $job->company_id,
+										'code' => trim($item_record['UOM']),
+									])->first();
+									if (!$uom) {
+										$status['errors'][] = 'Invalid UOM';
+									}
+								}
+
+								if (empty($item_record['Reference'])) {
+									$status['errors'][] = 'Reference is empty';
+								}
+
+								if (empty($item_record['Quantity'])) {
+									$status['errors'][] = 'Quantity is empty';
+								}
+
+								if (empty($item_record['Amount'])) {
+									$status['errors'][] = 'Amount is empty';
+								} elseif (!is_numeric($item_record['Amount'])) {
+									$status['errors'][] = 'Invalid Amount';
+								}
+
+								$taxes = [];
+								if ($item_code && $branch && $customer) {
+									$taxes = Tax::getTaxes($item_code->id, $branch->id, $customer->id, $to_account_type_id);
+									if (!$taxes['success']) {
+										$status['errors'][] = $taxes['error'];
+									}
+								}
+
+								if (count($status['errors']) > 0) {
+									// dump($status['errors']);
+									$original_record['Record No'] = $k + 1;
+									$original_record['Error Details'] = implode(',', $status['errors']);
+									$all_error_records[] = $original_record;
+									$job->incrementError();
+									continue;
+								}
+								// dd(date('Y-m-d', PHPExcel_Shared_Date::ExcelToPHP($doc_date)));
+								DB::beginTransaction();
+
+								// dd(Auth::user()->company_id);
+								$service_invoice = ServiceInvoice::firstOrNew([
+									'company_id' => $job->company_id,
+									'number' => $generateNumber['number'],
+								]);
+								if ($type->id == 1061) {
+									$service_invoice->is_cn_created = 0;
+								} elseif ($type->id == 1060) {
+									$service_invoice->is_cn_created = 1;
+								} elseif ($type->id == 1061) {
+									$service_invoice->is_cn_created = 0;
+								}
+
+								$service_invoice->company_id = $job->company_id;
+								$service_invoice->type_id = $type->id;
+								$service_invoice->branch_id = $branch->id;
+								$service_invoice->sbu_id = $sbu->id;
+								$service_invoice->category_id = $category->id;
+								// $service_invoice->sub_category_id = $sub_category->id;
+								$service_invoice->document_date = date('Y-m-d', PHPExcel_Shared_Date::ExcelToPHP($doc_date));
+								$service_invoice->is_service = $is_service;
+								$service_invoice->is_reverse_charge_applicable = $is_reverse_charge_applicable;
+								$service_invoice->po_reference_number = $po_reference_number;
+								$service_invoice->invoice_number = $reference_invoice_number;
+								$service_invoice->invoice_date = $reference_invoice_date;
+								$service_invoice->to_account_type_id = $to_account_type_id;
+								$service_invoice->customer_id = $customer->id;
+								$message = 'Service invoice added successfully';
+								$service_invoice->items_count = 1;
+								$service_invoice->status_id = $status_id;
+								$service_invoice->created_by_id = $job->created_by_id;
+								$service_invoice->updated_at = NULL;
+								$service_invoice->save();
+
+								$service_invoice_item = ServiceInvoiceItem::firstOrNew([
+									'service_invoice_id' => $service_invoice->id,
+									'service_item_id' => $item_code->id,
+								]);
+								$service_invoice_item->e_invoice_uom_id = $uom->id;
+								$service_invoice_item->description = $item_record['Reference'];
+								// $service_invoice_item->qty = 1;
+								// $service_invoice_item->sub_total = 1 * $record['Amount'];
+								$service_invoice_item->qty = $item_record['Quantity'];
+								$service_invoice_item->rate = $item_record['Amount'];
+								$service_invoice_item->sub_total = $item_record['Quantity'] * $item_record['Amount'];
+								$service_invoice_item->save();
+
+								//SAVE SERVICE INVOICE ITEM TAX
+								$item_taxes = [];
+								$total_tax_amount = 0;
+								if (!empty($item_code->sac_code_id)) {
+
+									if ($service_invoice->customer->primaryAddress->state_id == $service_invoice->outlet->state_id) {
+										$taxes = $service_invoice_item->serviceItem->taxCode->taxes()->where('type_id', 1160)->get();
+									} else {
+										$taxes = $service_invoice_item->serviceItem->taxCode->taxes()->where('type_id', 1161)->get();
+									}
+
+									// $tax_codes = TaxCode::with([
+									// 	'taxes' => function ($query) use ($taxes) {
+									// 		$query->whereIn('tax_id', $taxes['tax_ids']);
+									// 	},
+									// ])
+									// 	->where('id', $item_code->sac_code_id)
+									// 	->get();
+
+									// if (!empty($tax_codes)) {
+									// foreach ($tax_codes as $tax_code) {
+									foreach ($taxes as $tax) {
+										$tax_amount = round($service_invoice_item->sub_total * $tax->pivot->percentage / 100, 2);
+										$total_tax_amount += $tax_amount;
+										$item_taxes[$tax->id] = [
+											'percentage' => $tax->pivot->percentage,
+											'amount' => $tax_amount,
+										];
+									}
+									$service_invoice_item->taxes()->sync($item_taxes);
+									// }
+								}
+								// }
+								// else {
+								$KFC_tax_amount = 0;
+								if ($service_invoice->customer->primaryAddress->state_id) {
+									if (($service_invoice->customer->primaryAddress->state_id == 3) && ($service_invoice->outlet->state_id == 3)) {
+										//3 FOR KERALA
+										//check customer state and outlet states are equal KL.  //add KFC tax
+										if (!$customer->gst_number) {
+											//customer dont't have GST
+											if (!empty($item_code->sac_code_id)) {
+												//customer have HSN and SAC Code
+												$KFC_tax_amount = round($service_invoice_item->sub_total * 1 / 100, 2); //ONE PERCENTAGE FOR KFC
+												$item_taxes[4] = [ //4 for KFC
+													'percentage' => 1,
+													'amount' => $KFC_tax_amount,
+												];
+											}
+										}
+									}
+									$service_invoice_item->taxes()->sync($item_taxes);
+								}
+								// }
+								$amount_total += $item_record['Amount'];
+								$service_invoice->amount_total = $amount_total;
+								$service_invoice->tax_total = $item_code->sac_code_id ? $total_tax_amount : 0;
+								$sub_total += $item_record['Quantity'] * $item_record['Amount'];
+								$service_invoice->sub_total = $sub_total;
+								// $service_invoice->sub_total = 1 * $item_record['Amount'];
+								$total += $item_record['Quantity'] * $item_record['Amount'] + $total_tax_amount;
+								$service_invoice->total = $total;
+
+								$invoice_amount += $item_record['Quantity'] * $item_record['Amount'] + $total_tax_amount;
+								// dump($invoice_amount, $round_off_invoice_amount);
+								//FOR ROUND OFF
+								if ($invoice_amount <= round($invoice_amount)) {
+									$round_off = round($invoice_amount) - $invoice_amount;
+								} else {
+									$round_off = $invoice_amount - round($invoice_amount);
+								}
+								$service_invoice->round_off_amount = number_format($round_off, 2);
+								$service_invoice->final_amount = round($invoice_amount);
+								$service_invoice->save();
+
+								DB::commit();
+								//UPDATING PROGRESS FOR EVERY FIVE RECORDS
+								if (($k + 1) % 5 == 0) {
+									$job->save();
+								}
+							}
+						}
+					}
+					$job->incrementNew();
+					$i++;
+					$objPHPExcel = PHPExcel_IOFactory::load(storage_path('app/' . $job->src_file));
+					$sheet = $objPHPExcel->getSheet(0);
+					$highestRow = $sheet->getHighestDataRow();
+
+					$header = $sheet->rangeToArray('A1:N1', NULL, TRUE, FALSE);
+					$header = $header[0];
+					$rows = $sheet->rangeToArray('A' . $i . ':N' . $i . $highestRow, NULL, TRUE, FALSE);
+					// dump('-------------------------------------------------------');
 				}
 			}
 			// dd(1);
