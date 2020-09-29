@@ -936,7 +936,7 @@ class ServiceInvoiceController extends Controller {
 					$serial_number_category = 4;
 				} elseif ($request->type_id == 1062) {
 					//INV
-					$serial_number_category = 121;
+					$serial_number_category = 125;
 				}
 
 				$sbu = Sbu::find($request->sbu_id);
