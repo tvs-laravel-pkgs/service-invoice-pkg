@@ -1412,7 +1412,7 @@ class ServiceInvoiceController extends Controller {
 					'success' => false,
 					'errors' => ['Customer Address Maximum Allowed Length 100!'],
 				];
-				DB::commit();
+				// DB::commit();
 			}
 		}
 		// dd(1);
@@ -1930,7 +1930,7 @@ class ServiceInvoiceController extends Controller {
 			$api_log->created_by_id = Auth::user()->id;
 			$api_log->save();
 			// dd($api_log);
-			DB::commit();
+			// DB::commit();
 
 			curl_close($ch);
 
@@ -1965,7 +1965,7 @@ class ServiceInvoiceController extends Controller {
 					// dd('Error: ' . $generate_irn_output['Error']);
 				}
 			}
-			DB::commit();
+			// DB::commit();
 
 			//AES DECRYPTION AFTER GENERATE IRN
 			$aes_decrypt_url = 'https://www.devglan.com/online-tools/aes-decryption';
