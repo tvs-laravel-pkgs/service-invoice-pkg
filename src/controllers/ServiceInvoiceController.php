@@ -48,9 +48,9 @@ use Yajra\Datatables\Datatables;
 
 class ServiceInvoiceController extends Controller {
 
-	public function __construct(SoapWrapper $soapWrapper) {
+	public function __construct() {
 		$this->middleware('auth');
-		$this->soapWrapper = $soapWrapper;
+		$this->soapWrapper = new SoapWrapper;
 	}
 
 	public function getServiceInvoiceFilter() {
