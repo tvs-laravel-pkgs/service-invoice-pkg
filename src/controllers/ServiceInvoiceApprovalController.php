@@ -224,6 +224,7 @@ class ServiceInvoiceApprovalController extends Controller {
 			'attachments',
 			// 'customer',
 			'toAccountType',
+			'address',
 			'branch',
 			'sbu',
 			'serviceInvoiceItems',

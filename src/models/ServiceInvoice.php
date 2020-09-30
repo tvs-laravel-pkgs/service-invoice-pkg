@@ -120,6 +120,10 @@ class ServiceInvoice extends Model {
 		return $this->belongsTo('App\Outlet', 'branch_id', 'id');
 	}
 
+	public function address() {
+		return $this->belongsTo('App\Address', 'address_id', 'id');
+	}
+
 	public function sbu() {
 		return $this->belongsTo('App\Sbu', 'sbu_id', 'id');
 	}
@@ -244,12 +248,14 @@ class ServiceInvoice extends Model {
 				->first();
 
 			$service_invoice->customer;
+			$service_invoice->address;
+			// dd($service_invoice->address);
 			$service_invoice->customer->primaryAddress;
 
 			if (!empty($service_invoice)) {
-				if ($service_invoice->customer->primaryAddress->state_id) {
-					if ($service_invoice->customer->primaryAddress->state_id == 3 && $service_invoice->branch->primaryAddress->state_id == 3) {
-						if (empty($service_invoice->customer->gst_number)) {
+				if ($service_invoice->customer->primaryAddress->state_id || $service_invoice->address->state_id) {
+					if (($service_invoice->customer->primaryAddress->state_id == 3 || $service_invoice->address->state_id == 3) && $service_invoice->branch->primaryAddress->state_id == 3) {
+						if (empty($service_invoice->customer->gst_number) || empty($service_invoice->customer->gst_number)) {
 							if (!empty($invoice_item->serviceItem->taxCode)) {
 								$KFC_IN = 1;
 								foreach ($invoice_item->serviceItem->taxCode->taxes as $tax) {
@@ -456,9 +462,9 @@ class ServiceInvoice extends Model {
 			// dump($service_invoice);
 			// dd(1);
 			if (!empty($service_invoice)) {
-				if ($service_invoice->customer->primaryAddress->state_id) {
-					if ($service_invoice->customer->primaryAddress->state_id == 3 && $service_invoice->branch->primaryAddress->state_id == 3) {
-						if (empty($service_invoice->customer->gst_number)) {
+				if ($service_invoice->customer->primaryAddress->state_id || $service_invoice->address->state_id) {
+					if (($service_invoice->customer->primaryAddress->state_id == 3 || $service_invoice->address->state_id == 3) && $service_invoice->branch->primaryAddress->state_id == 3) {
+						if (empty($service_invoice->customer->gst_number) || empty($service_invoice->address->state_id)) {
 							//FOR AXAPTA EXPORT WHILE GETING KFC ADD SEPERATE TAX LIKE CGST,SGST
 							if (!empty($invoice_item->serviceItem->taxCode)) {
 								foreach ($invoice_item->serviceItem->taxCode->taxes as $tax) {
@@ -533,7 +539,7 @@ class ServiceInvoice extends Model {
 					$params['AmountCurDebit'] = '';
 				}
 				$params['AmountCurCredit'] = $this->type_id == 1060 ? $amount_diff : "";
-				$params['LedgerDimension'] = $invoice_item->serviceItem->coaCode->code . '-' . $this->branch->code . '-' . $this->sbu->name;
+				$params['LedgerDimension'] = '3198' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
 				$this->exportRowToAxapta($params);
 			} else {
@@ -545,7 +551,7 @@ class ServiceInvoice extends Model {
 					$params['AmountCurCredit'] = '';
 				}
 				$params['AmountCurDebit'] = $this->type_id == 1060 ? ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : "";
-				$params['LedgerDimension'] = $invoice_item->serviceItem->coaCode->code . '-' . $this->branch->code . '-' . $this->sbu->name;
+				$params['LedgerDimension'] = '3198' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
 				$this->exportRowToAxapta($params);
 			}

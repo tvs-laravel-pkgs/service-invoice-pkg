@@ -1,11 +1,11 @@
 <!-- Content Wrap -->
 <div class="content-wrap cndn-wrap">
-<div class="pace" style="display: none;" id="pace">
-    <div class="pace-progress" data-progress-text="100%" data-progress="99" style="transform: translate3d(100%, 0px, 0px);">
-        <div class="pace-progress-inner"></div>
+    <div class="pace" style="display: none;" id="pace">
+        <div class="pace-progress" data-progress-text="100%" data-progress="99" style="transform: translate3d(100%, 0px, 0px);">
+            <div class="pace-progress-inner"></div>
+        </div>
+        <div class="pace-activity"></div>
     </div>
-    <div class="pace-activity"></div>
-</div>
     <!-- Page Header -->
     <div class="page-header">
         <div class="page-header-inner">
@@ -275,14 +275,40 @@
                                         </div><!-- Info Wrap -->
                                         <div class="info-wrap" ng-show="!isObjectEmpty($ctrl.customer)">
                                             <p class="info-content"><b>{{$ctrl.customer.mobile_no ? $ctrl.customer.mobile_no : ''}}</b></p>
-                                            <p class="info-content">{{$ctrl.customer.address}}</p>
+                                            <p class="info-content">{{$ctrl.customer_address.address_line1}}</p>
                                             <div class="info-space"></div>
-                                            <p class="info-content">GST # {{$ctrl.customer.gst_number ? $ctrl.customer.gst_number : ''}}
+                                            <p class="info-content">GST # {{$ctrl.customer_address.gst_number ? $ctrl.customer_address.gst_number : ''}}
                                                 {{$ctrl.customer.gstin ? $ctrl.customer.gstin : ''}} </p>
                                         </div><!-- Info Wrap -->
                                     </li>
                                 </ul><!-- Flex List -->
                             </div><!-- Flex Wrap -->
+                            <div class="row" ng-if="$ctrl.single_address">
+                                <input type="hidden" name="address_id" value="{{$ctrl.customer_address.id}}">
+                            </div>
+                            <div class="row" ng-if="$ctrl.multiple_address">
+                                <div class="col-md-12">
+                                    <div class="page-form pb-80">
+                                        <div class="flex-wrap">
+                                            <ul class="flex-list bordered">
+                                                <li class="flex-md-4" ng-repeat="(key,address) in $ctrl.customer_addresses">
+                                                    <!-- <ul class="table-form-list"> -->
+                                                    <!-- <li> -->
+                                                    <div class="table-form-list-wrap">
+                                                        <input type="checkbox" name="address_id" id="{{address.id}}" class="address" value="{{address.id}}" ng-click="selectedAddress(address)" ng-checked="$ctrl.service_invoice.address_id == address.id">
+                                                        <div class="table-form-list-control">
+                                                            Address: {{address.address_line1}}
+                                                            GSTIN: {{address.gst_number}}
+                                                        </div><!-- Table Form List Control -->
+                                                    </div><!-- Table Form List Wrap -->
+                                                    <!-- </li> -->
+                                                    <!-- </ul> -->
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="table-wrap-header">
                                 <div class="row">
                                     <div class="col-md-6">
@@ -627,6 +653,7 @@
                 <input type="hidden" name="action" value="{{$ctrl.add_service_action}}">
                 <input type="hidden" name="customer_id" value="{{$ctrl.service_invoice.customer.id}}">
                 <input type="hidden" name="branch_id" value="{{$ctrl.service_invoice.branch.id}}">
+                <input type="hidden" name="state_id" value="{{$ctrl.customer.state_id}}">
                 <div class="modal-footer">
                     <div class="row">
                         <div class="col-md-9 text-left">
@@ -640,7 +667,7 @@
                                         <span class="modal-footer-list-label">{{tax.name}} ({{tax.pivot.percentage}}%)</span>
                                         <span class="modal-footer-list-value">{{(tax.pivot.amount ? tax.pivot.amount : 0) | number : 2}}</span>
                                     </li>
-                                    <li ng-show="($ctrl.service_invoice.branch.primary_address.state_id == '3') && ($ctrl.service_invoice.customer.primary_address.state_id == '3') && ($ctrl.service_item_detail.tax_code != NULL) && ($ctrl.service_invoice.customer.gst_number == NULL)">
+                                    <li ng-show="($ctrl.service_invoice.branch.primary_address.state_id == '3') && ($ctrl.customer.state_id == '3') && ($ctrl.service_item_detail.tax_code != NULL) && ($ctrl.customer.gst_number == NULL)">
                                         <span class="modal-footer-list-label">KFC (1%)</span>
                                         <span class="modal-footer-list-value">{{$ctrl.KFC_total | number : 2}}</span>
                                     </li>

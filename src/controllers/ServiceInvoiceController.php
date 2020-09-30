@@ -25,12 +25,15 @@ use App\Employee;
 use App\Entity;
 use App\FinancialYear;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\WpoSoapController;
 use App\Outlet;
 use App\Sbu;
 use App\State;
 use App\User;
 use App\Vendor;
+use Artisaninweb\SoapWrapper\SoapWrapper;
 use Auth;
+use Carbon\Carbon;
 use DB;
 use Entrust;
 use Excel;
@@ -46,7 +49,10 @@ use Yajra\Datatables\Datatables;
 
 class ServiceInvoiceController extends Controller {
 
-	public function __construct() {
+	public function __construct(SoapWrapper $soapWrapper, WpoSoapController $getSoap = null) {
+		$this->middleware('auth');
+		$this->soapWrapper = $soapWrapper;
+		$this->getSoap = $getSoap;
 	}
 
 	public function getServiceInvoiceFilter() {
@@ -304,6 +310,7 @@ class ServiceInvoiceController extends Controller {
 			$service_invoice = ServiceInvoice::with([
 				'attachments',
 				'toAccountType',
+				'address',
 				// 'customer',
 				// 'customer.primaryAddress',
 				'branch',
@@ -322,7 +329,8 @@ class ServiceInvoiceController extends Controller {
 				return response()->json(['success' => false, 'error' => 'Service Invoice not found']);
 			}
 			$service_invoice->customer; //ADDED FOR CUSTOMER AND VENDOR BOTH
-			$service_invoice->customer->primaryAddress; //ADDED FOR CUSTOMER AND VENDOR BOTH
+			// $service_invoice->customer->primaryAddress; //ADDED FOR CUSTOMER AND VENDOR BOTH
+			// $service_invoice->customer_address = $service_invoice->address; //ADDED FOR CUSTOMER AND VENDOR BOTH
 			$fields = Field::withTrashed()->get()->keyBy('id');
 			if (count($service_invoice->serviceInvoiceItems) > 0) {
 				$gst_total = 0;
@@ -462,6 +470,11 @@ class ServiceInvoiceController extends Controller {
 			'sub_category_list' => [],
 			'uom_list' => EInvoiceUom::getList(),
 			'to_account_type_list' => Config::select('name', 'id')->where('config_type_id', 27)->whereIn('id', [1440, 1441])->get(), //ACCOUNT TYPES
+			'addresses' => Address::where([
+				'entity_id' => $service_invoice->customer_id,
+				'company_id' => Auth::user()->company_id,
+				'address_of_id' => 24,
+			])->get(), //ACCOUNT TYPES
 			// 'sub_category_list' => [],
 		];
 		$this->data['config_values'] = Entity::where('company_id', Auth::user()->company_id)->whereIn('entity_type_id', [15, 16])->get();
@@ -478,17 +491,17 @@ class ServiceInvoiceController extends Controller {
 		return Sbu::getSbus($outlet_id);
 	}
 
-	public function searchCustomer(Request $r) {
-		return Customer::searchCustomer($r);
-	}
+	// public function searchCustomer(Request $r) {
+	// 	return Customer::searchCustomer($r);
+	// }
 
 	public function searchField(Request $r) {
 		return Field::searchField($r);
 	}
 
-	public function getCustomerDetails(Request $request) {
-		return Customer::getDetails($request);
-	}
+	// public function getCustomerDetails(Request $request) {
+	// 	return Customer::getDetails($request);
+	// }
 
 	public function searchBranch(Request $r) {
 		return Outlet::search($r);
@@ -506,7 +519,8 @@ class ServiceInvoiceController extends Controller {
 		// dd($request->all());
 
 		//GET TAXES BY CONDITIONS
-		$taxes = Tax::getTaxes($request->service_item_id, $request->branch_id, $request->customer_id, $request->to_account_type_id);
+		$taxes = Tax::getTaxes($request->service_item_id, $request->branch_id, $request->customer_id, $request->to_account_type_id, $request->state_id);
+		// dd($taxes);
 		if (!$taxes['success']) {
 			return response()->json(['success' => false, 'error' => $taxes['error']]);
 		}
@@ -737,7 +751,7 @@ class ServiceInvoiceController extends Controller {
 	public function getServiceItem(Request $request) {
 		// dd($request->all());
 		//GET TAXES BY CONDITIONS
-		$taxes = Tax::getTaxes($request->service_item_id, $request->branch_id, $request->customer_id, $request->to_account_type_id);
+		$taxes = Tax::getTaxes($request->service_item_id, $request->branch_id, $request->customer_id, $request->to_account_type_id, $request->state_id);
 		if (!$taxes['success']) {
 			return response()->json(['success' => false, 'error' => $taxes['error']]);
 		}
@@ -807,7 +821,26 @@ class ServiceInvoiceController extends Controller {
 				}
 			}
 		}
-
+		if ($request->state_id) {
+			// dd('in');
+			if (($request->state_id == 3) && ($outlet->state_id == 3)) {
+				//3 FOR KERALA
+				//check customer state and outlet states are equal KL.  //add KFC tax
+				if (!$request->gst_number) {
+					//customer dont't have GST
+					if (!is_null($service_item->sac_code_id)) {
+						//customer have HSN and SAC Code
+						$gst_total += round((1 / 100) * ($request->qty * $request->amount), 2);
+						$KFC_tax_amount = round($request->qty * $request->amount * 1 / 100, 2); //ONE PERCENTAGE FOR KFC
+						$service_item['KFC'] = [ //4 for KFC
+							'percentage' => 1,
+							'amount' => $KFC_tax_amount,
+						];
+					}
+				}
+			}
+		}
+		// dd(1);
 		//FIELD GROUPS PUSH
 		if (isset($request->field_groups)) {
 			if (!empty($request->field_groups)) {
@@ -870,6 +903,9 @@ class ServiceInvoiceController extends Controller {
 					'required:true',
 				],
 				'category_id' => [
+					'required:true',
+				],
+				'address_id' => [
 					'required:true',
 				],
 				// 'sub_category_id' => [
@@ -1004,7 +1040,9 @@ class ServiceInvoiceController extends Controller {
 			$service_invoice->round_off_amount = abs($request->round_off_amount);
 			// $service_invoice->invoice_date = date('Y-m-d H:i:s');
 			$service_invoice->company_id = Auth::user()->company_id;
+			$service_invoice->address_id = $request->address_id;
 			$service_invoice->save();
+			// dd($service_invoice);
 			$approval_levels = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 19)->first();
 			// $approval_levels = ApprovalLevel::where('approval_type_id', 1)->first();
 			if ($approval_levels != '') {
@@ -1140,6 +1178,7 @@ class ServiceInvoiceController extends Controller {
 			'company',
 			// 'customer',
 			'toAccountType',
+			'address',
 			'outlets',
 			'outlets.primaryAddress',
 			'outlets.region',
@@ -1167,27 +1206,31 @@ class ServiceInvoiceController extends Controller {
 		//ADDED FOR QUEUE METHOD END
 
 		$service_invoice->customer;
-		$service_invoice->customer->primaryAddress;
+		$service_invoice->address;
+		// $service_invoice->customer->primaryAddress;
 		// dd($service_invoice->outlets->primaryAddress->country);
 		$service_invoice->company->formatted_address = $service_invoice->company->primaryAddress ? $service_invoice->company->primaryAddress->getFormattedAddress() : 'NA';
 		// $service_invoice->outlets->formatted_address = $service_invoice->outlets->primaryAddress ? $service_invoice->outlets->primaryAddress->getFormattedAddress() : 'NA';
 		$service_invoice->outlets = $service_invoice->outlets ? $service_invoice->outlets : 'NA';
-		$service_invoice->customer->formatted_address = $service_invoice->customer->primaryAddress ? $service_invoice->customer->primaryAddress->address_line1 : 'NA';
+		// $service_invoice->customer->formatted_address = $service_invoice->customer->primaryAddress ? $service_invoice->customer->primaryAddress->address_line1 : 'NA';
+		$service_invoice->customer->formatted_address = $service_invoice->address ? $service_invoice->address->address_line1 : 'NA';
 
 		if ($service_invoice->to_account_type_id == 1440) {
-			$city = City::where('name', $service_invoice->customer->city)->first();
+			// $city = City::where('name', $service_invoice->customer->city)->first();
 			// dd($city);
-			if ($city) {
-				$state = State::find($city->state_id);
-				$service_invoice->customer->state_code = $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-';
-			} else {
-				$service_invoice->customer->state_code = '-';
-			}
+			// if ($city) {
+			$state = State::find($service_invoice->address ? $service_invoice->address->state_id : NULL);
+			$service_invoice->address->state_code = $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-';
+			// } else {
+			// $service_invoice->customer->state_code = '-';
+			// }
 		} else {
-			$state = State::find($service_invoice->customer->primaryAddress ? $service_invoice->customer->primaryAddress->state_id : NULL);
+			$state = State::find($service_invoice->address ? $service_invoice->address->state_id : NULL);
+			// $state = State::find($service_invoice->customer->primaryAddress ? $service_invoice->customer->primaryAddress->state_id : NULL);
 			$service_invoice->customer->state_code = $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-';
 			// dd($service_invoice->customer_id);
-			$address = Address::with(['city', 'state', 'country'])->where('address_of_id', 21)->where('entity_id', $service_invoice->customer_id)->first();
+			// $address = Address::with(['city', 'state', 'country'])->where('address_of_id', 21)->where('entity_id', $service_invoice->customer_id)->first();
+			$address = Address::with(['city', 'state', 'country'])->find($service_invoice->address_id);
 			// dd($address);
 			if ($address) {
 				$service_invoice->customer->address .= $address->address_line1 ? $address->address_line1 . ', ' : '';
@@ -1201,7 +1244,7 @@ class ServiceInvoiceController extends Controller {
 			}
 		}
 		// dd(1);
-		// dd($service_invoice->outlets->formatted_address);
+		// dd($service_invoice);
 		$fields = Field::withTrashed()->get()->keyBy('id');
 
 		if (count($service_invoice->serviceInvoiceItems) > 0) {
@@ -1364,8 +1407,19 @@ class ServiceInvoiceController extends Controller {
 			$service_invoice->round_off_amount = 0;
 		}
 		// dd($service_invoice->round_off_amount);
-
-		if ($service_invoice->customer->gst_number && ($item_count == $item_count_with_tax_code)) {
+		if ($service_invoice->address) {
+			if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->address_line1)) >= 100) {
+				$errors[] = 'Customer Address Maximum Allowed Length 100!';
+				return [
+					'success' => false,
+					'errors' => ['Customer Address Maximum Allowed Length 100!'],
+				];
+				DB::commit();
+			}
+		}
+		// dd(1);
+		// if ($service_invoice->customer->gst_number && ($item_count == $item_count_with_tax_code)) {
+		if ($service_invoice->address->gst_number && ($item_count == $item_count_with_tax_code) && $service_invoice->address->pincode) {
 			//----------// ENCRYPTION START //----------//
 			// $service_invoice->irnCreate($service_invoice_id);
 			// RSA ENCRYPTION
@@ -1422,16 +1476,17 @@ class ServiceInvoiceController extends Controller {
 			if ($status != 200) {
 				return [
 					'success' => false,
-					'errors' => "Connection error!",
+					'errors' => ["Conection Error in BDO Login!"],
 				];
-				$errors[] = curl_errno($ch);
+				$errors[] = 'Conection Error in BDO Login!';
+				// DB::commit();
 				// return response()->json([
 				//  'success' => false,
 				//  'error' => 'call to URL $bdo_login_url failed with status $status',
 				//  'errors' => ["response " . $server_output . ", curl_error " . curl_error($ch) . ", curl_errno " . curl_errno($ch)],
 				// ]);
 			}
-
+			// dd(json_encode($errors));
 			$api_log = new ApiLog;
 			$api_log->type_id = $service_invoice->type_id;
 			$api_log->entity_number = $service_invoice->number;
@@ -1441,9 +1496,10 @@ class ServiceInvoiceController extends Controller {
 			$api_log->response_data = $server_output;
 			$api_log->user_id = Auth::user()->id;
 			$api_log->status_id = $status != 200 ? 11272 : 11271;
-			$api_log->errors = curl_errno($ch);
+			$api_log->errors = empty(json_encode($errors)) ? NULL : json_encode($errors);
 			$api_log->created_by_id = Auth::user()->id;
 			$api_log->save();
+			// DB::commit();
 
 			curl_close($ch);
 
@@ -1681,19 +1737,22 @@ class ServiceInvoiceController extends Controller {
 						"Em" => null, //need to clarify
 					),
 					"BuyerDtls" => array(
+						"Gstin" => $service_invoice->address->gst_number ? $service_invoice->address->gst_number : 'N/A', //need to clarify if available ok otherwise ?
 						// "Gstin" => $service_invoice->customer->gst_number ? $service_invoice->customer->gst_number : 'N/A', //need to clarify if available ok otherwise ?
-						"Gstin" => "32ATAPM8948G1ZK", //for TN TESTING
+						// "Gstin" => "32ATAPM8948G1ZK", //for TN TESTING
 						"LglNm" => $service_invoice->customer ? $service_invoice->customer->name : 'N/A',
 						"TrdNm" => $service_invoice->customer ? $service_invoice->customer->name : null,
-						"Pos" => $service_invoice->customer->primaryAddress ? ($service_invoice->customer->primaryAddress->state ? $service_invoice->customer->primaryAddress->state->e_invoice_state_code : 'N/A') : 'N/A',
+						// "Pos" => $service_invoice->customer->primaryAddress ? ($service_invoice->customer->primaryAddress->state ? $service_invoice->customer->primaryAddress->state->e_invoice_state_code : 'N/A') : 'N/A',
+						// "Loc" => $service_invoice->customer->primaryAddress ? ($service_invoice->customer->primaryAddress->state ? $service_invoice->customer->primaryAddress->state->name : 'N/A') : 'N/A',
+						"Pos" => $service_invoice->address ? ($service_invoice->address->state ? $service_invoice->address->state->e_invoice_state_code : 'N/A') : 'N/A',
 						// "Pos" => "27",
-						"Loc" => $service_invoice->customer->primaryAddress ? ($service_invoice->customer->primaryAddress->state ? $service_invoice->customer->primaryAddress->state->name : 'N/A') : 'N/A',
+						"Loc" => $service_invoice->address ? ($service_invoice->address->state ? $service_invoice->address->state->name : 'N/A') : 'N/A',
 
-						"Addr1" => $service_invoice->customer->primaryAddress ? preg_replace('/\r|\n|:|"/', ",", $service_invoice->customer->primaryAddress->address_line1) : 'N/A',
-						"Addr2" => $service_invoice->customer->primaryAddress ? preg_replace('/\r|\n|:|"/', ",", $service_invoice->customer->primaryAddress->address_line2) : null,
-						// "Pin" => $service_invoice->customer->primaryAddress ? $service_invoice->customer->primaryAddress->pincode : null,
-						"Stcd" => $service_invoice->customer->primaryAddress ? ($service_invoice->customer->primaryAddress->state ? $service_invoice->customer->primaryAddress->state->e_invoice_state_code : null) : null,
-						"Pin" => 680001,
+						"Addr1" => $service_invoice->address ? preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->address_line1) : 'N/A',
+						"Addr2" => $service_invoice->address ? preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->address_line2) : null,
+						"Stcd" => $service_invoice->address ? ($service_invoice->address->state ? $service_invoice->address->state->e_invoice_state_code : null) : null,
+						"Pin" => $service_invoice->address ? $service_invoice->address->pincode : null,
+						// "Pin" => 680001,
 						// "Stcd" => "32",
 						"Ph" => $service_invoice->customer->mobile_no ? $service_invoice->customer->mobile_no : null,
 						"Em" => $service_invoice->customer->email ? $service_invoice->customer->email : null,
@@ -1869,10 +1928,11 @@ class ServiceInvoiceController extends Controller {
 			$api_log->response_data = $generate_irn_output;
 			$api_log->user_id = Auth::user()->id;
 			$api_log->status_id = $status != 200 ? 11272 : 11271;
-			$api_log->errors = curl_errno($ch);
+			$api_log->errors = empty($errors) ? NULL : json_encode($errors);
 			$api_log->created_by_id = Auth::user()->id;
 			$api_log->save();
 			// dd($api_log);
+			DB::commit();
 
 			curl_close($ch);
 
@@ -1907,6 +1967,7 @@ class ServiceInvoiceController extends Controller {
 					// dd('Error: ' . $generate_irn_output['Error']);
 				}
 			}
+			DB::commit();
 
 			//AES DECRYPTION AFTER GENERATE IRN
 			$aes_decrypt_url = 'https://www.devglan.com/online-tools/aes-decryption';
@@ -2003,15 +2064,19 @@ class ServiceInvoiceController extends Controller {
 			$service_invoice_save->version = $get_version->Version;
 			$service_invoice_save->irn_request = $json_encoded_data;
 			$service_invoice_save->irn_response = $aes_final_decoded_plain_text;
-			$service_invoice_save->status_id = 4; //APPROVED
+			if (count($errors) > 0) {
+				$service_invoice_save->status_id = 2; //APPROVAL 1 PENDING
+			} else {
+				$service_invoice_save->status_id = 4; //APPROVED
+			}
 
 			if (count($errors) > 0) {
-				$service_invoice->errors = json_encode($errors);
+				$service_invoice->errors = empty($errors) ? NULL : json_encode($errors);
 				$service_invoice->status_id = 6; //E-Invoice Fail
 				$service_invoice->save();
 				// return;
 			}
-
+			$service_invoice->errors = empty($errors) ? NULL : json_encode($errors);
 			$service_invoice_save->save();
 
 			//SEND TO PDF
@@ -2076,6 +2141,7 @@ class ServiceInvoiceController extends Controller {
 			'attachments',
 			// 'customer',
 			'toAccountType',
+			'address',
 			'branch',
 			'branch.primaryAddress',
 			'sbu',
@@ -2561,7 +2627,8 @@ class ServiceInvoiceController extends Controller {
 		$json_encoded_data =
 			json_encode(
 			array(
-				"supplier_gstin" => "09ADDPT0274H009", //FOR TESTING
+				"supplier_gstin" => $service_invoice->outlets ? ($service_invoice->outlets->gst_number ? $service_invoice->outlets->gst_number : 'N/A') : 'N/A', //FOR TESTING
+				// "supplier_gstin" => "09ADDPT0274H009", //FOR TESTING
 				"doc_no" => $service_invoice->number,
 				// "doc_no" => "23AUG2020SN146",
 				"irn_no" => $service_invoice->irn_number,
@@ -2691,6 +2758,182 @@ class ServiceInvoiceController extends Controller {
 			'success' => true,
 			'service_invoice' => $service_invoice_save,
 			'message' => $service_invoice->type . ' Cancened Successfully!',
+		]);
+	}
+
+	public function searchCustomer(Request $r) {
+		// return Customer::searchCustomer($r);
+		// dump(strlen($r->key));
+		$key = $r->key;
+
+		$this->soapWrapper->add('customer', function ($service) {
+			$service
+				->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
+				->trace(true);
+		});
+		$params = ['ACCOUNTNUM' => $r->key];
+		$getResult = $this->soapWrapper->call('customer.GetNewCustMasterDetails_Search', [$params]);
+		$customer_data = $getResult->GetNewCustMasterDetails_SearchResult;
+		if (empty($customer_data)) {
+			return response()->json(['success' => false, 'error' => 'Customer Not Available!.']);
+		}
+
+		// Convert xml string into an object
+		$xml_customer_data = simplexml_load_string($customer_data->any);
+		// dd($xml_customer_data);
+		// Convert into json
+		$customer_encode = json_encode($xml_customer_data);
+
+		// Convert into associative array
+		$customer_data = json_decode($customer_encode, true);
+
+		$api_customer_data = $customer_data['Table'];
+		if (count($api_customer_data) == 0) {
+			return response()->json(['success' => false, 'error' => 'Customer Not Available!.']);
+		}
+		// dd($api_customer_data);
+		$list = [];
+		if ($api_customer_data) {
+			$data = [];
+			if (count($api_customer_data) > 0) {
+				foreach ($api_customer_data as $key => $customer_data) {
+					// $primaryAddress = [];
+					$data['code'] = $customer_data['ACCOUNTNUM'];
+					$data['name'] = $customer_data['NAME'];
+					$data['mobile_no'] = isset($customer_data['LOCATOR']) ? $customer_data['LOCATOR'] : NULL;
+					$data['cust_group'] = isset($customer_data['CUSTGROUP']) ? $customer_data['CUSTGROUP'] : NULL;
+					$data['pan_number'] = isset($customer_data['PANNO']) ? $customer_data['PANNO'] : NULL;
+					// $data['address'] = $customer_data['ADDRESS'];
+					// $data['gst_number'] = isset($customer_data['GST_NUMBER']) ? $customer_data['GST_NUMBER'] : NULL;
+					// $city = City::select('state_id')->where('name', "LIKE", $customer_data['CITY'])->first();
+
+					// $data['primaryAddress']['state_id'] = $city ? $city->state_id : NULL;
+					// dd($data);
+					$list[] = $data;
+				}
+			}
+		}
+
+		return response()->json($list);
+	}
+
+	public function getCustomerAddress(Request $request) {
+		// dd($request->all());
+		$this->soapWrapper->add('address', function ($service) {
+			$service
+				->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
+				->trace(true);
+		});
+		$params = ['ACCOUNTNUM' => $request->data['code']];
+		$getResult = $this->soapWrapper->call('address.GetNewCustomerAddress_Search', [$params]);
+		$customer_data = $getResult->GetNewCustomerAddress_SearchResult;
+		if (empty($customer_data)) {
+			return response()->json(['success' => false, 'error' => 'Address Not Available!.']);
+		}
+
+		// Convert xml string into an object
+		$xml_customer_data = simplexml_load_string($customer_data->any);
+		// dd($xml_customer_data);
+
+		// Convert into json
+		$customer_encode = json_encode($xml_customer_data);
+		// Convert into associative array
+		$customer_data = json_decode($customer_encode, true);
+		// dd($customer_data);
+		// dd($customer_data['Table']);
+
+		$api_customer_data = $customer_data['Table'];
+		// dd($api_customer_data);
+		if (count($api_customer_data) == 0) {
+			return response()->json(['success' => false, 'error' => 'Address Not Available!.']);
+		}
+
+		$customer = Customer::firstOrNew(['code' => $request->data['code']]);
+		$customer->company_id = Auth::user()->company_id;
+		$customer->name = $request->data['name'];
+		$customer->cust_group = $request->data['cust_group'] == 'Not available' ? NULL : $request->data['cust_group'];
+		$customer->gst_number = isset($request->data['gst_number']) ? $request->data['gst_number'] : NULL;
+		$customer->pan_number = $request->data['pan_number'] == 'Not available' ? NULL : $request->data['pan_number'];
+		$customer->mobile_no = $request->data['mobile_no'] == 'Not available' ? NULL : $request->data['mobile_no'];
+		$customer->address = NULL;
+		$customer->city = NULL; //$customer_data['CITY'];
+		$customer->zipcode = NULL; //$customer_data['ZIPCODE'];
+		$customer->created_at = Carbon::now();
+		// $customer->save();
+		// dd($customer->id);
+		// dd($api_customer_data);
+		$list = [];
+		if ($api_customer_data) {
+			$data = [];
+			if (isset($api_customer_data)) {
+				$array_count = array_filter($api_customer_data, 'is_array');
+				if (count($array_count) > 0) {
+					// dd('mu;l');
+					// $i = 0;
+					// dd($api_customer_data);
+					foreach ($api_customer_data as $key => $customer_data) {
+
+						$address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $customer_data['RECID']]); //CUSTOMER
+						// dd($address);
+						$address->company_id = Auth::user()->company_id;
+						$address->entity_id = $customer->id;
+						$address->ax_id = $customer_data['RECID'];
+						$address->gst_number = isset($customer_data['GST_NUMBER']) ? $customer_data['GST_NUMBER'] : NULL;
+						$address->address_of_id = 24;
+						$address->address_type_id = 40;
+						$address->name = 'Primary Address_' . $customer_data['RECID'];
+						$address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
+						$city = City::where('name', $customer_data['CITY'])->first();
+						// if ($city) {
+						$state = State::where('code', $customer_data['STATE'])->first();
+						$address->country_id = $state ? $state->country_id : NULL;
+						$address->state_id = $state ? $state->id : NULL;
+						// }
+						$address->city_id = $city ? $city->id : NULL;
+						$address->pincode = $customer_data['ZIPCODE'] == 'Not available' ? NULL : $customer_data['ZIPCODE'];
+						$address->save();
+						// dd($address);
+						$customer_address[] = $address;
+						// $i++;
+					}
+					// dump($i);
+					// dd($customer_get_data);
+				} else {
+					// dd('sing');
+					// dd($api_customer_data['RECID']);
+					$address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $api_customer_data['RECID']]); //CUSTOMER
+					// dd($address);
+					$address->company_id = Auth::user()->company_id;
+					$address->entity_id = $customer->id;
+					$address->ax_id = $api_customer_data['RECID'];
+					$address->gst_number = isset($api_customer_data['GST_NUMBER']) ? $api_customer_data['GST_NUMBER'] : NULL;
+					$address->address_of_id = 24;
+					$address->address_type_id = 40;
+					$address->name = 'Primary Address_' . $api_customer_data['RECID'];
+					$address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
+					$city = City::where('name', $api_customer_data['CITY'])->first();
+					// if ($city) {
+					$state = State::where('code', $api_customer_data['STATE'])->first();
+					$address->country_id = $state ? $state->country_id : NULL;
+					$address->state_id = $state ? $state->id : NULL;
+					// }
+					$address->city_id = $city ? $city->id : NULL;
+					$address->pincode = $api_customer_data['ZIPCODE'] == 'Not available' ? NULL : $api_customer_data['ZIPCODE'];
+					$address->save();
+					// dd($address);
+					$customer_address[] = $address;
+					// $customer_get_data = Customer::with(['primaryAddresses'])->where('company_id', Auth::user()->company_id)->find($customer->id);
+				}
+			} else {
+				// $customer_get_data = [];
+				$customer_address = [];
+			}
+
+		}
+		return response()->json([
+			'success' => true,
+			'customer_address' => $customer_address,
+			'customer' => $customer,
 		]);
 	}
 }

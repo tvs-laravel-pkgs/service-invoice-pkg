@@ -10,6 +10,8 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 	Route::post('/service-invoice/send-multiple-approval', 'ServiceInvoiceController@sendMultipleApproval')->name('sendMultipleApproval');
 	Route::get('/service-invoice/filter', 'ServiceInvoiceController@getServiceInvoiceFilter')->name('getServiceInvoiceFilter');
 	Route::post('/service-invoice/export', 'ServiceInvoiceController@exportServiceInvoicesToExcel')->name('exportServiceInvoicesToExcel');
+	Route::post('/service-invoice/customer/search', 'ServiceInvoiceController@searchCustomer')->name('searchCustomerServiceInvoice');
+	Route::post('/service-invoice/customer/get-address', 'ServiceInvoiceController@getCustomerAddress')->name('getCustomerAddressServiceInvoice');
 
 	//SERVICE-INVOICE-APPROVAL
 	Route::get('/service-invoices/cn-dn-approvals/get-list', 'ServiceInvoiceApprovalController@getServiceInvoiceApprovalList')->name('getServiceInvoiceApprovalList');
@@ -33,8 +35,8 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 	Route::post('/get-branch-details', 'ServiceInvoiceController@getBranchDetails')->name('getBranchDetails');
 
 	// CUSTOMER
-	Route::post('/service-invoice/customer/search', 'ServiceInvoiceController@searchCustomer')->name('searchCustomer');
-	Route::post('/service-invoice/get-customer-details', 'ServiceInvoiceController@getCustomerDetails')->name('getCustomerDetails');
+	// Route::post('/service-invoice/customer/search', 'ServiceInvoiceController@searchCustomer')->name('searchCustomer');
+	// Route::post('/service-invoice/get-customer-details', 'ServiceInvoiceController@getCustomerDetails')->name('getCustomerDetails');
 
 	// SERVICE ITEM
 	Route::post('/service-invoice/service-item/search', 'ServiceInvoiceController@searchServiceItem')->name('searchServiceItem');
