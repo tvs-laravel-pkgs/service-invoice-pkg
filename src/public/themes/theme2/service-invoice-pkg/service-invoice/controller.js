@@ -538,6 +538,15 @@ app.component('serviceInvoiceForm', {
                 $timeout(function() {
                     $scope.serviceInvoiceItemCalc();
                 }, 1500);
+                $timeout(function() {
+                    self.customer_addresses = response.data.extras.addresses;
+                    // self.customer_address = response.data.service_invoice.address;
+                    // self.customer.state_id = response.data.service_invoice.address.state_id;
+                    // self.customer.gst_number = response.data.service_invoice.address.gst_number;
+                    // console.log(self.customer_address);
+                    $scope.customerSelected();
+                },1300);
+                // $scope.apply();
 
                 //ATTACHMENTS
                 if (self.service_invoice.attachments.length) {
@@ -715,12 +724,14 @@ app.component('serviceInvoiceForm', {
 
         //GET CUSTOMER DETAILS
         $scope.customerSelected = function() {
+            console.log('test');
             $('#pace').css("display", "block");
             $('#pace').addClass('pace-active');
             console.log(self.service_invoice.customer);
             if (self.service_invoice.customer || self.service_invoice.customer != null) {
-                var res = $rootScope.getCustomer(self.service_invoice.customer).then(function(res) {
-                    // console.log(res);
+                // var res = $rootScope.getCustomer(self.service_invoice.customer).then(function(res) {
+                var res = $rootScope.getCustomerAddress(self.service_invoice.customer).then(function(res) {
+                    console.log(res);
                     if (!res.data.success) {
                         $('#pace').css("display", "none");
                         $('#pace').addClass('pace-inactive');
@@ -729,14 +740,46 @@ app.component('serviceInvoiceForm', {
                     }
                     $('#pace').addClass('pace-inactive');
                     $('#pace').css("display", "none");
+                    console.log(res.data);
                     self.customer = res.data.customer;
                     self.service_invoice.customer.id = res.data.customer.id;
+                    if (res.data.customer_address.length > 1) {
+                        self.multiple_address = true;
+                        self.single_address = false;
+                        self.customer_addresses = res.data.customer_address;
+                        console.log(self.customer_address);
+                    } else {
+                        self.multiple_address = false;
+                        self.single_address = true;
+                        self.customer.state_id = res.data.customer_address[0].state_id;
+                        self.customer.gst_number = res.data.customer_address[0].gst_number;
+                        // self.customer = res.data.customer;
+                        // self.service_invoice.customer.id = res.data.customer.id;
+                        self.customer_address = res.data.customer_address[0];
+                        console.log(self.customer + 'single');
+                    }
                 });
             } else {
                 $('#pace').css("display", "none");
                 $('#pace').addClass('pace-inactive');
                 self.customer = {};
+                self.customer_address = {};
+                self.customer_addresses = {};
                 self.service_invoice.service_invoice_items = [];
+            }
+        }
+
+        $scope.selectedAddress = function(address) {
+            // console.log(address);
+            self.service_invoice.service_invoice_items = [];
+            if ($('.address:checked').length > 1) {
+                custom_noty('error', 'Already one address selected!');
+                return;
+            } else {
+                // console.log('2');
+                self.customer.state_id = address.state_id;
+                self.customer.gst_number = address.gst_number;
+                console.log(self.customer);
             }
         }
 
@@ -893,6 +936,8 @@ app.component('serviceInvoiceForm', {
                         branch_id: self.service_invoice.branch.id,
                         customer_id: self.service_invoice.customer.id,
                         to_account_type_id: $to_account_type_id,
+                        state_id: self.customer.state_id,
+                        gst_number: self.customer.gst_number,
                     }
                 ).then(function(response) {
                     if (response.data.success) {
@@ -1007,6 +1052,8 @@ app.component('serviceInvoiceForm', {
                         btn_action: 'edit',
                         branch_id: self.service_invoice.branch.id,
                         customer_id: self.service_invoice.customer.id,
+                        state_id: self.customer.state_id,
+                        gst_number: self.customer.gst_number,
                     }
                 ).then(function(response) {
                     console.log(response);
@@ -1045,6 +1092,7 @@ app.component('serviceInvoiceForm', {
         //ITEM TO INVOICE TOTAL AMOUNT CALC
         $scope.totalAmountCalc = function() {
             console.log(self.service_invoice);
+            console.log(self.customer);
             self.sub_total = 0;
             self.total = 0;
             self.KFC_total = 0;
@@ -1053,6 +1101,7 @@ app.component('serviceInvoiceForm', {
                 self.sub_total = self.qty * self.rate;
                 // self.sub_total = self.rate;
                 console.log(self.sub_total);
+                console.log('in');
                 if (self.service_item_detail.tax_code != null) {
                     if (self.service_item_detail.tax_code.taxes.length > 0) {
                         $(self.service_item_detail.tax_code.taxes).each(function(key, tax) {
@@ -1061,13 +1110,14 @@ app.component('serviceInvoiceForm', {
                         });
                     }
                 }
-                if (self.service_invoice.branch.primary_address.state_id && self.service_invoice.customer.primary_address) {
-                    if (self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.customer.primary_address.state_id == 3) {
-                        if (self.service_invoice.customer.gst_number == null) {
+                if (self.service_invoice.branch.primary_address.state_id && self.customer.state_id) {
+                    console.log('in');
+                    if (self.service_invoice.branch.primary_address.state_id == 3 && self.customer.state_id == 3) {
+                        if (self.customer.gst_number == null) {
                             if (self.service_item_detail.tax_code != null) {
                                 self.KFC_total = self.sub_total / 100;
-                                console.log(self.sub_total);
-                                console.log(self.KFC_total);
+                                // console.log(self.sub_total);
+                                // console.log(self.KFC_total);
                             }
                         }
                     }

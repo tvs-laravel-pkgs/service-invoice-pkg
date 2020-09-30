@@ -223,10 +223,9 @@
                                         </div><!-- Info Wrap -->
                                         <div class="info-wrap">
                                             <p class="info-content"><b>{{$ctrl.customer.mobile_no}}</b></p>
-                                            <p class="info-content">{{$ctrl.customer.address}}</p>
+                                            <p class="info-content">{{$ctrl.service_invoice.address.address_line1}}</p>
                                             <div class="info-space"></div>
-                                            <p class="info-content">GST # {{$ctrl.customer.gst_number ? $ctrl.customer.gst_number : 'NA'}}
-                                            {{$ctrl.customer.gstin ? $ctrl.customer.gstin : 'NA'}}</p>
+                                            <p class="info-content">GST # {{$ctrl.service_invoice.address.gst_number ? $ctrl.service_invoice.address.gst_number : 'NA'}}</p>
                                             <div class="info-space"></div>
                                             <div class="table-form-list-wrap" ng-if="$ctrl.service_invoice.status_id == 5">
                                                 <label class="table-form-list-label">Remarks</label>
