@@ -25,7 +25,6 @@ use App\Employee;
 use App\Entity;
 use App\FinancialYear;
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\WpoSoapController;
 use App\Outlet;
 use App\Sbu;
 use App\State;
@@ -49,10 +48,9 @@ use Yajra\Datatables\Datatables;
 
 class ServiceInvoiceController extends Controller {
 
-	public function __construct(SoapWrapper $soapWrapper, WpoSoapController $getSoap = null) {
+	public function __construct(SoapWrapper $soapWrapper) {
 		$this->middleware('auth');
 		$this->soapWrapper = $soapWrapper;
-		$this->getSoap = $getSoap;
 	}
 
 	public function getServiceInvoiceFilter() {
