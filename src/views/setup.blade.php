@@ -32,6 +32,9 @@
     var ref_attachements_url = "{{URL::to('/storage/app/public/service-invoice/attachments')}}";
     var exportServiceInvoicesToExcelUrl = "{{route('exportServiceInvoicesToExcel')}}";
     var get_cn_dn_approval_filter_url = "{{route('getApprovalFilter')}}";
+
+    var get_gstin_details = "{{url('service-invoice-pkg/service-invoice/customer/get-gst/')}}";
+
 </script>
 
 <script type="text/javascript">

@@ -1218,14 +1218,14 @@ class ServiceInvoiceController extends Controller {
 			// dd($city);
 			// if ($city) {
 			$state = State::find($service_invoice->address ? $service_invoice->address->state_id : NULL);
-			$service_invoice->address->state_code = $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-';
+			$service_invoice->address->state_code = $state ? $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-' : '-';
 			// } else {
 			// $service_invoice->customer->state_code = '-';
 			// }
 		} else {
 			$state = State::find($service_invoice->address ? $service_invoice->address->state_id : NULL);
 			// $state = State::find($service_invoice->customer->primaryAddress ? $service_invoice->customer->primaryAddress->state_id : NULL);
-			$service_invoice->customer->state_code = $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-';
+			$service_invoice->customer->state_code = $state ? $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-' : '-';
 			// dd($service_invoice->customer_id);
 			// $address = Address::with(['city', 'state', 'country'])->where('address_of_id', 21)->where('entity_id', $service_invoice->customer_id)->first();
 			$address = Address::with(['city', 'state', 'country'])->find($service_invoice->address_id);
@@ -1260,6 +1260,7 @@ class ServiceInvoiceController extends Controller {
 			$item_count_with_tax_code = 0;
 			$gst_total = 0;
 			foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
+				// dd($serviceInvoiceItem->serviceItem->code);
 				//FIELD GROUPS AND FIELDS INTEGRATION
 				if (count($serviceInvoiceItem->eavVarchars) > 0) {
 					$eav_varchar_field_group_ids = $serviceInvoiceItem->eavVarchars()->pluck('field_group_id')->toArray();
@@ -1405,20 +1406,23 @@ class ServiceInvoiceController extends Controller {
 			$service_invoice->round_off_amount = 0;
 		}
 		// dd($service_invoice->round_off_amount);
-		if ($service_invoice->address) {
-			if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->address_line1)) >= 100) {
-				$errors[] = 'Customer Address Maximum Allowed Length 100!';
-				return [
-					'success' => false,
-					'errors' => ['Customer Address Maximum Allowed Length 100!'],
-				];
-				// DB::commit();
-			}
-		}
+
 		// dd(1);
+		// dd($service_invoice->customer->name);
 		// if ($service_invoice->customer->gst_number && ($item_count == $item_count_with_tax_code)) {
 		if ($service_invoice->address->gst_number && ($item_count == $item_count_with_tax_code) && $service_invoice->address->pincode) {
 			//----------// ENCRYPTION START //----------//
+
+			if ($service_invoice->address) {
+				if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->address_line1)) >= 100) {
+					$errors[] = 'Customer Address Maximum Allowed Length 100!';
+					return [
+						'success' => false,
+						'errors' => ['Customer Address Maximum Allowed Length 100!'],
+					];
+					// DB::commit();
+				}
+			}
 			// $service_invoice->irnCreate($service_invoice_id);
 			// RSA ENCRYPTION
 			$rsa = new Crypt_RSA;
@@ -1427,12 +1431,14 @@ class ServiceInvoiceController extends Controller {
 
 			// $clientid = "prakashr@featsolutions.in"; //PROVIDE FROM BDO COMPANY
 			$clientid = "amutha@sundarammotors.com"; //PROVIDE FROM BDO COMPANY
+			// $clientid = "61b27a26bd86cbb93c5c11be0c2856"; //LIVE
 			// dump('clientid ' . $clientid);
 
 			$rsa->loadKey($public_key);
 			$rsa->setEncryptionMode(2);
 			// $data = 'BBAkBDB0YzZiYThkYTg4ZDZBBDJjZBUyBGFkBBB0BWB='; // CLIENT SECRET KEY
 			$data = 'TQAkSDQ0YzZiYTTkYTg4ZDZSSDJjZSUySGFkSSQ0SWQ='; // CLIENT SECRET KEY
+			// $data = '7dd55886594bccadb03c48eb3f448e'; // LIVE
 			$ClientSecret = $rsa->encrypt($data);
 			$clientsecretencrypted = base64_encode($ClientSecret);
 			// dump('ClientSecret ' . $clientsecretencrypted);
@@ -1445,6 +1451,7 @@ class ServiceInvoiceController extends Controller {
 			// dump('appsecretkey ' . $appsecretkey);
 
 			$bdo_login_url = 'https://sandboxeinvoiceapi.bdo.in/bdoauth/bdoauthenticate';
+			// $bdo_login_url = 'https://einvoiceapi.bdo.in/bdoauth/bdoauthenticate';
 
 			$ch = curl_init($bdo_login_url);
 			// Setup request to send json via POST`
@@ -1484,6 +1491,13 @@ class ServiceInvoiceController extends Controller {
 				//  'errors' => ["response " . $server_output . ", curl_error " . curl_error($ch) . ", curl_errno " . curl_errno($ch)],
 				// ]);
 			}
+
+			curl_close($ch);
+
+			$bdo_login_check = json_decode($server_output);
+
+			DB::beginTransaction();
+
 			// dd(json_encode($errors));
 			$api_log = new ApiLog;
 			$api_log->type_id = $service_invoice->type_id;
@@ -1493,19 +1507,24 @@ class ServiceInvoiceController extends Controller {
 			$api_log->src_data = $params;
 			$api_log->response_data = $server_output;
 			$api_log->user_id = Auth::user()->id;
-			$api_log->status_id = $status != 200 ? 11272 : 11271;
-			$api_log->errors = empty(json_encode($errors)) ? NULL : json_encode($errors);
+			$api_log->status_id = $bdo_login_check->status == 0 ? 11272 : 11271;
+			$api_log->errors = !empty($errors) ? NULL : json_encode($errors);
 			$api_log->created_by_id = Auth::user()->id;
 			$api_log->save();
-			// DB::commit();
 
-			curl_close($ch);
+			DB::commit();
 
-			$server_output = json_decode($server_output);
-			$expiry = $server_output->expiry;
-			$bdo_authtoken = $server_output->bdo_authtoken;
-			$status = $server_output->status;
-			$bdo_sek = $server_output->bdo_sek;
+			if ($bdo_login_check->status == 0) {
+				return [
+					'success' => false,
+					'errors' => [$bdo_login_check->ErrorMsg],
+				];
+			}
+
+			$expiry = $bdo_login_check->expiry;
+			$bdo_authtoken = $bdo_login_check->bdo_authtoken;
+			$status = $bdo_login_check->status;
+			$bdo_sek = $bdo_login_check->bdo_sek;
 
 			$aes_decrypt_url = 'https://www.devglan.com/online-tools/aes-decryption';
 
@@ -1538,7 +1557,7 @@ class ServiceInvoiceController extends Controller {
 			if ($status != 200) {
 				return [
 					'success' => false,
-					'errors' => curl_errno($ch),
+					'errors' => ["Somthing Went Wrong!"],
 				];
 				$errors[] = curl_errno($ch);
 				// return response()->json([
@@ -1716,7 +1735,7 @@ class ServiceInvoiceController extends Controller {
 					'DocDtls' => array(
 						"Typ" => $service_invoice->type,
 						"No" => $service_invoice->number,
-						// "No" => '23AUG2020SN146',
+						// "No" => '23AUG2020SN154',
 						"Dt" => date('d-m-Y', strtotime($service_invoice->document_date)),
 					),
 					'SellerDtls' => array(
@@ -1879,9 +1898,9 @@ class ServiceInvoiceController extends Controller {
 			if ($status != 200) {
 				return [
 					'success' => false,
-					'errors' => 'Connection error!',
+					'errors' => ['Connection error!'],
 				];
-				$errors[] = curl_errno($ch);
+				$errors[] = 'Connection error!';
 			}
 			// dd(storage_path('app/public/service-invoice/IRN_images/'));
 
@@ -1889,9 +1908,11 @@ class ServiceInvoiceController extends Controller {
 
 			$aes_output = json_decode($server_output);
 			// dd($aes_output->output);
+			// dd($errors);
 
 			//ENCRYPTED GIVEN DATA TO DBO
 			$bdo_generate_irn_url = 'https://sandboxeinvoiceapi.bdo.in/bdoapi/public/generateIRN';
+			// $bdo_generate_irn_url = 'https://einvoiceapi.bdo.in/bdoapi/public/generateIRN'; //LIVE
 
 			$ch = curl_init($bdo_generate_irn_url);
 			// Setup request to send json via POST`
@@ -1914,41 +1935,47 @@ class ServiceInvoiceController extends Controller {
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
 			// Execute the POST request
-			$generate_irn_output = curl_exec($ch);
+			$generate_irn_output_data = curl_exec($ch);
 			// dd($generate_irn_output);
-
-			$api_log = new ApiLog;
-			$api_log->type_id = $service_invoice->type_id;
-			$api_log->entity_number = $service_invoice->number;
-			$api_log->entity_id = $service_invoice->id;
-			$api_log->url = $bdo_generate_irn_url;
-			$api_log->src_data = $params;
-			$api_log->response_data = $generate_irn_output;
-			$api_log->user_id = Auth::user()->id;
-			$api_log->status_id = $status != 200 ? 11272 : 11271;
-			$api_log->errors = empty($errors) ? NULL : json_encode($errors);
-			$api_log->created_by_id = Auth::user()->id;
-			$api_log->save();
-			// dd($api_log);
-			// DB::commit();
 
 			curl_close($ch);
 
-			$generate_irn_output = json_decode($generate_irn_output, true);
+			$generate_irn_output = json_decode($generate_irn_output_data, true);
 			// dump($generate_irn_output);
 			// dd();
 
 			// If header status is not Created or not OK, return error message
+
+			// dd(json_encode($errors));
+
 			if (is_array($generate_irn_output['Error'])) {
 				$bdo_errors = [];
 				$rearrange_key = 0;
 				foreach ($generate_irn_output['Error'] as $key => $error) {
 					// dump($rearrange_key, $error);
 					$bdo_errors[$rearrange_key] = $error;
-					$errors[] = $error;
+					$errors[$rearrange_key] = $error;
 					$rearrange_key++;
 				}
 				// dump($bdo_errors);
+				DB::beginTransaction();
+
+				$api_log = new ApiLog;
+				$api_log->type_id = $service_invoice->type_id;
+				$api_log->entity_number = $service_invoice->number;
+				$api_log->entity_id = $service_invoice->id;
+				$api_log->url = $bdo_generate_irn_url;
+				$api_log->src_data = $params;
+				$api_log->response_data = $generate_irn_output_data;
+				$api_log->user_id = Auth::user()->id;
+				$api_log->status_id = !empty($errors) ? 11272 : 11271; //FAILED //SUCCESS
+				$api_log->errors = empty($errors) ? NULL : json_encode($errors);
+				$api_log->created_by_id = Auth::user()->id;
+				$api_log->save();
+				// dd($api_log);
+
+				DB::commit();
+
 				return [
 					'success' => false,
 					'errors' => $bdo_errors,
@@ -1958,6 +1985,24 @@ class ServiceInvoiceController extends Controller {
 			} elseif (!is_array($generate_irn_output['Error'])) {
 				if ($generate_irn_output['Status'] != 1) {
 					$errors[] = $generate_irn_output['Error'];
+
+					DB::beginTransaction();
+
+					$api_log = new ApiLog;
+					$api_log->type_id = $service_invoice->type_id;
+					$api_log->entity_number = $service_invoice->number;
+					$api_log->entity_id = $service_invoice->id;
+					$api_log->url = $bdo_generate_irn_url;
+					$api_log->src_data = $params;
+					$api_log->response_data = $generate_irn_output_data;
+					$api_log->user_id = Auth::user()->id;
+					$api_log->status_id = !empty($errors) ? 11272 : 11271; //FAILED //SUCCESS
+					$api_log->errors = empty($errors) ? NULL : json_encode($errors);
+					$api_log->created_by_id = Auth::user()->id;
+					$api_log->save();
+					// dd($api_log);
+					DB::commit();
+
 					return [
 						'success' => false,
 						'errors' => $generate_irn_output['Error'],
@@ -1965,7 +2010,6 @@ class ServiceInvoiceController extends Controller {
 					// dd('Error: ' . $generate_irn_output['Error']);
 				}
 			}
-			// DB::commit();
 
 			//AES DECRYPTION AFTER GENERATE IRN
 			$aes_decrypt_url = 'https://www.devglan.com/online-tools/aes-decryption';
@@ -1999,10 +2043,10 @@ class ServiceInvoiceController extends Controller {
 			// dump('final status check: ' . $status);
 			// If header status is not Created or not OK, return error message
 			if ($status != 200) {
-				$errors[] = curl_errno($ch);
+				$errors[] = 'Connection error!';
 				return [
 					'success' => false,
-					'errors' => curl_errno($ch),
+					'errors' => ['Connection error!'],
 				];
 				// return response()->json([
 				//  'success' => false,
@@ -2062,10 +2106,13 @@ class ServiceInvoiceController extends Controller {
 			$service_invoice_save->version = $get_version->Version;
 			$service_invoice_save->irn_request = $json_encoded_data;
 			$service_invoice_save->irn_response = $aes_final_decoded_plain_text;
-			if (count($errors) > 0) {
+
+			if (!$r['success']) {
 				$service_invoice_save->status_id = 2; //APPROVAL 1 PENDING
-			} else {
-				$service_invoice_save->status_id = 4; //APPROVED
+				return [
+					'success' => false,
+					'errors' => ['Somthing Went Wrong!'],
+				];
 			}
 
 			if (count($errors) > 0) {
@@ -2498,12 +2545,18 @@ class ServiceInvoiceController extends Controller {
 
 		$public_key = 'MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAxqHazGS4OkY/bDp0oklL+Ser7EpTpxyeMop8kfBlhzc8dzWryuAECwu8i/avzL4f5XG/DdSgMz7EdZCMrcxtmGJlMo2tUqjVlIsUslMG6Cmn46w0u+pSiM9McqIvJgnntKDHg90EIWg1BNnZkJy1NcDrB4O4ea66Y6WGNdb0DxciaYRlToohv8q72YLEII/z7W/7EyDYEaoSlgYs4BUP69LF7SANDZ8ZuTpQQKGF4TJKNhJ+ocmJ8ahb2HTwH3Ol0THF+0gJmaigs8wcpWFOE2K+KxWfyX6bPBpjTzC+wQChCnGQREhaKdzawE/aRVEVnvWc43dhm0janHp29mAAVv+ngYP9tKeFMjVqbr8YuoT2InHWFKhpPN8wsk30YxyDvWkN3mUgj3Q/IUhiDh6fU8GBZ+iIoxiUfrKvC/XzXVsCE2JlGVceuZR8OzwGrxk+dvMnVHyauN1YWnJuUTYTrCw3rgpNOyTWWmlw2z5dDMpoHlY0WmTVh0CrMeQdP33D3LGsa+7JYRyoRBhUTHepxLwk8UiLbu6bGO1sQwstLTTmk+Z9ZSk9EUK03Bkgv0hOmSPKC4MLD5rOM/oaP0LLzZ49jm9yXIrgbEcn7rv82hk8ghqTfChmQV/q+94qijf+rM2XJ7QX6XBES0UvnWnV6bVjSoLuBi9TF1ttLpiT3fkCAwEAAQ=='; //PROVIDE FROM BDO COMPANY
 
-		$clientid = "prakashr@featsolutions.in"; //PROVIDE FROM BDO COMPANY
+		// $clientid = "prakashr@featsolutions.in"; //PROVIDE FROM BDO COMPANY
+		$clientid = "amutha@sundarammotors.com"; //PROVIDE FROM BDO COMPANY
+		// $clientid = "61b27a26bd86cbb93c5c11be0c2856"; //LIVE
+
 		// dump('clientid ' . $clientid);
 
 		$rsa->loadKey($public_key);
 		$rsa->setEncryptionMode(2);
-		$data = 'BBAkBDB0YzZiYThkYTg4ZDZBBDJjZBUyBGFkBBB0BWB='; // CLIENT SECRET KEY
+		// $data = 'BBAkBDB0YzZiYThkYTg4ZDZBBDJjZBUyBGFkBBB0BWB='; // CLIENT SECRET KEY
+		$data = 'TQAkSDQ0YzZiYTTkYTg4ZDZSSDJjZSUySGFkSSQ0SWQ='; // CLIENT SECRET KEY
+		// $data = '7dd55886594bccadb03c48eb3f448e'; // LIVE
+
 		$ClientSecret = $rsa->encrypt($data);
 		$clientsecretencrypted = base64_encode($ClientSecret);
 		// dump('ClientSecret ' . $clientsecretencrypted);
@@ -2516,6 +2569,7 @@ class ServiceInvoiceController extends Controller {
 		// dump('appsecretkey ' . $appsecretkey);
 
 		$bdo_login_url = 'https://sandboxeinvoiceapi.bdo.in/bdoauth/bdoauthenticate';
+		// $bdo_login_url = 'https://einvoiceapi.bdo.in/bdoauth/bdoauthenticate';  //LIVE
 
 		$ch = curl_init($bdo_login_url);
 		// Setup request to send json via POST`
@@ -2535,7 +2589,7 @@ class ServiceInvoiceController extends Controller {
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
 		// Execute the POST request
-		$server_output = curl_exec($ch);
+		$server_output_data = curl_exec($ch);
 
 		// Get the POST request header status
 		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -2553,6 +2607,9 @@ class ServiceInvoiceController extends Controller {
 			//  'errors' => ["response " . $server_output . ", curl_error " . curl_error($ch) . ", curl_errno " . curl_errno($ch)],
 			// ]);
 		}
+		$server_output = json_decode($server_output_data);
+
+		DB::beginTransaction();
 
 		$api_log = new ApiLog;
 		$api_log->type_id = $service_invoice->type_id;
@@ -2560,16 +2617,21 @@ class ServiceInvoiceController extends Controller {
 		$api_log->entity_id = $service_invoice->id;
 		$api_log->url = $bdo_login_url;
 		$api_log->src_data = $params;
-		$api_log->response_data = $server_output;
+		$api_log->response_data = $server_output_data;
 		$api_log->user_id = Auth::user()->id;
-		$api_log->status_id = $status != 200 ? 11272 : 11271;
+		$api_log->status_id = $server_output->status == 0 ? 11272 : 11271;
 		$api_log->errors = curl_errno($ch);
 		$api_log->created_by_id = Auth::user()->id;
 		$api_log->save();
 
+		DB::commit();
+
+		if ($server_output->status == 0) {
+			return ['success' => false, 'errors' => $server_output->ErrorMsg];
+		}
+
 		curl_close($ch);
 
-		$server_output = json_decode($server_output);
 		$expiry = $server_output->expiry;
 		$bdo_authtoken = $server_output->bdo_authtoken;
 		$status = $server_output->status;
@@ -2684,6 +2746,7 @@ class ServiceInvoiceController extends Controller {
 		// dd($aes_output);
 
 		$bdo_cancel_irn_url = 'https://sandboxeinvoiceapi.bdo.in/bdoapi/public/cancelIRN';
+		// $bdo_cancel_irn_url = 'https://einvoiceapi.bdo.in/bdoapi/public/cancelIRN';  //LIVE
 
 		$ch = curl_init($bdo_cancel_irn_url);
 		// Setup request to send json via POST`
@@ -2706,8 +2769,14 @@ class ServiceInvoiceController extends Controller {
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
 		// Execute the POST request
-		$cancel_irn_output = curl_exec($ch);
+		$cancel_irn_output_data = curl_exec($ch);
 		// dd($cancel_irn_output);
+
+		$cancel_irn_output_encode = json_decode($cancel_irn_output_data, true);
+		// dd($cancel_irn_output_encode['irnStatus']);
+		// If header status is not Created or not OK, return error message
+
+		DB::beginTransaction();
 
 		$api_log = new ApiLog;
 		$api_log->type_id = $service_invoice->type_id;
@@ -2715,31 +2784,29 @@ class ServiceInvoiceController extends Controller {
 		$api_log->entity_id = $service_invoice->id;
 		$api_log->url = $bdo_cancel_irn_url;
 		$api_log->src_data = $params;
-		$api_log->response_data = $cancel_irn_output;
+		$api_log->response_data = $cancel_irn_output_data;
 		$api_log->user_id = Auth::user()->id;
-		$api_log->status_id = $status != 200 ? 11272 : 11271;
-		$api_log->errors = curl_errno($ch);
+		$api_log->status_id = $cancel_irn_output_encode['irnStatus'] != 1 ? 11272 : 11271;
+		$api_log->errors = $cancel_irn_output_encode['irnStatus'] != 1 ? $cancel_irn_output_encode['ErrorMsg'] : NULL;
 		$api_log->created_by_id = Auth::user()->id;
 		$api_log->save();
+		// dump($aes_final_decoded_plain_text);
+		DB::commit();
 
-		curl_close($ch);
-
-		$cancel_irn_output_encode = json_decode($cancel_irn_output, true);
-		// dd($cancel_irn_output_encode['irnStatus']);
-		// If header status is not Created or not OK, return error message
 		if ($cancel_irn_output_encode['irnStatus'] != 1) {
 			return response()->json([
 				'success' => false,
 				'errors' => [$cancel_irn_output_encode['ErrorMsg']],
 			]);
 		}
-		// dump($aes_final_decoded_plain_text);
+
+		curl_close($ch);
 
 		$service_invoice_save = ServiceInvoice::find($request->id);
 		$service_invoice_save->cancel_irn_number = $cancel_irn_output_encode['Irn'];
 		$service_invoice_save->cancel_irn_number = $cancel_irn_output_encode['CancelDate'];
 		$service_invoice_save->cancel_irn_request = $json_encoded_data;
-		$service_invoice_save->cancel_irn_response = $cancel_irn_output;
+		$service_invoice_save->cancel_irn_response = $cancel_irn_output_data;
 		$service_invoice_save->status_id = 7; //CANCELED
 
 		$service_invoice_save->save();
@@ -2761,7 +2828,7 @@ class ServiceInvoiceController extends Controller {
 
 	public function searchCustomer(Request $r) {
 		// return Customer::searchCustomer($r);
-		// dump(strlen($r->key));
+		// dd(strlen($r->key));
 		$key = $r->key;
 
 		$this->soapWrapper->add('customer', function ($service) {
@@ -2791,24 +2858,28 @@ class ServiceInvoiceController extends Controller {
 		}
 		// dd($api_customer_data);
 		$list = [];
-		if ($api_customer_data) {
+		if (isset($api_customer_data)) {
 			$data = [];
-			if (count($api_customer_data) > 0) {
+			$array_count = array_filter($api_customer_data, 'is_array');
+			if (count($array_count) > 0) {
+				// if (count($api_customer_data) > 0) {
 				foreach ($api_customer_data as $key => $customer_data) {
-					// $primaryAddress = [];
 					$data['code'] = $customer_data['ACCOUNTNUM'];
 					$data['name'] = $customer_data['NAME'];
-					$data['mobile_no'] = isset($customer_data['LOCATOR']) ? $customer_data['LOCATOR'] : NULL;
-					$data['cust_group'] = isset($customer_data['CUSTGROUP']) ? $customer_data['CUSTGROUP'] : NULL;
-					$data['pan_number'] = isset($customer_data['PANNO']) ? $customer_data['PANNO'] : NULL;
-					// $data['address'] = $customer_data['ADDRESS'];
-					// $data['gst_number'] = isset($customer_data['GST_NUMBER']) ? $customer_data['GST_NUMBER'] : NULL;
-					// $city = City::select('state_id')->where('name', "LIKE", $customer_data['CITY'])->first();
+					$data['mobile_no'] = isset($customer_data['LOCATOR']) && $customer_data['LOCATOR'] != 'Not available' ? $customer_data['LOCATOR'] : NULL;
+					$data['cust_group'] = isset($customer_data['CUSTGROUP']) && $customer_data['CUSTGROUP'] != 'Not available' ? $customer_data['CUSTGROUP'] : NULL;
+					$data['pan_number'] = isset($customer_data['PANNO']) && $customer_data['PANNO'] != 'Not available' ? $customer_data['PANNO'] : NULL;
 
-					// $data['primaryAddress']['state_id'] = $city ? $city->state_id : NULL;
-					// dd($data);
 					$list[] = $data;
 				}
+			} else {
+				$data['code'] = $api_customer_data['ACCOUNTNUM'];
+				$data['name'] = $api_customer_data['NAME'];
+				$data['mobile_no'] = isset($api_customer_data['LOCATOR']) && $api_customer_data['LOCATOR'] != 'Not available' ? $api_customer_data['LOCATOR'] : NULL;
+				$data['cust_group'] = isset($api_customer_data['CUSTGROUP']) && $api_customer_data['CUSTGROUP'] != 'Not available' ? $api_customer_data['CUSTGROUP'] : NULL;
+				$data['pan_number'] = isset($api_customer_data['PANNO']) && $api_customer_data['PANNO'] != 'Not available' ? $api_customer_data['PANNO'] : NULL;
+
+				$list[] = $data;
 			}
 		}
 
@@ -2838,7 +2909,6 @@ class ServiceInvoiceController extends Controller {
 		// Convert into associative array
 		$customer_data = json_decode($customer_encode, true);
 		// dd($customer_data);
-		// dd($customer_data['Table']);
 
 		$api_customer_data = $customer_data['Table'];
 		// dd($api_customer_data);
@@ -2849,17 +2919,16 @@ class ServiceInvoiceController extends Controller {
 		$customer = Customer::firstOrNew(['code' => $request->data['code']]);
 		$customer->company_id = Auth::user()->company_id;
 		$customer->name = $request->data['name'];
-		$customer->cust_group = $request->data['cust_group'] == 'Not available' ? NULL : $request->data['cust_group'];
-		$customer->gst_number = isset($request->data['gst_number']) ? $request->data['gst_number'] : NULL;
-		$customer->pan_number = $request->data['pan_number'] == 'Not available' ? NULL : $request->data['pan_number'];
-		$customer->mobile_no = $request->data['mobile_no'] == 'Not available' ? NULL : $request->data['mobile_no'];
+		$customer->cust_group = empty($request->data['cust_group']) ? NULL : $request->data['cust_group'];
+		$customer->gst_number = empty($request->data['gst_number']) ? NULL : $request->data['gst_number'];
+		$customer->pan_number = empty($request->data['pan_number']) ? NULL : $request->data['pan_number'];
+		$customer->mobile_no = empty($request->data['mobile_no']) ? NULL : $request->data['mobile_no'];
 		$customer->address = NULL;
 		$customer->city = NULL; //$customer_data['CITY'];
 		$customer->zipcode = NULL; //$customer_data['ZIPCODE'];
 		$customer->created_at = Carbon::now();
-		// $customer->save();
-		// dd($customer->id);
-		// dd($api_customer_data);
+		$customer->save();
+
 		$list = [];
 		if ($api_customer_data) {
 			$data = [];
@@ -2867,8 +2936,6 @@ class ServiceInvoiceController extends Controller {
 				$array_count = array_filter($api_customer_data, 'is_array');
 				if (count($array_count) > 0) {
 					// dd('mu;l');
-					// $i = 0;
-					// dd($api_customer_data);
 					foreach ($api_customer_data as $key => $customer_data) {
 
 						$address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $customer_data['RECID']]); //CUSTOMER
@@ -2882,23 +2949,16 @@ class ServiceInvoiceController extends Controller {
 						$address->name = 'Primary Address_' . $customer_data['RECID'];
 						$address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
 						$city = City::where('name', $customer_data['CITY'])->first();
-						// if ($city) {
 						$state = State::where('code', $customer_data['STATE'])->first();
 						$address->country_id = $state ? $state->country_id : NULL;
 						$address->state_id = $state ? $state->id : NULL;
-						// }
 						$address->city_id = $city ? $city->id : NULL;
 						$address->pincode = $customer_data['ZIPCODE'] == 'Not available' ? NULL : $customer_data['ZIPCODE'];
 						$address->save();
-						// dd($address);
 						$customer_address[] = $address;
-						// $i++;
 					}
-					// dump($i);
-					// dd($customer_get_data);
 				} else {
 					// dd('sing');
-					// dd($api_customer_data['RECID']);
 					$address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $api_customer_data['RECID']]); //CUSTOMER
 					// dd($address);
 					$address->company_id = Auth::user()->company_id;
@@ -2920,10 +2980,8 @@ class ServiceInvoiceController extends Controller {
 					$address->save();
 					// dd($address);
 					$customer_address[] = $address;
-					// $customer_get_data = Customer::with(['primaryAddresses'])->where('company_id', Auth::user()->company_id)->find($customer->id);
 				}
 			} else {
-				// $customer_get_data = [];
 				$customer_address = [];
 			}
 
@@ -2933,5 +2991,9 @@ class ServiceInvoiceController extends Controller {
 			'customer_address' => $customer_address,
 			'customer' => $customer,
 		]);
+	}
+
+	public function getGstDetails($gstin) {
+		return Customer::getGstDetail($gstin);
 	}
 }
