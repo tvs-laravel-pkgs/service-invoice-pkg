@@ -1407,8 +1407,6 @@ class ServiceInvoiceController extends Controller {
 		}
 		// dd($service_invoice->round_off_amount);
 
-		// dd(1);
-		// dd($service_invoice->customer->name);
 		// if ($service_invoice->customer->gst_number && ($item_count == $item_count_with_tax_code)) {
 		if ($service_invoice->address->gst_number && ($item_count == $item_count_with_tax_code) && $service_invoice->address->pincode) {
 			//----------// ENCRYPTION START //----------//
@@ -1947,6 +1945,17 @@ class ServiceInvoiceController extends Controller {
 			// If header status is not Created or not OK, return error message
 
 			// dd(json_encode($errors));
+			DB::beginTransaction();
+
+			$api_log = new ApiLog;
+			$api_log->type_id = $service_invoice->type_id;
+			$api_log->entity_number = $service_invoice->number;
+			$api_log->entity_id = $service_invoice->id;
+			$api_log->url = $bdo_generate_irn_url;
+			$api_log->src_data = $params;
+			$api_log->response_data = $generate_irn_output_data;
+			$api_log->user_id = Auth::user()->id;
+			$api_log->created_by_id = Auth::user()->id;
 
 			if (is_array($generate_irn_output['Error'])) {
 				$bdo_errors = [];
@@ -1958,21 +1967,10 @@ class ServiceInvoiceController extends Controller {
 					$rearrange_key++;
 				}
 				// dump($bdo_errors);
-				DB::beginTransaction();
 
-				$api_log = new ApiLog;
-				$api_log->type_id = $service_invoice->type_id;
-				$api_log->entity_number = $service_invoice->number;
-				$api_log->entity_id = $service_invoice->id;
-				$api_log->url = $bdo_generate_irn_url;
-				$api_log->src_data = $params;
-				$api_log->response_data = $generate_irn_output_data;
-				$api_log->user_id = Auth::user()->id;
 				$api_log->status_id = !empty($errors) ? 11272 : 11271; //FAILED //SUCCESS
 				$api_log->errors = empty($errors) ? NULL : json_encode($errors);
-				$api_log->created_by_id = Auth::user()->id;
 				$api_log->save();
-				// dd($api_log);
 
 				DB::commit();
 
@@ -1986,19 +1984,8 @@ class ServiceInvoiceController extends Controller {
 				if ($generate_irn_output['Status'] != 1) {
 					$errors[] = $generate_irn_output['Error'];
 
-					DB::beginTransaction();
-
-					$api_log = new ApiLog;
-					$api_log->type_id = $service_invoice->type_id;
-					$api_log->entity_number = $service_invoice->number;
-					$api_log->entity_id = $service_invoice->id;
-					$api_log->url = $bdo_generate_irn_url;
-					$api_log->src_data = $params;
-					$api_log->response_data = $generate_irn_output_data;
-					$api_log->user_id = Auth::user()->id;
 					$api_log->status_id = !empty($errors) ? 11272 : 11271; //FAILED //SUCCESS
 					$api_log->errors = empty($errors) ? NULL : json_encode($errors);
-					$api_log->created_by_id = Auth::user()->id;
 					$api_log->save();
 					// dd($api_log);
 					DB::commit();
@@ -2010,6 +1997,12 @@ class ServiceInvoiceController extends Controller {
 					// dd('Error: ' . $generate_irn_output['Error']);
 				}
 			}
+
+			$api_log->status_id = !empty($errors) ? 11272 : 11271; //FAILED //SUCCESS
+			$api_log->errors = empty($errors) ? NULL : json_encode($errors);
+			$api_log->save();
+
+			DB::commit();
 
 			//AES DECRYPTION AFTER GENERATE IRN
 			$aes_decrypt_url = 'https://www.devglan.com/online-tools/aes-decryption';
@@ -2365,16 +2358,34 @@ class ServiceInvoiceController extends Controller {
 	}
 
 	public function saveApprovalStatus(Request $request) {
-
+		// dd($request->all());
 		DB::beginTransaction();
 		try {
-			$send_approval = ServiceInvoice::find($request->id);
-			// dd($request->send_to_approval);
-			$send_approval->status_id = 2; //$request->send_to_approval;
-			$send_approval->updated_by_id = Auth()->user()->id;
-			$send_approval->updated_at = date("Y-m-d H:i:s");
-			$message = 'Approval status updated successfully';
-			$send_approval->save();
+			$send_approval = ServiceInvoice::with(['toAccountType', 'address'])->find($request->id);
+			$send_approval->customer;
+			if ($send_approval->address) {
+				$customer_trande_name_check = Customer::getGstDetail($send_approval->address ? $send_approval->address->gst_number : NULL);
+				if ($customer_trande_name_check->original['success'] == false) {
+					return response()->json(['success' => false, 'errors' => [$customer_trande_name_check->original['error']]]);
+				} else {
+					// dump(trim(strtolower($customer_trande_name_check->original['trade_name'])), trim(strtolower($send_approval->customer->name)));
+					if (trim(strtolower($customer_trande_name_check->original['trade_name'])) != trim(strtolower($send_approval->customer->name))) {
+						return response()->json(['success' => false, 'errors' => ['Customer Name Not Matched with GSTIN Registration!']]);
+					} else {
+						$send_approval->status_id = 2; //$request->send_to_approval;
+						$send_approval->updated_by_id = Auth()->user()->id;
+						$send_approval->updated_at = date("Y-m-d H:i:s");
+						$message = 'Approval status updated successfully';
+						$send_approval->save();
+					}
+				}
+			} else {
+				$send_approval->status_id = 2; //$request->send_to_approval;
+				$send_approval->updated_by_id = Auth()->user()->id;
+				$send_approval->updated_at = date("Y-m-d H:i:s");
+				$message = 'Approval status updated successfully';
+				$send_approval->save();
+			}
 			$approval_levels = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 19)->first();
 			// $approval_levels = ApprovalLevel::where('approval_type_id', 1)->first();
 			if ($approval_levels != '') {
@@ -2406,11 +2417,34 @@ class ServiceInvoiceController extends Controller {
 			try {
 				foreach ($send_for_approvals as $key => $value) {
 					// return $this->saveApprovalStatus($value, $next_status);
-					$send_approval = ServiceInvoice::find($value);
-					$send_approval->status_id = $next_status;
-					$send_approval->updated_by_id = Auth()->user()->id;
-					$send_approval->updated_at = date("Y-m-d H:i:s");
-					$send_approval->save();
+					// $send_approval = ServiceInvoice::find($value);
+					$send_approval = ServiceInvoice::with(['toAccountType', 'address'])->find($value);
+					$send_approval->customer;
+					if ($send_approval->address) {
+						$customer_trande_name_check = Customer::getGstDetail($send_approval->address ? $send_approval->address->gst_number : NULL);
+						if ($customer_trande_name_check->original['success'] == false) {
+							return response()->json(['success' => false, 'errors' => [$customer_trande_name_check->original['error']]]);
+						} else {
+							// dump(trim(strtolower($customer_trande_name_check->original['trade_name'])), trim(strtolower($send_approval->customer->name)));
+							if (trim(strtolower($customer_trande_name_check->original['trade_name'])) != trim(strtolower($send_approval->customer->name))) {
+								return response()->json(['success' => false, 'errors' => ['Customer Name Not Matched with GSTIN Registration!. Customer Name: ' . $send_approval->customer->name]]);
+							} else {
+								$send_approval->status_id = $next_status;
+								$send_approval->updated_by_id = Auth()->user()->id;
+								$send_approval->updated_at = date("Y-m-d H:i:s");
+								$send_approval->save();
+							}
+						}
+					} else {
+						$send_approval->status_id = $next_status;
+						$send_approval->updated_by_id = Auth()->user()->id;
+						$send_approval->updated_at = date("Y-m-d H:i:s");
+						$send_approval->save();
+					}
+					// 		$send_approval->status_id = $next_status;
+					// 		$send_approval->updated_by_id = Auth()->user()->id;
+					// 		$send_approval->updated_at = date("Y-m-d H:i:s");
+					// 		$send_approval->save();
 					$approval_levels = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 19)->first();
 					if ($approval_levels != '') {
 						if ($send_approval->status_id == $approval_levels->name) {

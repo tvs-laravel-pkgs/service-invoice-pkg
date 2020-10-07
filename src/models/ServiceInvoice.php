@@ -810,7 +810,9 @@ class ServiceInvoice extends Model {
 									'company_id' => $job->company_id,
 									'entity_id' => $customer->id,
 									'address_of_id' => 24, //CUSTOMER
-								])->first();
+								])
+									->orderBy('id', 'desc')
+									->first();
 							}
 							if (!$customer_address) {
 								$status['errors'][] = 'Address Not Mapped with Customer';
@@ -828,7 +830,9 @@ class ServiceInvoice extends Model {
 									'company_id' => $job->company_id,
 									'entity_id' => $customer->id,
 									'address_of_id' => 21, //VENDOR
-								])->first();
+								])
+									->orderBy('id', 'desc')
+									->first();
 							}
 							if (!$vendor_address) {
 								$status['errors'][] = 'Address Not Mapped with Vendor';

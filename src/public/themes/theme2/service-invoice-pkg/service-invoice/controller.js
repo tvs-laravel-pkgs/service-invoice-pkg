@@ -291,6 +291,8 @@ app.component('serviceInvoiceList', {
 
         $('#send_for_approval').on('click', function() { //alert('dsf');
             if ($('.service_invoice_checkbox:checked').length > 0) {
+                $('#pace').css("display", "block");
+                $('#pace').addClass('pace-active');
                 var send_for_approval = []
                 $('input[name="child_boxes"]:checked').each(function() {
                     send_for_approval.push(this.value);
@@ -301,6 +303,8 @@ app.component('serviceInvoiceList', {
                         send_for_approval: send_for_approval,
                     }
                 ).then(function(response) {
+                    $('#pace').css("display", "none");
+                    $('#pace').addClass('pace-inactive');
                     if (response.data.success == true) {
                         custom_noty('success', response.data.message);
                         $timeout(function() {
@@ -432,12 +436,16 @@ app.component('serviceInvoiceList', {
         $scope.approvalConfirm = function() {
             $id = $('#approval_id').val();
             $send_to_approval = $('#next_status').val();
+            $('#pace').css("display", "block");
+            $('#pace').addClass('pace-active');
             $http.post(
                 laravel_routes['saveApprovalStatus'], {
                     id: $id,
                     send_to_approval: $send_to_approval,
                 }
             ).then(function(response) {
+                $('#pace').css("display", "none");
+                $('#pace').addClass('pace-inactive');
                 if (response.data.success == true) {
                     custom_noty('success', response.data.message);
                     $('#service-invoice-table').DataTable().ajax.reload();
