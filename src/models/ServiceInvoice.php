@@ -8,6 +8,7 @@ use Abs\SerialNumberPkg\SerialNumberGroup;
 use Abs\TaxPkg\Tax;
 use Abs\TaxPkg\TaxCode;
 use App\Address;
+use App\ApiLog;
 use App\City;
 use App\Company;
 use App\Config;
@@ -1381,5 +1382,23 @@ class ServiceInvoice extends Model {
 
 	public static function percentage($num, $per) {
 		return ($num / 100) * $per;
+	}
+
+	public static function apiLogs($params) {
+		// dd($params);
+		$api_log = new ApiLog;
+		$api_log->type_id = $params['type_id'];
+		$api_log->entity_number = $params['entity_number'];
+		$api_log->entity_id = $params['entity_id'];
+		$api_log->url = $params['url'];
+		$api_log->src_data = $params['src_data'];
+		$api_log->response_data = $params['response_data'];
+		$api_log->user_id = $params['user_id'];
+		$api_log->status_id = $params['status_id'];
+		$api_log->errors = $params['errors'];
+		$api_log->created_by_id = $params['created_by_id'];
+		$api_log->save();
+
+		return $api_log;
 	}
 }

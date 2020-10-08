@@ -13,6 +13,8 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 	Route::post('/service-invoice/customer/search', 'ServiceInvoiceController@searchCustomer')->name('searchCustomerServiceInvoice');
 	Route::post('/service-invoice/customer/get-address', 'ServiceInvoiceController@getCustomerAddress')->name('getCustomerAddressServiceInvoice');
 	Route::get('/service-invoice/customer/get-gst/{gstin}', 'ServiceInvoiceController@getGstDetails')->name('getGstDetailsServiceInvoice');
+	Route::post('/service-invoice/vendor/search', 'ServiceInvoiceController@searchVendor')->name('searchVendorServiceInvoice');
+	Route::post('/service-invoice/vendor/get-address', 'ServiceInvoiceController@getVendorAddress')->name('getVendorAddressServiceInvoice');
 
 	//SERVICE-INVOICE-APPROVAL
 	Route::get('/service-invoices/cn-dn-approvals/get-list', 'ServiceInvoiceApprovalController@getServiceInvoiceApprovalList')->name('getServiceInvoiceApprovalList');

@@ -494,21 +494,70 @@ app.component('serviceInvoiceApprovalView', {
         });
         self.service_invoice_id = $routeParams.id;
 
+        // $scope.vendorSelected = function() {
+        //     // console.log('vendor');
+        //     if (self.service_invoice.customer || self.service_invoice.customer != null) {
+        //         var res = $rootScope.getVendor(self.service_invoice.customer.id).then(function(res) {
+        //             console.log(res);
+        //             if (!res.data.success) {
+        //                 custom_noty('error', res.data.error);
+        //                 return;
+        //             }
+        //             self.customer = res.data.vendor;
+        //             self.service_invoice.customer.id = res.data.vendor.id;
+        //             // console.log(self.service_invoice.customer.id);
+        //         });
+        //     } else {
+        //         self.customer = {};
+        //         self.service_invoice.service_invoice_items = [];
+        //     }
+        // }
         $scope.vendorSelected = function() {
             // console.log('vendor');
+            $('#pace').css("display", "block");
+            $('#pace').addClass('pace-active');
+            console.log(self.service_invoice.customer);
             if (self.service_invoice.customer || self.service_invoice.customer != null) {
-                var res = $rootScope.getVendor(self.service_invoice.customer.id).then(function(res) {
+                // var res = $rootScope.getCustomer(self.service_invoice.customer).then(function(res) {
+                var res = $rootScope.getVendorAddress(self.service_invoice.customer).then(function(res) {
                     console.log(res);
                     if (!res.data.success) {
+                        $('#pace').css("display", "none");
+                        $('#pace').addClass('pace-inactive');
                         custom_noty('error', res.data.error);
                         return;
                     }
+                    $('#pace').addClass('pace-inactive');
+                    $('#pace').css("display", "none");
+                    console.log(res.data);
                     self.customer = res.data.vendor;
                     self.service_invoice.customer.id = res.data.vendor.id;
-                    // console.log(self.service_invoice.customer.id);
+                    if (res.data.vendor_address.length > 1) {
+                        self.multiple_address = true;
+                        self.single_address = false;
+                        self.customer_addresses = res.data.vendor_address;
+                        console.log(self.vendor_address);
+                    } else {
+                        self.multiple_address = false;
+                        self.single_address = true;
+                        self.customer.state_id = res.data.vendor_address[0].state_id;
+                        self.customer.gst_number = res.data.vendor_address[0].gst_number;
+
+                        self.customer_address = res.data.vendor_address[0];
+                        console.log(self.customer + 'single');
+                        if (res.data.vendor_address[0].gst_number) {
+                            setTimeout(function() {
+                                $scope.checkCustomerGSTIN(res.data.vendor_address[0].gst_number, self.vendor.name);
+                            }, 1000);
+                        }
+                    }
                 });
             } else {
+                $('#pace').css("display", "none");
+                $('#pace').addClass('pace-inactive');
                 self.customer = {};
+                self.customer_address = {};
+                self.customer_addresses = {};
                 self.service_invoice.service_invoice_items = [];
             }
         }
