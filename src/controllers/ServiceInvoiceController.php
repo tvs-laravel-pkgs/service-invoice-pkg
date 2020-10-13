@@ -978,12 +978,16 @@ class ServiceInvoiceController extends Controller {
 					return response()->json(['success' => false, 'errors' => ['SBU Not Found']]);
 				}
 
-				//GENERATE SERVICE INVOICE NUMBER
-				$generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, $branch->id, $sbu);
-				if (!$generateNumber['success']) {
-					return response()->json(['success' => false, 'errors' => ['No Serial number found']]);
+				if (!$sbu->business_id) {
+					return response()->json(['success' => false, 'errors' => ['Business Not Found']]);
 				}
 
+				//OUTLET BASED CODE
+				// $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, $branch->id, $sbu);
+
+				//STATE BUSINESS BASED CODE
+				$generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, NULL, NULL, $sbu->business_id);
+				// dd($generateNumber);
 				$generateNumber['service_invoice_id'] = $request->id;
 
 				$error_messages_1 = [

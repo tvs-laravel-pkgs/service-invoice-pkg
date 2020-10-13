@@ -438,7 +438,7 @@ app.component('serviceInvoiceApprovalList', {
 app.component('serviceInvoiceApprovalView', {
     templateUrl: service_invoice_approval_view_template_url,
     controller: function($http, $location, HelperService, $routeParams, $rootScope, $scope, $timeout, $mdSelect, $window) {
-        if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061) {} else {
+        if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061 || $routeParams.type_id == 1062) {} else {
             $location.path('/page-not-found')
             return;
         }
@@ -453,7 +453,7 @@ app.component('serviceInvoiceApprovalView', {
         self.ref_attachements_url_link = ref_attachements_url;
         if (self.type_id == 1060) {
             self.minus_value = '-';
-        } else if (self.type_id == 1061) {
+        } else if (self.type_id == 1061 || self.type_id == 1062) {
             self.minus_value = '';
         }
         $http.get(
@@ -688,6 +688,8 @@ app.component('serviceInvoiceApprovalView', {
             $('#next_status').val($send_to_approval);
         }
         $scope.approvalConfirm = function() {
+            $('#pace').css("display", "block");
+            $('#pace').addClass('pace-active');
             $id = $('#approval_id').val();
             $send_to_approval = $('#next_status').val();
             var ButtonValue = $('#approve').attr("id");
@@ -698,10 +700,15 @@ app.component('serviceInvoiceApprovalView', {
                     status_name: ButtonValue,
                 }
             ).then(function(response) {
+                $('#pace').css("display", "none");
+                $('#pace').addClass('pace-inactive');
                 if (response.data.success == true) {
                     custom_noty('success', 'CN/DN ' + response.data.message + ' Successfully');
-                    $('#cn-dn-approval-table').DataTable().ajax.reload();
-                    $scope.$apply();
+                    // $('#cn-dn-approval-table').DataTable().ajax.reload();
+                    $timeout(function() {
+                        $location.path('/service-invoice-pkg/cn-dn/approval/approval-level/' + $routeParams.approval_type_id + '/list/');
+                    }, 900);
+                    $scope.$apply()
                 } else {
                     custom_noty('error', response.data.errors);
                 }
