@@ -801,24 +801,25 @@ class ServiceInvoiceController extends Controller {
 		// }
 		// }
 		$KFC_tax_amount = 0;
-		if ($customer->primaryAddress->state_id) {
-			if (($customer->primaryAddress->state_id == 3) && ($outlet->state_id == 3)) {
-				//3 FOR KERALA
-				//check customer state and outlet states are equal KL.  //add KFC tax
-				if (!$customer->gst_number) {
-					//customer dont't have GST
-					if (!is_null($service_item->sac_code_id)) {
-						//customer have HSN and SAC Code
-						$gst_total += round((1 / 100) * ($request->qty * $request->amount), 2);
-						$KFC_tax_amount = round($request->qty * $request->amount * 1 / 100, 2); //ONE PERCENTAGE FOR KFC
-						$service_item['KFC'] = [ //4 for KFC
-							'percentage' => 1,
-							'amount' => $KFC_tax_amount,
-						];
-					}
-				}
-			}
-		}
+		// if ($customer->primaryAddress->state_id) {
+		// 	if (($customer->primaryAddress->state_id == 3) && ($outlet->state_id == 3)) {
+		// 		//3 FOR KERALA
+		// 		//check customer state and outlet states are equal KL.  //add KFC tax
+		// 		if (!$customer->gst_number) {
+		// 			dd(1);
+		// 			//customer dont't have GST
+		// 			if (!is_null($service_item->sac_code_id)) {
+		// 				//customer have HSN and SAC Code
+		// 				$gst_total += round((1 / 100) * ($request->qty * $request->amount), 2);
+		// 				$KFC_tax_amount = round($request->qty * $request->amount * 1 / 100, 2); //ONE PERCENTAGE FOR KFC
+		// 				$service_item['KFC'] = [ //4 for KFC
+		// 					'percentage' => 1,
+		// 					'amount' => $KFC_tax_amount,
+		// 				];
+		// 			}
+		// 		}
+		// 	}
+		// }
 		if ($request->state_id) {
 			// dd('in');
 			if (($request->state_id == 3) && ($outlet->state_id == 3)) {
@@ -1987,6 +1988,16 @@ class ServiceInvoiceController extends Controller {
 			];
 
 			if (is_array($generate_irn_output['Error'])) {
+				if ($generate_irn_output['status'] == 0) {
+					$api_params['errors'] = ['Somthing Went Wrong!. Try Again Later!'];
+					$api_params['message'] = 'Error Generating IRN!';
+					$api_logs[5] = $api_params;
+					return [
+						'success' => false,
+						'errors' => 'Somthing Went Wrong!. Try Again Later!',
+						'api_logs' => $api_logs,
+					];
+				}
 				$bdo_errors = [];
 				$rearrange_key = 0;
 				foreach ($generate_irn_output['Error'] as $key => $error) {
@@ -2040,6 +2051,7 @@ class ServiceInvoiceController extends Controller {
 					// dd('Error: ' . $generate_irn_output['Error']);
 				}
 			}
+
 			$api_params['message'] = 'Success GENSERATE IRN!';
 
 			$api_params['errors'] = NULL;
