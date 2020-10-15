@@ -1499,7 +1499,7 @@ app.component('serviceInvoiceView', {
         self.ref_attachements_url_link = ref_attachements_url;
         if (self.type_id == 1060) {
             self.minus_value = '-';
-        } else if (self.type_id == 1061) {
+        } else if (self.type_id == 1061 || self.type_id == 1062) {
             self.minus_value = '';
         }
         $scope.attachment_url = base_url + '/storage/app/public/service-invoice-pdf';

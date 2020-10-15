@@ -986,8 +986,14 @@ class ServiceInvoiceController extends Controller {
 				//OUTLET BASED CODE
 				// $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, $branch->id, $sbu);
 
-				//STATE BUSINESS BASED CODE
-				$generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, NULL, NULL, $sbu->business_id);
+				//ONLY FOR SCRAP INVOICE
+				if ($request->category_id == 4) {
+					$serial_number_category = 126; //FOR SCRAP
+					$generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, NULL, NULL, NULL);
+				} else {
+					//STATE BUSINESS BASED CODE
+					$generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, NULL, NULL, $sbu->business_id);
+				}
 				// dd($generateNumber);
 				$generateNumber['service_invoice_id'] = $request->id;
 
@@ -1416,7 +1422,6 @@ class ServiceInvoiceController extends Controller {
 		// if ($service_invoice->customer->gst_number && ($item_count == $item_count_with_tax_code)) {
 		if ($service_invoice->address->gst_number && ($item_count == $item_count_with_tax_code) && $service_invoice->address->pincode) {
 			//----------// ENCRYPTION START //----------//
-
 			if ($service_invoice->address) {
 				if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->address_line1)) >= 100) {
 					$errors[] = 'Customer Address Maximum Allowed Length 100!';
