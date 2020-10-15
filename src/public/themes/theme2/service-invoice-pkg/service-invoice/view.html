@@ -207,7 +207,7 @@
                                                     <img src="{{$ctrl.qr_image_url}}/{{$ctrl.service_invoice.qr_image}}" style="width: 100px;" alt="Qr Image">
                                                 </div>
                                             </li>
-                                            <li ng-if="$ctrl.service_invoice.irn_number" style="margin-top: 100px;">
+                                            <li ng-if="$ctrl.service_invoice.irn_number && $ctrl.service_invoice.cancel_irn == true" style="margin-top: 100px;">
                                                 <!-- <label class="table-form-list-label">QR Image </label> -->
                                                 <div class="table-form-list-control" style="margin-left: 30px !important;">
                                                     <button id="cancel_irn" data-toggle="modal" data-target="#cancel-irn-modal" type="button" class="btn btn-primary my-tooltip" ng-if="$ctrl.service_invoice.status_id == 4">Cancel IRN</button>

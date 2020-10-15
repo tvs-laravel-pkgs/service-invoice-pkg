@@ -411,9 +411,17 @@ class ServiceInvoiceApprovalController extends Controller {
 					$r = $approved_status->createPdf($approval_status->id);
 					if (!$r['success']) {
 						DB::rollBack();
+						// return response()->json($r);
+					}
+					if (isset($r['api_logs'])) {
+						foreach ($r['api_logs'] as $api_log) {
+							$api_data = ServiceInvoice::apiLogs($api_log);
+						}
+					}
+					if (!$r['success']) {
+						// DB::rollBack();
 						return response()->json($r);
 					}
-
 				}
 			} else {
 				return response()->json(['success' => false, 'errors' => ['Final CN/DN Status has not mapped.!']]);

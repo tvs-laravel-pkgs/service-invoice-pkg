@@ -315,7 +315,7 @@
                                         <h5 class="table-wrap-title">Details</h5>
                                     </div><!-- Column -->
                                     <div class="col-md-6 text-right">
-                                        <a class="btn btn-secondary-dark btn-md type2 my-tooltip" data-toggle="modal" data-target="#modal-cn-addnew" ng-click="addItem()" ng-shortcut="'meta+shift+o'" ng-shortcut-click data-title="ctrl+shift+o">+ Add Item</a>
+                                        <a class="btn btn-secondary-dark btn-md type2 my-tooltip add_item_btn" data-toggle="modal" data-target="#modal-cn-addnew" ng-click="addItem()" ng-shortcut="'meta+shift+o'" ng-shortcut-click data-title="ctrl+shift+o">+ Add Item</a>
                                     </div><!-- Column -->
                                 </div><!-- Row -->
                             </div><!-- Table Wrap Header -->
@@ -654,6 +654,7 @@
                 <input type="hidden" name="customer_id" value="{{$ctrl.service_invoice.customer.id}}">
                 <input type="hidden" name="branch_id" value="{{$ctrl.service_invoice.branch.id}}">
                 <input type="hidden" name="state_id" value="{{$ctrl.customer.state_id}}">
+                <input type="hidden" name="gst_number" value="{{$ctrl.customer.gst_number}}">
                 <div class="modal-footer">
                     <div class="row">
                         <div class="col-md-9 text-left">

@@ -8,6 +8,7 @@ use Abs\SerialNumberPkg\SerialNumberGroup;
 use Abs\TaxPkg\Tax;
 use Abs\TaxPkg\TaxCode;
 use App\Address;
+use App\ApiLog;
 use App\City;
 use App\Company;
 use App\Config;
@@ -805,6 +806,18 @@ class ServiceInvoice extends Model {
 							if (!$customer) {
 								$status['errors'][] = 'Invalid Customer';
 							}
+							if ($customer->id) {
+								$customer_address = Address::where([
+									'company_id' => $job->company_id,
+									'entity_id' => $customer->id,
+									'address_of_id' => 24, //CUSTOMER
+								])
+									->orderBy('id', 'desc')
+									->first();
+							}
+							if (!$customer_address) {
+								$status['errors'][] = 'Address Not Mapped with Customer';
+							}
 						} elseif ($to_account_type_id == 1441) {
 							$customer = Vendor::where([
 								'company_id' => $job->company_id,
@@ -812,6 +825,18 @@ class ServiceInvoice extends Model {
 							])->first();
 							if (!$customer) {
 								$status['errors'][] = 'Invalid Vendor';
+							}
+							if ($customer->id) {
+								$vendor_address = Address::where([
+									'company_id' => $job->company_id,
+									'entity_id' => $customer->id,
+									'address_of_id' => 21, //VENDOR
+								])
+									->orderBy('id', 'desc')
+									->first();
+							}
+							if (!$vendor_address) {
+								$status['errors'][] = 'Address Not Mapped with Vendor';
 							}
 						}
 					}
@@ -982,7 +1007,7 @@ class ServiceInvoice extends Model {
 									$service_invoice->is_cn_created = 0;
 								} elseif ($type->id == 1060) {
 									$service_invoice->is_cn_created = 1;
-								} elseif ($type->id == 1061) {
+								} elseif ($type->id == 1062) {
 									$service_invoice->is_cn_created = 0;
 								}
 
@@ -1000,6 +1025,7 @@ class ServiceInvoice extends Model {
 								$service_invoice->invoice_date = $reference_invoice_date;
 								$service_invoice->to_account_type_id = $to_account_type_id;
 								$service_invoice->customer_id = $customer->id;
+								$service_invoice->address_id = $to_account_type_id == 1440 ? ($customer_address ? $customer_address->id : NULL) : ($vendor_address ? $vendor_address->id : NULL);
 								$message = 'Service invoice added successfully';
 								$service_invoice->items_count = 1;
 								$service_invoice->status_id = $status_id;
@@ -1306,10 +1332,10 @@ class ServiceInvoice extends Model {
 			$this->round_off_amount = 0;
 		}
 		if ($this->to_account_type_id == 1440 || $this->to_account_type_id == 1440) {
-			$city = City::where('name', $this->customer->city)->first();
+			$city = City::where('name', $this->address->city)->first();
 			// dd($city);
-			$state = State::find($city->state_id);
-			$this->customer->state_code = $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-';
+			$state = State::find($this->address->state_id);
+			$this->address->state_code = $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-';
 		} else {
 			$state = State::find($this->customer->primaryAddress ? $this->customer->primaryAddress->state_id : NULL);
 			$this->customer->state_code = $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-';
@@ -1356,5 +1382,23 @@ class ServiceInvoice extends Model {
 
 	public static function percentage($num, $per) {
 		return ($num / 100) * $per;
+	}
+
+	public static function apiLogs($params) {
+		// dd($params);
+		$api_log = new ApiLog;
+		$api_log->type_id = $params['type_id'];
+		$api_log->entity_number = $params['entity_number'];
+		$api_log->entity_id = $params['entity_id'];
+		$api_log->url = $params['url'];
+		$api_log->src_data = $params['src_data'];
+		$api_log->response_data = $params['response_data'];
+		$api_log->user_id = $params['user_id'];
+		$api_log->status_id = $params['status_id'];
+		$api_log->errors = $params['errors'];
+		$api_log->created_by_id = $params['created_by_id'];
+		$api_log->save();
+
+		return $api_log;
 	}
 }
