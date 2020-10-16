@@ -158,7 +158,7 @@ class ServiceItemController extends Controller {
 
 			$validator = Validator::make($request->all(), [
 				'name' => [
-					'unique:service_items,name,' . $request->id . ',id,company_id,' . Auth::user()->company_id,
+					//'unique:service_items,name,' . $request->id . ',id,company_id,' . Auth::user()->company_id,
 					'required:true',
 				],
 				'code' => [
