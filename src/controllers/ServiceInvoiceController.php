@@ -2002,16 +2002,6 @@ class ServiceInvoiceController extends Controller {
 			];
 
 			if (is_array($generate_irn_output['Error'])) {
-				if ($generate_irn_output['status'] == 0) {
-					$api_params['errors'] = ['Somthing Went Wrong!. Try Again Later!'];
-					$api_params['message'] = 'Error Generating IRN!';
-					$api_logs[5] = $api_params;
-					return [
-						'success' => false,
-						'errors' => 'Somthing Went Wrong!. Try Again Later!',
-						'api_logs' => $api_logs,
-					];
-				}
 				$bdo_errors = [];
 				$rearrange_key = 0;
 				foreach ($generate_irn_output['Error'] as $key => $error) {
@@ -2031,6 +2021,16 @@ class ServiceInvoiceController extends Controller {
 					'errors' => $bdo_errors,
 					'api_logs' => $api_logs,
 				];
+				if ($generate_irn_output['status'] == 0) {
+					$api_params['errors'] = ['Somthing Went Wrong!. Try Again Later!'];
+					$api_params['message'] = 'Error Generating IRN!';
+					$api_logs[5] = $api_params;
+					return [
+						'success' => false,
+						'errors' => 'Somthing Went Wrong!. Try Again Later!',
+						'api_logs' => $api_logs,
+					];
+				}
 				// return response()->json(['success' => false, 'errors' => $bdo_errors]);
 				// dd('Error: ' . $generate_irn_output['Error']['E2000']);
 			} elseif (!is_array($generate_irn_output['Error'])) {
