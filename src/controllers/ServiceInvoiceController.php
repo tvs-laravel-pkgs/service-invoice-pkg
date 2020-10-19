@@ -839,6 +839,19 @@ class ServiceInvoiceController extends Controller {
 				}
 			}
 		}
+
+		//FOR TCS TAX CALCULATION
+		$TCS_tax_amount = 0;
+		if ($service_item) {
+			if ($service_item->tcs_percentage) {
+				$gst_total += round(($service_item->tcs_percentage / 100) * ($request->qty * $request->amount), 2);
+				$TCS_tax_amount = round($request->qty * $request->amount * $service_item->tcs_percentage / 100, 2); //ONE PERCENTAGE FOR TCS
+				$service_item['TCS'] = [ // for TCS
+					'percentage' => $service_item->tcs_percentage,
+					'amount' => $TCS_tax_amount,
+				];
+			}
+		}
 		// dd(1);
 		//FIELD GROUPS PUSH
 		if (isset($request->field_groups)) {
@@ -1622,6 +1635,7 @@ class ServiceInvoiceController extends Controller {
 			$cgst_total = 0;
 			$sgst_total = 0;
 			$igst_total = 0;
+			$tcs_total = 0;
 			foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
 				$item = [];
 				// dd($serviceInvoiceItem);
@@ -1644,6 +1658,10 @@ class ServiceInvoiceController extends Controller {
 				if (!$service_item) {
 					$errors[] = 'Service Item not found';
 					// return response()->json(['success' => false, 'error' => 'Service Item not found']);
+				}
+
+				if ($service_item->tcs_percentage) {
+					$tcs_total += round($serviceInvoiceItem->sub_total * $service_item->tcs_percentage / 100, 2);
 				}
 
 				//TAX CALC AND PUSH
@@ -1709,7 +1727,9 @@ class ServiceInvoiceController extends Controller {
 				$item['StateCesAmt'] = 0; //NEED TO CLARIFY IF KFC
 				$item['StateCesNonAdvlAmt'] = 0; //NEED TO CLARIFY IF KFC
 				$item['OthChrg'] = 0;
+				// $item['OthChrg'] = number_format(isset($serviceInvoiceItem->TCS) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->TCS->pivot->percentage / 100 : 0, 2); //FOR TCS TAX
 				$item['TotItemVal'] = number_format(($serviceInvoiceItem->sub_total ? $serviceInvoiceItem->sub_total : 0) + (isset($serviceInvoiceItem->IGST) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->IGST->pivot->percentage / 100 : 0) + (isset($serviceInvoiceItem->CGST) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->CGST->pivot->percentage / 100 : 0) + (isset($serviceInvoiceItem->SGST) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->SGST->pivot->percentage / 100 : 0), 2);
+				// + (isset($serviceInvoiceItem->TCS) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->TCS->pivot->percentage / 100 : 0), 2); BDO Monish Told to remove item level other Charges
 
 				$item['OrdLineRef'] = "0";
 				$item['OrgCntry'] = "IN"; //Always value will be "IND"
@@ -1846,7 +1866,7 @@ class ServiceInvoiceController extends Controller {
 						"CesVal" => 0,
 						"StCesVal" => 0,
 						"Discount" => 0,
-						"OthChrg" => 0,
+						"OthChrg" => number_format($tcs_total, 2),
 						"RndOffAmt" => number_format($service_invoice->final_amount - $service_invoice->total, 2),
 						// "RndOffAmt" => 0, // Invalid invoice round off amount ,should be  + or - RS 10.
 						"TotInvVal" => number_format($service_invoice->final_amount, 2),
@@ -2003,16 +2023,6 @@ class ServiceInvoiceController extends Controller {
 			];
 
 			if (is_array($generate_irn_output['Error'])) {
-				if ($generate_irn_output['status'] == 0) {
-					$api_params['errors'] = ['Somthing Went Wrong!. Try Again Later!'];
-					$api_params['message'] = 'Error Generating IRN!';
-					$api_logs[5] = $api_params;
-					return [
-						'success' => false,
-						'errors' => 'Somthing Went Wrong!. Try Again Later!',
-						'api_logs' => $api_logs,
-					];
-				}
 				$bdo_errors = [];
 				$rearrange_key = 0;
 				foreach ($generate_irn_output['Error'] as $key => $error) {
@@ -2032,6 +2042,16 @@ class ServiceInvoiceController extends Controller {
 					'errors' => $bdo_errors,
 					'api_logs' => $api_logs,
 				];
+				if ($generate_irn_output['status'] == 0) {
+					$api_params['errors'] = ['Somthing Went Wrong!. Try Again Later!'];
+					$api_params['message'] = 'Error Generating IRN!';
+					$api_logs[5] = $api_params;
+					return [
+						'success' => false,
+						'errors' => 'Somthing Went Wrong!. Try Again Later!',
+						'api_logs' => $api_logs,
+					];
+				}
 				// return response()->json(['success' => false, 'errors' => $bdo_errors]);
 				// dd('Error: ' . $generate_irn_output['Error']['E2000']);
 			} elseif (!is_array($generate_irn_output['Error'])) {

@@ -226,6 +226,7 @@ class ServiceInvoiceApprovalController extends Controller {
 			'toAccountType',
 			'address',
 			'branch',
+			'branch.primaryAddress',
 			'sbu',
 			'serviceInvoiceItems',
 			'serviceInvoiceItems.eInvoiceUom',

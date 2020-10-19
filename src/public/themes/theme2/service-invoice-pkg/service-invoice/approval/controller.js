@@ -584,6 +584,7 @@ app.component('serviceInvoiceApprovalView', {
 
         //EDIT SERVICE INVOICE ITEM
         $scope.editServiceItem = function(service_invoice_item_id, description, qty, rate, index, e_invoice_uom_id) {
+            console.log(self.service_invoice);
             if (service_invoice_item_id) {
                 self.enable_service_item_md_change = false;
                 self.add_service_action = false;
@@ -619,12 +620,15 @@ app.component('serviceInvoiceApprovalView', {
         }
 
         //ITEM TO INVOICE TOTAL AMOUNT CALC
-        $scope.totalAmountCalc = function() {
+         $scope.totalAmountCalc = function() {
             self.sub_total = 0;
             self.total = 0;
+            self.KFC_total = 0;
+            self.tcs_total = 0;
             self.gst_total = 0;
             if (self.qty && self.rate) {
                 self.sub_total = self.qty * self.rate;
+                // self.sub_total = self.rate;
                 if (self.service_item_detail.tax_code != null) {
                     if (self.service_item_detail.tax_code.taxes.length > 0) {
                         $(self.service_item_detail.tax_code.taxes).each(function(key, tax) {
@@ -633,7 +637,28 @@ app.component('serviceInvoiceApprovalView', {
                         });
                     }
                 }
-                self.total = self.sub_total + self.gst_total;
+                //FOR TCS TAX
+                if (self.service_item_detail.tcs_percentage) {
+                    self.tcs_total = $scope.percentage(self.sub_total, self.service_item_detail.tcs_percentage).toFixed(2);
+                }
+                // FOR KFC TAX
+                if (self.service_invoice.branch.primary_address.state_id) {
+                    if (self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.customer.primary_address.state_id == 3) {
+                        if (self.service_invoice.customer.gst_number == null) {
+                            if (self.service_item_detail.tax_code != null) {
+                                self.KFC_total = self.sub_total / 100;
+                            }
+                        }
+                    }
+                }
+                // else{
+                //     if(self.service_invoice.branch.primary_address.state_id){
+                //         if(self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.customer.primary_address.state_id == 3){
+                //             self.KFC_total = self.sub_total/100;
+                //         }
+                //     }
+                // }
+                self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total) + parseFloat(self.tcs_total);
             }
         };
 

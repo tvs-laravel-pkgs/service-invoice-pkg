@@ -39,6 +39,7 @@ class ServiceItemController extends Controller {
 				'service_item_sub_categories.name as sub_category',
 				'service_item_categories.name as main_category',
 				// 'coa_codes.name as coa_code',
+				DB::raw('IF((service_items.tcs_percentage) IS NULL ,"--",service_items.tcs_percentage) as tcs_percentage'),
 				'tax_codes.code as sac_code',
 				DB::raw('IF((service_items.deleted_at) IS NULL ,"Active","Inactive") as status'),
 				DB::raw('CONCAT(coa_codes.code," / ",coa_codes.name) as coa_code')
@@ -204,6 +205,7 @@ class ServiceItemController extends Controller {
 			$service_item->coa_code_id = $request->coa_code_id;
 			$service_item->sac_code_id = $request->sac_code_id;
 			$service_item->default_reference = $request->default_reference;
+			$service_item->tcs_percentage = $request->tcs_percentage;
 			$service_item->save();
 			//SAVE FIELD-GROUP FIELD
 			$service_item->fieldGroups()->sync([]);

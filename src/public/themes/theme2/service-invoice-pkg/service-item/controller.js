@@ -67,6 +67,7 @@ app.component('serviceItemList', {
                     { data: 'sub_category', searchable: false },
                     { data: 'coa_code', searchable: false },
                     { data: 'sac_code', searchable: false },
+                    { data: 'tcs_percentage', searchable: false },
                 ],
                 rowCallback: function(row, data) {
                     $(row).addClass('highlight-row');
