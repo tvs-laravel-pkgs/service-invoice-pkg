@@ -1922,8 +1922,8 @@ class ServiceInvoiceController extends Controller {
 				)
 			);
 
-			dump($json_encoded_data);
-			dd(1);
+			// dump($json_encoded_data);
+			// dd(1);
 
 			//AES ENCRYPT
 			$aes_encrypt_url = 'https://www.devglan.com/online-tools/aes-encryption';
