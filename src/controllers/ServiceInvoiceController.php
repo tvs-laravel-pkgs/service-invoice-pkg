@@ -1638,7 +1638,6 @@ class ServiceInvoiceController extends Controller {
 			$cgst_total = 0;
 			$sgst_total = 0;
 			$igst_total = 0;
-			$tcs_total = 0;
 			foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
 				$item = [];
 				// dd($serviceInvoiceItem);
@@ -1661,10 +1660,6 @@ class ServiceInvoiceController extends Controller {
 				if (!$service_item) {
 					$errors[] = 'Service Item not found';
 					// return response()->json(['success' => false, 'error' => 'Service Item not found']);
-				}
-
-				if ($service_item->tcs_percentage) {
-					$tcs_total += round($serviceInvoiceItem->sub_total * $service_item->tcs_percentage / 100, 2);
 				}
 
 				//TAX CALC AND PUSH
@@ -1786,6 +1781,13 @@ class ServiceInvoiceController extends Controller {
 			$additionaldoc_detail['Info'] = null;
 			// dd(preg_replace("/\r|\n/", "", $service_invoice->customer->primaryAddress->address_line1));
 			// dd($cgst_total, $sgst_total, $igst_total);
+
+			//FOR TCS
+			$tcs_total = 0;
+			if ($service_item->tcs_percentage) {
+				$tcs_total = round(($cgst_total + $sgst_total + $igst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
+			}
+
 			$json_encoded_data =
 				json_encode(
 				array(
