@@ -1445,9 +1445,34 @@ class ServiceInvoiceController extends Controller {
 		}
 		// dd($service_invoice->round_off_amount);
 
+		// if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->pincode))) {
+		// 	$errors[] = 'Customer Pincode Required. Customer Pincode Not Found!';
+		// 	return [
+		// 		'success' => false,
+		// 		'errors' => ['Customer Pincode Required. Customer Pincode Not Found!'],
+		// 	];
+		// 	// DB::commit();
+		// }
+
 		// if ($service_invoice->customer->gst_number && ($item_count == $item_count_with_tax_code)) {
-		if ($service_invoice->address->gst_number && ($item_count == $item_count_with_tax_code) && $service_invoice->address->pincode) {
+		if ($service_invoice->address->gst_number && ($item_count == $item_count_with_tax_code)) {
 			//----------// ENCRYPTION START //----------//
+
+			if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->pincode))) {
+				$errors[] = 'Customer Pincode Required. Customer Pincode Not Found!';
+				return [
+					'success' => false,
+					'errors' => ['Customer Pincode Required. Customer Pincode Not Found!'],
+				];
+			}
+
+			if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->state_id))) {
+				$errors[] = 'Customer State Required. Customer State Not Found!';
+				return [
+					'success' => false,
+					'errors' => ['Customer State Required. Customer State Not Found!'],
+				];
+			}
 
 			if ($service_invoice->address) {
 				if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->address_line1)) >= 100) {
@@ -1459,6 +1484,7 @@ class ServiceInvoiceController extends Controller {
 					// DB::commit();
 				}
 			}
+
 			// $service_invoice->irnCreate($service_invoice_id);
 			// RSA ENCRYPTION
 			$rsa = new Crypt_RSA;
@@ -1466,15 +1492,15 @@ class ServiceInvoiceController extends Controller {
 			$public_key = 'MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAxqHazGS4OkY/bDp0oklL+Ser7EpTpxyeMop8kfBlhzc8dzWryuAECwu8i/avzL4f5XG/DdSgMz7EdZCMrcxtmGJlMo2tUqjVlIsUslMG6Cmn46w0u+pSiM9McqIvJgnntKDHg90EIWg1BNnZkJy1NcDrB4O4ea66Y6WGNdb0DxciaYRlToohv8q72YLEII/z7W/7EyDYEaoSlgYs4BUP69LF7SANDZ8ZuTpQQKGF4TJKNhJ+ocmJ8ahb2HTwH3Ol0THF+0gJmaigs8wcpWFOE2K+KxWfyX6bPBpjTzC+wQChCnGQREhaKdzawE/aRVEVnvWc43dhm0janHp29mAAVv+ngYP9tKeFMjVqbr8YuoT2InHWFKhpPN8wsk30YxyDvWkN3mUgj3Q/IUhiDh6fU8GBZ+iIoxiUfrKvC/XzXVsCE2JlGVceuZR8OzwGrxk+dvMnVHyauN1YWnJuUTYTrCw3rgpNOyTWWmlw2z5dDMpoHlY0WmTVh0CrMeQdP33D3LGsa+7JYRyoRBhUTHepxLwk8UiLbu6bGO1sQwstLTTmk+Z9ZSk9EUK03Bkgv0hOmSPKC4MLD5rOM/oaP0LLzZ49jm9yXIrgbEcn7rv82hk8ghqTfChmQV/q+94qijf+rM2XJ7QX6XBES0UvnWnV6bVjSoLuBi9TF1ttLpiT3fkCAwEAAQ=='; //PROVIDE FROM BDO COMPANY
 
 			// $clientid = "prakashr@featsolutions.in"; //PROVIDE FROM BDO COMPANY
-			$clientid = "amutha@sundarammotors.com"; //PROVIDE FROM BDO COMPANY
-			// $clientid = "61b27a26bd86cbb93c5c11be0c2856"; //LIVE
+			// $clientid = "amutha@sundarammotors.com"; //PROVIDE FROM BDO COMPANY
+			$clientid = "61b27a26bd86cbb93c5c11be0c2856"; //LIVE
 			// dump('clientid ' . $clientid);
 
 			$rsa->loadKey($public_key);
 			$rsa->setEncryptionMode(2);
 			// $data = 'BBAkBDB0YzZiYThkYTg4ZDZBBDJjZBUyBGFkBBB0BWB='; // CLIENT SECRET KEY
-			$data = 'TQAkSDQ0YzZiYTTkYTg4ZDZSSDJjZSUySGFkSSQ0SWQ='; // CLIENT SECRET KEY
-			// $data = '7dd55886594bccadb03c48eb3f448e'; // LIVE
+			// $data = 'TQAkSDQ0YzZiYTTkYTg4ZDZSSDJjZSUySGFkSSQ0SWQ='; // CLIENT SECRET KEY
+			$data = '7dd55886594bccadb03c48eb3f448e'; // LIVE
 			$ClientSecret = $rsa->encrypt($data);
 			$clientsecretencrypted = base64_encode($ClientSecret);
 			// dump('ClientSecret ' . $clientsecretencrypted);
@@ -1486,8 +1512,8 @@ class ServiceInvoiceController extends Controller {
 			$appsecretkey = base64_encode($AppSecret);
 			// dump('appsecretkey ' . $appsecretkey);
 
-			$bdo_login_url = 'https://sandboxeinvoiceapi.bdo.in/bdoauth/bdoauthenticate';
-			// $bdo_login_url = 'https://einvoiceapi.bdo.in/bdoauth/bdoauthenticate'; // LIVE
+			// $bdo_login_url = 'https://sandboxeinvoiceapi.bdo.in/bdoauth/bdoauthenticate';
+			$bdo_login_url = 'https://einvoiceapi.bdo.in/bdoauth/bdoauthenticate'; // LIVE
 
 			$ch = curl_init($bdo_login_url);
 			// Setup request to send json via POST`
@@ -1639,6 +1665,9 @@ class ServiceInvoiceController extends Controller {
 			$cgst_total = 0;
 			$sgst_total = 0;
 			$igst_total = 0;
+			$cgst_amt = 0;
+			$sgst_amt = 0;
+			$igst_amt = 0;
 			$tcs_total = 0;
 			foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
 				$item = [];
@@ -1664,24 +1693,23 @@ class ServiceInvoiceController extends Controller {
 					// return response()->json(['success' => false, 'error' => 'Service Item not found']);
 				}
 
-				if ($service_item->tcs_percentage) {
-					$tcs_total += round($serviceInvoiceItem->sub_total * $service_item->tcs_percentage / 100, 2);
-				}
-
 				//TAX CALC AND PUSH
 				if (!is_null($service_item->sac_code_id)) {
 					if (count($service_item->taxCode->taxes) > 0) {
 						foreach ($service_item->taxCode->taxes as $key => $value) {
 							//FOR CGST
 							if ($value->name == 'CGST') {
+								$cgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 								$cgst_total += round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 							}
 							//FOR CGST
 							if ($value->name == 'SGST') {
+								$sgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 								$sgst_total += round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 							}
 							//FOR CGST
 							if ($value->name == 'IGST') {
+								$igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 								$igst_total += round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 							}
 						}
@@ -1692,6 +1720,13 @@ class ServiceInvoiceController extends Controller {
 						'errors' => 'Item Not Mapped with Tax code!. Item Code: ' . $service_item->code,
 					];
 					$errors[] = 'Item Not Mapped with Tax code!. Item Code: ' . $service_item->code;
+				}
+
+				//FOR TCS TAX
+				if ($service_item->tcs_percentage) {
+					$gst_total = 0;
+					$gst_total = $cgst_amt + $sgst_amt + $igst_amt;
+					$tcs_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
 				}
 
 				// dd(1);
@@ -1787,6 +1822,13 @@ class ServiceInvoiceController extends Controller {
 			$additionaldoc_detail['Info'] = null;
 			// dd(preg_replace("/\r|\n/", "", $service_invoice->customer->primaryAddress->address_line1));
 			// dd($cgst_total, $sgst_total, $igst_total);
+
+			//FOR TCS
+			$tcs_total = 0;
+			if ($service_item->tcs_percentage) {
+				$tcs_total = round(($cgst_total + $sgst_total + $igst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
+			}
+
 			$json_encoded_data =
 				json_encode(
 				array(
@@ -1977,8 +2019,8 @@ class ServiceInvoiceController extends Controller {
 			// dd($errors);
 
 			//ENCRYPTED GIVEN DATA TO DBO
-			$bdo_generate_irn_url = 'https://sandboxeinvoiceapi.bdo.in/bdoapi/public/generateIRN';
-			// $bdo_generate_irn_url = 'https://einvoiceapi.bdo.in/bdoapi/public/generateIRN'; //LIVE
+			// $bdo_generate_irn_url = 'https://sandboxeinvoiceapi.bdo.in/bdoapi/public/generateIRN';
+			$bdo_generate_irn_url = 'https://einvoiceapi.bdo.in/bdoapi/public/generateIRN'; //LIVE
 
 			$ch = curl_init($bdo_generate_irn_url);
 			// Setup request to send json via POST`
@@ -2706,16 +2748,16 @@ class ServiceInvoiceController extends Controller {
 		$public_key = 'MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAxqHazGS4OkY/bDp0oklL+Ser7EpTpxyeMop8kfBlhzc8dzWryuAECwu8i/avzL4f5XG/DdSgMz7EdZCMrcxtmGJlMo2tUqjVlIsUslMG6Cmn46w0u+pSiM9McqIvJgnntKDHg90EIWg1BNnZkJy1NcDrB4O4ea66Y6WGNdb0DxciaYRlToohv8q72YLEII/z7W/7EyDYEaoSlgYs4BUP69LF7SANDZ8ZuTpQQKGF4TJKNhJ+ocmJ8ahb2HTwH3Ol0THF+0gJmaigs8wcpWFOE2K+KxWfyX6bPBpjTzC+wQChCnGQREhaKdzawE/aRVEVnvWc43dhm0janHp29mAAVv+ngYP9tKeFMjVqbr8YuoT2InHWFKhpPN8wsk30YxyDvWkN3mUgj3Q/IUhiDh6fU8GBZ+iIoxiUfrKvC/XzXVsCE2JlGVceuZR8OzwGrxk+dvMnVHyauN1YWnJuUTYTrCw3rgpNOyTWWmlw2z5dDMpoHlY0WmTVh0CrMeQdP33D3LGsa+7JYRyoRBhUTHepxLwk8UiLbu6bGO1sQwstLTTmk+Z9ZSk9EUK03Bkgv0hOmSPKC4MLD5rOM/oaP0LLzZ49jm9yXIrgbEcn7rv82hk8ghqTfChmQV/q+94qijf+rM2XJ7QX6XBES0UvnWnV6bVjSoLuBi9TF1ttLpiT3fkCAwEAAQ=='; //PROVIDE FROM BDO COMPANY
 
 		// $clientid = "prakashr@featsolutions.in"; //PROVIDE FROM BDO COMPANY
-		$clientid = "amutha@sundarammotors.com"; //PROVIDE FROM BDO COMPANY
-		// $clientid = "61b27a26bd86cbb93c5c11be0c2856"; //LIVE
+		// $clientid = "amutha@sundarammotors.com"; //PROVIDE FROM BDO COMPANY
+		$clientid = "61b27a26bd86cbb93c5c11be0c2856"; //LIVE
 
 		// dump('clientid ' . $clientid);
 
 		$rsa->loadKey($public_key);
 		$rsa->setEncryptionMode(2);
 		// $data = 'BBAkBDB0YzZiYThkYTg4ZDZBBDJjZBUyBGFkBBB0BWB='; // CLIENT SECRET KEY
-		$data = 'TQAkSDQ0YzZiYTTkYTg4ZDZSSDJjZSUySGFkSSQ0SWQ='; // CLIENT SECRET KEY
-		// $data = '7dd55886594bccadb03c48eb3f448e'; // LIVE
+		// $data = 'TQAkSDQ0YzZiYTTkYTg4ZDZSSDJjZSUySGFkSSQ0SWQ='; // CLIENT SECRET KEY
+		$data = '7dd55886594bccadb03c48eb3f448e'; // LIVE
 
 		$ClientSecret = $rsa->encrypt($data);
 		$clientsecretencrypted = base64_encode($ClientSecret);
@@ -2728,8 +2770,8 @@ class ServiceInvoiceController extends Controller {
 		$appsecretkey = base64_encode($AppSecret);
 		// dump('appsecretkey ' . $appsecretkey);
 
-		$bdo_login_url = 'https://sandboxeinvoiceapi.bdo.in/bdoauth/bdoauthenticate';
-		// $bdo_login_url = 'https://einvoiceapi.bdo.in/bdoauth/bdoauthenticate'; //LIVE
+		// $bdo_login_url = 'https://sandboxeinvoiceapi.bdo.in/bdoauth/bdoauthenticate';
+		$bdo_login_url = 'https://einvoiceapi.bdo.in/bdoauth/bdoauthenticate'; //LIVE
 
 		$ch = curl_init($bdo_login_url);
 		// Setup request to send json via POST`
@@ -2905,8 +2947,8 @@ class ServiceInvoiceController extends Controller {
 
 		// dd($aes_output);
 
-		$bdo_cancel_irn_url = 'https://sandboxeinvoiceapi.bdo.in/bdoapi/public/cancelIRN';
-		// $bdo_cancel_irn_url = 'https://einvoiceapi.bdo.in/bdoapi/public/cancelIRN'; //LIVE
+		// $bdo_cancel_irn_url = 'https://sandboxeinvoiceapi.bdo.in/bdoapi/public/cancelIRN';
+		$bdo_cancel_irn_url = 'https://einvoiceapi.bdo.in/bdoapi/public/cancelIRN'; //LIVE
 
 		$ch = curl_init($bdo_cancel_irn_url);
 		// Setup request to send json via POST`
