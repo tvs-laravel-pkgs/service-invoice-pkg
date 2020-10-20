@@ -450,7 +450,8 @@ app.component('serviceInvoiceApprovalView', {
         self.type_id = $routeParams.type_id;
         self.approval_type_id = $routeParams.approval_type_id;
         self.enable_service_item_md_change = true;
-        self.ref_attachements_url_link = ref_attachements_url;
+        self.ref_attachements_url_link = ref_service_invoice_attachements_url;
+        
         if (self.type_id == 1060) {
             self.minus_value = '-';
         } else if (self.type_id == 1061 || self.type_id == 1062) {
@@ -488,6 +489,18 @@ app.component('serviceInvoiceApprovalView', {
                             $scope.vendorSelected(); //USED FOR GET FULL ADDRESS
                         }
                     }, 1200);
+                }
+                // ATTACHMENTS
+                if (self.service_invoice.attachments.length) {
+                    $(self.service_invoice.attachments).each(function(key, attachment) {
+                        console.log(attachment);
+                        var design = '<div class="imageuploadify-container" data-attachment_id="' + attachment.id + '" style="margin-left: 0px; margin-right: 0px;">' +
+                            '<div class="imageuploadify-details"><div class="imageuploadify-file-icon"></div><span class="imageuploadify-file-name">' + attachment.name + '' +
+                            '</span><span class="imageuploadify-file-type">image/jpeg</span>' +
+                            '<span class="imageuploadify-file-size">369960</span></div>' +
+                            '</div>';
+                        $('.imageuploadify-images-list').append(design);
+                    });
                 }
             }
             $rootScope.loading = false;
@@ -597,6 +610,8 @@ app.component('serviceInvoiceApprovalView', {
                         btn_action: 'edit',
                         branch_id: self.service_invoice.branch.id,
                         customer_id: self.service_invoice.customer.id,
+                        state_id: self.service_invoice.address.state_id,
+                        gst_number: self.service_invoice.address.gst_number,
                     }
                 ).then(function(response) {
                     if (response.data.success) {
