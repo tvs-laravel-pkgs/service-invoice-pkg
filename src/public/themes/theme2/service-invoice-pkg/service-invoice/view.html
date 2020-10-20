@@ -282,7 +282,7 @@
                                                 </td>
                                                 <td class="action">
                                                     <a href="javascript:void(0)" ng-click="editServiceItem(service_invoice_item.service_item_id, service_invoice_item.description,
-                                                     service_invoice_item.qty,  service_invoice_item.rate, index, service_invoice_item.e_invoice_uom_id)">
+                                                     service_invoice_item.qty,  service_invoice_item.rate, index, service_invoice_item.e_invoice_uom_id,$ctrl.service_invoice.to_account_type_id)">
                                                         <img class="img-responsive" src="./public/theme/img/table/cndn/view.svg" alt="View" />
                                                     </a>
                                                 </td>
@@ -574,9 +574,13 @@
                                         <span class="modal-footer-list-label">{{tax.name}} ({{tax.pivot.percentage}}%)</span>
                                         <span class="modal-footer-list-value">{{(tax.pivot.amount ? tax.pivot.amount : 0) | number : 2}}</span>
                                     </li>
-                                    <li ng-show="($ctrl.service_invoice.branch.primary_address.state_id == '3') && ($ctrl.service_invoice.customer.primary_address.state_id == '3') && ($ctrl.service_item_detail.tax_code != NULL) && ($ctrl.service_invoice.customer.gst_number == NULL)">
+                                    <li ng-show="($ctrl.service_invoice.branch.primary_address.state_id == '3') && ($ctrl.service_invoice.address.state_id == '3') && ($ctrl.service_item_detail.tax_code != NULL) && ($ctrl.service_invoice.address.gst_number == NULL)">
                                         <span class="modal-footer-list-label">KFC (1%)</span>
                                         <span class="modal-footer-list-value">{{$ctrl.KFC_total | number : 2}}</span>
+                                    </li>
+                                    <li ng-show="$ctrl.service_item_detail != NULL">
+                                        <span class="modal-footer-list-label">TCS ({{$ctrl.service_item_detail.tcs_percentage}}%)</span>
+                                        <span class="modal-footer-list-value">{{$ctrl.tcs_total | number : 2}}</span>
                                     </li>
                                     <li class="color-red">
                                         <span class="modal-footer-list-label">Total</span>

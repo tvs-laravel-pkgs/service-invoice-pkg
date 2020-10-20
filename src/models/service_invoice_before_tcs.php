@@ -238,11 +238,6 @@ class ServiceInvoice extends Model {
 		$total_amount_with_gst['credit'] = 0;
 		$total_amount_with_gst['invoice'] = 0;
 		$KFC_IN = 0;
-		//FOR TCS
-		$tcs_total['credit'] = 0;
-		$tcs_total['debit'] = 0;
-		$tcs_total['invoice'] = 0;
-
 		foreach ($this->serviceInvoiceItems as $invoice_item) {
 			$service_invoice = $invoice_item->serviceInvoice()->with([
 				'toAccountType',
@@ -294,16 +289,11 @@ class ServiceInvoice extends Model {
 						}
 					}
 				}
-				if ($invoice_item->serviceItem->tcs_percentage) {
-					$tcs_total['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * $invoice_item->serviceItem->tcs_percentage / 100, 2) : 0;
-					$tcs_total['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * $invoice_item->serviceItem->tcs_percentage / 100, 2) : 0;
-
-					$tcs_total['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $invoice_item->serviceItem->tcs_percentage / 100, 2) : 0;
-				}
 			}
 			$item_codes[] = $invoice_item->serviceItem->code;
 			$item_descriptions[] = $invoice_item->description;
 		}
+		// dd($total_amount_with_gst['credit'], $total_amount_with_gst['debit'], $total_amount_with_gst['invoice']);
 
 		$Txt = implode(',', $item_descriptions);
 		if ($this->type_id == 1060) {
@@ -328,6 +318,7 @@ class ServiceInvoice extends Model {
 		// dump($amount_diff);
 
 		if ($total_amount_with_gst['debit'] == 0 && $total_amount_with_gst['credit'] == 0 && $total_amount_with_gst['invoice'] == 0) {
+			// dump('if');
 			$params = [
 				'Voucher' => 'V',
 				'AccountType' => $this->to_account_type_id == 1440 ? 'Customer' : 'Vendor',
@@ -339,30 +330,29 @@ class ServiceInvoice extends Model {
 			//ADDED FOR ROUND OFF
 			if ($amount_diff > 0) {
 				// dump('if');
-				$params['AmountCurCredit'] = $this->type_id == 1060 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff + $tcs_total['credit'] : 0;
+				$params['AmountCurCredit'] = $this->type_id == 1060 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff : 0;
 				if ($this->type_id == 1061) {
-					$params['AmountCurDebit'] = $this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff + $tcs_total['debit'] : 0;
+					$params['AmountCurDebit'] = $this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff : 0;
 
 				} elseif ($this->type_id == 1062) {
-					$params['AmountCurDebit'] = $this->type_id == 1062 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff + $tcs_total['invoice'] : 0;
+					$params['AmountCurDebit'] = $this->type_id == 1062 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff : 0;
 				} else {
 					$params['AmountCurDebit'] = '';
 				}
 			} else {
 				// dump('else');
-				$params['AmountCurCredit'] = $this->type_id == 1060 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff + $tcs_total['credit'] : 0;
+				$params['AmountCurCredit'] = $this->type_id == 1060 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff : 0;
 				if ($this->type_id == 1061) {
-
-					$params['AmountCurDebit'] = $this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff + $tcs_total['debit'] : 0;
+					$params['AmountCurDebit'] = $this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff : 0;
 
 				} elseif ($this->type_id == 1062) {
-
-					$params['AmountCurDebit'] = $this->type_id == 1062 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff + $tcs_total['invoice'] : 0;
+					$params['AmountCurDebit'] = $this->type_id == 1062 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff : 0;
 				} else {
 					$params['AmountCurDebit'] = '';
 				}
 			}
 		} else {
+			// dump('else');
 			$params = [
 				'Voucher' => 'V',
 				'AccountType' => $this->to_account_type_id == 1440 ? 'Customer' : 'Vendor',
@@ -375,27 +365,27 @@ class ServiceInvoice extends Model {
 			if ($amount_diff > 0) {
 				// dump('if');
 				if ($this->type_id == 1061) {
-					$params['AmountCurDebit'] = $this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff + $total_amount_with_gst['debit'] + $tcs_total['debit'] : 0;
+					$params['AmountCurDebit'] = $this->type_id == 1061 ? ($total_amount_with_gst['debit'] + ($this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff : 0)) : 0;
 				} elseif ($this->type_id == 1062) {
-					$params['AmountCurDebit'] = $this->type_id == 1062 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff + $total_amount_with_gst['invoice'] + $tcs_total['invoice'] : 0;
+					$params['AmountCurDebit'] = $this->type_id == 1062 ? ($total_amount_with_gst['invoice'] + ($this->type_id == 1062 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff : 0)) : 0;
 				} else {
 					$params['AmountCurDebit'] = '';
 				}
-				$params['AmountCurCredit'] = $this->type_id == 1060 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff + $total_amount_with_gst['credit'] + $tcs_total['credit'] : 0;
+				$params['AmountCurCredit'] = ($total_amount_with_gst['credit'] + ($this->type_id == 1060 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff : 0));
 			} else {
 				// dump('else');
 				if ($this->type_id == 1061) {
-					$params['AmountCurDebit'] = $this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') + ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) + $total_amount_with_gst['debit'] + $tcs_total['debit'] : 0;
+					$params['AmountCurDebit'] = $this->type_id == 1061 ? ($total_amount_with_gst['debit'] + ($this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') + ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : 0)) : 0;
 
 				} elseif ($this->type_id == 1062) {
-					$params['AmountCurDebit'] = $this->type_id == 1062 ? $this->serviceInvoiceItems()->sum('sub_total') + ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) + $total_amount_with_gst['invoice'] + $tcs_total['invoice'] : 0;
+					$params['AmountCurDebit'] = $this->type_id == 1062 ? ($total_amount_with_gst['invoice'] + ($this->type_id == 1062 ? $this->serviceInvoiceItems()->sum('sub_total') + ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : 0)) : 0;
 				} else {
 					$params['AmountCurDebit'] = '';
 				}
-				$params['AmountCurCredit'] = $this->type_id == 1060 ? $this->serviceInvoiceItems()->sum('sub_total') + ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) + $total_amount_with_gst['credit'] + $tcs_total['credit'] : 0;
+				$params['AmountCurCredit'] = ($total_amount_with_gst['credit'] + ($this->type_id == 1060 ? $this->serviceInvoiceItems()->sum('sub_total') + ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : 0));
 			}
 		}
-
+		// dd($params);
 		if ($this->serviceInvoiceItems[0]->taxCode) {
 			if ($this->serviceInvoiceItems[0]->taxCode->type_id == 1020) {
 				//HSN Code
@@ -532,32 +522,14 @@ class ServiceInvoice extends Model {
 
 									$this->exportRowToAxapta($params);
 								}
-
 							}
 						}
 					}
 				}
 
 			}
-			//FOR TCS TAX
-			if ($invoice_item->serviceItem->tcs_percentage) {
-				if ($this->type_id == 1061) {
-					$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $invoice_item->serviceItem->tcs_percentage / 100, 2) : 0;
-				} elseif ($this->type_id == 1062) {
-					$params['AmountCurCredit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $invoice_item->serviceItem->tcs_percentage / 100, 2) : 0;
-				} else {
-					$params['AmountCurCredit'] = '';
-				}
-				$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $invoice_item->serviceItem->tcs_percentage / 100, 2) : 0;
-				$params['LedgerDimension'] = '2289' . '-' . $this->branch->code . '-' . $this->sbu->name;
-
-				//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
-				$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
-				$this->exportRowToAxapta($params);
-			}
 
 		}
-
 		if (!empty($service_invoice->round_off_amount) && $service_invoice->round_off_amount != '0.00') {
 			if ($amount_diff > 0) {
 				if ($this->type_id == 1061) {

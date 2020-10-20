@@ -450,7 +450,8 @@ app.component('serviceInvoiceApprovalView', {
         self.type_id = $routeParams.type_id;
         self.approval_type_id = $routeParams.approval_type_id;
         self.enable_service_item_md_change = true;
-        self.ref_attachements_url_link = ref_attachements_url;
+        self.ref_attachements_url_link = ref_service_invoice_attachements_url;
+        
         if (self.type_id == 1060) {
             self.minus_value = '-';
         } else if (self.type_id == 1061 || self.type_id == 1062) {
@@ -488,6 +489,18 @@ app.component('serviceInvoiceApprovalView', {
                             $scope.vendorSelected(); //USED FOR GET FULL ADDRESS
                         }
                     }, 1200);
+                }
+                // ATTACHMENTS
+                if (self.service_invoice.attachments.length) {
+                    $(self.service_invoice.attachments).each(function(key, attachment) {
+                        console.log(attachment);
+                        var design = '<div class="imageuploadify-container" data-attachment_id="' + attachment.id + '" style="margin-left: 0px; margin-right: 0px;">' +
+                            '<div class="imageuploadify-details"><div class="imageuploadify-file-icon"></div><span class="imageuploadify-file-name">' + attachment.name + '' +
+                            '</span><span class="imageuploadify-file-type">image/jpeg</span>' +
+                            '<span class="imageuploadify-file-size">369960</span></div>' +
+                            '</div>';
+                        $('.imageuploadify-images-list').append(design);
+                    });
                 }
             }
             $rootScope.loading = false;
@@ -584,6 +597,7 @@ app.component('serviceInvoiceApprovalView', {
 
         //EDIT SERVICE INVOICE ITEM
         $scope.editServiceItem = function(service_invoice_item_id, description, qty, rate, index, e_invoice_uom_id) {
+            console.log(self.service_invoice);
             if (service_invoice_item_id) {
                 self.enable_service_item_md_change = false;
                 self.add_service_action = false;
@@ -596,6 +610,8 @@ app.component('serviceInvoiceApprovalView', {
                         btn_action: 'edit',
                         branch_id: self.service_invoice.branch.id,
                         customer_id: self.service_invoice.customer.id,
+                        state_id: self.service_invoice.address.state_id,
+                        gst_number: self.service_invoice.address.gst_number,
                     }
                 ).then(function(response) {
                     if (response.data.success) {
@@ -619,12 +635,15 @@ app.component('serviceInvoiceApprovalView', {
         }
 
         //ITEM TO INVOICE TOTAL AMOUNT CALC
-        $scope.totalAmountCalc = function() {
+         $scope.totalAmountCalc = function() {
             self.sub_total = 0;
             self.total = 0;
+            self.KFC_total = 0;
+            self.tcs_total = 0;
             self.gst_total = 0;
             if (self.qty && self.rate) {
                 self.sub_total = self.qty * self.rate;
+                // self.sub_total = self.rate;
                 if (self.service_item_detail.tax_code != null) {
                     if (self.service_item_detail.tax_code.taxes.length > 0) {
                         $(self.service_item_detail.tax_code.taxes).each(function(key, tax) {
@@ -633,7 +652,28 @@ app.component('serviceInvoiceApprovalView', {
                         });
                     }
                 }
-                self.total = self.sub_total + self.gst_total;
+                //FOR TCS TAX
+                if (self.service_item_detail.tcs_percentage) {
+                    self.tcs_total = $scope.percentage(self.sub_total, self.service_item_detail.tcs_percentage).toFixed(2);
+                }
+                // FOR KFC TAX
+                if (self.service_invoice.branch.primary_address.state_id) {
+                    if (self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.customer.primary_address.state_id == 3) {
+                        if (self.service_invoice.customer.gst_number == null) {
+                            if (self.service_item_detail.tax_code != null) {
+                                self.KFC_total = self.sub_total / 100;
+                            }
+                        }
+                    }
+                }
+                // else{
+                //     if(self.service_invoice.branch.primary_address.state_id){
+                //         if(self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.customer.primary_address.state_id == 3){
+                //             self.KFC_total = self.sub_total/100;
+                //         }
+                //     }
+                // }
+                self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total) + parseFloat(self.tcs_total);
             }
         };
 

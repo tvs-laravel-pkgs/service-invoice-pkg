@@ -599,6 +599,7 @@ class ServiceInvoiceController extends Controller {
 				},
 			])
 				->find($request->service_item_id);
+			// dd($service_item);
 			if (!$service_item) {
 				return response()->json(['success' => false, 'error' => 'Service Item not found']);
 			}
@@ -839,6 +840,22 @@ class ServiceInvoiceController extends Controller {
 				}
 			}
 		}
+		// dump($gst_total);
+		//FOR TCS TAX CALCULATION
+		$TCS_tax_amount = 0;
+		$tcs_total = 0;
+		if ($service_item) {
+			if ($service_item->tcs_percentage) {
+				// $gst_total += round(($service_item->tcs_percentage / 100) * ($request->qty * $request->amount), 2);
+				$tcs_total = round(($gst_total + $request->qty * $request->amount) * $service_item->tcs_percentage / 100, 2);
+				// dd($tcs_total);
+				$TCS_tax_amount = round(($gst_total + $request->qty * $request->amount) * $service_item->tcs_percentage / 100, 2); //ONE PERCENTAGE FOR TCS
+				$service_item['TCS'] = [ // for TCS
+					'percentage' => $service_item->tcs_percentage,
+					'amount' => $TCS_tax_amount,
+				];
+			}
+		}
 		// dd(1);
 		//FIELD GROUPS PUSH
 		if (isset($request->field_groups)) {
@@ -857,7 +874,7 @@ class ServiceInvoiceController extends Controller {
 		$service_item->e_invoice_uom = $e_invoice_uom;
 		$service_item->rate = $request->amount;
 		$service_item->sub_total = round(($request->qty * $request->amount), 2);
-		$service_item->total = round($request->qty * $request->amount, 2) + $gst_total;
+		$service_item->total = round($request->qty * $request->amount, 2) + $gst_total + $tcs_total;
 
 		if ($request->action == 'add') {
 			$add = true;
@@ -1428,9 +1445,34 @@ class ServiceInvoiceController extends Controller {
 		}
 		// dd($service_invoice->round_off_amount);
 
+		// if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->pincode))) {
+		// 	$errors[] = 'Customer Pincode Required. Customer Pincode Not Found!';
+		// 	return [
+		// 		'success' => false,
+		// 		'errors' => ['Customer Pincode Required. Customer Pincode Not Found!'],
+		// 	];
+		// 	// DB::commit();
+		// }
+
 		// if ($service_invoice->customer->gst_number && ($item_count == $item_count_with_tax_code)) {
-		if ($service_invoice->address->gst_number && ($item_count == $item_count_with_tax_code) && $service_invoice->address->pincode) {
+		if ($service_invoice->address->gst_number && ($item_count == $item_count_with_tax_code)) {
 			//----------// ENCRYPTION START //----------//
+			if (empty($service_invoice->address->pincode)) {
+				$errors[] = 'Customer Pincode Required. Customer Pincode Not Found!';
+				return [
+					'success' => false,
+					'errors' => ['Customer Pincode Required. Customer Pincode Not Found!'],
+				];
+			}
+
+			if (empty($service_invoice->address->state_id)) {
+				$errors[] = 'Customer State Required. Customer State Not Found!';
+				return [
+					'success' => false,
+					'errors' => ['Customer State Required. Customer State Not Found!'],
+				];
+			}
+
 			if ($service_invoice->address) {
 				if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->address_line1)) >= 100) {
 					$errors[] = 'Customer Address Maximum Allowed Length 100!';
@@ -1441,6 +1483,7 @@ class ServiceInvoiceController extends Controller {
 					// DB::commit();
 				}
 			}
+
 			// $service_invoice->irnCreate($service_invoice_id);
 			// RSA ENCRYPTION
 			$rsa = new Crypt_RSA;
@@ -1621,6 +1664,10 @@ class ServiceInvoiceController extends Controller {
 			$cgst_total = 0;
 			$sgst_total = 0;
 			$igst_total = 0;
+			$cgst_amt = 0;
+			$sgst_amt = 0;
+			$igst_amt = 0;
+			$tcs_total = 0;
 			foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
 				$item = [];
 				// dd($serviceInvoiceItem);
@@ -1651,14 +1698,17 @@ class ServiceInvoiceController extends Controller {
 						foreach ($service_item->taxCode->taxes as $key => $value) {
 							//FOR CGST
 							if ($value->name == 'CGST') {
+								$cgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 								$cgst_total += round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 							}
 							//FOR CGST
 							if ($value->name == 'SGST') {
+								$sgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 								$sgst_total += round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 							}
 							//FOR CGST
 							if ($value->name == 'IGST') {
+								$igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 								$igst_total += round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 							}
 						}
@@ -1669,6 +1719,13 @@ class ServiceInvoiceController extends Controller {
 						'errors' => 'Item Not Mapped with Tax code!. Item Code: ' . $service_item->code,
 					];
 					$errors[] = 'Item Not Mapped with Tax code!. Item Code: ' . $service_item->code;
+				}
+
+				//FOR TCS TAX
+				if ($service_item->tcs_percentage) {
+					$gst_total = 0;
+					$gst_total = $cgst_amt + $sgst_amt + $igst_amt;
+					$tcs_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
 				}
 
 				// dd(1);
@@ -1708,7 +1765,9 @@ class ServiceInvoiceController extends Controller {
 				$item['StateCesAmt'] = 0; //NEED TO CLARIFY IF KFC
 				$item['StateCesNonAdvlAmt'] = 0; //NEED TO CLARIFY IF KFC
 				$item['OthChrg'] = 0;
+				// $item['OthChrg'] = number_format(isset($serviceInvoiceItem->TCS) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->TCS->pivot->percentage / 100 : 0, 2); //FOR TCS TAX
 				$item['TotItemVal'] = number_format(($serviceInvoiceItem->sub_total ? $serviceInvoiceItem->sub_total : 0) + (isset($serviceInvoiceItem->IGST) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->IGST->pivot->percentage / 100 : 0) + (isset($serviceInvoiceItem->CGST) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->CGST->pivot->percentage / 100 : 0) + (isset($serviceInvoiceItem->SGST) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->SGST->pivot->percentage / 100 : 0), 2);
+				// + (isset($serviceInvoiceItem->TCS) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->TCS->pivot->percentage / 100 : 0), 2); BDO Monish Told to remove item level other Charges
 
 				$item['OrdLineRef'] = "0";
 				$item['OrgCntry'] = "IN"; //Always value will be "IND"
@@ -1762,6 +1821,7 @@ class ServiceInvoiceController extends Controller {
 			$additionaldoc_detail['Info'] = null;
 			// dd(preg_replace("/\r|\n/", "", $service_invoice->customer->primaryAddress->address_line1));
 			// dd($cgst_total, $sgst_total, $igst_total);
+
 			$json_encoded_data =
 				json_encode(
 				array(
@@ -1845,7 +1905,7 @@ class ServiceInvoiceController extends Controller {
 						"CesVal" => 0,
 						"StCesVal" => 0,
 						"Discount" => 0,
-						"OthChrg" => 0,
+						"OthChrg" => number_format($tcs_total, 2),
 						"RndOffAmt" => number_format($service_invoice->final_amount - $service_invoice->total, 2),
 						// "RndOffAmt" => 0, // Invalid invoice round off amount ,should be  + or - RS 10.
 						"TotInvVal" => number_format($service_invoice->final_amount, 2),
