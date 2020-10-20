@@ -599,6 +599,7 @@ class ServiceInvoiceController extends Controller {
 				},
 			])
 				->find($request->service_item_id);
+			// dd($service_item);
 			if (!$service_item) {
 				return response()->json(['success' => false, 'error' => 'Service Item not found']);
 			}
@@ -839,13 +840,16 @@ class ServiceInvoiceController extends Controller {
 				}
 			}
 		}
-
+		// dump($gst_total);
 		//FOR TCS TAX CALCULATION
 		$TCS_tax_amount = 0;
+		$tcs_total = 0;
 		if ($service_item) {
 			if ($service_item->tcs_percentage) {
-				$gst_total += round(($service_item->tcs_percentage / 100) * ($request->qty * $request->amount), 2);
-				$TCS_tax_amount = round($request->qty * $request->amount * $service_item->tcs_percentage / 100, 2); //ONE PERCENTAGE FOR TCS
+				// $gst_total += round(($service_item->tcs_percentage / 100) * ($request->qty * $request->amount), 2);
+				$tcs_total = round(($gst_total + $request->qty * $request->amount) * $service_item->tcs_percentage / 100, 2);
+				// dd($tcs_total);
+				$TCS_tax_amount = round(($gst_total + $request->qty * $request->amount) * $service_item->tcs_percentage / 100, 2); //ONE PERCENTAGE FOR TCS
 				$service_item['TCS'] = [ // for TCS
 					'percentage' => $service_item->tcs_percentage,
 					'amount' => $TCS_tax_amount,
@@ -870,7 +874,7 @@ class ServiceInvoiceController extends Controller {
 		$service_item->e_invoice_uom = $e_invoice_uom;
 		$service_item->rate = $request->amount;
 		$service_item->sub_total = round(($request->qty * $request->amount), 2);
-		$service_item->total = round($request->qty * $request->amount, 2) + $gst_total;
+		$service_item->total = round($request->qty * $request->amount, 2) + $gst_total + $tcs_total;
 
 		if ($request->action == 'add') {
 			$add = true;
