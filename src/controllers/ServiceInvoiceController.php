@@ -1445,9 +1445,35 @@ class ServiceInvoiceController extends Controller {
 		}
 		// dd($service_invoice->round_off_amount);
 
+		// if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->pincode))) {
+		// 	$errors[] = 'Customer Pincode Required. Customer Pincode Not Found!';
+		// 	return [
+		// 		'success' => false,
+		// 		'errors' => ['Customer Pincode Required. Customer Pincode Not Found!'],
+		// 	];
+		// 	// DB::commit();
+		// }
+
 		// if ($service_invoice->customer->gst_number && ($item_count == $item_count_with_tax_code)) {
-		if ($service_invoice->address->gst_number && ($item_count == $item_count_with_tax_code) && $service_invoice->address->pincode) {
+		if ($service_invoice->address->gst_number && ($item_count == $item_count_with_tax_code)) {
 			//----------// ENCRYPTION START //----------//
+
+			if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->pincode))) {
+				$errors[] = 'Customer Pincode Required. Customer Pincode Not Found!';
+				return [
+					'success' => false,
+					'errors' => ['Customer Pincode Required. Customer Pincode Not Found!'],
+				];
+			}
+
+			if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->state_id))) {
+				$errors[] = 'Customer State Required. Customer State Not Found!';
+				return [
+					'success' => false,
+					'errors' => ['Customer State Required. Customer State Not Found!'],
+				];
+			}
+
 			if ($service_invoice->address) {
 				if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->address_line1)) >= 100) {
 					$errors[] = 'Customer Address Maximum Allowed Length 100!';
@@ -1458,6 +1484,7 @@ class ServiceInvoiceController extends Controller {
 					// DB::commit();
 				}
 			}
+
 			// $service_invoice->irnCreate($service_invoice_id);
 			// RSA ENCRYPTION
 			$rsa = new Crypt_RSA;
@@ -1638,6 +1665,10 @@ class ServiceInvoiceController extends Controller {
 			$cgst_total = 0;
 			$sgst_total = 0;
 			$igst_total = 0;
+			$cgst_amt = 0;
+			$sgst_amt = 0;
+			$igst_amt = 0;
+			$tcs_total = 0;
 			foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
 				$item = [];
 				// dd($serviceInvoiceItem);
@@ -1668,14 +1699,17 @@ class ServiceInvoiceController extends Controller {
 						foreach ($service_item->taxCode->taxes as $key => $value) {
 							//FOR CGST
 							if ($value->name == 'CGST') {
+								$cgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 								$cgst_total += round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 							}
 							//FOR CGST
 							if ($value->name == 'SGST') {
+								$sgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 								$sgst_total += round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 							}
 							//FOR CGST
 							if ($value->name == 'IGST') {
+								$igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 								$igst_total += round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 							}
 						}
@@ -1686,6 +1720,13 @@ class ServiceInvoiceController extends Controller {
 						'errors' => 'Item Not Mapped with Tax code!. Item Code: ' . $service_item->code,
 					];
 					$errors[] = 'Item Not Mapped with Tax code!. Item Code: ' . $service_item->code;
+				}
+
+				//FOR TCS TAX
+				if ($service_item->tcs_percentage) {
+					$gst_total = 0;
+					$gst_total = $cgst_amt + $sgst_amt + $igst_amt;
+					$tcs_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
 				}
 
 				// dd(1);
