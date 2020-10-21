@@ -898,7 +898,7 @@ class ServiceInvoiceController extends Controller {
 				'sbu_id.required' => 'Sbu is required',
 				'category_id.required' => 'Category is required',
 				// 'sub_category_id.required' => 'Sub Category is required',
-				'invoice_date.required_if' => 'Invoice date is required',
+				// 'invoice_date.required_if' => 'Invoice date is required',
 				'document_date.required' => 'Document date is required',
 				'customer_id.required' => 'Customer is required',
 				'proposal_attachments.*.required' => 'Please upload an image',
@@ -906,7 +906,7 @@ class ServiceInvoiceController extends Controller {
 				'number.unique' => 'Service invoice number has already been taken',
 				// 'is_reverse_charge_applicable.required' => 'Reverse Charge Applicale is required',
 				// 'po_reference_number.required' => 'PO Reference Number is required',
-				'invoice_number.required_if' => 'Invoice Number is required',
+				// 'invoice_number.required_if' => 'Invoice Number is required',
 				// 'invoice_date.required' => 'Invoice Date is required',
 				// 'round_off_amount.required' => 'Round Off Amount is required',
 			];
@@ -1102,11 +1102,11 @@ class ServiceInvoiceController extends Controller {
 			if ($request->service_invoice_items) {
 				if (!empty($request->service_invoice_items)) {
 					//VALIDATE UNIQUE
-					$service_invoice_items = collect($request->service_invoice_items)->pluck('service_item_id')->toArray();
-					$service_invoice_items_unique = array_unique($service_invoice_items);
-					if (count($service_invoice_items) != count($service_invoice_items_unique)) {
-						return response()->json(['success' => false, 'errors' => ['Service invoice items has already been taken']]);
-					}
+					// $service_invoice_items = collect($request->service_invoice_items)->pluck('service_item_id')->toArray();
+					// $service_invoice_items_unique = array_unique($service_invoice_items);
+					// if (count($service_invoice_items) != count($service_invoice_items_unique)) {
+					// 	return response()->json(['success' => false, 'errors' => ['Service invoice items has already been taken']]);
+					// }
 					foreach ($request->service_invoice_items as $key => $val) {
 						$service_invoice_item = ServiceInvoiceItem::firstOrNew([
 							'id' => $val['id'],
