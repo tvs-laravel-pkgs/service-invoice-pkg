@@ -1457,8 +1457,7 @@ class ServiceInvoiceController extends Controller {
 		// if ($service_invoice->customer->gst_number && ($item_count == $item_count_with_tax_code)) {
 		if ($service_invoice->address->gst_number && ($item_count == $item_count_with_tax_code)) {
 			//----------// ENCRYPTION START //----------//
-
-			if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->pincode))) {
+			if (empty($service_invoice->address->pincode)) {
 				$errors[] = 'Customer Pincode Required. Customer Pincode Not Found!';
 				return [
 					'success' => false,
@@ -1466,7 +1465,7 @@ class ServiceInvoiceController extends Controller {
 				];
 			}
 
-			if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->state_id))) {
+			if (empty($service_invoice->address->state_id)) {
 				$errors[] = 'Customer State Required. Customer State Not Found!';
 				return [
 					'success' => false,
@@ -1822,12 +1821,6 @@ class ServiceInvoiceController extends Controller {
 			$additionaldoc_detail['Info'] = null;
 			// dd(preg_replace("/\r|\n/", "", $service_invoice->customer->primaryAddress->address_line1));
 			// dd($cgst_total, $sgst_total, $igst_total);
-
-			//FOR TCS
-			$tcs_total = 0;
-			if ($service_item->tcs_percentage) {
-				$tcs_total = round(($cgst_total + $sgst_total + $igst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
-			}
 
 			$json_encoded_data =
 				json_encode(
