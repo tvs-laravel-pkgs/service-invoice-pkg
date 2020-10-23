@@ -354,40 +354,42 @@ class ServiceInvoice extends Model {
 				// dump($invoice_kfc_percentage);
 				// dd($invoice_item->serviceItem->taxCode->taxes);
 				// dump($invoice_kfc_percentage);
-				foreach ($invoice_item->serviceItem->taxCode->taxes as $key => $tax) {
-					// dump($tax->name);
-					if ($tax->name == 'CGST' && $invoice_cgst_percentage != 0.00) {
-						$cgst_amt['credit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-						$cgst_amt['debit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-						$cgst_amt['invoice'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-						$tcs_calc_gst['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+				if (!empty($invoice_item->serviceItem->taxCode)) {
+					foreach ($invoice_item->serviceItem->taxCode->taxes as $key => $tax) {
+						// dump($tax->name);
+						if ($tax->name == 'CGST' && $invoice_cgst_percentage != 0.00) {
+							$cgst_amt['credit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+							$cgst_amt['debit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+							$cgst_amt['invoice'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+							$tcs_calc_gst['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
-						$tcs_calc_gst['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+							$tcs_calc_gst['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
-						$tcs_calc_gst['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+							$tcs_calc_gst['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
-					}
-					//FOR CGST
-					if ($tax->name == 'SGST' && $invoice_sgst_percentage != 0.00) {
-						$sgst_amt['credit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-						$sgst_amt['debit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-						$sgst_amt['invoice'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-						$tcs_calc_gst['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+						}
+						//FOR CGST
+						if ($tax->name == 'SGST' && $invoice_sgst_percentage != 0.00) {
+							$sgst_amt['credit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+							$sgst_amt['debit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+							$sgst_amt['invoice'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+							$tcs_calc_gst['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
-						$tcs_calc_gst['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+							$tcs_calc_gst['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
-						$tcs_calc_gst['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-					}
-					//FOR CGST
-					if ($tax->name == 'IGST' && $invoice_igst_percentage != 0.00) {
-						$igst_amt['credit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-						$igst_amt['debit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-						$igst_amt['invoice'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-						$tcs_calc_gst['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+							$tcs_calc_gst['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+						}
+						//FOR CGST
+						if ($tax->name == 'IGST' && $invoice_igst_percentage != 0.00) {
+							$igst_amt['credit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+							$igst_amt['debit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+							$igst_amt['invoice'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+							$tcs_calc_gst['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
-						$tcs_calc_gst['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+							$tcs_calc_gst['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
-						$tcs_calc_gst['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+							$tcs_calc_gst['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+						}
 					}
 				}
 				// dump($tcs_calc_gst['credit'], $tcs_calc_gst['debit'], $tcs_calc_gst['invoice'], $invoice_item->sub_total);
