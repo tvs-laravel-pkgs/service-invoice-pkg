@@ -1498,16 +1498,16 @@ class ServiceInvoiceController extends Controller {
 			$rsa->loadKey($public_key);
 			$rsa->setEncryptionMode(2);
 			// $data = 'BBAkBDB0YzZiYThkYTg4ZDZBBDJjZBUyBGFkBBB0BWB='; // CLIENT SECRET KEY
-			$client_secret_key = 'TQAkSDQ0YzZiYTTkYTg4ZDZSSDJjZSUySGFkSSQ0SWQ='; // CLIENT SECRET KEY
+			$data = 'TQAkSDQ0YzZiYTTkYTg4ZDZSSDJjZSUySGFkSSQ0SWQ='; // CLIENT SECRET KEY
 			// $data = '7dd55886594bccadb03c48eb3f448e'; // LIVE
-			$ClientSecret = $rsa->encrypt($client_secret_key);
+			$ClientSecret = $rsa->encrypt($data);
 			$clientsecretencrypted = base64_encode($ClientSecret);
 			// dump('ClientSecret ' . $clientsecretencrypted);
 
 			$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-			$app_secret_key = substr(str_shuffle($characters), 0, 32); // RANDOM KEY GENERATE
+			$data = substr(str_shuffle($characters), 0, 32); // RANDOM KEY GENERATE
 			// $data = 'Rdp5EB5w756dVph0C3jCXY1K6RPC6RCD'; // RANDOM KEY GENERATE
-			$AppSecret = $rsa->encrypt($app_secret_key);
+			$AppSecret = $rsa->encrypt($data);
 			$appsecretkey = base64_encode($AppSecret);
 			// dump('appsecretkey ' . $appsecretkey);
 
@@ -1570,6 +1570,27 @@ class ServiceInvoiceController extends Controller {
 				'created_by_id' => Auth::user()->id,
 			];
 
+			// ServiceInvoice::apiLogs($api_params);
+
+			// DB::beginTransaction();
+
+			// // dd(json_encode($errors));
+			// $api_log = new ApiLog;
+			// $api_log->type_id = $service_invoice->type_id;
+			// $api_log->entity_number = $service_invoice->number;
+			// $api_log->entity_id = $service_invoice->id;
+			// $api_log->url = $bdo_login_url;
+			// $api_log->src_data = $params;
+			// $api_log->response_data = $server_output;
+			// $api_log->user_id = Auth::user()->id;
+			// $api_log->status_id = $bdo_login_check->status == 0 ? 11272 : 11271;
+			// $api_log->errors = !empty($errors) ? NULL : json_encode($errors);
+			// $api_log->created_by_id = Auth::user()->id;
+			// $api_log->save();
+			// // dd($api_log);
+
+			// DB::commit();
+
 			if ($bdo_login_check->status == 0) {
 				$api_params['message'] = 'Login Failed!';
 				$api_logs[0] = $api_params;
@@ -1589,14 +1610,53 @@ class ServiceInvoiceController extends Controller {
 			$status = $bdo_login_check->status;
 			$bdo_sek = $bdo_login_check->bdo_sek;
 
-			//DECRYPT WITH APP KEY AND BDO SEK KEY
-			$decrypt_data_with_bdo_sek = self::decryptAesData($app_secret_key, $bdo_sek);
-			if (!$decrypt_data_with_bdo_sek) {
-				$errors[] = 'Decryption Error!';
-				return response()->json(['success' => false, 'error' => 'Decryption Error!']);
-			}
-			// dd($decrypt_data_with_bdo_sek);
+			$aes_decrypt_url = 'https://www.devglan.com/online-tools/aes-decryption';
 
+			$ch = curl_init($aes_decrypt_url);
+
+			// Setup request to send json via POST`
+			$params = json_encode(array(
+				'textToDecrypt' => $bdo_sek,
+				'secretKey' => $data,
+				'mode' => 'ECB',
+				'keySize' => '256',
+				'dataFormat' => 'Base64',
+			));
+
+			// Attach encoded JSON string to the POST fields
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+
+			// Set the content type to application/json
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+			// Return response instead of outputting
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+			// Execute the POST request
+			$server_output = curl_exec($ch);
+
+			// Get the POST request header status
+			$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+			// If header status is not Created or not OK, return error message
+			if ($status != 200) {
+				return [
+					'success' => false,
+					'errors' => ["Somthing Went Wrong!"],
+				];
+				$errors[] = curl_errno($ch);
+				// return response()->json([
+				//  'success' => false,
+				//  'error' => 'call to URL $bdo_login_url failed with status $status',
+				//  'errors' => ["response " . $server_output . ", curl_error " . curl_error($ch) . ", curl_errno " . curl_errno($ch)],
+				// ]);
+			}
+
+			curl_close($ch);
+
+			$server_output = json_decode($server_output);
+
+			$aes_decoded_plain_text = base64_decode($server_output->output);
+			// dd($aes_decoded_plain_text);
 			//ITEm
 			$items = [];
 			$sno = 1;
@@ -1776,7 +1836,7 @@ class ServiceInvoiceController extends Controller {
 					'DocDtls' => array(
 						"Typ" => $service_invoice->type,
 						"No" => $service_invoice->number,
-						// "No" => '23AUG2020SN159',
+						// "No" => '23AUG2020SN154',
 						"Dt" => date('d-m-Y', strtotime($service_invoice->document_date)),
 					),
 					'SellerDtls' => array(
@@ -1906,13 +1966,50 @@ class ServiceInvoiceController extends Controller {
 			// dd(1);
 
 			//AES ENCRYPT
-			//ENCRYPT WITH Decrypted BDO SEK KEY TO PLAIN TEXT AND JSON DATA
-			$encrypt_data = self::encryptAesData($decrypt_data_with_bdo_sek, $json_encoded_data);
-			if (!$encrypt_data) {
-				$errors[] = 'IRN Encryption Error!';
-				return response()->json(['success' => false, 'error' => 'IRN Encryption Error!']);
+			$aes_encrypt_url = 'https://www.devglan.com/online-tools/aes-encryption';
+
+			$ch = curl_init($aes_encrypt_url);
+
+			$data = array(
+				'data' => json_encode(array(
+					'textToEncrypt' => $json_encoded_data,
+					'secretKey' => $aes_decoded_plain_text,
+					'mode' => 'ECB',
+					'keySize' => '256',
+					'dataFormat' => 'Base64',
+				)),
+			);
+
+			// Attach encoded JSON string to the POST fields
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+
+			// Set the content type to application/json
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:multipart/form-data'));
+			// curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+
+			// Return response instead of outputting
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+			$server_output = curl_exec($ch);
+
+			// Get the POST request header status
+			$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+			// If header status is not Created or not OK, return error message
+			if ($status != 200) {
+				return [
+					'success' => false,
+					'errors' => ['Connection error!'],
+				];
+				$errors[] = 'Connection error!';
 			}
-			// dd($encrypt_data);
+			// dd(storage_path('app/public/service-invoice/IRN_images/'));
+
+			curl_close($ch);
+
+			$aes_output = json_decode($server_output);
+			// dd($aes_output->output);
+			// dd($errors);
 
 			//ENCRYPTED GIVEN DATA TO DBO
 			$bdo_generate_irn_url = 'https://sandboxeinvoiceapi.bdo.in/bdoapi/public/generateIRN';
@@ -1921,7 +2018,7 @@ class ServiceInvoiceController extends Controller {
 			$ch = curl_init($bdo_generate_irn_url);
 			// Setup request to send json via POST`
 			$params = json_encode(array(
-				'Data' => $encrypt_data,
+				'Data' => $aes_output->output,
 			));
 
 			// Attach encoded JSON string to the POST fields
@@ -2034,17 +2131,79 @@ class ServiceInvoiceController extends Controller {
 			$api_params['errors'] = NULL;
 			$api_logs[4] = $api_params;
 
+			// ServiceInvoice::apiLogs($api_params);
+
+			// DB::beginTransaction();
+
+			// $api_log = new ApiLog;
+			// $api_log->type_id = $service_invoice->type_id;
+			// $api_log->entity_number = $service_invoice->number;
+			// $api_log->entity_id = $service_invoice->id;
+			// $api_log->url = $bdo_generate_irn_url;
+			// $api_log->src_data = $params;
+			// $api_log->response_data = $generate_irn_output_data;
+			// $api_log->user_id = Auth::user()->id;
+			// $api_log->created_by_id = Auth::user()->id;
+
+			// $api_log->status_id = !empty($errors) ? 11272 : 11271; //FAILED //SUCCESS
+			// $api_log->errors = empty($errors) ? NULL : json_encode($errors);
+			// $api_log->save();
+
+			// DB::commit();
+
 			//AES DECRYPTION AFTER GENERATE IRN
-			$irn_decrypt_data = self::decryptAesData($decrypt_data_with_bdo_sek, $generate_irn_output['Data']);
-			// dd($irn_decrypt_data);
-			if (!$irn_decrypt_data) {
-				$errors[] = 'IRN Decryption Error!';
-				return response()->json(['success' => false, 'error' => 'IRN Decryption Error!']);
+			$aes_decrypt_url = 'https://www.devglan.com/online-tools/aes-decryption';
+
+			$ch = curl_init($aes_decrypt_url);
+
+			// Setup request to send json via POST`
+			$params = json_encode(array(
+				'textToDecrypt' => $generate_irn_output['Data'],
+				'secretKey' => $aes_decoded_plain_text, //PLAIN TEXT GET FROM DECODE
+				'mode' => 'ECB',
+				'keySize' => '256',
+				'dataFormat' => 'Base64',
+			));
+
+			// Attach encoded JSON string to the POST fields
+			curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+
+			// Set the content type to application/json
+			curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+
+			// Return response instead of outputting
+			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+			// Execute the POST request
+			$server_output = curl_exec($ch);
+			// dump($server_output);
+
+			// Get the POST request header status
+			$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+			// dump('final status check: ' . $status);
+			// If header status is not Created or not OK, return error message
+			if ($status != 200) {
+				$errors[] = 'Connection error!';
+				return [
+					'success' => false,
+					'errors' => ['Connection error!'],
+				];
+				// return response()->json([
+				//  'success' => false,
+				//  'error' => 'call to URL $bdo_generate_irn_url failed with status $status',
+				//  'errors' => ["response " . $server_output . ", curl_error " . curl_error($ch) . ", curl_errno " . curl_errno($ch)],
+				// ]);
 			}
+			// dd(1);
 
-			$final_json_decode = json_decode($irn_decrypt_data);
+			curl_close($ch);
+
+			$final_encrypt_output = json_decode($server_output);
+
+			$aes_final_decoded_plain_text = base64_decode($final_encrypt_output->output);
+			// dump($aes_final_decoded_plain_text);
+			$final_json_decode = json_decode($aes_final_decoded_plain_text);
 			// dd($final_json_decode);
-
 			$IRN_images_des = storage_path('app/public/service-invoice/IRN_images');
 			File::makeDirectory($IRN_images_des, $mode = 0777, true, true);
 
@@ -2086,7 +2245,7 @@ class ServiceInvoiceController extends Controller {
 			$service_invoice_save->ack_date = $final_json_decode->AckDt;
 			$service_invoice_save->version = $get_version->Version;
 			$service_invoice_save->irn_request = $json_encoded_data;
-			$service_invoice_save->irn_response = $irn_decrypt_data;
+			$service_invoice_save->irn_response = $aes_final_decoded_plain_text;
 
 			if (!$r['success']) {
 				$service_invoice_save->status_id = 2; //APPROVAL 1 PENDING
@@ -2589,18 +2748,18 @@ class ServiceInvoiceController extends Controller {
 
 		$rsa->loadKey($public_key);
 		$rsa->setEncryptionMode(2);
-		// $client_secret_key = 'BBAkBDB0YzZiYThkYTg4ZDZBBDJjZBUyBGFkBBB0BWB='; // CLIENT SECRET KEY
-		$client_secret_key = 'TQAkSDQ0YzZiYTTkYTg4ZDZSSDJjZSUySGFkSSQ0SWQ='; // CLIENT SECRET KEY
-		// $client_secret_key = '7dd55886594bccadb03c48eb3f448e'; // LIVE
+		// $data = 'BBAkBDB0YzZiYThkYTg4ZDZBBDJjZBUyBGFkBBB0BWB='; // CLIENT SECRET KEY
+		$data = 'TQAkSDQ0YzZiYTTkYTg4ZDZSSDJjZSUySGFkSSQ0SWQ='; // CLIENT SECRET KEY
+		// $data = '7dd55886594bccadb03c48eb3f448e'; // LIVE
 
-		$ClientSecret = $rsa->encrypt($client_secret_key);
+		$ClientSecret = $rsa->encrypt($data);
 		$clientsecretencrypted = base64_encode($ClientSecret);
 		// dump('ClientSecret ' . $clientsecretencrypted);
 
 		$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-		$app_secret_key = substr(str_shuffle($characters), 0, 32); // RANDOM KEY GENERATE
-		// $app_secret_key = 'Rdp5EB5w756dVph0C3jCXY1K6RPC6RCD'; // RANDOM KEY GENERATE
-		$AppSecret = $rsa->encrypt($app_secret_key);
+		$data = substr(str_shuffle($characters), 0, 32); // RANDOM KEY GENERATE
+		// $data = 'Rdp5EB5w756dVph0C3jCXY1K6RPC6RCD'; // RANDOM KEY GENERATE
+		$AppSecret = $rsa->encrypt($data);
 		$appsecretkey = base64_encode($AppSecret);
 		// dump('appsecretkey ' . $appsecretkey);
 
@@ -2673,12 +2832,52 @@ class ServiceInvoiceController extends Controller {
 		$status = $server_output->status;
 		$bdo_sek = $server_output->bdo_sek;
 
-		//DECRYPT WITH APP KEY AND BDO SEK KEY
-		$decrypt_data_with_bdo_sek = self::decryptAesData($app_secret_key, $bdo_sek);
-		if (!$decrypt_data_with_bdo_sek) {
-			$errors[] = 'Decryption Error!';
-			return response()->json(['success' => false, 'error' => 'Decryption Error!']);
+		$aes_decrypt_url = 'https://www.devglan.com/online-tools/aes-decryption';
+
+		$ch = curl_init($aes_decrypt_url);
+
+		// Setup request to send json via POST`
+		$params = json_encode(array(
+			'textToDecrypt' => $bdo_sek,
+			'secretKey' => $data,
+			'mode' => 'ECB',
+			'keySize' => '256',
+			'dataFormat' => 'Base64',
+		));
+
+		// Attach encoded JSON string to the POST fields
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+
+		// Set the content type to application/json
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+		// Return response instead of outputting
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+		// Execute the POST request
+		$server_output = curl_exec($ch);
+
+		// Get the POST request header status
+		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+		// If header status is not Created or not OK, return error message
+		if ($status != 200) {
+			// $errors[] = curl_errno($ch);
+			return [
+				'success' => false,
+				'errors' => curl_errno($ch),
+			];
+			// return response()->json([
+			//  'success' => false,
+			//  'error' => 'call to URL $bdo_login_url failed with status $status',
+			//  'errors' => ["response " . $server_output . ", curl_error " . curl_error($ch) . ", curl_errno " . curl_errno($ch)],
+			// ]);
 		}
+
+		curl_close($ch);
+
+		$server_output = json_decode($server_output);
+
+		$aes_decoded_plain_text = base64_decode($server_output->output);
 
 		$json_encoded_data =
 			json_encode(
@@ -2693,15 +2892,53 @@ class ServiceInvoiceController extends Controller {
 				"remark" => "Wrong Data",
 			)
 		);
-		// dump($json_encoded_data);
+		// dd($json_encoded_data);
 
-		//ENCRYPT WITH Decrypted BDO SEK KEY TO PLAIN TEXT AND JSON DATA
-		$encrypt_data = self::encryptAesData($decrypt_data_with_bdo_sek, $json_encoded_data);
-		if (!$encrypt_data) {
-			$errors[] = 'IRN Encryption Error!';
-			return response()->json(['success' => false, 'error' => 'IRN Encryption Error!']);
+		//AES ENCRYPT
+		$aes_encrypt_url = 'https://www.devglan.com/online-tools/aes-encryption';
+
+		$ch = curl_init($aes_encrypt_url);
+
+		$data = array(
+			'data' => json_encode(array(
+				'textToEncrypt' => $json_encoded_data,
+				'secretKey' => $aes_decoded_plain_text,
+				'mode' => 'ECB',
+				'keySize' => '256',
+				'dataFormat' => 'Base64',
+			)),
+		);
+
+		// Attach encoded JSON string to the POST fields
+		curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+
+		// Set the content type to application/json
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:multipart/form-data'));
+		// curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+
+		// Return response instead of outputting
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+		$server_output = curl_exec($ch);
+
+		// Get the POST request header status
+		$status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+
+		// If header status is not Created or not OK, return error message
+		if ($status != 200) {
+			// $errors[] = curl_errno($ch);
+			return [
+				'success' => false,
+				'errors' => curl_errno($ch),
+			];
 		}
-		// dd($encrypt_data);
+		// dd(storage_path('app/public/service-invoice/IRN_images/'));
+
+		curl_close($ch);
+
+		$aes_output = json_decode($server_output);
+
+		// dd($aes_output);
 
 		$bdo_cancel_irn_url = 'https://sandboxeinvoiceapi.bdo.in/bdoapi/public/cancelIRN';
 		// $bdo_cancel_irn_url = 'https://einvoiceapi.bdo.in/bdoapi/public/cancelIRN'; //LIVE
@@ -2709,7 +2946,7 @@ class ServiceInvoiceController extends Controller {
 		$ch = curl_init($bdo_cancel_irn_url);
 		// Setup request to send json via POST`
 		$params = json_encode(array(
-			'Data' => $encrypt_data,
+			'Data' => $aes_output->output,
 		));
 
 		// Attach encoded JSON string to the POST fields
@@ -3138,24 +3375,5 @@ class ServiceInvoiceController extends Controller {
 
 	public function getGstDetails($gstin) {
 		return Customer::getGstDetail($gstin);
-	}
-
-	public static function encryptAesData($encryption_key, $data) {
-		$method = 'aes-256-ecb';
-
-		$iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($method));
-
-		$encrypted = openssl_encrypt($data, $method, $encryption_key, 0, $iv);
-
-		return $encrypted;
-	}
-
-	public static function decryptAesData($encryption_key, $data) {
-		$method = 'aes-256-ecb';
-
-		$iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($method));
-
-		$decrypted = openssl_decrypt(base64_decode($data), $method, $encryption_key, OPENSSL_RAW_DATA, $iv);
-		return $decrypted;
 	}
 }
