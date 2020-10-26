@@ -1497,16 +1497,16 @@ class ServiceInvoiceController extends Controller {
 
 			$rsa->loadKey($public_key);
 			$rsa->setEncryptionMode(2);
-			// $data = 'BBAkBDB0YzZiYThkYTg4ZDZBBDJjZBUyBGFkBBB0BWB='; // CLIENT SECRET KEY
+			// $client_secret_key = 'BBAkBDB0YzZiYThkYTg4ZDZBBDJjZBUyBGFkBBB0BWB='; // CLIENT SECRET KEY
 			// $client_secret_key = 'TQAkSDQ0YzZiYTTkYTg4ZDZSSDJjZSUySGFkSSQ0SWQ='; // CLIENT SECRET KEY
-			$data = '7dd55886594bccadb03c48eb3f448e'; // LIVE
+			$client_secret_key = '7dd55886594bccadb03c48eb3f448e'; // LIVE
 			$ClientSecret = $rsa->encrypt($client_secret_key);
 			$clientsecretencrypted = base64_encode($ClientSecret);
 			// dump('ClientSecret ' . $clientsecretencrypted);
 
 			$characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
 			$app_secret_key = substr(str_shuffle($characters), 0, 32); // RANDOM KEY GENERATE
-			// $data = 'Rdp5EB5w756dVph0C3jCXY1K6RPC6RCD'; // RANDOM KEY GENERATE
+			// $app_secret_key = 'Rdp5EB5w756dVph0C3jCXY1K6RPC6RCD'; // RANDOM KEY GENERATE
 			$AppSecret = $rsa->encrypt($app_secret_key);
 			$appsecretkey = base64_encode($AppSecret);
 			// dump('appsecretkey ' . $appsecretkey);
