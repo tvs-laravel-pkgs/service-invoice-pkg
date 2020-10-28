@@ -2045,6 +2045,17 @@ class ServiceInvoiceController extends Controller {
 			$final_json_decode = json_decode($irn_decrypt_data);
 			// dd($final_json_decode);
 
+			if ($final_json_decode->irnStatus == 0) {
+				$api_params['message'] = $final_json_decode->irnStatus;
+				$api_params['errors'] = $final_json_decode->irnStatus;
+				$api_logs[6] = $api_params;
+				return [
+					'success' => false,
+					'errors' => $final_json_decode->ErrorMsg,
+					'api_logs' => $api_logs,
+				];
+			}
+
 			$IRN_images_des = storage_path('app/public/service-invoice/IRN_images');
 			File::makeDirectory($IRN_images_des, $mode = 0777, true, true);
 
