@@ -2721,20 +2721,20 @@ class ServiceInvoiceController extends Controller {
 						}
 					}
 				}
-				$file_name = 'cn-dn-tcs-export-' . date('Y-m-d-H-i-s');
-				Excel::create($file_name, function ($excel) use ($service_invoice_header, $service_invoice_details) {
-					$excel->sheet('cn-dn-tcs', function ($sheet) use ($service_invoice_header, $service_invoice_details) {
-						$sheet->fromArray($service_invoice_details, NULL, 'A1');
-						$sheet->row(1, $service_invoice_header);
-						$sheet->row(1, function ($row) {
-							$row->setBackground('#c4c4c4');
-						});
-					});
-					$excel->setActiveSheetIndex(0);
-				})
-					->store('xlsx')
-				;
 			}
+			$file_name = 'cn-dn-tcs-export-' . date('Y-m-d-H-i-s');
+			Excel::create($file_name, function ($excel) use ($service_invoice_header, $service_invoice_details) {
+				$excel->sheet('cn-dn-tcs', function ($sheet) use ($service_invoice_header, $service_invoice_details) {
+					$sheet->fromArray($service_invoice_details, NULL, 'A1');
+					$sheet->row(1, $service_invoice_header);
+					$sheet->row(1, function ($row) {
+						$row->setBackground('#c4c4c4');
+					});
+				});
+				$excel->setActiveSheetIndex(0);
+			})
+				->store('xlsx')
+			;
 		}
 		return response()->download('storage/exports/' . $file_name . '.xlsx');
 		return Storage::download(storage_path('exports/') . $file_name . '.xlsx');
