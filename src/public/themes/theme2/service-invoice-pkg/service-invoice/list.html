@@ -226,10 +226,15 @@
                         </div>
                         <div class="row modal-row">
                             <div class="col-md-6">
-                                <button type="button" class="btn btn-rose my-tooltip" ng-click="reset_filter(); $ctrl.type_id=''; $ctrl.branchSearchText=''; $ctrl.service_invoice.sbu_id=''; $ctrl.service_invoice.category_id=''; $ctrl.service_invoice.sub_category_id=''; $ctrl.customerSearchText=''; $ctrl.status_id=''" ng-shortcut="'meta+shift+t'" ng-shortcut-click data-title="ctrl+shift+t">Reset Filter</button>
-                                <button type="submit" class="btn btn-primary my-tooltip" ng-click="$ctrl.exportToExcel()" ng-shortcut="'meta+shift+e'" ng-shortcut-click data-title="ctrl+shift+e">
+                                <button type="button" class="btn btn-rose my-tooltip" ng-click="reset_filter(); $ctrl.type_id=''; $ctrl.branchSearchText=''; $ctrl.service_invoice.sbu_id=''; $ctrl.service_invoice.category_id=''; $ctrl.service_invoice.sub_category_id=''; $ctrl.customerSearchText=''; $ctrl.status_id=''" ng-shortcut="'meta+shift+t'" ng-shortcut-click data-title="ctrl+shift+t" id="reset_filter">Reset Filter</button>
+                                <!-- <button type="submit" class="btn btn-primary my-tooltip" ng-click="$ctrl.exportToExcel()" ng-shortcut="'meta+shift+e'" ng-shortcut-click data-title="ctrl+shift+e" id="export">
                                     Export
-                                </button>
+                                </button> -->
+                                <input class="btn btn-primary my-tooltip" ng-shortcut="'meta+shift+e'" ng-shortcut-click data-title="ctrl+shift+e" class="btn btn-primary my-tooltip" type="submit" name="export_type" value="Export">
+                                <input class="btn btn-primary my-tooltip" type="submit" name="export_type" value="TCS Export">
+                                <!-- <button type="button" class="btn btn-primary my-tooltip" ng-click="$ctrl.TCSexportToExcel()" id="tcs_export"> -->
+                                    <!-- TCS Export -->
+                                <!-- </button> -->
                             </div>
                         </div><!-- Row -->
                     </div><!-- Modal Form -->
