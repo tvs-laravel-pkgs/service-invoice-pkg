@@ -231,7 +231,7 @@
                                     Export
                                 </button> -->
                                 <input class="btn btn-primary my-tooltip" ng-shortcut="'meta+shift+e'" ng-shortcut-click data-title="ctrl+shift+e" class="btn btn-primary my-tooltip" type="submit" name="export_type" value="Export">
-                                <input class="btn btn-primary my-tooltip" type="submit" name="export_type" value="TCS Export">
+                                <input ng-if="$ctrl.tcs_export" class="btn btn-primary my-tooltip" type="submit" name="export_type" value="TCS Export">
                                 <!-- <button type="button" class="btn btn-primary my-tooltip" ng-click="$ctrl.TCSexportToExcel()" id="tcs_export"> -->
                                     <!-- TCS Export -->
                                 <!-- </button> -->
