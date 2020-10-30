@@ -70,6 +70,7 @@ app.component('serviceInvoiceList', {
         self.create_dn = self.hasPermission('create-dn');
         self.create_inv = self.hasPermission('create-inv');
         self.import_cn_dn = self.hasPermission('import-cn-dn');
+        self.tcs_export = self.hasPermission('tcs-export');
         $http.get(
             get_service_invoice_filter_url
         ).then(function(response) {
