@@ -145,6 +145,13 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 				'display_name' => 'View SBU Based',
 			],
 
+			3053 => [
+				'display_order' => 12,
+				'parent_id' => 3040,
+				'name' => 'tcs-export',
+				'display_name' => 'TCS Export',
+			],
+
 		];
 
 		foreach ($permissions as $permission_id => $permsion) {
