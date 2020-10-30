@@ -2482,102 +2482,248 @@ class ServiceInvoiceController extends Controller {
 	}
 
 	public function exportServiceInvoicesToExcel(Request $request) {
+		// dd($request->all());
 		ini_set('memory_limit', '-1');
 		ini_set('max_execution_time', 0);
 
 		ob_end_clean();
 		$date_range = explode(" to ", $request->invoice_date);
 		// $approved_status = ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
+		if ($request->export_type == "Export") {
+			$query = ServiceInvoice::select('service_invoices.*')
+			// ->join('service_item_sub_categories as sc', 'sc.id', 'service_invoices.sub_category_id')
+				->where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
+				->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
+				->where('service_invoices.company_id', Auth::user()->company_id)
+				->where('status_id', 4)
+				->where(function ($query) use ($request) {
+					if ($request->invoice_number) {
+						$query->where('service_invoices.number', 'like', "%" . $request->invoice_number . "%");
+					}
+				})
+				->where(function ($query) use ($request) {
+					if (!empty($request->type_id)) {
+						$query->where('service_invoices.type_id', $request->type_id);
+					}
+				})
+				->where(function ($query) use ($request) {
+					if (!empty($request->branch_id)) {
+						$query->where('service_invoices.branch_id', $request->branch_id);
+					}
+				})
+				->where(function ($query) use ($request) {
+					if (!empty($request->sbu_id)) {
+						$query->where('service_invoices.sbu_id', $request->sbu_id);
+					}
+				})
+				->where(function ($query) use ($request) {
+					if (!empty($request->category_id)) {
+						$query->where('service_invoices.category_id', $request->category_id);
+						// $query->where('sc.category_id', $request->category_id);
+					}
+				})
+			// ->where(function ($query) use ($request) {
+			// 	if (!empty($request->sub_category_id)) {
+			// 		$query->where('service_invoices.sub_category_id', $request->sub_category_id);
+			// 	}
+			// })
+				->where(function ($query) use ($request) {
+					if (!empty($request->customer_id)) {
+						$query->where('service_invoices.customer_id', $request->customer_id);
+					}
+				})
+				->where(function ($query) use ($request) {
+					if (Entrust::can('view-own-cn-dn')) {
+						$query->where('service_invoices.created_by_id', Auth::id());
+					}
+				})
+			;
+			$service_invoices = clone $query;
+			$service_invoices = $service_invoices->get();
+			// dd($service_invoices);
+			foreach ($service_invoices as $service_invoice) {
+				$service_invoice->exportToAxapta(true);
+			}
 
-		$query = ServiceInvoice::select('service_invoices.*')
-		// ->join('service_item_sub_categories as sc', 'sc.id', 'service_invoices.sub_category_id')
-			->where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
-			->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
-			->where('service_invoices.company_id', Auth::user()->company_id)
-			->where('status_id', 4)
-			->where(function ($query) use ($request) {
-				if ($request->invoice_number) {
-					$query->where('service_invoices.number', 'like', "%" . $request->invoice_number . "%");
+			$service_invoice_ids = clone $query;
+
+			$service_invoice_ids = $service_invoice_ids->pluck('service_invoices.id');
+			// dd($service_invoice_ids);
+			$axapta_records = AxaptaExport::where([
+				'company_id' => Auth::user()->company_id,
+				'entity_type_id' => 1400,
+			])
+				->whereIn('entity_id', $service_invoice_ids)
+				->get()->toArray();
+
+			// $axapta_records = [];
+			foreach ($axapta_records as $key => &$axapta_record) {
+				$axapta_record['TransDate'] = date('d/m/Y', strtotime($axapta_record['TransDate']));
+				$axapta_record['DocumentDate'] = date('d/m/Y', strtotime($axapta_record['DocumentDate']));
+				unset($axapta_record['id']);
+				unset($axapta_record['company_id']);
+				unset($axapta_record['entity_type_id']);
+				unset($axapta_record['entity_id']);
+				unset($axapta_record['created_at']);
+				unset($axapta_record['updated_at']);
+				$axapta_record['LineNum'] = $key + 1;
+			}
+			// dd($axapta_records);
+
+			$file_name = 'cn-dn-export-' . date('Y-m-d-H-i-s');
+			Excel::create($file_name, function ($excel) use ($axapta_records) {
+				$excel->sheet('cn-dns', function ($sheet) use ($axapta_records) {
+
+					$sheet->fromArray($axapta_records);
+				});
+			})->store('xlsx')
+			//->download('xlsx')
+			;
+
+		} elseif ($request->export_type == "TCS Export") {
+			$query = ServiceInvoice::with([
+				'company',
+				// 'customer',
+				'toAccountType',
+				'address',
+				'outlets',
+				'outlets.primaryAddress',
+				'outlets.region',
+				'sbus',
+				'serviceInvoiceItems',
+				'serviceInvoiceItems.serviceItem' => function ($query) {
+					$query->whereNotNull('tcs_percentage');
+				},
+				'serviceInvoiceItems.eavVarchars',
+				'serviceInvoiceItems.eavInts',
+				'serviceInvoiceItems.eavDatetimes',
+				'serviceInvoiceItems.eInvoiceUom',
+				'serviceInvoiceItems.serviceItem.taxCode',
+				'serviceInvoiceItems.taxes',
+			])
+				->where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
+				->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
+				->where('service_invoices.company_id', Auth::user()->company_id)
+				->where('status_id', 4)
+			;
+
+			$service_invoices = clone $query;
+			$service_invoices = $service_invoices->get();
+			// dd($service_invoices);
+
+			if (count($service_invoices) > 0) {
+				$service_invoice_header = ['Outlet', 'Bill / No.', 'Invoice date', 'Item name', 'Account Type', 'Customer name', 'Address', 'Zip code', 'PAN number', 'Before GST amount', 'CGST amount', 'SGST amount', 'IGST amount', 'KFC amount', 'Taxable amount', 'Payment dates', 'Period', 'IT %', 'IT amount', 'Total'];
+				// dd($service_invoice_header);
+				$service_invoice_details = array();
+				if ($service_invoices) {
+					foreach ($service_invoices as $key => $service_invoice) {
+						// dump($service_invoice);
+						$gst_total = 0;
+						$cgst_amt = 0;
+						$sgst_amt = 0;
+						$igst_amt = 0;
+						$kfc_amt = 0;
+						$tcs_total = 0;
+						foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
+							$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id);
+							if (!$taxes['success']) {
+								return response()->json(['success' => false, 'error' => $taxes['error']]);
+							}
+
+							$service_item = ServiceItem::with([
+								'coaCode',
+								'taxCode',
+								'taxCode.taxes' => function ($query) use ($taxes) {
+									$query->whereIn('tax_id', $taxes['tax_ids']);
+								},
+							])
+								->find($serviceInvoiceItem->service_item_id);
+							if (!$service_item) {
+								return response()->json(['success' => false, 'error' => 'Service Item not found']);
+							}
+							// dd($serviceInvoiceItem->serviceItem);
+							//TAX CALC AND PUSH
+							if (!is_null($service_item->sac_code_id)) {
+								if (count($service_item->taxCode->taxes) > 0) {
+									foreach ($service_item->taxCode->taxes as $key => $value) {
+										//FOR CGST
+										if ($value->name == 'CGST') {
+											$cgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+										}
+										//FOR CGST
+										if ($value->name == 'SGST') {
+											$sgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+										}
+										//FOR CGST
+										if ($value->name == 'IGST') {
+											$igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+										}
+									}
+
+									if ($service_invoice->address->state_id) {
+										// dd('in');
+										if (($service_invoice->address->state_id == 3) && ($service_invoice->outlets->state_id == 3)) {
+											//3 FOR KERALA
+											//check customer state and outlet states are equal KL.  //add KFC tax
+											if (!$request->gst_number) {
+												//customer dont't have GST
+												if (!is_null($service_item->sac_code_id)) {
+													//customer have HSN and SAC Code
+													$kfc_amt = round($serviceInvoiceItem->sub_total * 1 / 100, 2);
+												}
+											}
+										}
+									}
+								}
+							}
+							//FOR TCS TAX
+							if (!empty($service_item->tcs_percentage)) {
+								$gst_total = 0;
+								$gst_total = $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt;
+								$tcs_total = round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
+							}
+
+							// dd($serviceInvoiceItem->sub_total);
+							$service_invoice_details[] = [
+								$service_invoice->outlets->code,
+								$service_invoice->number,
+								date('d/m/Y', strtotime($service_invoice->document_date)),
+								$service_item->name,
+								$service_invoice->toAccountType->name,
+								$service_invoice->customer->name,
+								$service_invoice->address->address_line1 . ',' . $service_invoice->address->address_line2,
+								$service_invoice->address->pincode,
+								$service_invoice->customer->pan_number,
+								$serviceInvoiceItem->sub_total,
+								$cgst_amt,
+								$sgst_amt,
+								$igst_amt,
+								$kfc_amt,
+								$serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt,
+								'-',
+								'-',
+								$service_item->tcs_percentage,
+								$tcs_total,
+								$serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt + $tcs_total,
+							];
+						}
+					}
 				}
-			})
-			->where(function ($query) use ($request) {
-				if (!empty($request->type_id)) {
-					$query->where('service_invoices.type_id', $request->type_id);
-				}
-			})
-			->where(function ($query) use ($request) {
-				if (!empty($request->branch_id)) {
-					$query->where('service_invoices.branch_id', $request->branch_id);
-				}
-			})
-			->where(function ($query) use ($request) {
-				if (!empty($request->sbu_id)) {
-					$query->where('service_invoices.sbu_id', $request->sbu_id);
-				}
-			})
-			->where(function ($query) use ($request) {
-				if (!empty($request->category_id)) {
-					$query->where('service_invoices.category_id', $request->category_id);
-					// $query->where('sc.category_id', $request->category_id);
-				}
-			})
-		// ->where(function ($query) use ($request) {
-		// 	if (!empty($request->sub_category_id)) {
-		// 		$query->where('service_invoices.sub_category_id', $request->sub_category_id);
-		// 	}
-		// })
-			->where(function ($query) use ($request) {
-				if (!empty($request->customer_id)) {
-					$query->where('service_invoices.customer_id', $request->customer_id);
-				}
-			})
-			->where(function ($query) use ($request) {
-				if (Entrust::can('view-own-cn-dn')) {
-					$query->where('service_invoices.created_by_id', Auth::id());
-				}
-			})
-		;
-		$service_invoices = clone $query;
-		$service_invoices = $service_invoices->get();
-		// dd($service_invoices);
-		foreach ($service_invoices as $service_invoice) {
-			$service_invoice->exportToAxapta(true);
+				$file_name = 'cn-dn-tcs-export-' . date('Y-m-d-H-i-s');
+				Excel::create($file_name, function ($excel) use ($service_invoice_header, $service_invoice_details) {
+					$excel->sheet('cn-dn-tcs', function ($sheet) use ($service_invoice_header, $service_invoice_details) {
+						$sheet->fromArray($service_invoice_details, NULL, 'A1');
+						$sheet->row(1, $service_invoice_header);
+						$sheet->row(1, function ($row) {
+							$row->setBackground('#c4c4c4');
+						});
+					});
+					$excel->setActiveSheetIndex(0);
+				})
+					->store('xlsx')
+				;
+			}
 		}
-
-		$service_invoice_ids = clone $query;
-
-		$service_invoice_ids = $service_invoice_ids->pluck('service_invoices.id');
-		// dd($service_invoice_ids);
-		$axapta_records = AxaptaExport::where([
-			'company_id' => Auth::user()->company_id,
-			'entity_type_id' => 1400,
-		])
-			->whereIn('entity_id', $service_invoice_ids)
-			->get()->toArray();
-
-		// $axapta_records = [];
-		foreach ($axapta_records as $key => &$axapta_record) {
-			$axapta_record['TransDate'] = date('d/m/Y', strtotime($axapta_record['TransDate']));
-			$axapta_record['DocumentDate'] = date('d/m/Y', strtotime($axapta_record['DocumentDate']));
-			unset($axapta_record['id']);
-			unset($axapta_record['company_id']);
-			unset($axapta_record['entity_type_id']);
-			unset($axapta_record['entity_id']);
-			unset($axapta_record['created_at']);
-			unset($axapta_record['updated_at']);
-			$axapta_record['LineNum'] = $key + 1;
-		}
-		// dd($axapta_records);
-
-		$file_name = 'cn-dn-export-' . date('Y-m-d-H-i-s');
-		Excel::create($file_name, function ($excel) use ($axapta_records) {
-			$excel->sheet('cn-dns', function ($sheet) use ($axapta_records) {
-
-				$sheet->fromArray($axapta_records);
-			});
-		})->store('xlsx')
-		//->download('xlsx')
-		;
 		return response()->download('storage/exports/' . $file_name . '.xlsx');
 		return Storage::download(storage_path('exports/') . $file_name . '.xlsx');
 
