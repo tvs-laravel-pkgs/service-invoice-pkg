@@ -2612,12 +2612,13 @@ class ServiceInvoiceController extends Controller {
 			$service_invoices = $service_invoices->get();
 			// dd($service_invoices);
 
+			$service_invoice_header = ['Outlet', 'Bill / No.', 'Invoice date', 'Item name', 'Account Type', 'Customer name', 'Address', 'Zip code', 'PAN number',
+				// 'HSN/SAC Code',
+				'Before GST amount', 'CGST amount', 'SGST amount', 'IGST amount', 'KFC amount', 'Taxable amount', 'Payment dates', 'Period', 'IT %', 'IT amount', 'Total'];
+			$service_invoice_details = array();
+
 			if (count($service_invoices) > 0) {
-				$service_invoice_header = ['Outlet', 'Bill / No.', 'Invoice date', 'Item name', 'Account Type', 'Customer name', 'Address', 'Zip code', 'PAN number',
-					// 'HSN/SAC Code',
-					'Before GST amount', 'CGST amount', 'SGST amount', 'IGST amount', 'KFC amount', 'Taxable amount', 'Payment dates', 'Period', 'IT %', 'IT amount', 'Total'];
 				// dd($service_invoice_header);
-				$service_invoice_details = array();
 				if ($service_invoices) {
 					foreach ($service_invoices as $key => $service_invoice) {
 						// foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
