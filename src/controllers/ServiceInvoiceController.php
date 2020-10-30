@@ -2590,9 +2590,10 @@ class ServiceInvoiceController extends Controller {
 				'outlets.region',
 				'sbus',
 				'serviceInvoiceItems',
-				'serviceInvoiceItems.serviceItem' => function ($query) {
-					$query->whereNotNull('tcs_percentage');
-				},
+				'serviceInvoiceItems.serviceItem',
+				//  => function ($query) {
+				// 	$query->whereNotNull('tcs_percentage');
+				// },
 				'serviceInvoiceItems.eavVarchars',
 				'serviceInvoiceItems.eavInts',
 				'serviceInvoiceItems.eavDatetimes',
@@ -2604,18 +2605,24 @@ class ServiceInvoiceController extends Controller {
 				->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
 				->where('service_invoices.company_id', Auth::user()->company_id)
 				->where('status_id', 4)
+			// ->get()
 			;
-
+			// dd(count($query));
 			$service_invoices = clone $query;
 			$service_invoices = $service_invoices->get();
 			// dd($service_invoices);
 
 			if (count($service_invoices) > 0) {
-				$service_invoice_header = ['Outlet', 'Bill / No.', 'Invoice date', 'Item name', 'Account Type', 'Customer name', 'Address', 'Zip code', 'PAN number', 'Before GST amount', 'CGST amount', 'SGST amount', 'IGST amount', 'KFC amount', 'Taxable amount', 'Payment dates', 'Period', 'IT %', 'IT amount', 'Total'];
+				$service_invoice_header = ['Outlet', 'Bill / No.', 'Invoice date', 'Item name', 'Account Type', 'Customer name', 'Address', 'Zip code', 'PAN number',
+					// 'HSN/SAC Code',
+					'Before GST amount', 'CGST amount', 'SGST amount', 'IGST amount', 'KFC amount', 'Taxable amount', 'Payment dates', 'Period', 'IT %', 'IT amount', 'Total'];
 				// dd($service_invoice_header);
 				$service_invoice_details = array();
 				if ($service_invoices) {
 					foreach ($service_invoices as $key => $service_invoice) {
+						// foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
+						// 	dd($serviceInvoiceItem->serviceItem);
+						// }
 						// dump($service_invoice);
 						$gst_total = 0;
 						$cgst_amt = 0;
@@ -2624,7 +2631,9 @@ class ServiceInvoiceController extends Controller {
 						$kfc_amt = 0;
 						$tcs_total = 0;
 						foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
+
 							$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id);
+
 							if (!$taxes['success']) {
 								return response()->json(['success' => false, 'error' => $taxes['error']]);
 							}
@@ -2637,6 +2646,7 @@ class ServiceInvoiceController extends Controller {
 								},
 							])
 								->find($serviceInvoiceItem->service_item_id);
+							// dd($service_item->taxCode->code);
 							if (!$service_item) {
 								return response()->json(['success' => false, 'error' => 'Service Item not found']);
 							}
@@ -2682,29 +2692,32 @@ class ServiceInvoiceController extends Controller {
 								$tcs_total = round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
 							}
 
-							// dd($serviceInvoiceItem->sub_total);
-							$service_invoice_details[] = [
-								$service_invoice->outlets->code,
-								$service_invoice->number,
-								date('d/m/Y', strtotime($service_invoice->document_date)),
-								$service_item->name,
-								$service_invoice->toAccountType->name,
-								$service_invoice->customer->name,
-								$service_invoice->address->address_line1 . ',' . $service_invoice->address->address_line2,
-								$service_invoice->address->pincode,
-								$service_invoice->customer->pan_number,
-								$serviceInvoiceItem->sub_total,
-								$cgst_amt,
-								$sgst_amt,
-								$igst_amt,
-								$kfc_amt,
-								$serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt,
-								'-',
-								'-',
-								$service_item->tcs_percentage,
-								$tcs_total,
-								$serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt + $tcs_total,
-							];
+							if ($serviceInvoiceItem->serviceItem && $serviceInvoiceItem->serviceItem->tcs_percentage > 0) {
+								// dd($serviceInvoiceItem->sub_total);
+								$service_invoice_details[] = [
+									$service_invoice->outlets->code,
+									$service_invoice->number,
+									date('d/m/Y', strtotime($service_invoice->document_date)),
+									$service_item->name,
+									$service_invoice->toAccountType->name,
+									$service_invoice->customer->name,
+									$service_invoice->address->address_line1 . ',' . $service_invoice->address->address_line2,
+									$service_invoice->address->pincode,
+									$service_invoice->customer->pan_number,
+									// $service_item->taxCode->code,
+									(float) $serviceInvoiceItem->sub_total,
+									$cgst_amt,
+									$sgst_amt,
+									$igst_amt,
+									$kfc_amt,
+									$serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt,
+									'-',
+									'-',
+									(float) $service_item->tcs_percentage,
+									$tcs_total,
+									$serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt + $tcs_total,
+								];
+							}
 						}
 					}
 				}
