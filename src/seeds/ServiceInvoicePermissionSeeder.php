@@ -148,8 +148,21 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 			3053 => [
 				'display_order' => 12,
 				'parent_id' => 3040,
-				'name' => 'tcs-export',
-				'display_name' => 'TCS Export',
+				'name' => 'tcs-export-own',
+				'display_name' => 'TCS Export Own',
+			],
+			3054 => [
+				'display_order' => 12,
+				'parent_id' => 3040,
+				'name' => 'tcs-export-all',
+				'display_name' => 'TCS Export All',
+			],
+
+			3055 => [
+				'display_order' => 12,
+				'parent_id' => 3040,
+				'name' => 'tcs-export-outlet-based',
+				'display_name' => 'TCS Export outlet-based',
 			],
 
 		];
