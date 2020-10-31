@@ -2608,6 +2608,20 @@ class ServiceInvoiceController extends Controller {
 				->where('status_id', 4)
 			// ->get()
 			;
+			if (Entrust::can('view-all-cn-dn')) {
+				$query = $query->where('service_invoices.company_id', Auth::user()->company_id);
+			} elseif (Entrust::can('view-outlet-based-cn-dn')) {
+				$view_user_outlets_only = User::leftJoin('employees', 'employees.id', 'users.entity_id')
+					->leftJoin('employee_outlet', 'employee_outlet.employee_id', 'employees.id')
+					->leftJoin('outlets', 'outlets.id', 'employee_outlet.outlet_id')
+					->where('employee_outlet.employee_id', Auth::user()->entity_id)
+					->where('users.company_id', Auth::user()->company_id)
+					->where('users.user_type_id', 1)
+					->pluck('employee_outlet.outlet_id')
+					->toArray();
+				$query = $query->whereIn('service_invoices.branch_id', $view_user_outlets_only);
+			}
+
 			// dd(count($query));
 			$service_invoices = clone $query;
 			$service_invoices = $service_invoices->get();
