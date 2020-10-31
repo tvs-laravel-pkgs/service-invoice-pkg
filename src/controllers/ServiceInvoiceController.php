@@ -2628,7 +2628,7 @@ class ServiceInvoiceController extends Controller {
 			$service_invoices = $service_invoices->get();
 			// dd($service_invoices);
 
-			$service_invoice_header = ['Outlet', 'Bill / No.', 'Invoice date', 'Item name', 'Account Type', 'Customer name', 'Address', 'Zip code', 'PAN number',
+			$service_invoice_header = ['Outlet', 'Bill / No.', 'Invoice date', 'Item name', 'Account Type', 'Customer / Vendor name', 'Address', 'Zip code', 'PAN number',
 				// 'HSN/SAC Code',
 				'Before GST amount', 'CGST amount', 'SGST amount', 'IGST amount', 'KFC amount', 'Taxable amount', 'Payment dates', 'Period', 'IT %', 'IT amount', 'Total'];
 			$service_invoice_details = array();
@@ -2740,6 +2740,175 @@ class ServiceInvoiceController extends Controller {
 				}
 			}
 			$file_name = 'cn-dn-tcs-export-' . date('Y-m-d-H-i-s');
+			Excel::create($file_name, function ($excel) use ($service_invoice_header, $service_invoice_details) {
+				$excel->sheet('cn-dn-tcs', function ($sheet) use ($service_invoice_header, $service_invoice_details) {
+					$sheet->fromArray($service_invoice_details, NULL, 'A1');
+					$sheet->row(1, $service_invoice_header);
+					$sheet->row(1, function ($row) {
+						$row->setBackground('#c4c4c4');
+					});
+				});
+				$excel->setActiveSheetIndex(0);
+			})
+				->store('xlsx')
+			;
+		} elseif ($request->export_type == "GST Export") {
+			// dd($request->gstin);
+			$query = ServiceInvoice::with([
+				'company',
+				// 'customer',
+				'toAccountType',
+				'address',
+				'outlets' => function ($query) use ($request) {
+					$query->where('gst_number', $request->gstin);
+				},
+				'outlets.primaryAddress',
+				'outlets.region',
+				'sbus',
+				'serviceInvoiceItems',
+				'serviceInvoiceItems.serviceItem',
+				'serviceInvoiceItems.eavVarchars',
+				'serviceInvoiceItems.eavInts',
+				'serviceInvoiceItems.eavDatetimes',
+				'serviceInvoiceItems.eInvoiceUom',
+				'serviceInvoiceItems.serviceItem.taxCode',
+				'serviceInvoiceItems.taxes',
+			])
+				->where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
+				->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
+				->where('service_invoices.company_id', Auth::user()->company_id)
+				->where('status_id', 4)
+			// ->get()
+			;
+			// if (Entrust::can('gst-export-all')) {
+			// 	$query = $query->where('service_invoices.company_id', Auth::user()->company_id);
+			// } elseif (Entrust::can('gst-export-own')) {
+			// 	$query = $query->where('service_invoices.created_by_id', Auth::user()->id);
+			// } elseif (Entrust::can('gst-export-outlet-based')) {
+			// 	$view_user_outlets_only = User::leftJoin('employees', 'employees.id', 'users.entity_id')
+			// 		->leftJoin('employee_outlet', 'employee_outlet.employee_id', 'employees.id')
+			// 		->leftJoin('outlets', 'outlets.id', 'employee_outlet.outlet_id')
+			// 		->where('employee_outlet.employee_id', Auth::user()->entity_id)
+			// 		->where('users.company_id', Auth::user()->company_id)
+			// 		->where('users.user_type_id', 1)
+			// 		->pluck('employee_outlet.outlet_id')
+			// 		->toArray();
+			// 	$query = $query->whereIn('service_invoices.branch_id', $view_user_outlets_only);
+			// }
+
+			// dd(count($query));
+			$service_invoices = clone $query;
+			$service_invoices = $service_invoices->get();
+			// dd($service_invoices);
+
+			$service_invoice_header = ['Account Type', 'Customer/Vendor Code', 'Invoice No', 'Invoice Date
+', 'Customer/Vendor Name', 'GSTIN', 'Billing Address', 'Invoice Value', 'HSN/SAC Code', 'Unit Of Measure', 'Qty', 'Item Taxable Value', 'CGST Rate', 'SGST Rate', 'IGST Rate', 'KFC Rate', 'CGST Amount', 'SGST Amount', 'IGST Amount', 'KFC Amount',
+			];
+			$service_invoice_details = array();
+
+			if (count($service_invoices) > 0) {
+				// dd($service_invoice_header);
+				if ($service_invoices) {
+					foreach ($service_invoices as $key => $service_invoice) {
+						$gst_total = 0;
+						$cgst_amt = 0;
+						$sgst_amt = 0;
+						$igst_amt = 0;
+						$kfc_amt = 0;
+						$kfc_percentage = 0;
+						$cgst_percentage = 0;
+						$sgst_percentage = 0;
+						$igst_percentage = 0;
+						foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
+
+							$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id);
+
+							if (!$taxes['success']) {
+								return response()->json(['success' => false, 'error' => $taxes['error']]);
+							}
+
+							$service_item = ServiceItem::with([
+								'coaCode',
+								'taxCode',
+								'taxCode.taxes' => function ($query) use ($taxes) {
+									$query->whereIn('tax_id', $taxes['tax_ids']);
+								},
+							])
+								->find($serviceInvoiceItem->service_item_id);
+							// dd($service_item->taxCode->code);
+							if (!$service_item) {
+								return response()->json(['success' => false, 'error' => 'Service Item not found']);
+							}
+							// dd($serviceInvoiceItem->serviceItem);
+							//TAX CALC AND PUSH
+							if (!is_null($service_item->sac_code_id)) {
+								if (count($service_item->taxCode->taxes) > 0) {
+									foreach ($service_item->taxCode->taxes as $key => $value) {
+										//FOR CGST
+										if ($value->name == 'CGST') {
+											$cgst_percentage = $value->pivot->percentage;
+											$cgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+										}
+										//FOR CGST
+										if ($value->name == 'SGST') {
+											$sgst_percentage = $value->pivot->percentage;
+											$sgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+										}
+										//FOR CGST
+										if ($value->name == 'IGST') {
+											$igst_percentage = $value->pivot->percentage;
+											$igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+										}
+									}
+
+									if ($service_invoice->address->state_id && $service_invoice->outlets) {
+										if ($service_invoice->address->state_id == 3) {
+											if (($service_invoice->address->state_id == 3) && ($service_invoice->outlets->state_id == 3)) {
+												//3 FOR KERALA
+												//check customer state and outlet states are equal KL.  //add KFC tax
+												if (!$service_invoice->address->gst_number) {
+													//customer dont't have GST
+													if (!is_null($service_item->sac_code_id)) {
+														$kfc_percentage = 1;
+														//customer have HSN and SAC Code
+														$kfc_amt = round($serviceInvoiceItem->sub_total * 1 / 100, 2);
+													}
+												}
+											}
+										}
+									}
+								}
+							}
+							if ($service_invoice->outlets) {
+								// dd($service_invoice);
+								$service_invoice_details[] = [
+									$service_invoice->toAccountType->name,
+									$service_invoice->customer->code,
+									$service_invoice->number,
+									date('d/m/Y', strtotime($service_invoice->document_date)),
+									$service_invoice->customer->name,
+									$service_invoice->address->gst_number,
+									$service_invoice->address->address_line1 . ',' . $service_invoice->address->address_line2,
+									$serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt,
+									$service_item->taxCode->code,
+									$serviceInvoiceItem->eInvoiceUom->code,
+									$serviceInvoiceItem->qty,
+									(float) ($serviceInvoiceItem->sub_total / $serviceInvoiceItem->qty),
+									$cgst_percentage,
+									$sgst_percentage,
+									$igst_percentage,
+									$kfc_percentage,
+									$cgst_amt,
+									$sgst_amt,
+									$igst_amt,
+									$kfc_amt,
+								];
+							}
+						}
+					}
+				}
+			}
+			$file_name = 'cn-dn-gst-export-' . date('Y-m-d-H-i-s');
 			Excel::create($file_name, function ($excel) use ($service_invoice_header, $service_invoice_details) {
 				$excel->sheet('cn-dn-tcs', function ($sheet) use ($service_invoice_header, $service_invoice_details) {
 					$sheet->fromArray($service_invoice_details, NULL, 'A1');
