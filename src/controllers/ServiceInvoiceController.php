@@ -2692,7 +2692,7 @@ class ServiceInvoiceController extends Controller {
 										if (($service_invoice->address->state_id == 3) && ($service_invoice->outlets->state_id == 3)) {
 											//3 FOR KERALA
 											//check customer state and outlet states are equal KL.  //add KFC tax
-											if (!$request->gst_number) {
+											if (!$service_invoice->address->gst_number) {
 												//customer dont't have GST
 												if (!is_null($service_item->sac_code_id)) {
 													//customer have HSN and SAC Code
