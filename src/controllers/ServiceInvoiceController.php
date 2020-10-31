@@ -2609,6 +2609,8 @@ class ServiceInvoiceController extends Controller {
 			;
 			if (Entrust::can('view-all-cn-dn')) {
 				$query = $query->where('service_invoices.company_id', Auth::user()->company_id);
+			} elseif (Entrust::can('view-own-cn-dn')) {
+				$query = $query->where('service_invoices.created_by_id', Auth::user()->id);
 			} elseif (Entrust::can('view-outlet-based-cn-dn')) {
 				$view_user_outlets_only = User::leftJoin('employees', 'employees.id', 'users.entity_id')
 					->leftJoin('employee_outlet', 'employee_outlet.employee_id', 'employees.id')
