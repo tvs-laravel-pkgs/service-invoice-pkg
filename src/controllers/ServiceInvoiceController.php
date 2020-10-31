@@ -2608,7 +2608,7 @@ class ServiceInvoiceController extends Controller {
 				->where('status_id', 4)
 			// ->get()
 			;
-			if (Entrust::can('tcs-export-outlet-all')) {
+			if (Entrust::can('tcs-export-all')) {
 				$query = $query->where('service_invoices.company_id', Auth::user()->company_id);
 			} elseif (Entrust::can('tcs-export-own')) {
 				$query = $query->where('service_invoices.created_by_id', Auth::user()->id);
