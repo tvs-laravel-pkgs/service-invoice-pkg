@@ -2879,7 +2879,7 @@ class ServiceInvoiceController extends Controller {
 									}
 								}
 							}
-							if ($service_invoice->outlets) {
+							if ($service_invoice->outlets && empty($serviceInvoiceItem->serviceItem->tcs_percentage)) {
 								// dd($service_invoice);
 								$service_invoice_details[] = [
 									$service_invoice->toAccountType->name,
