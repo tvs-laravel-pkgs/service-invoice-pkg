@@ -79,6 +79,11 @@ class ServiceItemController extends Controller {
 					$query->where('service_items.sac_code_id', $request->sac_code_id);
 				}
 			})
+			->where(function ($query) use ($request) {
+				if (!empty($request->tcs_percentage)) {
+					$query->where('service_items.tcs_percentage', "LIKE", "%" . $request->tcs_percentage . "%");
+				}
+			})
 			->groupBy('service_items.id')
 			->orderBy('service_items.code', 'asc');
 		// dd($service_item_category_list);

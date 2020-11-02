@@ -56,6 +56,7 @@ app.component('serviceItemList', {
                         d.sub_category_id = $('#sub_category_id').val();
                         d.coa_code_id = $('#coa_code_id').val();
                         d.sac_code_id = $('#sac_code_id').val();
+                        d.tcs_percentage = $('#tcs_percentage').val();
                     },
                 },
 
@@ -63,11 +64,11 @@ app.component('serviceItemList', {
                     { data: 'action', searchable: false, class: 'action' },
                     { data: 'code', name: 'service_items.code', searchable: true },
                     { data: 'name', name: 'service_items.name', searchable: true },
-                    { data: 'main_category', searchable: false },
-                    { data: 'sub_category', searchable: false },
-                    { data: 'coa_code', searchable: false },
-                    { data: 'sac_code', searchable: false },
-                    { data: 'tcs_percentage', searchable: false },
+                    { data: 'main_category',name: 'service_item_categories.name', searchable: true },
+                    { data: 'sub_category',name: 'service_item_sub_categories.name', searchable: true },
+                    { data: 'coa_code',name:'coa_codes.code', searchable: true },
+                    { data: 'sac_code',name: 'tax_codes.code', searchable: true },
+                    { data: 'tcs_percentage',name:'service_items.tcs_percentage', searchable: true },
                 ],
                 rowCallback: function(row, data) {
                     $(row).addClass('highlight-row');
@@ -103,6 +104,11 @@ app.component('serviceItemList', {
             }, 900);
         });
         $('#item_name').keyup(function() {
+            setTimeout(function() {
+                dataTable.draw();
+            }, 900);
+        });
+        $('#tcs_percentage').keyup(function() {
             setTimeout(function() {
                 dataTable.draw();
             }, 900);
@@ -190,6 +196,7 @@ app.component('serviceItemList', {
             $('#sub_category_id').val('');
             $('#coa_code_id').val('');
             $('#sac_code_id').val('');
+            $('#tcs_percentage').val('');
             dataTable.draw();
         }
 

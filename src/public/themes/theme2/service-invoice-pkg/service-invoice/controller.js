@@ -70,6 +70,8 @@ app.component('serviceInvoiceList', {
         self.create_dn = self.hasPermission('create-dn');
         self.create_inv = self.hasPermission('create-inv');
         self.import_cn_dn = self.hasPermission('import-cn-dn');
+        self.tcs_export = self.hasPermission('tcs-export-all');
+        self.gst_export = self.hasPermission('gst-export');
         $http.get(
             get_service_invoice_filter_url
         ).then(function(response) {
@@ -254,6 +256,10 @@ app.component('serviceInvoiceList', {
         //             });
         //     }
         // }
+        self.export_value = function(value){
+            console.log(value);
+            $("#export_type").val(value);
+        }
 
         self.exportServiceInvoicesToExcelUrl = exportServiceInvoicesToExcelUrl;
         self.csrf_token = $('meta[name="csrf-token"]').attr('content');
@@ -271,6 +277,15 @@ app.component('serviceInvoiceList', {
                 'invoice_date': {
                     required: true,
                 },
+                'gstin':{
+                    required: function(){
+                        if($('#export_type').val() == 3){
+                            return true;
+                        }else{
+                            return false;
+                        }
+                    }
+                }
             },
             submitHandler: function(form) {
                 form.submit();
