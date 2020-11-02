@@ -2801,8 +2801,7 @@ class ServiceInvoiceController extends Controller {
 			$service_invoices = $service_invoices->get();
 			// dd($service_invoices);
 
-			$service_invoice_header = ['Account Type', 'Customer/Vendor Code', 'Invoice No', 'Invoice Date
-', 'Customer/Vendor Name', 'GSTIN', 'Billing Address', 'Invoice Value', 'HSN/SAC Code', 'Unit Of Measure', 'Qty', 'Item Taxable Value', 'CGST Rate', 'SGST Rate', 'IGST Rate', 'KFC Rate', 'CGST Amount', 'SGST Amount', 'IGST Amount', 'KFC Amount',
+			$service_invoice_header = ['Service Type', 'Account Type', 'Customer/Vendor Code', 'Invoice No', 'Invoice Date', 'Ref. Invoice Number', 'Ref. Invoice Date', 'Customer/Vendor Name', 'GSTIN', 'Billing Address', 'Invoice Value', 'HSN/SAC Code', 'Unit Of Measure', 'Qty', 'Item Taxable Value', 'CGST Rate', 'SGST Rate', 'IGST Rate', 'KFC Rate', 'CGST Amount', 'SGST Amount', 'IGST Amount', 'KFC Amount',
 			];
 			$service_invoice_details = array();
 
@@ -2810,6 +2809,15 @@ class ServiceInvoiceController extends Controller {
 				// dd($service_invoice_header);
 				if ($service_invoices) {
 					foreach ($service_invoices as $key => $service_invoice) {
+
+						if ($service_invoice->type_id == 1060) {
+							$type = 'CN';
+						} elseif ($service_invoice->type_id == 1061) {
+							$type = 'DN';
+						} elseif ($service_invoice->type_id == 1062) {
+							$type = 'INV';
+						}
+
 						$gst_total = 0;
 						$cgst_amt = 0;
 						$sgst_amt = 0;
@@ -2882,10 +2890,13 @@ class ServiceInvoiceController extends Controller {
 							if ($service_invoice->outlets && empty($serviceInvoiceItem->serviceItem->tcs_percentage) && $service_item->taxCode) {
 								// dd($service_invoice);
 								$service_invoice_details[] = [
+									$type,
 									$service_invoice->toAccountType->name,
 									$service_invoice->customer->code,
 									$service_invoice->number,
 									date('d/m/Y', strtotime($service_invoice->document_date)),
+									$service_invoice->invoice_number,
+									$service_invoice->invoice_date ? date('d/m/Y', strtotime($service_invoice->invoice_date)) : '',
 									$service_invoice->customer->name,
 									$service_invoice->address->gst_number,
 									$service_invoice->address->address_line1 . ',' . $service_invoice->address->address_line2,
