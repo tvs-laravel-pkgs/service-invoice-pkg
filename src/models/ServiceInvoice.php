@@ -661,7 +661,7 @@ class ServiceInvoice extends Model {
 				$params['AmountCurCredit'] = '';
 			}
 			$params['AmountCurDebit'] = $this->type_id == 1060 ? round($tcs_total['credit'], 2) : 0;
-			$params['LedgerDimension'] = '2289' . '-' . $this->branch->code . '-' . $this->sbu->name;
+			$params['LedgerDimension'] = '2269' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
 			//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
 			$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
