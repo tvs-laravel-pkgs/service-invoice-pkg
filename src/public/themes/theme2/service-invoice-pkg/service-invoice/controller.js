@@ -224,6 +224,7 @@ app.component('serviceInvoiceList', {
             // $('#sub_category_id').val('');
             $('#customer_id').val('');
             $('#status_id').val('');
+            $('#gstin').val('');
             dataTable.draw();
         }
         //GET SERVICE ITEM SUB CATEGORY BY CATEGORY
