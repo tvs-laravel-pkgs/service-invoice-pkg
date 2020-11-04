@@ -1777,7 +1777,7 @@ class ServiceInvoiceController extends Controller {
 					'DocDtls' => array(
 						"Typ" => $service_invoice->type,
 						"No" => $service_invoice->number,
-						// "No" => '23AUG2020SN159',
+						// "No" => '23AUG2020SN161',
 						"Dt" => date('d-m-Y', strtotime($service_invoice->document_date)),
 					),
 					'SellerDtls' => array(
@@ -1941,7 +1941,7 @@ class ServiceInvoiceController extends Controller {
 
 			// Execute the POST request
 			$generate_irn_output_data = curl_exec($ch);
-			// dd($generate_irn_output);
+			// dump($generate_irn_output_data);
 
 			curl_close($ch);
 
@@ -3542,5 +3542,92 @@ class ServiceInvoiceController extends Controller {
 
 		$decrypted = openssl_decrypt(base64_decode($data), $method, $encryption_key, OPENSSL_RAW_DATA, $iv);
 		return $decrypted;
+	}
+
+	public function cholaPdfCreate(Request $request) {
+		// dd($request->all());
+		$service_invoice = ServiceInvoice::with([
+			'company',
+			// 'customer',
+			'serviceItemCategory',
+			'toAccountType',
+			'address',
+			'outlets',
+			'outlets.primaryAddress',
+			'outlets.region',
+			'sbus',
+			'serviceInvoiceItems',
+			'serviceInvoiceItems.serviceItem',
+			'serviceInvoiceItems.eavVarchars',
+			'serviceInvoiceItems.eavInts',
+			'serviceInvoiceItems.eavDatetimes',
+			'serviceInvoiceItems.eInvoiceUom',
+			'serviceInvoiceItems.serviceItem.taxCode',
+			'serviceInvoiceItems.taxes',
+		])->find($request->id);
+
+		// dd($service_invoice);
+		foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
+			$taxes = $serviceInvoiceItem->taxes;
+			$type = $serviceInvoiceItem->serviceItem;
+			foreach ($taxes as $array_key_replace => $tax) {
+				$serviceInvoiceItem[$tax->name] = $tax;
+			}
+			//dd($type->sac_code_id);
+		}
+
+		if (!empty($type->sac_code_id) && ($service_invoice->type_id == 1060)) {
+			$service_invoice->sac_code_status = 'CREDIT NOTE(CRN)';
+			$service_invoice->document_type = 'CRN';
+		} elseif (empty($type->sac_code_id) && ($service_invoice->type_id == 1060)) {
+			$service_invoice->sac_code_status = 'FINANCIAL CREDIT NOTE';
+			$service_invoice->document_type = 'CRN';
+		} elseif ($service_invoice->type_id == 1061) {
+			$service_invoice->sac_code_status = 'Tax Invoice(DBN)';
+			$service_invoice->document_type = 'DBN';
+		} else {
+			$service_invoice->sac_code_status = 'Invoice(INV)';
+			$service_invoice->document_type = 'INV';
+		}
+
+		if ($service_invoice->type_id == 1060) {
+			$service_invoice->type = 'CRN';
+		} elseif ($service_invoice->type_id == 1061) {
+			$service_invoice->type = 'DBN';
+		} elseif ($service_invoice->type_id == 1062) {
+			$service_invoice->type = 'INV';
+		}
+
+		if ($service_invoice->total > $service_invoice->final_amount) {
+			$service_invoice->round_off_amount = number_format(($service_invoice->final_amount - $service_invoice->total), 2);
+		} elseif ($service_invoice->total < $service_invoice->final_amount) {
+			$service_invoice->round_off_amount;
+		} else {
+			$service_invoice->round_off_amount = 0;
+		}
+
+		$service_invoice->qr_image = base_path("storage/app/public/service-invoice/IRN_images/" . $service_invoice->number . '.png') . '.jpg';
+
+		$this->data['service_invoice'] = $service_invoice;
+		// dd($this->data['service_invoice']);
+
+		$tax_list = Tax::where('company_id', Auth::user()->company_id)->get();
+		$this->data['tax_list'] = $tax_list;
+
+		$path = storage_path('app/public/service-invoice-pdf/chola-pdf');
+		$pathToFile = $path . '/' . $service_invoice->number . '.pdf';
+		File::isDirectory($path) or File::makeDirectory($path, 0777, true, true);
+
+		$pdf = app('dompdf.wrapper');
+		$pdf->getDomPDF()->set_option("enable_php", true);
+		$pdf = $pdf->loadView('service-invoices/pdf/chola/index', $this->data);
+		// $po_file_name = 'Invoice-' . $this->number . '.pdf';
+		File::delete($pathToFile);
+		File::put($pathToFile, $pdf->output());
+
+		return response()->json([
+			'success' => true,
+			'file_name_path' => url('storage/app/public/service-invoice-pdf/chola-pdf') . '/' . $service_invoice->number . '.pdf',
+		]);
 	}
 }
