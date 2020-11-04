@@ -2628,7 +2628,9 @@ class ServiceInvoiceController extends Controller {
 			$service_invoices = $service_invoices->get();
 			// dd($service_invoices);
 
-			$service_invoice_header = ['Outlet', 'Bill / No.', 'Invoice date', 'Item name', 'Account Type', 'Customer / Vendor name', 'Address', 'Zip code', 'PAN number',
+			$service_invoice_header = [
+				// 'Type',
+				'Outlet', 'Bill / No.', 'Invoice date', 'Item name', 'Account Type', 'Customer / Vendor name', 'Address', 'Zip code', 'PAN number',
 				// 'HSN/SAC Code',
 				'Before GST amount', 'CGST amount', 'SGST amount', 'IGST amount', 'KFC amount', 'Taxable amount', 'Payment dates', 'Period', 'IT %', 'IT amount', 'Total'];
 			$service_invoice_details = array();
@@ -2641,12 +2643,23 @@ class ServiceInvoiceController extends Controller {
 						// 	dd($serviceInvoiceItem->serviceItem);
 						// }
 						// dump($service_invoice);
+						if ($service_invoice->type_id == 1060) {
+							$type = 'CN';
+							$sign_value = '-';
+						} elseif ($service_invoice->type_id == 1061) {
+							$type = 'DN';
+							$sign_value = '';
+						} elseif ($service_invoice->type_id == 1062) {
+							$type = 'INV';
+							$sign_value = '';
+						}
 						$gst_total = 0;
 						$cgst_amt = 0;
 						$sgst_amt = 0;
 						$igst_amt = 0;
 						$kfc_amt = 0;
 						$tcs_total = 0;
+
 						foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
 
 							$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id);
@@ -2712,6 +2725,7 @@ class ServiceInvoiceController extends Controller {
 							if ($serviceInvoiceItem->serviceItem && $serviceInvoiceItem->serviceItem->tcs_percentage > 0) {
 								// dd($serviceInvoiceItem->sub_total);
 								$service_invoice_details[] = [
+									// $type,
 									$service_invoice->outlets->code,
 									$service_invoice->number,
 									date('d/m/Y', strtotime($service_invoice->document_date)),
@@ -2722,17 +2736,17 @@ class ServiceInvoiceController extends Controller {
 									$service_invoice->address->pincode,
 									$service_invoice->customer->pan_number,
 									// $service_item->taxCode->code,
-									(float) $serviceInvoiceItem->sub_total,
-									$cgst_amt,
-									$sgst_amt,
-									$igst_amt,
-									$kfc_amt,
-									$serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt,
+									$sign_value . (float) $serviceInvoiceItem->sub_total,
+									$cgst_amt ? $sign_value . $cgst_amt : 0,
+									$sgst_amt ? $sign_value . $sgst_amt : 0,
+									$igst_amt ? $sign_value . $igst_amt : 0,
+									$kfc_amt ? $sign_value . $kfc_amt : 0,
+									$sign_value . ($serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt),
 									'-',
 									'-',
 									(float) $service_item->tcs_percentage,
-									$tcs_total,
-									$serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt + $tcs_total,
+									$sign_value . $tcs_total,
+									$sign_value . ($serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt + $tcs_total),
 								];
 							}
 						}
@@ -2801,8 +2815,7 @@ class ServiceInvoiceController extends Controller {
 			$service_invoices = $service_invoices->get();
 			// dd($service_invoices);
 
-			$service_invoice_header = ['Account Type', 'Customer/Vendor Code', 'Invoice No', 'Invoice Date
-', 'Customer/Vendor Name', 'GSTIN', 'Billing Address', 'Invoice Value', 'HSN/SAC Code', 'Unit Of Measure', 'Qty', 'Item Taxable Value', 'CGST Rate', 'SGST Rate', 'IGST Rate', 'KFC Rate', 'CGST Amount', 'SGST Amount', 'IGST Amount', 'KFC Amount',
+			$service_invoice_header = ['Service Type', 'Account Type', 'Customer/Vendor Code', 'Invoice No', 'Invoice Date', 'Ref. Invoice Number', 'Ref. Invoice Date', 'Customer/Vendor Name', 'GSTIN', 'Billing Address', 'Invoice Value', 'HSN/SAC Code', 'Unit Of Measure', 'Qty', 'Item Taxable Value', 'CGST Rate', 'SGST Rate', 'IGST Rate', 'KFC Rate', 'CGST Amount', 'SGST Amount', 'IGST Amount', 'KFC Amount',
 			];
 			$service_invoice_details = array();
 
@@ -2810,6 +2823,18 @@ class ServiceInvoiceController extends Controller {
 				// dd($service_invoice_header);
 				if ($service_invoices) {
 					foreach ($service_invoices as $key => $service_invoice) {
+
+						if ($service_invoice->type_id == 1060) {
+							$type = 'CN';
+							$sign_value = '-';
+						} elseif ($service_invoice->type_id == 1061) {
+							$type = 'DN';
+							$sign_value = '';
+						} elseif ($service_invoice->type_id == 1062) {
+							$type = 'INV';
+							$sign_value = '';
+						}
+
 						$gst_total = 0;
 						$cgst_amt = 0;
 						$sgst_amt = 0;
@@ -2882,26 +2907,29 @@ class ServiceInvoiceController extends Controller {
 							if ($service_invoice->outlets && empty($serviceInvoiceItem->serviceItem->tcs_percentage) && $service_item->taxCode) {
 								// dd($service_invoice);
 								$service_invoice_details[] = [
+									$type,
 									$service_invoice->toAccountType->name,
 									$service_invoice->customer->code,
 									$service_invoice->number,
 									date('d/m/Y', strtotime($service_invoice->document_date)),
+									$service_invoice->invoice_number,
+									$service_invoice->invoice_date ? date('d/m/Y', strtotime($service_invoice->invoice_date)) : '',
 									$service_invoice->customer->name,
 									$service_invoice->address->gst_number,
 									$service_invoice->address->address_line1 . ',' . $service_invoice->address->address_line2,
-									$serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt,
+									$sign_value . ($serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt),
 									$service_item->taxCode->code,
 									$serviceInvoiceItem->eInvoiceUom->code,
 									$serviceInvoiceItem->qty,
-									(float) ($serviceInvoiceItem->sub_total / $serviceInvoiceItem->qty),
+									$sign_value . (float) ($serviceInvoiceItem->sub_total / $serviceInvoiceItem->qty),
 									$cgst_percentage,
 									$sgst_percentage,
 									$igst_percentage,
 									$kfc_percentage,
-									$cgst_amt,
-									$sgst_amt,
-									$igst_amt,
-									$kfc_amt,
+									$cgst_amt ? $sign_value . $cgst_amt : 0,
+									$sgst_amt ? $sign_value . $sgst_amt : 0,
+									$igst_amt ? $sign_value . $igst_amt : 0,
+									$kfc_amt ? $sign_value . $kfc_amt : 0,
 								];
 							}
 						}
