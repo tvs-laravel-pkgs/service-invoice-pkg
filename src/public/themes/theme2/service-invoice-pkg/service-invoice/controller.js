@@ -256,7 +256,7 @@ app.component('serviceInvoiceList', {
         //             });
         //     }
         // }
-        self.export_value = function(value){
+        self.export_value = function(value) {
             console.log(value);
             $("#export_type").val(value);
         }
@@ -277,11 +277,11 @@ app.component('serviceInvoiceList', {
                 'invoice_date': {
                     required: true,
                 },
-                'gstin':{
-                    required: function(){
-                        if($('#export_type').val() == 3){
+                'gstin': {
+                    required: function() {
+                        if ($('#export_type').val() == 3) {
                             return true;
-                        }else{
+                        } else {
                             return false;
                         }
                     }
@@ -1530,6 +1530,7 @@ app.component('serviceInvoiceView', {
             self.minus_value = '';
         }
         $scope.attachment_url = base_url + '/storage/app/public/service-invoice-pdf';
+        $scope.chola_attachment_url = base_url + '/storage/app/public/service-invoice-pdf/chola-pdf';
         console.log($scope.attachment_url);
         $http.get(
             $form_data_url
@@ -1558,8 +1559,17 @@ app.component('serviceInvoiceView', {
                 if (self.service_invoice.to_account_type_id == 1440 || self.service_invoice.to_account_type_id == 1441) { //CUSTOMER || VENDOE
                     $timeout(function() {
                         self.customer = self.service_invoice.customer;
+                        if (self.service_invoice.to_account_type_id == 1440) {
+                            console.log(self.customer);
+                            if (self.customer.pdf_format_id == 11311) {
+                                self.chola_pdf = true;
+                            } else {
+                                self.chola_pdf = false;
+                            }
+                        }
                         // $rootScope.getCustomer(self.service_invoice.customer_id);
                         if (self.service_invoice.to_account_type_id == 1441) {
+                            self.chola_pdf = false;
                             $scope.vendorSelected(); //USED FOR GET FULL ADDRESS
                         }
                     }, 1200);
@@ -1822,6 +1832,20 @@ app.component('serviceInvoiceView', {
                 self.service_invoice.round_off_amount = parseFloat(self.service_invoice.final_amount - self.table_total).toFixed(2);
             });
             $scope.$apply()
+        }
+
+        $scope.chola_pdf_download = function(service_invoice_id) {
+            $http.get(
+                laravel_routes['cholaPdfCreate'], {
+                    params: {
+                        id: service_invoice_id,
+                    }
+                }
+            ).then(function(res) {
+                console.log(res);
+                base_url + '/' + window.open(res.data.file_name_path, '_blank').focus();
+            });
+
         }
 
 
