@@ -356,7 +356,7 @@
                                         <a href="{{attachment_url}}/{{$ctrl.service_invoice.number}}.pdf" target="_blank"><button type="button" class="btn btn-primary my-tooltip" ng-if="$ctrl.service_invoice.status_id == 4">Download PDF</button></a>
 
                                         <!-- <a href="{{chola_attachment_url}}/{{$ctrl.service_invoice.number}}.pdf"> -->
-                                            <button type="button" class="btn btn-primary my-tooltip" ng-if="$ctrl.service_invoice.status_id == 4 && $ctrl.chola_pdf" ng-click="chola_pdf_download($ctrl.service_invoice.id)">Download Chola PDF</button>
+                                            <button type="button" class="btn btn-primary my-tooltip" ng-if="$ctrl.service_invoice.status_id == 4 && $ctrl.chola_pdf" ng-click="cholaPdfDownload($ctrl.service_invoice.id)">Download Chola PDF</button>
                                         <!-- </a> -->
                                     </div>
                                     <input type="hidden" name="send_to_approval" id="send_to_approval" value="{{$ctrl.approval_status.current_status_id}}">

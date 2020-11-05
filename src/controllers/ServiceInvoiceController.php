@@ -221,7 +221,6 @@ class ServiceInvoiceController extends Controller {
 				$img_delete = asset('public/theme/img/table/cndn/delete.svg');
 				$img_approval = asset('public/theme/img/table/cndn/approval.svg');
 				$path = URL::to('/storage/app/public/service-invoice-pdf');
-				$chola_pdf_path = URL::to('/storage/app/public/service-invoice-pdf/chola-pdf');
 				$output = '';
 				if ($service_invoice_list->status_id == '4') {
 					$output .= '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
@@ -231,7 +230,7 @@ class ServiceInvoiceController extends Controller {
 	                        </a>';
 					if ($service_invoice_list->pdf_format_id == 11311) {
 						//CHOLA CUSTOMER
-						$output .= '<a href="' . $chola_pdf_path . '/' . $service_invoice_list->number . '.pdf" class="" target="_blank"><img class="img-responsive" src="' . $img_download . '" alt="Download" title="Chola PDF"/>
+						$output .= '<a href="javascript:;" onclick="angular.element(this).scope().cholaPdfDownload(' . $service_invoice_list->id . ')"><img class="img-responsive" src="' . $img_download . '" alt="Download" title="Chola PDF"/>
 	                        </a>';
 					}
 					if ($service_invoice_list->ack_date) {
@@ -273,7 +272,7 @@ class ServiceInvoiceController extends Controller {
 	                        </a>';
 					if ($service_invoice_list->pdf_format_id == 11311) {
 						//CHOLA CUSTOMER
-						$output .= '<a href="' . $chola_pdf_path . '/' . $service_invoice_list->number . '.pdf" class="" target="_blank"><img class="img-responsive" src="' . $img_download . '" alt="Download" title="Chola PDF"/>
+						$output .= '<a href="javascript:;" onclick="angular.element(this).scope().cholaPdfDownload(' . $service_invoice_list->id . ')"><img class="img-responsive" src="' . $img_download . '" alt="Download" title="Chola PDF"/>
 	                        </a>';
 					}
 					if ($service_invoice_list->ack_date) {

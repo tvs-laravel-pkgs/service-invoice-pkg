@@ -500,6 +500,20 @@ app.component('serviceInvoiceList', {
             });
         }
 
+        $scope.cholaPdfDownload = function(service_invoice_id) {
+            $http.get(
+                laravel_routes['cholaPdfCreate'], {
+                    params: {
+                        id: service_invoice_id,
+                    }
+                }
+            ).then(function(res) {
+                console.log(res);
+                base_url + '/' + window.open(res.data.file_name_path, '_blank').focus();
+            });
+
+        }
+
         // window.onpopstate = function(e) { window.history.forward(1); }
         $rootScope.loading = false;
     }
@@ -1835,7 +1849,7 @@ app.component('serviceInvoiceView', {
             $scope.$apply()
         }
 
-        $scope.chola_pdf_download = function(service_invoice_id) {
+        $scope.cholaPdfDownload = function(service_invoice_id) {
             $http.get(
                 laravel_routes['cholaPdfCreate'], {
                     params: {
