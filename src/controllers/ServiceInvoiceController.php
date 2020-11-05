@@ -3605,7 +3605,11 @@ class ServiceInvoiceController extends Controller {
 			$service_invoice->round_off_amount = 0;
 		}
 
-		$service_invoice->qr_image = base_path("storage/app/public/service-invoice/IRN_images/" . $service_invoice->number . '.png') . '.jpg';
+		if ($service_invoice->qr_image) {
+			$service_invoice->qr_image = base_path("storage/app/public/service-invoice/IRN_images/" . $service_invoice->number . '.png') . '.jpg';
+		} else {
+			$service_invoice->qr_image = '';
+		}
 
 		$this->data['service_invoice'] = $service_invoice;
 		// dd($this->data['service_invoice']);
