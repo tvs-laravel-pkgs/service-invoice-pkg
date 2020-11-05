@@ -90,6 +90,7 @@ class ServiceInvoiceController extends Controller {
 				'service_item_sub_categories.name as sub_category',
 				// DB::raw('IF(service_invoices.to_account_type_id=1440,customers.code,vendors.code) as customer_code'),
 				// DB::raw('IF(service_invoices.to_account_type_id=1440,customers.name,vendors.name) as customer_name'),
+				'customers.pdf_format_id',
 				DB::raw('CASE
                     WHEN service_invoices.to_account_type_id = "1440" THEN customers.code
                     WHEN service_invoices.to_account_type_id = "1441" THEN vendors.code
@@ -220,13 +221,19 @@ class ServiceInvoiceController extends Controller {
 				$img_delete = asset('public/theme/img/table/cndn/delete.svg');
 				$img_approval = asset('public/theme/img/table/cndn/approval.svg');
 				$path = URL::to('/storage/app/public/service-invoice-pdf');
+				$chola_pdf_path = URL::to('/storage/app/public/service-invoice-pdf/chola-pdf');
 				$output = '';
 				if ($service_invoice_list->status_id == '4') {
 					$output .= '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
 	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
 	                    	</a>
-	                    	<a href="' . $path . '/' . $service_invoice_list->number . '.pdf" class="" target="_blank"><img class="img-responsive" src="' . $img_download . '" alt="Download" />
+	                    	<a href="' . $path . '/' . $service_invoice_list->number . '.pdf" class="" target="_blank"><img class="img-responsive" src="' . $img_download . '" alt="Download" title="PDF" />
 	                        </a>';
+					if ($service_invoice_list->pdf_format_id == 11311) {
+						//CHOLA CUSTOMER
+						$output .= '<a href="' . $chola_pdf_path . '/' . $service_invoice_list->number . '.pdf" class="" target="_blank"><img class="img-responsive" src="' . $img_download . '" alt="Download" title="Chola PDF"/>
+	                        </a>';
+					}
 					if ($service_invoice_list->ack_date) {
 						$current_date_time = date('d-m-Y H:i:s');
 						if (!empty($service_invoice_list->ack_date)) {
@@ -262,8 +269,13 @@ class ServiceInvoiceController extends Controller {
 					$output .= '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
 	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
 	                    	</a>
-	                    	<a href="' . $path . '/' . $service_invoice_list->number . '.pdf" class="" target="_blank"><img class="img-responsive" src="' . $img_download . '" alt="Download" />
+	                    	<a href="' . $path . '/' . $service_invoice_list->number . '.pdf" class="" target="_blank"><img class="img-responsive" src="' . $img_download . '" alt="Download" title="PDF"/>
 	                        </a>';
+					if ($service_invoice_list->pdf_format_id == 11311) {
+						//CHOLA CUSTOMER
+						$output .= '<a href="' . $chola_pdf_path . '/' . $service_invoice_list->number . '.pdf" class="" target="_blank"><img class="img-responsive" src="' . $img_download . '" alt="Download" title="Chola PDF"/>
+	                        </a>';
+					}
 					if ($service_invoice_list->ack_date) {
 						$current_date_time = date('d-m-Y H:i:s');
 						if (!empty($service_invoice_list->ack_date)) {
@@ -3046,7 +3058,6 @@ class ServiceInvoiceController extends Controller {
 		$api_log->save();
 
 		DB::commit();
-
 		if ($server_output->status == 0) {
 			return ['success' => false, 'errors' => $server_output->ErrorMsg];
 		}
@@ -3086,7 +3097,6 @@ class ServiceInvoiceController extends Controller {
 			$errors[] = 'IRN Encryption Error!';
 			return response()->json(['success' => false, 'error' => 'IRN Encryption Error!']);
 		}
-		// dd($encrypt_data);
 
 		$bdo_cancel_irn_url = 'https://sandboxeinvoiceapi.bdo.in/bdoapi/public/cancelIRN';
 		// $bdo_cancel_irn_url = 'https://einvoiceapi.bdo.in/bdoapi/public/cancelIRN'; //LIVE
