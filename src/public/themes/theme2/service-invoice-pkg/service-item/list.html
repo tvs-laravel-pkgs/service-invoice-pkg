@@ -84,7 +84,7 @@
                 <h5 class="modal-title" id="myModalLabel">Filter</h5>
             </div><!-- Modal Header -->
             <div class="modal-body">
-                <form id="filter-form" action="{{$ctrl.exportServiceInvoicesToExcelUrl}}" method="post">
+                <form id="filter-form" action="{{$ctrl.exportServiceItem}}" method="post">
                     <input type="hidden" name="_token" value="{{$ctrl.csrf_token}}">
                     <div class="modal-form mb-30">
                         <div class="row modal-row">
@@ -160,16 +160,17 @@
                                     <input type="hidden" name="sac_code_id" id="sac_code_id" value="{{$ctrl.service_item.tax_code.id}}">
                                 </div>
                             </div>
-                        <div class="col-md-6">
-                            <div class="input-text form-group">
-                                <label>TCS %</label>
-                                <input type="text" class="form-control" name="tcs_percentage" id="tcs_percentage" value="" placeholder="Enter TCS %" autocomplete="off">
+                            <div class="col-md-6">
+                                <div class="input-text form-group">
+                                    <label>TCS %</label>
+                                    <input type="text" class="form-control" name="tcs_percentage" id="tcs_percentage" value="" placeholder="Enter TCS %" autocomplete="off">
+                                </div>
                             </div>
-                        </div>
                         </div>
                         <div class="row modal-row">
                             <div class="col-md-6">
                                 <button type="button" class="btn btn-rose" ng-click="reset_filter(); $ctrl.coaCodeSearchText=''; $ctrl.service_item.main_category_id=''; $ctrl.service_item.sub_category_id=''; $ctrl.sacCodeSearchText=''">Reset Filter</button>
+                                <button type="submit" class="btn btn-primary">Export</button>
                             </div>
                         </div><!-- Row -->
                     </div><!-- Modal Form -->

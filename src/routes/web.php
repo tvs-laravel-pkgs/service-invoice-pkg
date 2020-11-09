@@ -61,6 +61,7 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 	Route::get('/service-items/filter', 'ServiceItemController@getServiceItemFilter')->name('getServiceItemFilter');
 	Route::post('/service-items/search-coa-code', 'ServiceItemController@searchCoaCode')->name('searchCoaCode');
 	Route::post('/service-items/search-sac-code', 'ServiceItemController@searchSacCode')->name('searchSacCode');
+	Route::post('/service-invoice/service-item/export', 'ServiceItemController@exportServiceInvoiceItemsToExcel')->name('exportServiceInvoiceItemsToExcel');
 
 	Route::get('/service-invoice/cancel-irn/{id}', 'ServiceInvoiceController@cancelIrn')->name('cancelIrn');
 	Route::get('/service-invoice/chola-pdf/{id}', 'ServiceInvoiceController@cholaPdfCreate')->name('cholaPdfCreate');

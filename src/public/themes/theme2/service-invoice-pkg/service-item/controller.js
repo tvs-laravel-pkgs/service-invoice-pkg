@@ -10,6 +10,7 @@ app.component('serviceItemList', {
             $rootScope.loading = false;
             // console.log(self.extras);
         });
+
         var dataTable
         setTimeout(function() {
             var table_scroll;
@@ -64,11 +65,11 @@ app.component('serviceItemList', {
                     { data: 'action', searchable: false, class: 'action' },
                     { data: 'code', name: 'service_items.code', searchable: true },
                     { data: 'name', name: 'service_items.name', searchable: true },
-                    { data: 'main_category',name: 'service_item_categories.name', searchable: true },
-                    { data: 'sub_category',name: 'service_item_sub_categories.name', searchable: true },
-                    { data: 'coa_code',name:'coa_codes.code', searchable: true },
-                    { data: 'sac_code',name: 'tax_codes.code', searchable: true },
-                    { data: 'tcs_percentage',name:'service_items.tcs_percentage', searchable: true },
+                    { data: 'main_category', name: 'service_item_categories.name', searchable: true },
+                    { data: 'sub_category', name: 'service_item_sub_categories.name', searchable: true },
+                    { data: 'coa_code', name: 'coa_codes.code', searchable: true },
+                    { data: 'sac_code', name: 'tax_codes.code', searchable: true },
+                    { data: 'tcs_percentage', name: 'service_items.tcs_percentage', searchable: true },
                 ],
                 rowCallback: function(row, data) {
                     $(row).addClass('highlight-row');
@@ -223,6 +224,26 @@ app.component('serviceItemList', {
                 }
             });
         }
+
+        //EXPORT
+        self.exportServiceItem = laravel_routes['exportServiceInvoiceItemsToExcel'];
+        self.csrf_token = $('meta[name="csrf-token"]').attr('content');
+        var filter_form_id = '#filter-form';
+        var filter_form_v = jQuery(filter_form_id).validate({
+            // errorPlacement: function(error, element) {
+            //     if (element.hasClass("dynamic_date")) {
+            //         error.insertAfter(element.parent("div"));
+            //     } else {
+            //         error.insertAfter(element);
+            //     }
+            // },
+            ignore: '',
+            rules: {  
+            },
+            submitHandler: function(form) {
+                form.submit();
+            },
+        });
 
         $rootScope.loading = false;
     }

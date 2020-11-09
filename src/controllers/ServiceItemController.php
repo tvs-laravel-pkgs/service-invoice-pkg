@@ -10,6 +10,7 @@ use Abs\TaxPkg\TaxCode;
 use App\Http\Controllers\Controller;
 use Auth;
 use DB;
+use Excel;
 use Illuminate\Http\Request;
 use Validator;
 use Yajra\Datatables\Datatables;
@@ -260,6 +261,104 @@ class ServiceItemController extends Controller {
 
 	public function searchSacCode(Request $r) {
 		return TaxCode::searchSacCode($r);
+	}
+
+	public function exportServiceInvoiceItemsToExcel(Request $request) {
+		// dd($request->all());
+		ini_set('memory_limit', '-1');
+		ini_set('max_execution_time', 0);
+
+		ob_end_clean();
+
+		$item_code_filter = $request->item_code;
+		$item_name_filter = $request->item_name;
+
+		$service_items = ServiceItem::with([
+			'subCategory',
+			'subCategory.serviceItemCategory',
+			'coaCode',
+			'taxCode',
+		])
+			->where(function ($query) use ($item_code_filter) {
+				if ($item_code_filter != null) {
+					$query->where('service_items.code', 'like', "%" . $item_code_filter . "%");
+				}
+			})
+			->where(function ($query) use ($item_name_filter) {
+				if ($item_name_filter != null) {
+					$query->where('service_items.name', 'like', "%" . $item_name_filter . "%");
+				}
+			})
+			->where(function ($query) use ($request) {
+				if (!empty($request->main_category_id)) {
+					$query->where('service_item_sub_categories.category_id', $request->main_category_id);
+				}
+			})
+			->where(function ($query) use ($request) {
+				if (!empty($request->sub_category_id)) {
+					$query->where('service_items.sub_category_id', $request->sub_category_id);
+				}
+			})
+			->where(function ($query) use ($request) {
+				if (!empty($request->coa_code_id)) {
+					$query->where('service_items.coa_code_id', $request->coa_code_id);
+				}
+			})
+			->where(function ($query) use ($request) {
+				if (!empty($request->sac_code_id)) {
+					$query->where('service_items.sac_code_id', $request->sac_code_id);
+				}
+			})
+			->where(function ($query) use ($request) {
+				if (!empty($request->tcs_percentage)) {
+					$query->where('service_items.tcs_percentage', "LIKE", "%" . $request->tcs_percentage . "%");
+				}
+			})
+			->get()
+		;
+
+		$service_item_header = [
+			'Code',
+			'Name',
+			'Category',
+			'Sub Category',
+			'COA Code',
+			'HSN/SAC Code',
+			'TCS Percentage',
+		];
+
+		$service_item_details = array();
+
+		if (count($service_items) > 0) {
+			foreach ($service_items as $key => $service_item) {
+				$service_item_details[] = [
+					$service_item->code,
+					$service_item->name,
+					$service_item->subCategory ? $service_item->subCategory->name : '',
+					$service_item->subCategory ? $service_item->subCategory->serviceItemCategory ? $service_item->subCategory->serviceItemCategory->name : '' : '',
+					$service_item->coaCode ? $service_item->coaCode->code . '/' . $service_item->coaCode->name : '',
+					$service_item->taxCode ? $service_item->taxCode->code : '',
+					$service_item->tcs_percentage ? $service_item->tcs_percentage : '',
+				];
+			}
+		}
+
+		$file_name = 'service-item-export-' . date('Y-m-d-H-i-s');
+		Excel::create($file_name, function ($excel) use ($service_item_header, $service_item_details) {
+			$excel->sheet('service-items', function ($sheet) use ($service_item_header, $service_item_details) {
+				$sheet->fromArray($service_item_details, NULL, 'A1');
+				$sheet->row(1, $service_item_header);
+				$sheet->row(1, function ($row) {
+					$row->setBackground('#c4c4c4');
+				});
+			});
+			$excel->setActiveSheetIndex(0);
+		})
+			->store('xlsx')
+		;
+
+		return response()->download('storage/exports/' . $file_name . '.xlsx');
+		return Storage::download(storage_path('exports/') . $file_name . '.xlsx');
 	}
 
 }
