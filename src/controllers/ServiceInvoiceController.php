@@ -1236,6 +1236,8 @@ class ServiceInvoiceController extends Controller {
 			'serviceInvoiceItems.eavDatetimes',
 			'serviceInvoiceItems.eInvoiceUom',
 			'serviceInvoiceItems.serviceItem.taxCode',
+			'serviceInvoiceItems.serviceItem.subCategory',
+			'serviceInvoiceItems.serviceItem.subCategory.attachment',
 			'serviceInvoiceItems.taxes',
 		])->find($service_invoice_id);
 		// dd($service_invoice);
@@ -1250,7 +1252,6 @@ class ServiceInvoiceController extends Controller {
 		// $service_invoice->status_id = 3; //IN PROGRESS
 		// $service_invoice->save();
 		//ADDED FOR QUEUE METHOD END
-
 		$service_invoice->customer;
 		$service_invoice->address;
 		// $service_invoice->customer->primaryAddress;
@@ -1308,8 +1309,10 @@ class ServiceInvoiceController extends Controller {
 			$item_count = 0;
 			$item_count_with_tax_code = 0;
 			$gst_total = 0;
+			$additional_image_name = '';
+			$additional_image_path = '';
 			foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
-				// dd($serviceInvoiceItem->serviceItem->code);
+				// dd($serviceInvoiceItem->serviceItem->subCategory);
 				//FIELD GROUPS AND FIELDS INTEGRATION
 				if (count($serviceInvoiceItem->eavVarchars) > 0) {
 					$eav_varchar_field_group_ids = $serviceInvoiceItem->eavVarchars()->pluck('field_group_id')->toArray();
@@ -1420,6 +1423,11 @@ class ServiceInvoiceController extends Controller {
 				//PUSH TOTAL FIELD GROUPS
 				$serviceInvoiceItem->field_groups = $field_group_val;
 				$item_count++;
+
+				if ($serviceInvoiceItem->serviceItem->subCategory->attachment) {
+					$additional_image_name = $serviceInvoiceItem->serviceItem->subCategory->attachment->name;
+					$additional_image_path = base_path('storage/app/public/service-invoice/service-item-sub-category/attachments/');
+				}
 			}
 		}
 		// dd($item_count, $item_count_with_tax_code);
@@ -2156,6 +2164,8 @@ class ServiceInvoiceController extends Controller {
 		// dd($service_invoice);
 		// dd('stop Encryption');
 		//----------// ENCRYPTION END //----------//
+		$service_invoice['additional_image_name'] = $additional_image_name;
+		$service_invoice['additional_image_path'] = $additional_image_path;
 
 		//dd($serviceInvoiceItem->field_groups);
 		$this->data['service_invoice_pdf'] = $service_invoice;

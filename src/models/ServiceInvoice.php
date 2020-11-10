@@ -1336,6 +1336,10 @@ class ServiceInvoice extends Model {
 			}
 			//Field values
 			$gst_total = 0;
+
+			$additional_image_name = '';
+			$additional_image_path = '';
+
 			foreach ($this->serviceInvoiceItems as $key => $serviceInvoiceItem) {
 				// dd($serviceInvoiceItem);
 				$serviceInvoiceItem->eInvoiceUom;
@@ -1446,6 +1450,11 @@ class ServiceInvoice extends Model {
 				}
 				//PUSH TOTAL FIELD GROUPS
 				$serviceInvoiceItem->field_groups = $field_group_val;
+
+				if ($serviceInvoiceItem->serviceItem->subCategory->attachment) {
+					$additional_image_name = $serviceInvoiceItem->serviceItem->subCategory->attachment->name;
+					$additional_image_path = base_path('storage/app/public/service-invoice/service-item-sub-category/attachments/');
+				}
 			}
 		}
 		//dd($this->type_id);
@@ -1501,6 +1510,9 @@ class ServiceInvoice extends Model {
 
 		// dd($this->sac_code_status);
 		//dd($serviceInvoiceItem->field_groups);
+
+		$this['additional_image_name'] = $additional_image_name;
+		$this['additional_image_path'] = $additional_image_path;
 
 		$data = [];
 		$data['service_invoice_pdf'] = $this;
