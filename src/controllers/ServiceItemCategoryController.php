@@ -192,7 +192,7 @@ class ServiceItemCategoryController extends Controller {
 							$name = $sub_service_item_category->id . '_' . $file_name . '.' . $extension;
 							$name = str_replace(' ', '-', $name); // Replaces all spaces with hyphens.
 
-							$sub_category['additional_image']->move(storage_path('app/public/service-invoice/attachments/'), $name);
+							$sub_category['additional_image']->move(storage_path('app/public/service-invoice/service-item-sub-category/attachments/'), $name);
 
 							$attachement = new Attachment;
 							$attachement->attachment_of_id = 11340;
