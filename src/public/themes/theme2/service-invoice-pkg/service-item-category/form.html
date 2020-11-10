@@ -68,7 +68,7 @@
                             <div class="tab-pane fade" id="sub-category-information" data-animation="fadeInUp" data-animation-delay="300">
                                 <div class="tab-pane-wrap">
                                     <div class="row">
-                                        <div class="col-lg-6 col-md-8">
+                                        <div class="col-lg-8 col-md-12">
                                             <h6 class="tab-pane-title">Category : <span class="color-primary-light">{{$ctrl.service_item_category.name}}</span></h6>
                                             <div class="table-responsive">
                                                 <table class="table table-form">
@@ -76,12 +76,14 @@
                                                         <tr>
                                                             <th>Sub Category Name<sup class="mandatory">*</sup></th>
                                                             <th>Active Status<sup class="mandatory">*</sup></th>
+                                                            <th>Additional Image</th>
                                                             <th></th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         <tr ng-repeat="(index, sub_category) in $ctrl.service_item_category.sub_category">
                                                             <input type="hidden" ng-model="sub_category.id" name="sub_category[{{index}}][id]" value="{{sub_category.id}}">
+                                                            <input type="hidden" ng-model="sub_category.additional_image_id" name="sub_category[{{index}}][additional_image_id]" value="{{sub_category.attachment.id}}">
                                                             <td>
                                                                 <input type="text" class="form-control type-sm sub_category_name required" ng-model="sub_category.name" name="sub_category[{{index}}][name]" placeholder="Enter Sub Category Name" maxlength="191" autocomplete="off" />
                                                             </td>
@@ -94,6 +96,10 @@
                                                                 <input type="hidden" name="sub_category[{{index}}][status]" value="{{sub_category.switch_value}}">
                                                             </td>
                                                             <td>
+                                                                <input type="file" class="form-control type-sm additional_image" ng-model="sub_category.attachment.name" name="sub_category[{{index}}][additional_image]" placeholder="Enter Additional Image" autocomplete="off" accept=".jpg" />
+                                                            {{sub_category.attachment.name}}
+                                                            </td>
+                                                            <td>
                                                                 <a href="javascript:;" ng-click="removeSubCategory(index,sub_category.id)"><img class="img-responsive" src="./public/theme/img/table/cndn/delete.svg" alt="Delete" /></a>
                                                             </td>
                                                         </tr>
@@ -101,7 +107,7 @@
                                                     </tbody>
                                                     <tfoot>
                                                         <tr>
-                                                            <td colspan="3">
+                                                            <td colspan="4">
                                                                 <button type="button" class="btn btn-primary-light btn-square" ng-click="addNewSubCategory()">+ Add Sub Category</button>
                                                             </td>
                                                         </tr>

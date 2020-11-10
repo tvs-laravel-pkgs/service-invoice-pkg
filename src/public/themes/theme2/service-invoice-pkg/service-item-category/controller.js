@@ -123,7 +123,7 @@ app.component('serviceItemCategoryForm', {
                 self.service_item_category.sub_category = [];
             }
             //self.service_item_category.sub_category = [];
-            console.log(self.service_item_category);
+            console.log(self.service_item_category.sub_category);
             if (self.service_item_category.deleted_at) {
                 self.switch_value = 'Inactive';
             } else {
@@ -151,6 +151,7 @@ app.component('serviceItemCategoryForm', {
             self.service_item_category.sub_category.push({
                 name: '',
                 switch_value: 'Active',
+                additional_image: 'null',
             });
         }
         self.sub_category_removal_id = [];

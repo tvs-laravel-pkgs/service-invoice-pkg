@@ -84,4 +84,8 @@ class ServiceItemSubCategory extends Model {
 		return $record;
 	}
 
+	public function attachment() {
+		return $this->belongsTo('App\Attachment', 'additional_image_id', 'id');
+	}
+
 }
