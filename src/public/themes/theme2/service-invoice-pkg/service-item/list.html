@@ -170,7 +170,7 @@
                         <div class="row modal-row">
                             <div class="col-md-6">
                                 <button type="button" class="btn btn-rose" ng-click="reset_filter(); $ctrl.coaCodeSearchText=''; $ctrl.service_item.main_category_id=''; $ctrl.service_item.sub_category_id=''; $ctrl.sacCodeSearchText=''">Reset Filter</button>
-                                <button type="submit" class="btn btn-primary">Export</button>
+                                <button ng-if="$ctrl.export" type="submit" class="btn btn-primary">Export</button>
                             </div>
                         </div><!-- Row -->
                     </div><!-- Modal Form -->

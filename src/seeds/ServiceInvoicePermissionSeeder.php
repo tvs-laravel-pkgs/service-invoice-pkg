@@ -63,6 +63,12 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 				'name' => 'delete-service-item',
 				'display_name' => 'Delete',
 			],
+			3024 => [
+				'display_order' => 4,
+				'parent_id' => 3020,
+				'name' => 'export-service-item',
+				'display_name' => 'Export',
+			],
 
 			//MASTER > SERVICE INVOICE
 			3040 => [
