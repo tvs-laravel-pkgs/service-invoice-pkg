@@ -60,3 +60,9 @@
     var search_coa_code_url = "{{url('/service-invoice-pkg/service-items/search-coa-code')}}";
     var search_sac_code_url = "{{url('/service-invoice-pkg/service-items/search-sac-code')}}";
 </script>
+
+<script type="text/javascript">
+    var tcs_report_form_template_url = "{{URL::asset($service_invoice_pkg_prefix .'/public/themes/'.$theme.'/service-invoice-pkg/tcs-gst-report/tcs-form.html')}}";
+    var gst_report_form_template_url = "{{URL::asset($service_invoice_pkg_prefix .'/public/themes/'.$theme.'/service-invoice-pkg/tcs-gst-report/gst-form.html')}}";
+</script>
+

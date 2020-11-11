@@ -146,27 +146,34 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 			],
 
 			3053 => [
-				'display_order' => 12,
-				'parent_id' => 3040,
+				'display_order' => 13,
+				'parent_id' => 2,
+				'name' => 'cndn-reports',
+				'display_name' => 'CNDN Reports',
+			],
+
+			3054 => [
+				'display_order' => 1,
+				'parent_id' => 3053,
 				'name' => 'tcs-export-own',
 				'display_name' => 'TCS Export Own',
 			],
-			3054 => [
-				'display_order' => 12,
-				'parent_id' => 3040,
+			3055 => [
+				'display_order' => 2,
+				'parent_id' => 3053,
 				'name' => 'tcs-export-all',
 				'display_name' => 'TCS Export All',
 			],
-			3055 => [
-				'display_order' => 12,
-				'parent_id' => 3040,
+			3056 => [
+				'display_order' => 3,
+				'parent_id' => 3053,
 				'name' => 'tcs-export-outlet-based',
 				'display_name' => 'TCS Export outlet-based',
 			],
 
-			3056 => [
-				'display_order' => 12,
-				'parent_id' => 3040,
+			3057 => [
+				'display_order' => 4,
+				'parent_id' => 3053,
 				'name' => 'gst-export',
 				'display_name' => 'GST Export',
 			],

@@ -56,8 +56,17 @@ app.config(['$routeProvider', function($routeProvider) {
     when('/service-invoice-pkg/service-item/edit/:id', {
         template: '<service-item-form></service-item-form>',
         title: 'Edit Service Item',
-    });
+    }).
 
+    //TCS AND GST REPORTS
+    when('/service-invoice-pkg/tcs-report', {
+        template: '<tcs-report-form></tcs-report-form>',
+        title: 'TCS Report',
+    }).
+    when('/service-invoice-pkg/gst-report', {
+        template: '<gst-report-form></gst-report-form>',
+        title: 'GST Report',
+    });
 
 }]);
 
