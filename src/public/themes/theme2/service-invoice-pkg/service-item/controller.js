@@ -3,6 +3,7 @@ app.component('serviceItemList', {
     controller: function($http, $location, HelperService, $scope, $routeParams, $rootScope, $element, $mdSelect) {
         var self = this;
         self.hasPermission = HelperService.hasPermission;
+        self.export = self.hasPermission('export-service-item');
         $http.get(
             get_service_item_filter_url
         ).then(function(response) {
