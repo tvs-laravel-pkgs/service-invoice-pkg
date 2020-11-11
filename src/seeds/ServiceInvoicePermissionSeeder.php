@@ -147,7 +147,7 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 
 			3053 => [
 				'display_order' => 13,
-				'parent_id' => 2,
+				'parent_id' => 840,
 				'name' => 'cndn-reports',
 				'display_name' => 'CNDN Reports',
 			],
