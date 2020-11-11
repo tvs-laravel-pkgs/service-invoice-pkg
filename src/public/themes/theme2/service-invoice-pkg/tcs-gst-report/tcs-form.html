@@ -1,0 +1,64 @@
+<!-- Content Wrap -->
+<div class="content-wrap cndn-wrap">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-inner">
+            <div class="page-header-content-left">
+                <div class="page-header-content title-block">
+                    <h1 class="title"><b>TCS Export</b></h1>
+                </div><!-- Page Header Content -->
+            </div><!-- Page Header Content Left -->
+        </div><!-- Page Header Inner -->
+    </div><!-- Page Header -->
+    <!-- Page Main Content -->
+    <div class="page-main-content form-content type2">
+        <div class="page-tab-form pb-70">
+            <div class="tab-form-wrap">
+                <div class="tab-form-header">
+                    <div class="tab-header">
+                        <!-- Filters -->
+                        <div class="isotope-filters animated" data-animation="fadeInLeft" data-animation-delay="300">
+                            <ul class="nav nav-pills cndn-tabs">
+                                <li class="active"><a class="filter active" data-target="#tcs-export" data-toggle="tab" aria-expanded="true">TCS Export</a></li>
+                            </ul>
+                        </div><!-- Filters -->
+                    </div><!-- Tab Header -->
+                </div><!-- Tab Form Header -->
+                <form id="tcs-export-form" action="{{$ctrl.exportServiceInvoicesToExcelUrl}}" method="post">
+                    <input type="hidden" name="_token" value="{{$ctrl.csrf_token}}">
+                    <input type="hidden" name="export_type" value="TCS Export">
+                    <div class="tab-form-body">
+                        <div class="tab-content">
+                            <!-- TAB PANEL -->
+                            <div class="tab-pane fade in active" id="tcs-export" data-animation="fadeInUp" data-animation-delay="300">
+                                <div class="tab-pane-wrap">
+                                    <div class="row modal-row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label>Doc. Date</label>
+                                                <div class="input-group date">
+                                                    <input class="form-control daterange required" placeholder="Select a Date Range" name="invoice_date" id="invoice_date" value="" autocomplete="off">
+                                                    <span class="input-group-addon">
+                                                        <img class="img-responsive" src="./public/theme/img/content/calender-gray-icon.svg" alt="Calendar Image" />
+                                                    </span>
+                                                </div><!-- Input Group -->
+                                            </div><!-- Feild -->
+                                        </div>
+                                        <div class="tab-pane-footer">
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <button type="button" class="btn btn-secondary my-tooltip" ng-click="reset_filter();" id="reset_filter">Reset</button>
+                                                    <button type="submit" class="btn btn-primary">Submit</button>
+                                                </div>
+                                            </div>
+                                        </div><!-- Tab Footer -->
+                                    </div>
+                                </div><!-- Tab Pane Wrap -->
+                            </div><!-- Tabe Pane -->
+                        </div><!-- Tab Content -->
+                    </div><!-- Tab Form Body -->
+                </form>
+            </div><!-- Tab Form Wrap -->
+        </div><!-- Page Form -->
+    </div><!-- Page Main Content -->
+</div><!-- Content Wrap -->
