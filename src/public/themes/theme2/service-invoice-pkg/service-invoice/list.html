@@ -224,12 +224,12 @@
                                     <input type="hidden" name="status_id" id="status_id" value="">
                                 </div><!-- Feild -->
                             </div><!-- Column -->
-                            <!-- <div class="col-md-6">
+                            <div class="col-md-6">
                                 <div class="input-text form-group">
                                     <label>TVS GSTIN</label>
                                     <input type="text" class="form-control" name="gstin" id="gstin" value="" placeholder="Enter GSTIN" autocomplete="off">
                                 </div>
-                            </div> -->
+                            </div>
                         </div>
                         <div class="row modal-row">
                             <div class="col-md-12">
@@ -238,8 +238,11 @@
                                     Export
                                 </button> -->
                                 <input class="btn btn-primary my-tooltip" ng-shortcut="'meta+shift+e'" ng-shortcut-click data-title="ctrl+shift+e" class="btn btn-primary my-tooltip" type="submit" name="export_type" ng-click="$ctrl.export_value(1)" value="Export">
-                                <!-- <input ng-if="$ctrl.tcs_export" class="btn btn-primary my-tooltip" type="submit" name="export_type" ng-click="$ctrl.export_value(2)" value="TCS Export"> -->
-                                <!-- <input ng-if="$ctrl.gst_export" class="btn btn-primary my-tooltip" type="submit" name="export_type" ng-click="$ctrl.export_value(3)" value="GST Export"> -->
+                                <input ng-if="$ctrl.tcs_export" class="btn btn-primary my-tooltip" type="submit" name="export_type" ng-click="$ctrl.export_value(2)" value="TCS Export">
+                                <input ng-if="$ctrl.gst_export" class="btn btn-primary my-tooltip" type="submit" name="export_type" ng-click="$ctrl.export_value(3)" value="GST Export">
+                                <!-- <button type="button" class="btn btn-primary my-tooltip" ng-click="$ctrl.TCSexportToExcel()" id="tcs_export"> -->
+                                    <!-- TCS Export -->
+                                <!-- </button> -->
                             </div>
                         </div><!-- Row -->
                     </div><!-- Modal Form -->
