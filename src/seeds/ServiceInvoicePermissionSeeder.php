@@ -151,35 +151,39 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 				'display_name' => 'View SBU Based',
 			],
 
-			3053 => [
-				'display_order' => 13,
-				'parent_id' => 840,
-				'name' => 'cndn-reports',
-				'display_name' => 'CNDN Reports',
-			],
+			// 3053 => [
+			// 	'display_order' => 13,
+			// 	'parent_id' => 840,
+			// 	'name' => 'cndn-reports',
+			// 	'display_name' => 'CNDN Reports',
+			// ],
 
 			3054 => [
-				'display_order' => 1,
-				'parent_id' => 3053,
+				// 'display_order' => 1,
+				'display_order' => 12,
+				'parent_id' => 3040,
 				'name' => 'tcs-export-own',
 				'display_name' => 'TCS Export Own',
 			],
 			3055 => [
-				'display_order' => 2,
-				'parent_id' => 3053,
+				// 'display_order' => 2,
+				'display_order' => 13,
+				'parent_id' => 3040,
 				'name' => 'tcs-export-all',
 				'display_name' => 'TCS Export All',
 			],
 			3056 => [
-				'display_order' => 3,
-				'parent_id' => 3053,
+				// 'display_order' => 3,
+				'display_order' => 14,
+				'parent_id' => 3040,
 				'name' => 'tcs-export-outlet-based',
 				'display_name' => 'TCS Export outlet-based',
 			],
 
 			3057 => [
-				'display_order' => 4,
-				'parent_id' => 3053,
+				// 'display_order' => 4,
+				'display_order' => 15,
+				'parent_id' => 3040,
 				'name' => 'gst-export',
 				'display_name' => 'GST Export',
 			],
