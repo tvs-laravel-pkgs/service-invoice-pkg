@@ -1632,7 +1632,9 @@ class ServiceInvoiceController extends Controller {
 				// dd($serviceInvoiceItem);
 
 				//GET TAXES
-				$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id, $service_invoice->address->state_id);
+				$state_id = $service_invoice->address ? $service_invoice->address->state_id ? $service_invoice->address->state_id : '' : '';
+
+				$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id, $$state_id);
 				if (!$taxes['success']) {
 					$errors[] = $taxes['error'];
 					// return response()->json(['success' => false, 'error' => $taxes['error']]);
@@ -2683,7 +2685,9 @@ class ServiceInvoiceController extends Controller {
 
 						foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
 
-							$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id, $service_invoice->address->state_id);
+							$state_id = $service_invoice->address ? $service_invoice->address->state_id ? $service_invoice->address->state_id : '' : '';
+
+							$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id, $state_id);
 
 							if (!$taxes['success']) {
 								return response()->json(['success' => false, 'error' => $taxes['error']]);
@@ -2710,11 +2714,11 @@ class ServiceInvoiceController extends Controller {
 										if ($value->name == 'CGST') {
 											$cgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 										}
-										//FOR CGST
+										//FOR SGST
 										if ($value->name == 'SGST') {
 											$sgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 										}
-										//FOR CGST
+										//FOR IGST
 										if ($value->name == 'IGST') {
 											$igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 										}
@@ -2866,8 +2870,8 @@ class ServiceInvoiceController extends Controller {
 						$sgst_percentage = 0;
 						$igst_percentage = 0;
 						foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
-
-							$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id, $service_invoice->address->state_id);
+							$state_id = $service_invoice->address ? $service_invoice->address->state_id ? $service_invoice->address->state_id : '' : '';
+							$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id, $state_id);
 
 							if (!$taxes['success']) {
 								return response()->json(['success' => false, 'error' => $taxes['error']]);
@@ -2895,12 +2899,12 @@ class ServiceInvoiceController extends Controller {
 											$cgst_percentage = $value->pivot->percentage;
 											$cgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 										}
-										//FOR CGST
+										//FOR SGST
 										if ($value->name == 'SGST') {
 											$sgst_percentage = $value->pivot->percentage;
 											$sgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 										}
-										//FOR CGST
+										//FOR IGST
 										if ($value->name == 'IGST') {
 											$igst_percentage = $value->pivot->percentage;
 											$igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
