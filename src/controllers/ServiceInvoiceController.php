@@ -2683,7 +2683,7 @@ class ServiceInvoiceController extends Controller {
 
 						foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
 
-							$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id);
+							$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id, $service_invoice->address->state_id);
 
 							if (!$taxes['success']) {
 								return response()->json(['success' => false, 'error' => $taxes['error']]);
