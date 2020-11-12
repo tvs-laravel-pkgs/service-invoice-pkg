@@ -1632,7 +1632,7 @@ class ServiceInvoiceController extends Controller {
 				// dd($serviceInvoiceItem);
 
 				//GET TAXES
-				$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id);
+				$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id, $service_invoice->address->state_id);
 				if (!$taxes['success']) {
 					$errors[] = $taxes['error'];
 					// return response()->json(['success' => false, 'error' => $taxes['error']]);
@@ -2683,7 +2683,7 @@ class ServiceInvoiceController extends Controller {
 
 						foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
 
-							$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id);
+							$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id, $service_invoice->address->state_id);
 
 							if (!$taxes['success']) {
 								return response()->json(['success' => false, 'error' => $taxes['error']]);
@@ -2867,7 +2867,7 @@ class ServiceInvoiceController extends Controller {
 						$igst_percentage = 0;
 						foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
 
-							$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id);
+							$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id, $service_invoice->address->state_id);
 
 							if (!$taxes['success']) {
 								return response()->json(['success' => false, 'error' => $taxes['error']]);
@@ -3245,6 +3245,8 @@ class ServiceInvoiceController extends Controller {
 				}
 			}
 			return response()->json($list);
+		} catch (\SoapFault $e) {
+			return response()->json(['success' => false, 'error' => 'Somthing went worng in SOAP Service!']);
 		} catch (\Exception $e) {
 			return response()->json(['success' => false, 'error' => 'Somthing went worng!']);
 		}
@@ -3310,6 +3312,10 @@ class ServiceInvoiceController extends Controller {
 							$address->entity_id = $customer->id;
 							$address->ax_id = $customer_data['RECID'];
 							$address->gst_number = isset($customer_data['GST_NUMBER']) ? $customer_data['GST_NUMBER'] : NULL;
+
+							// $address->ax_customer_location_id = isset($customer_data['AX_CUSTOMER_LOCATION_ID']) ? $customer_data['AX_CUSTOMER_LOCATION_ID'] : NULL;
+							// $address->is_primary = isset($customer_data['ISPRIMARY']) ? $customer_data['ISPRIMARY'] : NULL;
+
 							$address->address_of_id = 24;
 							$address->address_type_id = 40;
 							$address->name = 'Primary Address_' . $customer_data['RECID'];
@@ -3331,6 +3337,10 @@ class ServiceInvoiceController extends Controller {
 						$address->entity_id = $customer->id;
 						$address->ax_id = $api_customer_data['RECID'];
 						$address->gst_number = isset($api_customer_data['GST_NUMBER']) ? $api_customer_data['GST_NUMBER'] : NULL;
+
+						// $address->ax_customer_location_id = isset($customer_data['AX_CUSTOMER_LOCATION_ID']) ? $customer_data['AX_CUSTOMER_LOCATION_ID'] : NULL;
+						// $address->is_primary = isset($customer_data['ISPRIMARY']) ? $customer_data['ISPRIMARY'] : NULL;
+
 						$address->address_of_id = 24;
 						$address->address_type_id = 40;
 						$address->name = 'Primary Address_' . $api_customer_data['RECID'];
@@ -3356,6 +3366,8 @@ class ServiceInvoiceController extends Controller {
 				'customer_address' => $customer_address,
 				'customer' => $customer,
 			]);
+		} catch (\SoapFault $e) {
+			return response()->json(['success' => false, 'error' => 'Somthing went worng in SOAP Service!']);
 		} catch (Exception $e) {
 			return response()->json(['success' => false, 'error' => 'Somthing went worng!']);
 		}
@@ -3419,6 +3431,8 @@ class ServiceInvoiceController extends Controller {
 				}
 			}
 			return response()->json($list);
+		} catch (\SoapFault $e) {
+			return response()->json(['success' => false, 'error' => 'Somthing went worng in SOAP Service!']);
 		} catch (\Exception $e) {
 			return response()->json(['success' => false, 'error' => 'Somthing went worng!']);
 		}
@@ -3534,6 +3548,8 @@ class ServiceInvoiceController extends Controller {
 				'vendor_address' => $vendor_address,
 				'vendor' => $vendor,
 			]);
+		} catch (\SoapFault $e) {
+			return response()->json(['success' => false, 'error' => 'Somthing went worng in SOAP Service!']);
 		} catch (Exception $e) {
 			return response()->json(['success' => false, 'error' => 'Somthing went worng!']);
 		}
