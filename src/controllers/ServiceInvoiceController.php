@@ -1634,7 +1634,7 @@ class ServiceInvoiceController extends Controller {
 				//GET TAXES
 				$state_id = $service_invoice->address ? $service_invoice->address->state_id ? $service_invoice->address->state_id : '' : '';
 
-				$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id, $$state_id);
+				$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id, $state_id);
 				if (!$taxes['success']) {
 					$errors[] = $taxes['error'];
 					// return response()->json(['success' => false, 'error' => $taxes['error']]);
