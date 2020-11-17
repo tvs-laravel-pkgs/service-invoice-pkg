@@ -863,26 +863,54 @@ app.component('serviceInvoiceForm', {
                         custom_noty('error', response.data.error);
                         return;
                     } else {
-                        if (response.data.trade_name) {
-                            $noty = new Noty({
-                                type: 'success',
-                                layout: 'topRight',
-                                text: 'GSTIN Registred Name: ' + response.data.trade_name,
-                                animation: {
-                                    speed: 1000 // unavailable - no need
-                                },
-                            }).show();
-                            setTimeout(function() {
-                                $noty.close();
-                            }, 12000);
+                        if (response.data.trade_name || response.data.legal_name) {
 
                             var trade_name = response.data.trade_name.toLowerCase();
-                            console.log(trade_name);
-                            if (customer_name === trade_name) {
+                            var legal_name = response.data.legal_name.toLowerCase();
+                            console.log("trade_name = " + trade_name);
+                            console.log("legal_name = " + legal_name);
+                            if (customer_name === legal_name) {
+                                $noty = new Noty({
+                                    type: 'success',
+                                    layout: 'topRight',
+                                    text: 'GSTIN Registred Legal Name: ' + response.data.legal_name,
+                                    animation: {
+                                        speed: 1000 // unavailable - no need
+                                    },
+                                }).show();
+                                setTimeout(function() {
+                                    $noty.close();
+                                }, 12000);
+                                custom_noty('success', 'Customer Name Matched');
+                                $('#submit').show();
+                                $('.add_item_btn').show();
+                            } else if (customer_name === trade_name) {
+                                $noty = new Noty({
+                                    type: 'success',
+                                    layout: 'topRight',
+                                    text: 'GSTIN Registred Trade Name: ' + response.data.trade_name,
+                                    animation: {
+                                        speed: 1000 // unavailable - no need
+                                    },
+                                }).show();
+                                setTimeout(function() {
+                                    $noty.close();
+                                }, 12000);
                                 custom_noty('success', 'Customer Name Matched');
                                 $('#submit').show();
                                 $('.add_item_btn').show();
                             } else {
+                                $noty = new Noty({
+                                    type: 'success',
+                                    layout: 'topRight',
+                                    text: 'GSTIN Registred Legal Name: ' + response.data.legal_name + ', and  GSTIN Registred Trade Name: ' + response.data.trade_name,
+                                    animation: {
+                                        speed: 1000 // unavailable - no need
+                                    },
+                                }).show();
+                                setTimeout(function() {
+                                    $noty.close();
+                                }, 15000);
                                 custom_noty('error', 'Customer Name Not Matched!');
                                 custom_noty('error', 'Not Allow To Add Invoives!');
                                 $('#submit').hide();
