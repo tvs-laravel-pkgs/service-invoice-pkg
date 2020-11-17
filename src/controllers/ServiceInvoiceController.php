@@ -1634,7 +1634,7 @@ class ServiceInvoiceController extends Controller {
 				//GET TAXES
 				$state_id = $service_invoice->address ? $service_invoice->address->state_id ? $service_invoice->address->state_id : '' : '';
 
-				$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id, $$state_id);
+				$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id, $state_id);
 				if (!$taxes['success']) {
 					$errors[] = $taxes['error'];
 					// return response()->json(['success' => false, 'error' => $taxes['error']]);
@@ -2394,8 +2394,11 @@ class ServiceInvoiceController extends Controller {
 						return response()->json(['success' => false, 'errors' => [$customer_trande_name_check->original['error']]]);
 					}
 					// dump(trim(strtolower($customer_trande_name_check->original['trade_name'])), trim(strtolower($send_approval->customer->name)));
-					if (trim(strtolower($customer_trande_name_check->original['trade_name'])) != trim(strtolower($send_approval->customer->name))) {
-						return response()->json(['success' => false, 'errors' => ['Customer Name Not Matched with GSTIN Registration!']]);
+					if (trim(strtolower($customer_trande_name_check->original['legal_name'])) != trim(strtolower($send_approval->customer->name))) {
+						// return response()->json(['success' => false, 'errors' => ['Customer Name Not Matched with GSTIN Registration!']]);
+						if (trim(strtolower($customer_trande_name_check->original['trade_name'])) != trim(strtolower($send_approval->customer->name))) {
+							return response()->json(['success' => false, 'errors' => ['Customer Name Not Matched with GSTIN Registration!']]);
+						}
 					}
 					$send_approval->status_id = 2; //$request->send_to_approval;
 					$send_approval->updated_by_id = Auth()->user()->id;
@@ -2457,8 +2460,11 @@ class ServiceInvoiceController extends Controller {
 								return response()->json(['success' => false, 'errors' => [$customer_trande_name_check->original['error']]]);
 							}
 							// dump(trim(strtolower($customer_trande_name_check->original['trade_name'])), trim(strtolower($send_approval->customer->name)));
-							if (trim(strtolower($customer_trande_name_check->original['trade_name'])) != trim(strtolower($send_approval->customer->name))) {
-								return response()->json(['success' => false, 'errors' => ['Customer Name Not Matched with GSTIN Registration!. Customer Name: ' . $send_approval->customer->name]]);
+							if (trim(strtolower($customer_trande_name_check->original['legal_name'])) != trim(strtolower($send_approval->customer->name))) {
+								// return response()->json(['success' => false, 'errors' => ['Customer Name Not Matched with GSTIN Registration!']]);
+								if (trim(strtolower($customer_trande_name_check->original['trade_name'])) != trim(strtolower($send_approval->customer->name))) {
+									return response()->json(['success' => false, 'errors' => ['Customer Name Not Matched with GSTIN Registration!']]);
+								}
 							}
 							$send_approval->status_id = $next_status;
 							$send_approval->updated_by_id = Auth()->user()->id;
@@ -3318,7 +3324,6 @@ class ServiceInvoiceController extends Controller {
 							$address->gst_number = isset($customer_data['GST_NUMBER']) ? $customer_data['GST_NUMBER'] : NULL;
 
 							// $address->ax_customer_location_id = isset($customer_data['AX_CUSTOMER_LOCATION_ID']) ? $customer_data['AX_CUSTOMER_LOCATION_ID'] : NULL;
-							// $address->is_primary = isset($customer_data['ISPRIMARY']) ? $customer_data['ISPRIMARY'] : NULL;
 
 							$address->address_of_id = 24;
 							$address->address_type_id = 40;
@@ -3330,6 +3335,8 @@ class ServiceInvoiceController extends Controller {
 							$address->state_id = $state ? $state->id : NULL;
 							$address->city_id = $city ? $city->id : NULL;
 							$address->pincode = $customer_data['ZIPCODE'] == 'Not available' ? NULL : $customer_data['ZIPCODE'];
+							$address->is_primary = isset($customer_data['ISPRIMARY']) ? $customer_data['ISPRIMARY'] : 0;
+
 							$address->save();
 							$customer_address[] = $address;
 						}
@@ -3343,7 +3350,6 @@ class ServiceInvoiceController extends Controller {
 						$address->gst_number = isset($api_customer_data['GST_NUMBER']) ? $api_customer_data['GST_NUMBER'] : NULL;
 
 						// $address->ax_customer_location_id = isset($customer_data['AX_CUSTOMER_LOCATION_ID']) ? $customer_data['AX_CUSTOMER_LOCATION_ID'] : NULL;
-						// $address->is_primary = isset($customer_data['ISPRIMARY']) ? $customer_data['ISPRIMARY'] : NULL;
 
 						$address->address_of_id = 24;
 						$address->address_type_id = 40;
@@ -3357,6 +3363,7 @@ class ServiceInvoiceController extends Controller {
 						// }
 						$address->city_id = $city ? $city->id : NULL;
 						$address->pincode = $api_customer_data['ZIPCODE'] == 'Not available' ? NULL : $api_customer_data['ZIPCODE'];
+						$address->is_primary = isset($api_customer_data['ISPRIMARY']) ? $api_customer_data['ISPRIMARY'] : NULL;
 						$address->save();
 						// dd($address);
 						$customer_address[] = $address;
