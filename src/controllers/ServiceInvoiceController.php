@@ -3324,7 +3324,7 @@ class ServiceInvoiceController extends Controller {
 							$address->ax_id = $customer_data['RECID'];
 							$address->gst_number = isset($customer_data['GST_NUMBER']) ? $customer_data['GST_NUMBER'] : NULL;
 
-							// $address->ax_customer_location_id = isset($customer_data['AX_CUSTOMER_LOCATION_ID']) ? $customer_data['AX_CUSTOMER_LOCATION_ID'] : NULL;
+							$address->ax_customer_location_id = isset($customer_data['CUSTOMER_LOCATION_ID']) ? $customer_data['CUSTOMER_LOCATION_ID'] : NULL;
 
 							$address->address_of_id = 24;
 							$address->address_type_id = 40;
@@ -3350,7 +3350,7 @@ class ServiceInvoiceController extends Controller {
 						$address->ax_id = $api_customer_data['RECID'];
 						$address->gst_number = isset($api_customer_data['GST_NUMBER']) ? $api_customer_data['GST_NUMBER'] : NULL;
 
-						// $address->ax_customer_location_id = isset($customer_data['AX_CUSTOMER_LOCATION_ID']) ? $customer_data['AX_CUSTOMER_LOCATION_ID'] : NULL;
+						$address->ax_customer_location_id = isset($api_customer_data['CUSTOMER_LOCATION_ID']) ? $api_customer_data['CUSTOMER_LOCATION_ID'] : NULL;
 
 						$address->address_of_id = 24;
 						$address->address_type_id = 40;
