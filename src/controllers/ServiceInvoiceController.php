@@ -233,25 +233,27 @@ class ServiceInvoiceController extends Controller {
 						$output .= '<a href="javascript:;" onclick="angular.element(this).scope().cholaPdfDownload(' . $service_invoice_list->id . ')"><img class="img-responsive" src="' . $img_download . '" alt="Download" title="Chola PDF"/>
 	                        </a>';
 					}
-					if ($service_invoice_list->ack_date) {
-						$current_date_time = date('d-m-Y H:i:s');
-						if (!empty($service_invoice_list->ack_date)) {
-							$t1 = strtotime($service_invoice_list->ack_date);
-							$t2 = strtotime($current_date_time);
-							$diff = $t2 - $t1;
-							$hours = $diff / (60 * 60);
-							if ($hours < 24) {
-								$output .= '<a href="javascript:;" data-toggle="modal" data-target="#delete_irn"
+					if (Entrust::can('service-invoice-irn-cancel')) {
+						if ($service_invoice_list->ack_date) {
+							$current_date_time = date('d-m-Y H:i:s');
+							if (!empty($service_invoice_list->ack_date)) {
+								$t1 = strtotime($service_invoice_list->ack_date);
+								$t2 = strtotime($current_date_time);
+								$diff = $t2 - $t1;
+								$hours = $diff / (60 * 60);
+								if ($hours < 24) {
+									$output .= '<a href="javascript:;" data-toggle="modal" data-target="#delete_irn"
 									onclick="angular.element(this).scope().deleteIRN(' . $service_invoice_list->id . ')" dusk = "delete-btn" title="Cancel IRN">
 									<img src="' . $img_delete . '" alt="Cancel IRN" class="img-responsive">
 									</a>';
+								} else {
+									$output .= '';
+								}
 							} else {
 								$output .= '';
 							}
-						} else {
-							$output .= '';
-						}
 
+						}
 					}
 				} elseif ($service_invoice_list->status_id != '4' && $service_invoice_list->status_id != '3' && $service_invoice_list->status_id != '7') {
 					$output .= '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
@@ -275,23 +277,26 @@ class ServiceInvoiceController extends Controller {
 						$output .= '<a href="javascript:;" onclick="angular.element(this).scope().cholaPdfDownload(' . $service_invoice_list->id . ')"><img class="img-responsive" src="' . $img_download . '" alt="Download" title="Chola PDF"/>
 	                        </a>';
 					}
-					if ($service_invoice_list->ack_date) {
-						$current_date_time = date('d-m-Y H:i:s');
-						if (!empty($service_invoice_list->ack_date)) {
-							$t1 = strtotime($service_invoice_list->ack_date);
-							$t2 = strtotime($current_date_time);
-							$diff = $t2 - $t1;
-							$hours = $diff / (60 * 60);
-							if ($hours < 24 && $service_invoice_list->state_id == 7) {
-								$output .= '<a href="javascript:;" data-toggle="modal" data-target="#delete_irn"
+					if (Entrust::can('service-invoice-irn-cancel')) {
+
+						if ($service_invoice_list->ack_date) {
+							$current_date_time = date('d-m-Y H:i:s');
+							if (!empty($service_invoice_list->ack_date)) {
+								$t1 = strtotime($service_invoice_list->ack_date);
+								$t2 = strtotime($current_date_time);
+								$diff = $t2 - $t1;
+								$hours = $diff / (60 * 60);
+								if ($hours < 24 && $service_invoice_list->state_id == 7) {
+									$output .= '<a href="javascript:;" data-toggle="modal" data-target="#delete_irn"
 									onclick="angular.element(this).scope().deleteIRN(' . $service_invoice_list->id . ')" dusk = "delete-btn" title="Cancel IRN">
 									<img src="' . $img_delete . '" alt="Cancel IRN" class="img-responsive">
 									</a>';
+								} else {
+									$output .= '';
+								}
 							} else {
 								$output .= '';
 							}
-						} else {
-							$output .= '';
 						}
 					}
 
@@ -2524,7 +2529,8 @@ class ServiceInvoiceController extends Controller {
 				->where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
 				->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
 				->where('service_invoices.company_id', Auth::user()->company_id)
-				->where('status_id', 4)
+			// ->where('status_id', 4)
+				->whereIn('status_id', [4, 7])
 				->where(function ($query) use ($request) {
 					if ($request->invoice_number) {
 						$query->where('service_invoices.number', 'like', "%" . $request->invoice_number . "%");
@@ -2569,22 +2575,26 @@ class ServiceInvoiceController extends Controller {
 			;
 			$service_invoices = clone $query;
 			$service_invoices = $service_invoices->get();
-			// dd($service_invoices);
+
 			foreach ($service_invoices as $service_invoice) {
-				$service_invoice->exportToAxapta(true);
+				// dd($service_invoice->status_id);
+				if ($service_invoice->status_id != 7) {
+					$service_invoice->exportToAxapta(true);
+				}
 			}
 
 			$service_invoice_ids = clone $query;
 
 			$service_invoice_ids = $service_invoice_ids->pluck('service_invoices.id');
-			// dd($service_invoice_ids);
+			// dump($service_invoice_ids);
 			$axapta_records = AxaptaExport::where([
 				'company_id' => Auth::user()->company_id,
 				'entity_type_id' => 1400,
 			])
 				->whereIn('entity_id', $service_invoice_ids)
-				->get()->toArray();
-
+				->get()
+				->toArray();
+			// dd($axapta_records);
 			// $axapta_records = [];
 			foreach ($axapta_records as $key => &$axapta_record) {
 				$axapta_record['TransDate'] = date('d/m/Y', strtotime($axapta_record['TransDate']));
@@ -2991,6 +3001,32 @@ class ServiceInvoiceController extends Controller {
 
 	public function cancelIrn(Request $request) {
 		// dd($request->all());
+		$service_invoice = ServiceInvoice::with([
+			'company',
+			// 'customer',
+			'toAccountType',
+			'address',
+			'outlets',
+			'outlets.primaryAddress',
+			'outlets.region',
+			'sbus',
+			'serviceInvoiceItems',
+			'serviceInvoiceItems.serviceItem',
+			'serviceInvoiceItems.eavVarchars',
+			'serviceInvoiceItems.eavInts',
+			'serviceInvoiceItems.eavDatetimes',
+			'serviceInvoiceItems.eInvoiceUom',
+			'serviceInvoiceItems.serviceItem.taxCode',
+			'serviceInvoiceItems.serviceItem.subCategory',
+			'serviceInvoiceItems.serviceItem.subCategory.attachment',
+			'serviceInvoiceItems.taxes',
+		])->find($request->id);
+		// dd($service_invoice);
+		$r = $service_invoice->exportToAxaptaCancel();
+		if (!$r['success']) {
+			return $r;
+		}
+
 		$service_invoice = ServiceInvoice::find($request->id);
 
 		$rsa = new Crypt_RSA;
