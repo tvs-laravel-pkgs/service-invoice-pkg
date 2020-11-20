@@ -188,6 +188,14 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 				'display_name' => 'GST Export',
 			],
 
+			3058 => [
+				// 'display_order' => 4,
+				'display_order' => 16,
+				'parent_id' => 3040,
+				'name' => 'service-invoice-irn-cancel',
+				'display_name' => 'Service Invoice IRN Cancelation',
+			],
+
 		];
 
 		foreach ($permissions as $permission_id => $permsion) {
