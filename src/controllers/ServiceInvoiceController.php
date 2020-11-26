@@ -3640,6 +3640,7 @@ class ServiceInvoiceController extends Controller {
 			'sbus',
 			'serviceInvoiceItems',
 			'serviceInvoiceItems.serviceItem',
+			'serviceInvoiceItems.serviceItem.subCategory',
 			'serviceInvoiceItems.eavVarchars',
 			'serviceInvoiceItems.eavInts',
 			'serviceInvoiceItems.eavDatetimes',
