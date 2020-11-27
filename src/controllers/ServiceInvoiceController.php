@@ -832,21 +832,24 @@ class ServiceInvoiceController extends Controller {
 		// 		}
 		// 	}
 		// }
-		if ($request->state_id) {
-			// dd('in');
-			if (($request->state_id == 3) && ($outlet->state_id == 3)) {
-				//3 FOR KERALA
-				//check customer state and outlet states are equal KL.  //add KFC tax
-				if (!$request->gst_number) {
-					//customer dont't have GST
-					if (!is_null($service_item->sac_code_id)) {
-						//customer have HSN and SAC Code
-						$gst_total += round((1 / 100) * ($request->qty * $request->amount), 2);
-						$KFC_tax_amount = round($request->qty * $request->amount * 1 / 100, 2); //ONE PERCENTAGE FOR KFC
-						$service_item['KFC'] = [ //4 for KFC
-							'percentage' => 1,
-							'amount' => $KFC_tax_amount,
-						];
+		if ($request->type_id != 1060) {
+			//NOT ABLE TO CALCULATE THE KFC FOR CN
+			if ($request->state_id) {
+				// dd('in');
+				if (($request->state_id == 3) && ($outlet->state_id == 3)) {
+					//3 FOR KERALA
+					//check customer state and outlet states are equal KL.  //add KFC tax
+					if (!$request->gst_number) {
+						//customer dont't have GST
+						if (!is_null($service_item->sac_code_id)) {
+							//customer have HSN and SAC Code
+							$gst_total += round((1 / 100) * ($request->qty * $request->amount), 2);
+							$KFC_tax_amount = round($request->qty * $request->amount * 1 / 100, 2); //ONE PERCENTAGE FOR KFC
+							$service_item['KFC'] = [ //4 for KFC
+								'percentage' => 1,
+								'amount' => $KFC_tax_amount,
+							];
+						}
 					}
 				}
 			}
@@ -1510,15 +1513,15 @@ class ServiceInvoiceController extends Controller {
 			$public_key = 'MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAxqHazGS4OkY/bDp0oklL+Ser7EpTpxyeMop8kfBlhzc8dzWryuAECwu8i/avzL4f5XG/DdSgMz7EdZCMrcxtmGJlMo2tUqjVlIsUslMG6Cmn46w0u+pSiM9McqIvJgnntKDHg90EIWg1BNnZkJy1NcDrB4O4ea66Y6WGNdb0DxciaYRlToohv8q72YLEII/z7W/7EyDYEaoSlgYs4BUP69LF7SANDZ8ZuTpQQKGF4TJKNhJ+ocmJ8ahb2HTwH3Ol0THF+0gJmaigs8wcpWFOE2K+KxWfyX6bPBpjTzC+wQChCnGQREhaKdzawE/aRVEVnvWc43dhm0janHp29mAAVv+ngYP9tKeFMjVqbr8YuoT2InHWFKhpPN8wsk30YxyDvWkN3mUgj3Q/IUhiDh6fU8GBZ+iIoxiUfrKvC/XzXVsCE2JlGVceuZR8OzwGrxk+dvMnVHyauN1YWnJuUTYTrCw3rgpNOyTWWmlw2z5dDMpoHlY0WmTVh0CrMeQdP33D3LGsa+7JYRyoRBhUTHepxLwk8UiLbu6bGO1sQwstLTTmk+Z9ZSk9EUK03Bkgv0hOmSPKC4MLD5rOM/oaP0LLzZ49jm9yXIrgbEcn7rv82hk8ghqTfChmQV/q+94qijf+rM2XJ7QX6XBES0UvnWnV6bVjSoLuBi9TF1ttLpiT3fkCAwEAAQ=='; //PROVIDE FROM BDO COMPANY
 
 			// $clientid = "prakashr@featsolutions.in"; //PROVIDE FROM BDO COMPANY
-			// $clientid = "amutha@sundarammotors.com"; //PROVIDE FROM BDO COMPANY
-			$clientid = "61b27a26bd86cbb93c5c11be0c2856"; //LIVE
+			$clientid = "amutha@sundarammotors.com"; //PROVIDE FROM BDO COMPANY
+			// $clientid = "61b27a26bd86cbb93c5c11be0c2856"; //LIVE
 			// dump('clientid ' . $clientid);
 
 			$rsa->loadKey($public_key);
 			$rsa->setEncryptionMode(2);
 			// $client_secret_key = 'BBAkBDB0YzZiYThkYTg4ZDZBBDJjZBUyBGFkBBB0BWB='; // CLIENT SECRET KEY
-			// $client_secret_key = 'TQAkSDQ0YzZiYTTkYTg4ZDZSSDJjZSUySGFkSSQ0SWQ='; // CLIENT SECRET KEY
-			$client_secret_key = '7dd55886594bccadb03c48eb3f448e'; // LIVE
+			$client_secret_key = 'TQAkSDQ0YzZiYTTkYTg4ZDZSSDJjZSUySGFkSSQ0SWQ='; // CLIENT SECRET KEY
+			// $client_secret_key = '7dd55886594bccadb03c48eb3f448e'; // LIVE
 			$ClientSecret = $rsa->encrypt($client_secret_key);
 			$clientsecretencrypted = base64_encode($ClientSecret);
 			// dump('ClientSecret ' . $clientsecretencrypted);
@@ -1530,8 +1533,8 @@ class ServiceInvoiceController extends Controller {
 			$appsecretkey = base64_encode($AppSecret);
 			// dump('appsecretkey ' . $appsecretkey);
 
-			// $bdo_login_url = 'https://sandboxeinvoiceapi.bdo.in/bdoauth/bdoauthenticate';
-			$bdo_login_url = 'https://einvoiceapi.bdo.in/bdoauth/bdoauthenticate'; // LIVE
+			$bdo_login_url = 'https://sandboxeinvoiceapi.bdo.in/bdoauth/bdoauthenticate';
+			// $bdo_login_url = 'https://einvoiceapi.bdo.in/bdoauth/bdoauthenticate'; // LIVE
 
 			$ch = curl_init($bdo_login_url);
 			// Setup request to send json via POST`
@@ -1936,8 +1939,8 @@ class ServiceInvoiceController extends Controller {
 			// dd($encrypt_data);
 
 			//ENCRYPTED GIVEN DATA TO DBO
-			// $bdo_generate_irn_url = 'https://sandboxeinvoiceapi.bdo.in/bdoapi/public/generateIRN';
-			$bdo_generate_irn_url = 'https://einvoiceapi.bdo.in/bdoapi/public/generateIRN'; //LIVE
+			$bdo_generate_irn_url = 'https://sandboxeinvoiceapi.bdo.in/bdoapi/public/generateIRN';
+			// $bdo_generate_irn_url = 'https://einvoiceapi.bdo.in/bdoapi/public/generateIRN'; //LIVE
 
 			$ch = curl_init($bdo_generate_irn_url);
 			// Setup request to send json via POST`
@@ -2997,16 +3000,16 @@ class ServiceInvoiceController extends Controller {
 		$public_key = 'MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAxqHazGS4OkY/bDp0oklL+Ser7EpTpxyeMop8kfBlhzc8dzWryuAECwu8i/avzL4f5XG/DdSgMz7EdZCMrcxtmGJlMo2tUqjVlIsUslMG6Cmn46w0u+pSiM9McqIvJgnntKDHg90EIWg1BNnZkJy1NcDrB4O4ea66Y6WGNdb0DxciaYRlToohv8q72YLEII/z7W/7EyDYEaoSlgYs4BUP69LF7SANDZ8ZuTpQQKGF4TJKNhJ+ocmJ8ahb2HTwH3Ol0THF+0gJmaigs8wcpWFOE2K+KxWfyX6bPBpjTzC+wQChCnGQREhaKdzawE/aRVEVnvWc43dhm0janHp29mAAVv+ngYP9tKeFMjVqbr8YuoT2InHWFKhpPN8wsk30YxyDvWkN3mUgj3Q/IUhiDh6fU8GBZ+iIoxiUfrKvC/XzXVsCE2JlGVceuZR8OzwGrxk+dvMnVHyauN1YWnJuUTYTrCw3rgpNOyTWWmlw2z5dDMpoHlY0WmTVh0CrMeQdP33D3LGsa+7JYRyoRBhUTHepxLwk8UiLbu6bGO1sQwstLTTmk+Z9ZSk9EUK03Bkgv0hOmSPKC4MLD5rOM/oaP0LLzZ49jm9yXIrgbEcn7rv82hk8ghqTfChmQV/q+94qijf+rM2XJ7QX6XBES0UvnWnV6bVjSoLuBi9TF1ttLpiT3fkCAwEAAQ=='; //PROVIDE FROM BDO COMPANY
 
 		// $clientid = "prakashr@featsolutions.in"; //PROVIDE FROM BDO COMPANY
-		// $clientid = "amutha@sundarammotors.com"; //PROVIDE FROM BDO COMPANY
-		$clientid = "61b27a26bd86cbb93c5c11be0c2856"; //LIVE
+		$clientid = "amutha@sundarammotors.com"; //PROVIDE FROM BDO COMPANY
+		// $clientid = "61b27a26bd86cbb93c5c11be0c2856"; //LIVE
 
 		// dump('clientid ' . $clientid);
 
 		$rsa->loadKey($public_key);
 		$rsa->setEncryptionMode(2);
 		// $client_secret_key = 'BBAkBDB0YzZiYThkYTg4ZDZBBDJjZBUyBGFkBBB0BWB='; // CLIENT SECRET KEY
-		// $client_secret_key = 'TQAkSDQ0YzZiYTTkYTg4ZDZSSDJjZSUySGFkSSQ0SWQ='; // CLIENT SECRET KEY
-		$client_secret_key = '7dd55886594bccadb03c48eb3f448e'; // LIVE
+		$client_secret_key = 'TQAkSDQ0YzZiYTTkYTg4ZDZSSDJjZSUySGFkSSQ0SWQ='; // CLIENT SECRET KEY
+		// $client_secret_key = '7dd55886594bccadb03c48eb3f448e'; // LIVE
 
 		$ClientSecret = $rsa->encrypt($client_secret_key);
 		$clientsecretencrypted = base64_encode($ClientSecret);
@@ -3019,8 +3022,8 @@ class ServiceInvoiceController extends Controller {
 		$appsecretkey = base64_encode($AppSecret);
 		// dump('appsecretkey ' . $appsecretkey);
 
-		// $bdo_login_url = 'https://sandboxeinvoiceapi.bdo.in/bdoauth/bdoauthenticate';
-		$bdo_login_url = 'https://einvoiceapi.bdo.in/bdoauth/bdoauthenticate'; //LIVE
+		$bdo_login_url = 'https://sandboxeinvoiceapi.bdo.in/bdoauth/bdoauthenticate';
+		// $bdo_login_url = 'https://einvoiceapi.bdo.in/bdoauth/bdoauthenticate'; //LIVE
 
 		$ch = curl_init($bdo_login_url);
 		// Setup request to send json via POST`
@@ -3116,8 +3119,8 @@ class ServiceInvoiceController extends Controller {
 			return response()->json(['success' => false, 'error' => 'IRN Encryption Error!']);
 		}
 
-		// $bdo_cancel_irn_url = 'https://sandboxeinvoiceapi.bdo.in/bdoapi/public/cancelIRN';
-		$bdo_cancel_irn_url = 'https://einvoiceapi.bdo.in/bdoapi/public/cancelIRN'; //LIVE
+		$bdo_cancel_irn_url = 'https://sandboxeinvoiceapi.bdo.in/bdoapi/public/cancelIRN';
+		// $bdo_cancel_irn_url = 'https://einvoiceapi.bdo.in/bdoapi/public/cancelIRN'; //LIVE
 
 		$ch = curl_init($bdo_cancel_irn_url);
 		// Setup request to send json via POST`

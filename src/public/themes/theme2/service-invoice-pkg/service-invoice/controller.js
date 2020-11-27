@@ -1320,14 +1320,16 @@ app.component('serviceInvoiceForm', {
                 //     self.tcs_total = $scope.percentage(self.sub_total, self.service_item_detail.tcs_percentage).toFixed(2);
                 // }
                 //FOR KFC TAX
-                if (self.service_invoice.branch.primary_address.state_id && self.customer.state_id) {
-                    console.log('in');
-                    if (self.service_invoice.branch.primary_address.state_id == 3 && self.customer.state_id == 3) {
-                        if (self.customer.gst_number == null) {
-                            if (self.service_item_detail.tax_code != null) {
-                                self.KFC_total = self.sub_total / 100;
-                                // console.log(self.sub_total);
-                                // console.log(self.KFC_total);
+                if ($routeParams.type_id != 1060) {
+                    if (self.service_invoice.branch.primary_address.state_id && self.customer.state_id) {
+                        console.log('in');
+                        if (self.service_invoice.branch.primary_address.state_id == 3 && self.customer.state_id == 3) {
+                            if (self.customer.gst_number == null) {
+                                if (self.service_item_detail.tax_code != null) {
+                                    self.KFC_total = self.sub_total / 100;
+                                    // console.log(self.sub_total);
+                                    // console.log(self.KFC_total);
+                                }
                             }
                         }
                     }
@@ -1821,11 +1823,13 @@ app.component('serviceInvoiceView', {
                     self.tcs_total = $scope.percentage(self.sub_total, self.service_item_detail.tcs_percentage).toFixed(2);
                 }
                 // FOR KFC TAX
-                if (self.service_invoice.branch.primary_address.state_id) {
-                    if (self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.customer.primary_address.state_id == 3) {
-                        if (self.service_invoice.customer.gst_number == null) {
-                            if (self.service_item_detail.tax_code != null) {
-                                self.KFC_total = self.sub_total / 100;
+                if ($routeParams.type_id != 1060) {
+                    if (self.service_invoice.branch.primary_address.state_id) {
+                        if (self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.customer.primary_address.state_id == 3) {
+                            if (self.service_invoice.customer.gst_number == null) {
+                                if (self.service_item_detail.tax_code != null) {
+                                    self.KFC_total = self.sub_total / 100;
+                                }
                             }
                         }
                     }
