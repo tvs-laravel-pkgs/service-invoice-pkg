@@ -2598,9 +2598,11 @@ class ServiceInvoiceController extends Controller {
 				->where(function ($query) use ($request) {
 					if ($request->created_date) {
 						$created_date_range = explode(" to ", $request->created_date);
+						$time1 = '00:00:00';
+						$time2 = '24:00:00';
 						if (!empty($created_date_range)) {
-							$query->where('created_at', '>=', date('Y-m-d', strtotime($created_date_range[0])))
-								->where('created_at', '<=', date('Y-m-d', strtotime($created_date_range[1])));
+							$query->where('created_at', '>=', date('Y-m-d H:i:s', strtotime($created_date_range[0] . ' ' . $time1)))
+								->where('created_at', '<=', date('Y-m-d H:i:s', strtotime($created_date_range[1] . ' ' . $time2)));
 						}
 					}
 				})
