@@ -2524,6 +2524,7 @@ class ServiceInvoiceController extends Controller {
 
 		ob_end_clean();
 		$date_range = explode(" to ", $request->invoice_date);
+
 		// $approved_status = ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
 		if ($request->export_type == "Export") {
 			$query = ServiceInvoice::select('service_invoices.*')
@@ -2575,6 +2576,7 @@ class ServiceInvoiceController extends Controller {
 					}
 				})
 			;
+
 			$service_invoices = clone $query;
 			$service_invoices = $service_invoices->get();
 
@@ -2593,10 +2595,20 @@ class ServiceInvoiceController extends Controller {
 				'company_id' => Auth::user()->company_id,
 				'entity_type_id' => 1400,
 			])
+				->where(function ($query) use ($request) {
+					if ($request->created_date) {
+						$created_date_range = explode(" to ", $request->created_date);
+						if (!empty($created_date_range)) {
+							$query->where('created_at', '>=', date('Y-m-d', strtotime($created_date_range[0])))
+								->where('created_at', '<=', date('Y-m-d', strtotime($created_date_range[1])));
+						}
+					}
+				})
 				->whereIn('entity_id', $service_invoice_ids)
 				->get()
 				->toArray();
 			// dd($axapta_records);
+
 			// $axapta_records = [];
 			foreach ($axapta_records as $key => &$axapta_record) {
 				$axapta_record['TransDate'] = date('d/m/Y', strtotime($axapta_record['TransDate']));
