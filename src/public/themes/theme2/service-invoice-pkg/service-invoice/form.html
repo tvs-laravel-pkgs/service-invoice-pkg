@@ -655,6 +655,7 @@
                 <input type="hidden" name="branch_id" value="{{$ctrl.service_invoice.branch.id}}">
                 <input type="hidden" name="state_id" value="{{$ctrl.customer.state_id}}">
                 <input type="hidden" name="gst_number" value="{{$ctrl.customer.gst_number}}">
+                <input type="hidden" name="type_id" value="{{$ctrl.type_id}}">
                 <div class="modal-footer">
                     <div class="row">
                         <div class="col-md-9 text-left">
@@ -668,7 +669,7 @@
                                         <span class="modal-footer-list-label">{{tax.name}} ({{tax.pivot.percentage}}%)</span>
                                         <span class="modal-footer-list-value">{{(tax.pivot.amount ? tax.pivot.amount : 0) | number : 2}}</span>
                                     </li>
-                                    <li ng-show="($ctrl.service_invoice.branch.primary_address.state_id == '3') && ($ctrl.customer.state_id == '3') && ($ctrl.service_item_detail.tax_code != NULL) && ($ctrl.customer.gst_number == NULL)">
+                                    <li ng-show="($ctrl.service_invoice.branch.primary_address.state_id == '3') && ($ctrl.customer.state_id == '3') && ($ctrl.service_item_detail.tax_code != NULL) && ($ctrl.customer.gst_number == NULL) && ($ctrl.type_id != 1060)">
                                         <span class="modal-footer-list-label">KFC (1%)</span>
                                         <span class="modal-footer-list-value">{{$ctrl.KFC_total | number : 2}}</span>
                                     </li>
