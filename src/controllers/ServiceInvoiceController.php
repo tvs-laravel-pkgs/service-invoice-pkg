@@ -837,21 +837,24 @@ class ServiceInvoiceController extends Controller {
 		// 		}
 		// 	}
 		// }
-		if ($request->state_id) {
-			// dd('in');
-			if (($request->state_id == 3) && ($outlet->state_id == 3)) {
-				//3 FOR KERALA
-				//check customer state and outlet states are equal KL.  //add KFC tax
-				if (!$request->gst_number) {
-					//customer dont't have GST
-					if (!is_null($service_item->sac_code_id)) {
-						//customer have HSN and SAC Code
-						$gst_total += round((1 / 100) * ($request->qty * $request->amount), 2);
-						$KFC_tax_amount = round($request->qty * $request->amount * 1 / 100, 2); //ONE PERCENTAGE FOR KFC
-						$service_item['KFC'] = [ //4 for KFC
-							'percentage' => 1,
-							'amount' => $KFC_tax_amount,
-						];
+		if ($request->type_id != 1060) {
+			//NOT ABLE TO CALCULATE THE KFC FOR CN
+			if ($request->state_id) {
+				// dd('in');
+				if (($request->state_id == 3) && ($outlet->state_id == 3)) {
+					//3 FOR KERALA
+					//check customer state and outlet states are equal KL.  //add KFC tax
+					if (!$request->gst_number) {
+						//customer dont't have GST
+						if (!is_null($service_item->sac_code_id)) {
+							//customer have HSN and SAC Code
+							$gst_total += round((1 / 100) * ($request->qty * $request->amount), 2);
+							$KFC_tax_amount = round($request->qty * $request->amount * 1 / 100, 2); //ONE PERCENTAGE FOR KFC
+							$service_item['KFC'] = [ //4 for KFC
+								'percentage' => 1,
+								'amount' => $KFC_tax_amount,
+							];
+						}
 					}
 				}
 			}
