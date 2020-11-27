@@ -189,9 +189,9 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 			],
 
 			3058 => [
-				'display_order' => 4,
-				// 'display_order' => 16,
-				'parent_id' => 3053,
+				// 'display_order' => 5,
+				'display_order' => 14,
+				'parent_id' => 3040,
 				'name' => 'service-invoice-irn-cancel',
 				'display_name' => 'Service Invoice IRN Cancelation',
 			],
