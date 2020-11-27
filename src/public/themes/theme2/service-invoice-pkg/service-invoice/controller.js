@@ -226,6 +226,7 @@ app.component('serviceInvoiceList', {
         $scope.reset_filter = function() {
             $('#invoice_number').val('');
             $('#invoice_date').val('');
+            $('#created_date').val('');
             $('#type_id').val('');
             $('#branch_id').val('');
             $('#sbu_id').val('');
