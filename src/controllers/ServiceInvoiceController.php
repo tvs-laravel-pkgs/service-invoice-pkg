@@ -2519,7 +2519,7 @@ class ServiceInvoiceController extends Controller {
 
 	public function exportServiceInvoicesToExcel(Request $request) {
 		// dd($request->all());
-		ini_set('memory_limit', '-1');
+		// ini_set('memory_limit', '-1');
 		ini_set('max_execution_time', 0);
 
 		ob_end_clean();
