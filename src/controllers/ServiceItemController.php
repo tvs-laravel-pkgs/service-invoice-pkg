@@ -334,8 +334,8 @@ class ServiceItemController extends Controller {
 				$service_item_details[] = [
 					$service_item->code,
 					$service_item->name,
-					$service_item->subCategory ? $service_item->subCategory->name : '',
 					$service_item->subCategory ? $service_item->subCategory->serviceItemCategory ? $service_item->subCategory->serviceItemCategory->name : '' : '',
+					$service_item->subCategory ? $service_item->subCategory->name : '',
 					$service_item->coaCode ? $service_item->coaCode->code . '/' . $service_item->coaCode->name : '',
 					$service_item->taxCode ? $service_item->taxCode->code : '',
 					$service_item->tcs_percentage ? $service_item->tcs_percentage : '',
