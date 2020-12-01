@@ -484,17 +484,25 @@ app.component('serviceInvoiceList', {
 
         $scope.deleteIRN = function($id) {
             $("#cancel_irn_id").val($id);
+            $("#cancel_type").val("IRN");
+        }
+        $scope.deleteB2C = function($id) {
+            $("#cancel_irn_id").val($id);
+            $("#cancel_type").val("B2C");
         }
         $scope.cancelIRN = function() {
             $('#pace').css("display", "block");
             $('#pace').addClass('pace-active');
             $id = $('#cancel_irn_id').val();
+            $cancel_type = $('#cancel_type').val();
             // console.log($id);
+            // console.log($cancel_type);
             // return;
             $http.get(
                 laravel_routes['cancelIrn'], {
                     params: {
                         id: $id,
+                        type: $cancel_type,
                     }
                 }
             ).then(function(response) {

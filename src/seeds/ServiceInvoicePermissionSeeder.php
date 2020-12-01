@@ -196,6 +196,14 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 				'display_name' => 'Service Invoice IRN Cancelation',
 			],
 
+			3059 => [
+				// 'display_order' => 5,
+				'display_order' => 14,
+				'parent_id' => 3040,
+				'name' => 'service-invoice-cancel',
+				'display_name' => 'B2C Service Invoice Cancelation',
+			],
+
 		];
 
 		foreach ($permissions as $permission_id => $permsion) {
