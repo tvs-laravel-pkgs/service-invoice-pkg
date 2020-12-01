@@ -255,7 +255,15 @@ class ServiceInvoiceController extends Controller {
 
 						}
 					}
-				} elseif ($service_invoice_list->status_id != '4' && $service_invoice_list->status_id != '3' && $service_invoice_list->status_id != '7') {
+					if (Entrust::can('service-invoice-cancel')) {
+						if (empty($service_invoice_list->ack_date)) {
+							$output .= '<a href="javascript:;" data-toggle="modal" data-target="#delete_irn"
+									onclick="angular.element(this).scope().deleteB2C(' . $service_invoice_list->id . ')" dusk = "delete-btn" title="Cancel B2C">
+									<img src="' . $img_delete . '" alt="Cancel B2C" class="img-responsive">
+									</a>';
+						}
+					}
+				} elseif ($service_invoice_list->status_id != '4' && $service_invoice_list->status_id != '3' && $service_invoice_list->status_id != '7' && $service_invoice_list->status_id != '8') {
 					$output .= '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
 	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
 	                    	</a>
@@ -300,6 +308,17 @@ class ServiceInvoiceController extends Controller {
 						}
 					}
 
+				} elseif ($service_invoice_list->status_id == '8') {
+					$output .= '<a href="#!/service-invoice-pkg/service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
+	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
+	                    	</a>
+	                    	<a href="' . $path . '/' . $service_invoice_list->number . '.pdf" class="" target="_blank"><img class="img-responsive" src="' . $img_download . '" alt="Download" title="PDF"/>
+	                        </a>';
+					if ($service_invoice_list->pdf_format_id == 11311) {
+						//CHOLA CUSTOMER
+						$output .= '<a href="javascript:;" onclick="angular.element(this).scope().cholaPdfDownload(' . $service_invoice_list->id . ')"><img class="img-responsive" src="' . $img_download . '" alt="Download" title="Chola PDF"/>
+	                        </a>';
+					}
 				}
 				if ($service_invoice_list->status_id == '1') {
 					$next_status = 2; //ApprovalLevel::where('approval_type_id', 1)->pluck('current_status_id')->first();
@@ -2519,7 +2538,7 @@ class ServiceInvoiceController extends Controller {
 
 	public function exportServiceInvoicesToExcel(Request $request) {
 		// dd($request->all());
-		ini_set('memory_limit', '-1');
+		// ini_set('memory_limit', '-1');
 		ini_set('max_execution_time', 0);
 
 		ob_end_clean();
@@ -2533,7 +2552,7 @@ class ServiceInvoiceController extends Controller {
 				->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
 				->where('service_invoices.company_id', Auth::user()->company_id)
 			// ->where('status_id', 4)
-				->whereIn('status_id', [4, 7])
+				->whereIn('status_id', [4, 7, 8])
 				->where(function ($query) use ($request) {
 					if ($request->invoice_number) {
 						$query->where('service_invoices.number', 'like', "%" . $request->invoice_number . "%");
@@ -2582,7 +2601,7 @@ class ServiceInvoiceController extends Controller {
 
 			foreach ($service_invoices as $service_invoice) {
 				// dd($service_invoice->status_id);
-				if ($service_invoice->status_id != 7) {
+				if ($service_invoice->status_id != 7 && $service_invoice->status_id != 8) {
 					$service_invoice->exportToAxapta(true);
 				}
 			}
@@ -3045,6 +3064,26 @@ class ServiceInvoiceController extends Controller {
 		$r = $service_invoice->exportToAxaptaCancel();
 		if (!$r['success']) {
 			return $r;
+		}
+
+		if ($request->type == "B2C") {
+			$service_invoice_save = ServiceInvoice::find($request->id);
+			$service_invoice_save->status_id = 8; //B2C CANCELED
+			$service_invoice_save->save();
+
+			if ($service_invoice->type_id == 1060) {
+				$service_invoice->type = 'CREDIT NOTE(CRN)';
+			} elseif ($service_invoice->type_id == 1061) {
+				$service_invoice->type = 'DEBIT NOTE(DBN)';
+			} elseif ($service_invoice->type_id == 1062) {
+				$service_invoice->type = 'INVOICE(INV)';
+			}
+
+			return response()->json([
+				'success' => true,
+				'service_invoice' => $service_invoice_save,
+				'message' => $service_invoice->type . ' Cancened Successfully!',
+			]);
 		}
 
 		$service_invoice = ServiceInvoice::find($request->id);
