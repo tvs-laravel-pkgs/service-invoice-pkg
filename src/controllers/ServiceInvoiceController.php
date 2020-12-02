@@ -1824,7 +1824,7 @@ class ServiceInvoiceController extends Controller {
 					'DocDtls' => array(
 						"Typ" => $service_invoice->type,
 						"No" => $service_invoice->number,
-						// "No" => '23AUG2020SN161',
+						// "No" => '23AUG2020SN166',
 						"Dt" => date('d-m-Y', strtotime($service_invoice->document_date)),
 					),
 					'SellerDtls' => array(
@@ -2107,7 +2107,8 @@ class ServiceInvoiceController extends Controller {
 			$IRN_images_des = storage_path('app/public/service-invoice/IRN_images');
 			File::makeDirectory($IRN_images_des, $mode = 0777, true, true);
 
-			$url = QRCode::text($final_json_decode->QRCode)->setSize(4)->setOutfile('storage/app/public/service-invoice/IRN_images/' . $service_invoice->number . '.png')->png();
+			// $url = QRCode::text($final_json_decode->QRCode)->setSize(4)->setOutfile('storage/app/public/service-invoice/IRN_images/' . $service_invoice->number . '.png')->png();
+			$url = QRCode::text($final_json_decode->SignedQRCode)->setSize(4)->setOutfile('storage/app/public/service-invoice/IRN_images/' . $service_invoice->number . '.png')->png();
 
 			// $file_name = $service_invoice->number . '.png';
 
