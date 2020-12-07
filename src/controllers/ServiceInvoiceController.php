@@ -2680,7 +2680,8 @@ class ServiceInvoiceController extends Controller {
 				->where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
 				->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
 				->where('service_invoices.company_id', Auth::user()->company_id)
-				->where('status_id', 4)
+			// ->where('status_id', 4)
+				->whereIn('status_id', [4, 7, 8])
 			// ->get()
 			;
 			if (Entrust::can('tcs-export-all')) {
@@ -2871,9 +2872,11 @@ class ServiceInvoiceController extends Controller {
 				->where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
 				->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
 				->where('service_invoices.company_id', Auth::user()->company_id)
-				->where('status_id', 4)
+			// ->where('status_id', 4)
+				->whereIn('status_id', [4, 7, 8])
 			// ->get()
 			;
+			// dd(count($query));
 			// if (Entrust::can('gst-export-all')) {
 			// 	$query = $query->where('service_invoices.company_id', Auth::user()->company_id);
 			// } elseif (Entrust::can('gst-export-own')) {
@@ -2890,18 +2893,18 @@ class ServiceInvoiceController extends Controller {
 			// 	$query = $query->whereIn('service_invoices.branch_id', $view_user_outlets_only);
 			// }
 
-			// dd(count($query));
 			$service_invoices = clone $query;
 			$service_invoices = $service_invoices->get();
 			// dd($service_invoices);
 
-			$service_invoice_header = ['Service Type', 'Account Type', 'Customer/Vendor Code', 'Invoice No', 'Invoice Date', 'Ref. Invoice Number', 'Ref. Invoice Date', 'Customer/Vendor Name', 'GSTIN', 'Billing Address', 'Invoice Value', 'HSN/SAC Code', 'Unit Of Measure', 'Qty', 'Item Taxable Value', 'CGST Rate', 'SGST Rate', 'IGST Rate', 'KFC Rate', 'CGST Amount', 'SGST Amount', 'IGST Amount', 'KFC Amount',
+			$service_invoice_header = ['Service Type', 'Account Type', 'Customer/Vendor Code', 'Invoice No', 'Invoice Date', 'Ref. Invoice Number', 'Ref. Invoice Date', 'Customer/Vendor Name', 'GSTIN', 'Billing Address', 'Invoice Value', 'HSN/SAC Code', 'Unit Of Measure', 'Qty', 'Item Taxable Value', 'CGST Rate', 'SGST Rate', 'IGST Rate', 'KFC Rate', 'TCS Rate', 'CGST Amount', 'SGST Amount', 'IGST Amount', 'KFC Amount', 'TCS Amount',
 			];
 			$service_invoice_details = array();
 
 			if (count($service_invoices) > 0) {
 				// dd($service_invoice_header);
 				if ($service_invoices) {
+
 					foreach ($service_invoices as $key => $service_invoice) {
 
 						if ($service_invoice->type_id == 1060) {
@@ -2986,8 +2989,18 @@ class ServiceInvoiceController extends Controller {
 									}
 								}
 							}
-							if ($service_invoice->outlets && empty($serviceInvoiceItem->serviceItem->tcs_percentage) && $service_item->taxCode) {
-								// dd($service_invoice);
+
+							//FOR TCS TAX
+							$tcs_total = 0;
+							if (!empty($service_item->tcs_percentage)) {
+								$gst_total = 0;
+								$gst_total = $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt;
+								$tcs_total = round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
+							}
+							// dump($service_item->taxCode);
+
+							if ($service_invoice->outlets && $service_item->taxCode) {
+								// dump(1);
 								$service_invoice_details[] = [
 									$type,
 									$service_invoice->toAccountType->name,
@@ -2999,7 +3012,7 @@ class ServiceInvoiceController extends Controller {
 									$service_invoice->customer->name,
 									$service_invoice->address->gst_number,
 									$service_invoice->address->address_line1 . ',' . $service_invoice->address->address_line2,
-									$sign_value . ($serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt),
+									$sign_value . ($serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt + $tcs_total),
 									$service_item->taxCode->code,
 									$serviceInvoiceItem->eInvoiceUom->code,
 									$serviceInvoiceItem->qty,
@@ -3008,10 +3021,12 @@ class ServiceInvoiceController extends Controller {
 									$sgst_percentage,
 									$igst_percentage,
 									$kfc_percentage,
+									$service_item->tcs_percentage,
 									$cgst_amt ? $sign_value . $cgst_amt : 0,
 									$sgst_amt ? $sign_value . $sgst_amt : 0,
 									$igst_amt ? $sign_value . $igst_amt : 0,
 									$kfc_amt ? $sign_value . $kfc_amt : 0,
+									$tcs_total ? $sign_value . $tcs_total : 0,
 								];
 							}
 						}
