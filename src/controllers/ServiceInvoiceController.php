@@ -2022,8 +2022,8 @@ class ServiceInvoiceController extends Controller {
 					$rearrange_key++;
 				}
 				// dump($bdo_errors);
-				$api_params['errors'] = empty($errors) ? NULL : json_encode($errors);
-				$api_params['message'] = 'Error GENSERATE IRN array!';
+				$api_params['errors'] = empty($errors) ? 'Somthin went worng!, Try again later!' : json_encode($errors);
+				$api_params['message'] = 'Error GENERATE IRN array!';
 
 				$api_logs[2] = $api_params;
 
@@ -2047,9 +2047,9 @@ class ServiceInvoiceController extends Controller {
 			} elseif (!is_array($generate_irn_output['Error'])) {
 				if ($generate_irn_output['Status'] != 1) {
 					$errors[] = $generate_irn_output['Error'];
-					$api_params['message'] = 'Error GENSERATE IRN!';
+					$api_params['message'] = 'Error GENERATE IRN!';
 
-					$api_params['errors'] = empty($errors) ? NULL : json_encode($errors);
+					$api_params['errors'] = empty($errors) ? 'Error GENERATE IRN, Try again later!' : json_encode($errors);
 					// DB::beginTransaction();
 
 					// $api_log = new ApiLog;
@@ -3253,7 +3253,7 @@ class ServiceInvoiceController extends Controller {
 
 		// Execute the POST request
 		$cancel_irn_output_data = curl_exec($ch);
-		// dd($cancel_irn_output);
+		// dd($cancel_irn_output_data);
 
 		$cancel_irn_output_encode = json_decode($cancel_irn_output_data, true);
 		// dd($cancel_irn_output_encode['irnStatus']);
