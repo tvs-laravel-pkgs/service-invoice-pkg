@@ -34,7 +34,7 @@ app.component('serviceItemList', {
                 stateLoadCallback: function(settings) {
                     var state_save_val = JSON.parse(localStorage.getItem('SIDataTables_' + settings.sInstance));
                     if (state_save_val) {
-                        $('#search').val(state_save_val.search.search);
+                        $('#search_box').val(state_save_val.search.search);
                     }
                     return JSON.parse(localStorage.getItem('SIDataTables_' + settings.sInstance));
                 },
