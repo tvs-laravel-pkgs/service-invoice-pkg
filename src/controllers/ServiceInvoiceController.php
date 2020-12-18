@@ -894,6 +894,21 @@ class ServiceInvoiceController extends Controller {
 				];
 			}
 		}
+
+		//FOR CESS on GST TAX CALCULATION
+		$cess_gst_tax_amount = 0;
+		$cess_gst_total = 0;
+		if ($service_item) {
+			if ($service_item->cess_on_gst_percentage) {
+				// $gst_total += round(($service_item->tcs_percentage / 100) * ($request->qty * $request->amount), 2);
+				$cess_gst_total = round(($gst_total + $request->qty * $request->amount) * $service_item->cess_on_gst_percentage / 100, 2);
+				$cess_gst_tax_amount = round(($gst_total + $request->qty * $request->amount) * $service_item->cess_on_gst_percentage / 100, 2); //PERCENTAGE FOR CESS on GST
+				$service_item['CESS'] = [ // for CESS on GST
+					'percentage' => $service_item->cess_on_gst_percentage,
+					'amount' => $cess_gst_tax_amount,
+				];
+			}
+		}
 		// dd(1);
 		//FIELD GROUPS PUSH
 		if (isset($request->field_groups)) {
@@ -912,7 +927,7 @@ class ServiceInvoiceController extends Controller {
 		$service_item->e_invoice_uom = $e_invoice_uom;
 		$service_item->rate = $request->amount;
 		$service_item->sub_total = round(($request->qty * $request->amount), 2);
-		$service_item->total = round($request->qty * $request->amount, 2) + $gst_total + $tcs_total;
+		$service_item->total = round($request->qty * $request->amount, 2) + $gst_total + $tcs_total + $cess_gst_total;
 
 		if ($request->action == 'add') {
 			$add = true;
@@ -1655,6 +1670,7 @@ class ServiceInvoiceController extends Controller {
 			$sgst_amt = 0;
 			$igst_amt = 0;
 			$tcs_total = 0;
+			$cess_on_gst_total = 0;
 			foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
 				$item = [];
 				// dd($serviceInvoiceItem);
@@ -1717,8 +1733,14 @@ class ServiceInvoiceController extends Controller {
 					$tcs_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
 				}
 
-				// dd(1);
+				//FOR CESS on GST TAX
+				if ($service_item->cess_on_gst_percentage) {
+					$gst_total = 0;
+					$gst_total = $cgst_amt + $sgst_amt + $igst_amt;
+					$cess_on_gst_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->cess_on_gst_percentage / 100, 2);
+				}
 
+				// dd(1);
 				// dump($serviceInvoiceItem->sub_total ? $serviceInvoiceItem->sub_total : 0);
 				// dump(number_format($igst_total));
 				// dd($cgst_total, $sgst_total, $igst_total);
@@ -1894,7 +1916,7 @@ class ServiceInvoiceController extends Controller {
 						"CesVal" => 0,
 						"StCesVal" => 0,
 						"Discount" => 0,
-						"OthChrg" => number_format($tcs_total, 2),
+						"OthChrg" => number_format($tcs_total + $cess_on_gst_total, 2),
 						"RndOffAmt" => number_format($service_invoice->final_amount - $service_invoice->total, 2),
 						// "RndOffAmt" => 0, // Invalid invoice round off amount ,should be  + or - RS 10.
 						"TotInvVal" => number_format($service_invoice->final_amount, 2),
@@ -1950,7 +1972,14 @@ class ServiceInvoiceController extends Controller {
 					),
 				)
 			);
-
+			// //SAVE JSON DATA TO SERVICE INVOICE TABLE
+			// $service_invoice_save_json_data = ServiceInvoice::find($service_invoice_id);
+			// $service_invoice_save_json_data->json_request_send_to_bdo_api = $json_encoded_data;
+			// $service_invoice_save_json_data->status_id = 2;
+			// $service_invoice_save_json_data->save();
+			// if ($service_invoice_save_json_data) {
+			// 	DB::commit();
+			// }
 			// dump($json_encoded_data);
 			// dd(1);
 
@@ -2023,8 +2052,8 @@ class ServiceInvoiceController extends Controller {
 					$rearrange_key++;
 				}
 				// dump($bdo_errors);
-				$api_params['errors'] = empty($errors) ? NULL : json_encode($errors);
-				$api_params['message'] = 'Error GENSERATE IRN array!';
+				$api_params['errors'] = empty($errors) ? 'Somthin went worng!, Try again later!' : json_encode($errors);
+				$api_params['message'] = 'Error GENERATE IRN array!';
 
 				$api_logs[2] = $api_params;
 
@@ -2048,9 +2077,9 @@ class ServiceInvoiceController extends Controller {
 			} elseif (!is_array($generate_irn_output['Error'])) {
 				if ($generate_irn_output['Status'] != 1) {
 					$errors[] = $generate_irn_output['Error'];
-					$api_params['message'] = 'Error GENSERATE IRN!';
+					$api_params['message'] = 'Error GENERATE IRN!';
 
-					$api_params['errors'] = empty($errors) ? NULL : json_encode($errors);
+					$api_params['errors'] = empty($errors) ? 'Error GENERATE IRN, Try again later!' : json_encode($errors);
 					// DB::beginTransaction();
 
 					// $api_log = new ApiLog;
@@ -2681,7 +2710,8 @@ class ServiceInvoiceController extends Controller {
 				->where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
 				->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
 				->where('service_invoices.company_id', Auth::user()->company_id)
-				->where('status_id', 4)
+			// ->where('status_id', 4)
+				->whereIn('status_id', [4, 7, 8])
 			// ->get()
 			;
 			if (Entrust::can('tcs-export-all')) {
@@ -2872,9 +2902,11 @@ class ServiceInvoiceController extends Controller {
 				->where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
 				->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
 				->where('service_invoices.company_id', Auth::user()->company_id)
-				->where('status_id', 4)
+			// ->where('status_id', 4)
+				->whereIn('status_id', [4, 7, 8])
 			// ->get()
 			;
+			// dd(count($query));
 			// if (Entrust::can('gst-export-all')) {
 			// 	$query = $query->where('service_invoices.company_id', Auth::user()->company_id);
 			// } elseif (Entrust::can('gst-export-own')) {
@@ -2891,18 +2923,18 @@ class ServiceInvoiceController extends Controller {
 			// 	$query = $query->whereIn('service_invoices.branch_id', $view_user_outlets_only);
 			// }
 
-			// dd(count($query));
 			$service_invoices = clone $query;
 			$service_invoices = $service_invoices->get();
 			// dd($service_invoices);
 
-			$service_invoice_header = ['Service Type', 'Account Type', 'Customer/Vendor Code', 'Invoice No', 'Invoice Date', 'Ref. Invoice Number', 'Ref. Invoice Date', 'Customer/Vendor Name', 'GSTIN', 'Billing Address', 'Invoice Value', 'HSN/SAC Code', 'Unit Of Measure', 'Qty', 'Item Taxable Value', 'CGST Rate', 'SGST Rate', 'IGST Rate', 'KFC Rate', 'CGST Amount', 'SGST Amount', 'IGST Amount', 'KFC Amount',
+			$service_invoice_header = ['Service Type', 'Account Type', 'Customer/Vendor Code', 'Invoice No', 'Invoice Date', 'Ref. Invoice Number', 'Ref. Invoice Date', 'Customer/Vendor Name', 'GSTIN', 'Billing Address', 'Invoice Value', 'HSN/SAC Code', 'Unit Of Measure', 'Qty', 'Item Taxable Value', 'CGST Rate', 'SGST Rate', 'IGST Rate', 'KFC Rate', 'TCS Rate', 'CGST Amount', 'SGST Amount', 'IGST Amount', 'KFC Amount', 'TCS Amount',
 			];
 			$service_invoice_details = array();
 
 			if (count($service_invoices) > 0) {
 				// dd($service_invoice_header);
 				if ($service_invoices) {
+
 					foreach ($service_invoices as $key => $service_invoice) {
 
 						if ($service_invoice->type_id == 1060) {
@@ -2987,8 +3019,18 @@ class ServiceInvoiceController extends Controller {
 									}
 								}
 							}
-							if ($service_invoice->outlets && empty($serviceInvoiceItem->serviceItem->tcs_percentage) && $service_item->taxCode) {
-								// dd($service_invoice);
+
+							//FOR TCS TAX
+							$tcs_total = 0;
+							if (!empty($service_item->tcs_percentage)) {
+								$gst_total = 0;
+								$gst_total = $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt;
+								$tcs_total = round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
+							}
+							// dump($service_item->taxCode);
+
+							if ($service_invoice->outlets && $service_item->taxCode) {
+								// dump(1);
 								$service_invoice_details[] = [
 									$type,
 									$service_invoice->toAccountType->name,
@@ -3000,7 +3042,7 @@ class ServiceInvoiceController extends Controller {
 									$service_invoice->customer->name,
 									$service_invoice->address->gst_number,
 									$service_invoice->address->address_line1 . ',' . $service_invoice->address->address_line2,
-									$sign_value . ($serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt),
+									$sign_value . ($serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt + $tcs_total),
 									$service_item->taxCode->code,
 									$serviceInvoiceItem->eInvoiceUom->code,
 									$serviceInvoiceItem->qty,
@@ -3009,10 +3051,12 @@ class ServiceInvoiceController extends Controller {
 									$sgst_percentage,
 									$igst_percentage,
 									$kfc_percentage,
+									$service_item->tcs_percentage,
 									$cgst_amt ? $sign_value . $cgst_amt : 0,
 									$sgst_amt ? $sign_value . $sgst_amt : 0,
 									$igst_amt ? $sign_value . $igst_amt : 0,
 									$kfc_amt ? $sign_value . $kfc_amt : 0,
+									$tcs_total ? $sign_value . $tcs_total : 0,
 								];
 							}
 						}
@@ -3239,7 +3283,7 @@ class ServiceInvoiceController extends Controller {
 
 		// Execute the POST request
 		$cancel_irn_output_data = curl_exec($ch);
-		// dd($cancel_irn_output);
+		// dd($cancel_irn_output_data);
 
 		$cancel_irn_output_encode = json_decode($cancel_irn_output_data, true);
 		// dd($cancel_irn_output_encode['irnStatus']);

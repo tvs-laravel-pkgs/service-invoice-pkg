@@ -152,7 +152,7 @@ class ServiceItemController extends Controller {
 	}
 
 	public function saveServiceItem(Request $request) {
-		//dd($request->all());
+		// dd($request->all());
 		DB::beginTransaction();
 		try {
 
@@ -212,6 +212,7 @@ class ServiceItemController extends Controller {
 			$service_item->sac_code_id = $request->sac_code_id;
 			$service_item->default_reference = $request->default_reference;
 			$service_item->tcs_percentage = $request->tcs_percentage;
+			$service_item->cess_on_gst_percentage = $request->cess_on_gst_percentage;
 			$service_item->save();
 			//SAVE FIELD-GROUP FIELD
 			$service_item->fieldGroups()->sync([]);

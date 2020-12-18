@@ -1309,6 +1309,7 @@ app.component('serviceInvoiceForm', {
             self.total = 0;
             self.KFC_total = 0;
             self.tcs_total = 0;
+            self.cess_gst_total = 0;
             self.gst_total = 0;
             if (self.qty && self.rate) {
                 self.sub_total = self.qty * self.rate;
@@ -1354,7 +1355,15 @@ app.component('serviceInvoiceForm', {
                 if (self.service_item_detail.tcs_percentage) {
                     self.tcs_total = $scope.percentage(self.sub_total + self.gst_total + self.KFC_total, self.service_item_detail.tcs_percentage).toFixed(2);
                 }
-                self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total) + parseFloat(self.tcs_total);
+
+                //FOR CESS GST TAX
+                // console.log(self.service_invoice.branch.primary_address.state_id+ "state");
+                if (self.service_item_detail.cess_on_gst_percentage) {
+                    self.cess_gst_total = $scope.percentage(self.sub_total + self.gst_total + self.KFC_total, self.service_item_detail.cess_on_gst_percentage).toFixed(2);
+                }
+
+
+                self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total) + parseFloat(self.tcs_total) + parseFloat(self.cess_gst_total);
                 console.log(self.total);
             }
         };
@@ -1826,6 +1835,10 @@ app.component('serviceInvoiceView', {
                             self.gst_total += parseFloat($scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2));
                         });
                     }
+                }
+                //FOR TCS TAX
+                if (self.service_item_detail.tcs_percentage) {
+                    self.tcs_total = $scope.percentage(self.sub_total, self.service_item_detail.tcs_percentage).toFixed(2);
                 }
                 //FOR TCS TAX
                 if (self.service_item_detail.tcs_percentage) {

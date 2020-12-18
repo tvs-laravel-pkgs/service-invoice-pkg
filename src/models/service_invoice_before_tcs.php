@@ -27,7 +27,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use PHPExcel_IOFactory;
 use PHPExcel_Shared_Date;
 
-class ServiceInvoice extends Model {
+class ServiceInvoiceOld extends Model {
 	use SoftDeletes;
 	protected $table = 'service_invoices';
 	protected $fillable = [
