@@ -121,7 +121,7 @@ class ServiceItemController extends Controller {
 				'subCategory',
 				'fieldGroups',
 			])->find($id);
-			$this->data['sub_category_list'] = collect(ServiceItemSubCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->where('id', $service_item->sub_category_id)->get())->prepend(['id' => '', 'name' => 'Select Category']);
+			$this->data['sub_category_list'] = collect(ServiceItemSubCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->where('id', $service_item->sub_category_id)->orderBy('name', 'ASC')->get())->prepend(['id' => '', 'name' => 'Select Category']);
 			$sub_category = ServiceItemSubCategory::where('id', $service_item->sub_category_id)->first();
 			if ($sub_category) {
 				$main_category = ServiceItemCategory::select('id')->where('id', $sub_category->category_id)->first();
@@ -141,9 +141,9 @@ class ServiceItemController extends Controller {
 
 		$service_item->all_field_group_ids = FieldGroup::where('company_id', Auth::user()->company_id)->pluck('id')->toArray();
 		$this->data['extras'] = [
-			'main_category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
-			'coa_code_list' => collect(CoaCode::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Coa Code']),
-			'tax_list' => collect(TaxCode::select('code as name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Sac Code']),
+			'main_category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->orderBy('name', 'ASC')->get())->prepend(['id' => '', 'name' => 'Select Category']),
+			'coa_code_list' => collect(CoaCode::select('name', 'id')->where('company_id', Auth::user()->company_id)->orderBy('code', 'ASC')->get())->prepend(['id' => '', 'name' => 'Select Coa Code']),
+			'tax_list' => collect(TaxCode::select('code as name', 'id')->where('company_id', Auth::user()->company_id)->orderBy('code', 'ASC')->get())->prepend(['id' => '', 'name' => 'Select Sac Code']),
 			'field_group_list' => FieldGroup::select('name', 'id')->where('category_id', 1040)->where('company_id', Auth::user()->company_id)->get(),
 		];
 		$this->data['service_item'] = $service_item;
