@@ -98,10 +98,10 @@
                                             <div class="input-text form-group">
                                                 <label>HSN/SAC Code</label>
                                                 <md-select ng-model="$ctrl.service_item.sac_code_id" placeholder="Select HSN/SAC Code" data-md-container-class="selectdemoSelectHeader" md-on-close="clearSearchTerm()">
-                                                    <md-select-header class="demo-select-header ng-hide">
-                                                        <input ng-model="searchType" type="search" placeholder="Search for a HSN/SAC Code" class="demo-header-searchbox md-text">
+                                                    <md-select-header class="demo-select-header">
+                                                        <input ng-model="searchSac" type="search" placeholder="Search for a HSN/SAC Code" class="demo-header-searchbox md-text">
                                                     </md-select-header>
-                                                    <md-optgroup label="SAC Code List">
+                                                    <md-optgroup label="HSN/SAC Code List">
                                                         <md-option ng-value="type.id" ng-repeat="type in $ctrl.extras.tax_list | filter:searchSac">{{type.name}}</md-option>
                                                     </md-optgroup>
                                                 </md-select>
