@@ -1259,6 +1259,7 @@ class ServiceInvoiceController extends Controller {
 	}
 
 	public function createPdf($service_invoice_id) {
+		// try {
 		// dd($service_invoice_id);
 		$errors = [];
 
@@ -1841,7 +1842,7 @@ class ServiceInvoiceController extends Controller {
 						'RegRev' => $service_invoice->is_reverse_charge_applicable == 1 ? "Y" : "N",
 						'EcmGstin' => null,
 						'IgstonIntra' => null, //NEED TO CLARIFY
-						'supplydir' => null, //NULL ADDED 28-sep-2020 discussion "supplydir": "O"
+						'supplydir' => "O", //NULL ADDED 28-sep-2020 discussion "supplydir": "O"
 					),
 					'DocDtls' => array(
 						"Typ" => $service_invoice->type,
@@ -2253,6 +2254,9 @@ class ServiceInvoiceController extends Controller {
 		$r['api_logs'] = [];
 
 		return $r;
+		// } catch (Exception $e) {
+		// 	return response()->json(['success' => false, 'errors' => ['Exception Error' => $e->getMessage()]]);
+		// }
 	}
 
 	public function viewServiceInvoice($type_id, $id) {
