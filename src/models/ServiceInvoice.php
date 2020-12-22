@@ -14,11 +14,13 @@ use App\Company;
 use App\Config;
 use App\Customer;
 use App\EInvoiceUom;
+use App\Employee;
 use App\Entity;
 use App\FinancialYear;
 use App\Outlet;
 use App\Sbu;
 use App\State;
+use App\User;
 use App\Vendor;
 use DB;
 use File;
@@ -786,6 +788,17 @@ class ServiceInvoice extends Model {
 					$status = [];
 					$status['errors'] = [];
 
+					$user = User::find($job->created_by_id);
+					if (!$user) {
+						$status['errors'][] = 'User Not Found!';
+					} else {
+						$employee = Employee::find($user->entity_id);
+						// $employee_outlets = $employee->employee_outlets()->pluck('outlet_id')->toArray();
+						// $employee_sbus = $employee->employee_sbus()->pluck('sbu_id')->toArray();
+						// dump($employee_outlets);
+						// dd($employee_sbus);
+					}
+
 					if (empty($record['SNO'])) {
 						$status['errors'][] = 'SNO is empty';
 					} else {
@@ -820,12 +833,17 @@ class ServiceInvoice extends Model {
 					if (empty($record['Branch'])) {
 						$status['errors'][] = 'Branch is empty';
 					} else {
+						// $branches = Employee::where()
 						$branch = Outlet::where([
 							'company_id' => $job->company_id,
 							'code' => $record['Branch'],
 						])->first();
 						if (!$branch) {
 							$status['errors'][] = 'Invalid Branch';
+						}
+						$employee_outlte = $employee->employee_outlets;
+						if (!$employee_outlte) {
+							$status['errors'][] = 'Outlet is not mapped for your employee code';
 						}
 					}
 
@@ -839,10 +857,13 @@ class ServiceInvoice extends Model {
 						if (!$sbu) {
 							$status['errors'][] = 'Invalid SBU';
 						}
-						// $outlet_sbu = $branch->outlet_sbu;
-						// if (!$outlet_sbu) {
-						// 	$status['errors'][] = 'SBU is not mapped for this branch';
-						// }
+						if (empty($sbu->business_id)) {
+							$status['errors'][] = 'Business Not Mapped with this SBU';
+						}
+						$outlet_sbu = $branch->outlet_sbu;
+						if (!$outlet_sbu) {
+							$status['errors'][] = 'SBU is not mapped for this branch';
+						}
 					}
 
 					if (empty($record['Category'])) {
@@ -889,28 +910,17 @@ class ServiceInvoice extends Model {
 					if (empty($record['Reverse Charge Applicable'])) {
 						$status['errors'][] = 'Reverse Charge Applicable is empty';
 					} else {
-						if ($record['Reverse Charge Applicable'] == 'Yes') {
-							$is_reverse_charge_applicable = 1;
-						} else {
+						if ($record['Reverse Charge Applicable'] == 'No') {
 							$is_reverse_charge_applicable = 0;
+						} else {
+							$is_reverse_charge_applicable = 1;
 						}
-						if (!$is_reverse_charge_applicable) {
+						// dump($is_reverse_charge_applicable);
+						if (empty($is_reverse_charge_applicable) && $is_reverse_charge_applicable != 0) {
 							$status['errors'][] = 'Invalid Reverse Charge Applicable';
 						}
 					}
-
-					if (empty($record['Reverse Charge Applicable'])) {
-						$status['errors'][] = 'Reverse Charge Applicable is empty';
-					} else {
-						if ($record['Reverse Charge Applicable'] == 'Yes') {
-							$is_reverse_charge_applicable = 1;
-						} else {
-							$is_reverse_charge_applicable = 0;
-						}
-						if (!$is_reverse_charge_applicable) {
-							$status['errors'][] = 'Invalid Reverse Charge Applicable';
-						}
-					}
+					// dd($is_reverse_charge_applicable);
 
 					$po_reference_number = !empty($record['PO Reference Number']) ? $record['PO Reference Number'] : NULL;
 					// dd($record);
@@ -939,6 +949,7 @@ class ServiceInvoice extends Model {
 					} else {
 						$customer = '';
 						if ($to_account_type_id == 1440) {
+							//CUSTOMER
 							$customer = Customer::where([
 								'company_id' => $job->company_id,
 								'code' => trim($record['Customer/Vendor Code']),
@@ -959,6 +970,7 @@ class ServiceInvoice extends Model {
 								$status['errors'][] = 'Address Not Mapped with Customer';
 							}
 						} elseif ($to_account_type_id == 1441) {
+							//VENDOR
 							$customer = Vendor::where([
 								'company_id' => $job->company_id,
 								'code' => trim($record['Customer/Vendor Code']),
@@ -1013,16 +1025,41 @@ class ServiceInvoice extends Model {
 							//INV
 							$serial_number_category = 125;
 						}
-
+						// dd($branch, $sbu, $financial_year);
 						if ($branch && $sbu && $financial_year) {
 							//GENERATE SERVICE INVOICE NUMBER
-							$generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, $branch->id, $sbu);
-							if (!$generateNumber['success']) {
-								$status['errors'][] = 'No Serial number found';
+							if ($category->id == 4) {
+								if ($type->id == 1061) {
+									//DN
+									$serial_number_category = 128;
+								} elseif ($type->id == 1060) {
+									//CN
+									$serial_number_category = 127;
+								} elseif ($type->id == 1062) {
+									//INV
+									$serial_number_category = 126;
+								}
+								$generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, NULL, NULL, NULL);
+								if (!$generateNumber['success']) {
+									$status['errors'][] = 'No Serial number found';
+									// dd($status['errors']);
+								}
+							} else {
+								//STATE BUSINESS BASED CODE
+								$generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, NULL, NULL, $sbu->business_id);
+								if (!$generateNumber['success']) {
+									$status['errors'][] = 'No Serial number found';
+								}
 							}
+							// $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, $branch->id, $sbu);
+							// if (!$generateNumber['success']) {
+							// $status['errors'][] = 'No Serial number found';
+							// }
 						}
 
 					}
+					// dd($generateNumber);
+					// dd($status);
 
 					$approval_status = Entity::select('entities.name')->where('company_id', $job->company_id)->where('entity_type_id', 18)->first();
 					if ($approval_status) {
@@ -1069,8 +1106,8 @@ class ServiceInvoice extends Model {
 								// dump($sno);
 
 								$original_record = $item_record;
-								$status = [];
-								$status['errors'] = [];
+								// $status = [];
+								// $status['errors'] = [];
 								// dd($item_record);
 								if (empty($item_record['SNO'])) {
 									$status['errors'][] = 'SNO is empty';
@@ -1080,7 +1117,7 @@ class ServiceInvoice extends Model {
 										$status['errors'][] = 'Invalid SNO';
 									}
 								}
-
+								// $request = request();
 								if (empty($item_record['Item Code'])) {
 									$status['errors'][] = 'Item Code is empty';
 								} else {
@@ -1126,7 +1163,7 @@ class ServiceInvoice extends Model {
 										$status['errors'][] = $taxes['error'];
 									}
 								}
-
+								// dd($status['errors']);
 								if (count($status['errors']) > 0) {
 									// dump($status['errors']);
 									$original_record['Record No'] = $k + 1;
@@ -1221,25 +1258,41 @@ class ServiceInvoice extends Model {
 								// }
 								// else {
 								$KFC_tax_amount = 0;
-								if ($service_invoice->customer->primaryAddress->state_id) {
-									if (($service_invoice->customer->primaryAddress->state_id == 3) && ($service_invoice->outlet->state_id == 3)) {
-										//3 FOR KERALA
-										//check customer state and outlet states are equal KL.  //add KFC tax
-										if (!$customer->gst_number) {
-											//customer dont't have GST
-											if (!empty($item_code->sac_code_id)) {
-												//customer have HSN and SAC Code
-												$KFC_tax_amount = round($service_invoice_item->sub_total * 1 / 100, 2); //ONE PERCENTAGE FOR KFC
-												$item_taxes[4] = [ //4 for KFC
-													'percentage' => 1,
-													'amount' => $KFC_tax_amount,
-												];
+								if ($service_invoice->type_id != 1060) {
+//NOT CN
+									if ($service_invoice->customer->primaryAddress->state_id) {
+										if (($service_invoice->customer->primaryAddress->state_id == 3) && ($service_invoice->outlet->state_id == 3)) {
+											//3 FOR KERALA
+											//check customer state and outlet states are equal KL.  //add KFC tax
+											if (!$customer->gst_number) {
+												//customer dont't have GST
+												if (!empty($item_code->sac_code_id)) {
+													//customer have HSN and SAC Code
+													$KFC_tax_amount = round($service_invoice_item->sub_total * 1 / 100, 2); //ONE PERCENTAGE FOR KFC
+													$item_taxes[4] = [ //4 for KFC
+														'percentage' => 1,
+														'amount' => $KFC_tax_amount,
+													];
+												}
 											}
 										}
+										$service_invoice_item->taxes()->sync($item_taxes);
 									}
-									$service_invoice_item->taxes()->sync($item_taxes);
 								}
-								// }
+								//FOR TCS TAX CALCULATION
+								$TCS_tax_amount = 0;
+								$tcs_total = 0;
+								if ($$service_invoice_item->serviceItem) {
+									if ($$service_invoice_item->serviceItem->tcs_percentage) {
+										$tcs_total = round(($gst_total + $request->qty * $request->amount) * $$service_invoice_item->serviceItem->tcs_percentage / 100, 2);
+										// dd($tcs_total);
+										$TCS_tax_amount = round(($gst_total + $request->qty * $request->amount) * $$service_invoice_item->serviceItem->tcs_percentage / 100, 2); //ONE PERCENTAGE FOR TCS
+										$$service_invoice_item->serviceItem['TCS'] = [ // for TCS
+											'percentage' => $$service_invoice_item->serviceItem->tcs_percentage,
+											'amount' => $TCS_tax_amount,
+										];
+									}
+								}
 								$amount_total += $item_record['Amount'];
 								$service_invoice->amount_total = $amount_total;
 								$service_invoice->tax_total = $item_code->sac_code_id ? $total_tax_amount : 0;
