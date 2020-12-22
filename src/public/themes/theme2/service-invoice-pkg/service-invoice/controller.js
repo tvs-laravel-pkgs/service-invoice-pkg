@@ -1824,6 +1824,7 @@ app.component('serviceInvoiceView', {
             self.total = 0;
             self.KFC_total = 0;
             self.tcs_total = 0;
+            self.cess_gst_total = 0;
             self.gst_total = 0;
             if (self.qty && self.rate) {
                 self.sub_total = self.qty * self.rate;
@@ -1847,10 +1848,10 @@ app.component('serviceInvoiceView', {
                 }
                 // FOR KFC TAX
                 if ($routeParams.type_id != 1060) {
-                    if (self.service_invoice.branch.primary_address.state_id && self.customer.state_id) {
+                    if (self.service_invoice.branch.primary_address.state_id && self.service_invoice.address.state_id) {
                         console.log('in');
-                        if (self.service_invoice.branch.primary_address.state_id == 3 && self.customer.state_id == 3) {
-                            if (self.customer.gst_number == null) {
+                        if (self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.address.state_id == 3) {
+                            if (self.service_invoice.address.gst_number == null) {
                                 if (self.service_item_detail.tax_code != null) {
                                     self.KFC_total = self.sub_total / 100;
                                     // console.log(self.sub_total);
