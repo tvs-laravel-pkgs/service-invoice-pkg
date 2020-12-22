@@ -2674,7 +2674,7 @@ class ServiceInvoiceController extends Controller {
 				unset($axapta_record['entity_id']);
 				unset($axapta_record['created_at']);
 				unset($axapta_record['updated_at']);
-				//SARAVANABAVAN SIR TOLD TO REMOVE BELOW COLUMNS IN AXAPTA EXPORT START
+				//SARAVANABAVAN SIR TOLD TO REMOVE BELOW COLUMNS IN AXAPTA EXPORT START (22 DEC 2020)
 				unset($axapta_record['Due']);
 				unset($axapta_record['PaymReference']);
 				unset($axapta_record['TVSHSNCode']);
