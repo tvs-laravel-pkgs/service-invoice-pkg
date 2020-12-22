@@ -1331,8 +1331,8 @@ app.component('serviceInvoiceForm', {
                 // }
                 //FOR KFC TAX
                 if ($routeParams.type_id != 1060) {
-                    if (self.service_invoice.branch.primary_address.state_id && self.customer.state_id) {
                         console.log('in');
+                    if (self.service_invoice.branch.primary_address.state_id && self.customer.state_id) {
                         if (self.service_invoice.branch.primary_address.state_id == 3 && self.customer.state_id == 3) {
                             if (self.customer.gst_number == null) {
                                 if (self.service_item_detail.tax_code != null) {
@@ -1359,7 +1359,7 @@ app.component('serviceInvoiceForm', {
                 //FOR CESS GST TAX
                 // console.log(self.service_invoice.branch.primary_address.state_id+ "state");
                 if (self.service_item_detail.cess_on_gst_percentage) {
-                    self.cess_gst_total = $scope.percentage(self.sub_total + self.gst_total + self.KFC_total, self.service_item_detail.cess_on_gst_percentage).toFixed(2);
+                    self.cess_gst_total = $scope.percentage(self.sub_total, self.service_item_detail.cess_on_gst_percentage).toFixed(2);
                 }
 
 
@@ -1791,7 +1791,7 @@ app.component('serviceInvoiceView', {
                     get_service_item_info_url, {
                         service_item_id: service_invoice_item_id,
                         field_groups: self.service_invoice.service_invoice_items[index].field_groups,
-                        btn_action: 'edit',
+                        btn_action: 'view',
                         branch_id: self.service_invoice.branch.id,
                         customer_id: self.service_invoice.customer.id,
                         state_id: self.service_invoice.address.state_id,
@@ -1838,19 +1838,23 @@ app.component('serviceInvoiceView', {
                 }
                 //FOR TCS TAX
                 if (self.service_item_detail.tcs_percentage) {
-                    self.tcs_total = $scope.percentage(self.sub_total, self.service_item_detail.tcs_percentage).toFixed(2);
+                    self.tcs_total = $scope.percentage(self.sub_total + self.gst_total + self.KFC_total, self.service_item_detail.tcs_percentage).toFixed(2);
                 }
-                //FOR TCS TAX
-                if (self.service_item_detail.tcs_percentage) {
-                    self.tcs_total = $scope.percentage(self.sub_total, self.service_item_detail.tcs_percentage).toFixed(2);
+                //FOR CESS GST TAX
+                // console.log(self.service_invoice.branch.primary_address.state_id+ "state");
+                if (self.service_item_detail.cess_on_gst_percentage) {
+                    self.cess_gst_total = $scope.percentage(self.sub_total, self.service_item_detail.cess_on_gst_percentage).toFixed(2);
                 }
                 // FOR KFC TAX
                 if ($routeParams.type_id != 1060) {
-                    if (self.service_invoice.branch.primary_address.state_id) {
-                        if (self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.customer.primary_address.state_id == 3) {
-                            if (self.service_invoice.customer.gst_number == null) {
+                    if (self.service_invoice.branch.primary_address.state_id && self.customer.state_id) {
+                        console.log('in');
+                        if (self.service_invoice.branch.primary_address.state_id == 3 && self.customer.state_id == 3) {
+                            if (self.customer.gst_number == null) {
                                 if (self.service_item_detail.tax_code != null) {
                                     self.KFC_total = self.sub_total / 100;
+                                    // console.log(self.sub_total);
+                                    // console.log(self.KFC_total);
                                 }
                             }
                         }
@@ -1863,7 +1867,7 @@ app.component('serviceInvoiceView', {
                 //         }
                 //     }
                 // }
-                self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total) + parseFloat(self.tcs_total);
+                self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total) + parseFloat(self.tcs_total) + parseFloat(self.cess_gst_total);
             }
         };
 

@@ -900,9 +900,8 @@ class ServiceInvoiceController extends Controller {
 		$cess_gst_total = 0;
 		if ($service_item) {
 			if ($service_item->cess_on_gst_percentage) {
-				// $gst_total += round(($service_item->tcs_percentage / 100) * ($request->qty * $request->amount), 2);
-				$cess_gst_total = round(($gst_total + $request->qty * $request->amount) * $service_item->cess_on_gst_percentage / 100, 2);
-				$cess_gst_tax_amount = round(($gst_total + $request->qty * $request->amount) * $service_item->cess_on_gst_percentage / 100, 2); //PERCENTAGE FOR CESS on GST
+				$cess_gst_total = round(($request->qty * $request->amount) * $service_item->cess_on_gst_percentage / 100, 2);
+				$cess_gst_tax_amount = round(($request->qty * $request->amount) * $service_item->cess_on_gst_percentage / 100, 2); //PERCENTAGE FOR CESS on GST
 				$service_item['CESS'] = [ // for CESS on GST
 					'percentage' => $service_item->cess_on_gst_percentage,
 					'amount' => $cess_gst_tax_amount,
@@ -1736,9 +1735,10 @@ class ServiceInvoiceController extends Controller {
 
 				//FOR CESS on GST TAX
 				if ($service_item->cess_on_gst_percentage) {
-					$gst_total = 0;
-					$gst_total = $cgst_amt + $sgst_amt + $igst_amt;
-					$cess_on_gst_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->cess_on_gst_percentage / 100, 2);
+					// $gst_total = 0;
+					// $gst_total = $cgst_amt + $sgst_amt + $igst_amt;
+					// $cess_on_gst_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->cess_on_gst_percentage / 100, 2);
+					$cess_on_gst_total += round(($serviceInvoiceItem->sub_total) * $service_item->cess_on_gst_percentage / 100, 2);
 				}
 
 				// dd(1);
