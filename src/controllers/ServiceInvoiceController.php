@@ -2675,9 +2675,17 @@ class ServiceInvoiceController extends Controller {
 				unset($axapta_record['entity_id']);
 				unset($axapta_record['created_at']);
 				unset($axapta_record['updated_at']);
+				//SARAVANABAVAN SIR TOLD TO REMOVE BELOW COLUMNS IN AXAPTA EXPORT START
+				unset($axapta_record['Due']);
+				unset($axapta_record['PaymReference']);
+				unset($axapta_record['TVSHSNCode']);
+				unset($axapta_record['TVSSACCode']);
+				unset($axapta_record['TVSVendorLocationID']);
+				unset($axapta_record['TVSCustomerLocationID']);
+				unset($axapta_record['TVSCompanyLocationId']);
+				//END
 				$axapta_record['LineNum'] = $key + 1;
 			}
-			// dd($axapta_records);
 
 			$file_name = 'cn-dn-export-' . date('Y-m-d-H-i-s');
 			Excel::create($file_name, function ($excel) use ($axapta_records) {
