@@ -451,7 +451,7 @@ app.component('serviceInvoiceApprovalView', {
         self.approval_type_id = $routeParams.approval_type_id;
         self.enable_service_item_md_change = true;
         self.ref_attachements_url_link = ref_service_invoice_attachements_url;
-        
+
         if (self.type_id == 1060) {
             self.minus_value = '-';
         } else if (self.type_id == 1061 || self.type_id == 1062) {
@@ -635,11 +635,12 @@ app.component('serviceInvoiceApprovalView', {
         }
 
         //ITEM TO INVOICE TOTAL AMOUNT CALC
-         $scope.totalAmountCalc = function() {
+        $scope.totalAmountCalc = function() {
             self.sub_total = 0;
             self.total = 0;
             self.KFC_total = 0;
             self.tcs_total = 0;
+            self.cess_gst_total = 0;
             self.gst_total = 0;
             if (self.qty && self.rate) {
                 self.sub_total = self.qty * self.rate;
@@ -654,14 +655,24 @@ app.component('serviceInvoiceApprovalView', {
                 }
                 //FOR TCS TAX
                 if (self.service_item_detail.tcs_percentage) {
-                    self.tcs_total = $scope.percentage(self.sub_total, self.service_item_detail.tcs_percentage).toFixed(2);
+                    self.tcs_total = $scope.percentage(self.sub_total + self.gst_total + self.KFC_total, self.service_item_detail.tcs_percentage).toFixed(2);
+                }
+                //FOR CESS GST TAX
+                // console.log(self.service_invoice.branch.primary_address.state_id+ "state");
+                if (self.service_item_detail.cess_on_gst_percentage) {
+                    self.cess_gst_total = $scope.percentage(self.sub_total, self.service_item_detail.cess_on_gst_percentage).toFixed(2);
                 }
                 // FOR KFC TAX
-                if (self.service_invoice.branch.primary_address.state_id) {
-                    if (self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.customer.primary_address.state_id == 3) {
-                        if (self.service_invoice.customer.gst_number == null) {
-                            if (self.service_item_detail.tax_code != null) {
-                                self.KFC_total = self.sub_total / 100;
+                if ($routeParams.type_id != 1060) {
+                    if (self.service_invoice.branch.primary_address.state_id && self.service_invoice.address.state_id) {
+                        console.log('in');
+                        if (self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.address.state_id == 3) {
+                            if (self.service_invoice.address.gst_number == null) {
+                                if (self.service_item_detail.tax_code != null) {
+                                    self.KFC_total = self.sub_total / 100;
+                                    // console.log(self.sub_total);
+                                    // console.log(self.KFC_total);
+                                }
                             }
                         }
                     }
@@ -673,7 +684,7 @@ app.component('serviceInvoiceApprovalView', {
                 //         }
                 //     }
                 // }
-                self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total) + parseFloat(self.tcs_total);
+                self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total) + parseFloat(self.tcs_total) + parseFloat(self.cess_gst_total);
             }
         };
 

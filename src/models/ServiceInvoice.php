@@ -2028,14 +2028,27 @@ class ServiceInvoice extends Model {
 								//FOR TCS TAX CALCULATION
 								$TCS_tax_amount = 0;
 								$tcs_total = 0;
-								if ($$service_invoice_item->serviceItem) {
-									if ($$service_invoice_item->serviceItem->tcs_percentage) {
+								if ($service_invoice_item->serviceItem) {
+									if ($service_invoice_item->serviceItem->tcs_percentage) {
 										$tcs_total = round(($gst_total + $request->qty * $request->amount) * $$service_invoice_item->serviceItem->tcs_percentage / 100, 2);
 										// dd($tcs_total);
-										$TCS_tax_amount = round(($gst_total + $request->qty * $request->amount) * $$service_invoice_item->serviceItem->tcs_percentage / 100, 2); //ONE PERCENTAGE FOR TCS
-										$$service_invoice_item->serviceItem['TCS'] = [ // for TCS
-											'percentage' => $$service_invoice_item->serviceItem->tcs_percentage,
+										$TCS_tax_amount = round(($gst_total + $request->qty * $request->amount) * $service_invoice_item->serviceItem->tcs_percentage / 100, 2); //ONE PERCENTAGE FOR TCS
+										$service_invoice_item->serviceItem['TCS'] = [ // for TCS
+											'percentage' => $service_invoice_item->serviceItem->tcs_percentage,
 											'amount' => $TCS_tax_amount,
+										];
+									}
+								}
+								//FOR CESS on GST TAX CALCULATION
+								$cess_gst_tax_amount = 0;
+								$cess_gst_total = 0;
+								if ($service_invoice_item->serviceItem) {
+									if ($service_invoice_item->serviceItem->cess_on_gst_percentage) {
+										$cess_gst_total = round(($request->qty * $request->amount) * $service_invoice_item->serviceItem->cess_on_gst_percentage / 100, 2);
+										$cess_gst_tax_amount = round(($request->qty * $request->amount) * $service_invoice_item->serviceItem->cess_on_gst_percentage / 100, 2); //PERCENTAGE FOR CESS on GST
+										$service_invoice_item->serviceItem['CESS'] = [ // for CESS on GST
+											'percentage' => $service_invoice_item->serviceItem->cess_on_gst_percentage,
+											'amount' => $cess_gst_tax_amount,
 										];
 									}
 								}
