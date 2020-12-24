@@ -2944,7 +2944,7 @@ class ServiceInvoiceController extends Controller {
 			$service_invoices = $service_invoices->get();
 			// dd($service_invoices);
 
-			$service_invoice_header = ['Service Type', 'Account Type', 'Customer/Vendor Code', 'Invoice No', 'Invoice Date', 'Ref. Invoice Number', 'Ref. Invoice Date', 'Customer/Vendor Name', 'GSTIN', 'Billing Address', 'Invoice Value', 'HSN/SAC Code', 'Unit Of Measure', 'Qty', 'Item Taxable Value', 'CGST Rate', 'SGST Rate', 'IGST Rate', 'KFC Rate', 'TCS Rate', 'CGST Amount', 'SGST Amount', 'IGST Amount', 'KFC Amount', 'TCS Amount',
+			$service_invoice_header = ['Service Type', 'Account Type', 'Customer/Vendor Code', 'Invoice No', 'Invoice Date', 'Ref. Invoice Number', 'Ref. Invoice Date', 'Customer/Vendor Name', 'GSTIN', 'Billing Address', 'Invoice Value', 'HSN/SAC Code', 'Unit Of Measure', 'Qty', 'Item Taxable Value', 'CGST Rate', 'SGST Rate', 'IGST Rate', 'KFC Rate', 'TCS Rate', 'CESS on GST Rate', 'CGST Amount', 'SGST Amount', 'IGST Amount', 'KFC Amount', 'TCS Amount', 'CESS on GST Amount',
 			];
 			$service_invoice_details = array();
 
@@ -3044,6 +3044,12 @@ class ServiceInvoiceController extends Controller {
 								$gst_total = $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt;
 								$tcs_total = round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
 							}
+
+							//FOR CESS ON GST
+							$cess_on_gst_total = 0;
+							if (!empty($service_item->cess_on_gst_percentage)) {
+								$cess_on_gst_total = round($serviceInvoiceItem->sub_total * $service_item->cess_on_gst_percentage / 100, 2);
+							}
 							// dump($service_item->taxCode);
 
 							if ($service_invoice->outlets && $service_item->taxCode) {
@@ -3059,7 +3065,7 @@ class ServiceInvoiceController extends Controller {
 									$service_invoice->customer->name,
 									$service_invoice->address->gst_number,
 									$service_invoice->address->address_line1 . ',' . $service_invoice->address->address_line2,
-									$sign_value . ($serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt + $tcs_total),
+									$sign_value . ($serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt + $tcs_total + $cess_on_gst_total),
 									$service_item->taxCode->code,
 									$serviceInvoiceItem->eInvoiceUom->code,
 									$serviceInvoiceItem->qty,
@@ -3069,11 +3075,13 @@ class ServiceInvoiceController extends Controller {
 									$igst_percentage,
 									$kfc_percentage,
 									$service_item->tcs_percentage,
+									$service_item->cess_on_gst_percentage,
 									$cgst_amt ? $sign_value . $cgst_amt : 0,
 									$sgst_amt ? $sign_value . $sgst_amt : 0,
 									$igst_amt ? $sign_value . $igst_amt : 0,
 									$kfc_amt ? $sign_value . $kfc_amt : 0,
 									$tcs_total ? $sign_value . $tcs_total : 0,
+									$cess_on_gst_total ? $sign_value . $cess_on_gst_total : 0,
 								];
 							}
 						}
