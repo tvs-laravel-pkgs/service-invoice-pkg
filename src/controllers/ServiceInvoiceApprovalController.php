@@ -2,7 +2,7 @@
 
 namespace Abs\ServiceInvoicePkg;
 use Abs\ApprovalPkg\ApprovalTypeStatus;
-use Abs\AttributePkg\Field;
+use Abs\AttributePkg\Models\Field;
 use Abs\ServiceInvoicePkg\ServiceInvoice;
 use Abs\ServiceInvoicePkg\ServiceInvoiceController;
 use Abs\ServiceInvoicePkg\ServiceItem;
