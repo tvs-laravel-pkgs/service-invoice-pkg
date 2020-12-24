@@ -318,9 +318,9 @@ class ServiceInvoice extends Model {
 				}
 			}
 			if (!empty($service_invoice)) {
-				if ($service_invoice->type_id != 1060) {
-					if ($service_invoice->address->state_id) {
-						if ($service_invoice->address->state_id == 3 && $service_invoice->branch->primaryAddress->state_id == 3) {
+				if ($service_invoice->address->state_id) {
+					if ($service_invoice->address->state_id == 3 && $service_invoice->branch->primaryAddress->state_id == 3) {
+						if ($service_invoice->type_id != 1060) {
 							if (empty($service_invoice->address->gst_number)) {
 								if (!empty($invoice_item->serviceItem->taxCode)) {
 									$KFC_IN = 1;
@@ -358,34 +358,34 @@ class ServiceInvoice extends Model {
 									}
 								}
 							}
-						} else {
-							if (!empty($invoice_item->serviceItem->taxCode)) {
-								foreach ($invoice_item->serviceItem->taxCode->taxes as $tax) {
-									if ($tax->name == 'CGST' && $invoice_cgst_percentage != 0.00) {
-										$total_amount_with_gst_not_kfc['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+						}
+					} else {
+						if (!empty($invoice_item->serviceItem->taxCode)) {
+							foreach ($invoice_item->serviceItem->taxCode->taxes as $tax) {
+								if ($tax->name == 'CGST' && $invoice_cgst_percentage != 0.00) {
+									$total_amount_with_gst_not_kfc['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
-										$total_amount_with_gst_not_kfc['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									$total_amount_with_gst_not_kfc['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
-										$total_amount_with_gst_not_kfc['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									$total_amount_with_gst_not_kfc['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
-									}
-									//FOR SGST
-									if ($tax->name == 'SGST' && $invoice_sgst_percentage != 0.00) {
-										$total_amount_with_gst_not_kfc['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+								}
+								//FOR SGST
+								if ($tax->name == 'SGST' && $invoice_sgst_percentage != 0.00) {
+									$total_amount_with_gst_not_kfc['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
-										$total_amount_with_gst_not_kfc['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									$total_amount_with_gst_not_kfc['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
-										$total_amount_with_gst_not_kfc['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-									}
+									$total_amount_with_gst_not_kfc['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+								}
 
-									//FOR IGST
-									if ($tax->name == 'IGST' && $invoice_igst_percentage != 0.00) {
-										$total_amount_with_gst_not_kfc['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+								//FOR IGST
+								if ($tax->name == 'IGST' && $invoice_igst_percentage != 0.00) {
+									$total_amount_with_gst_not_kfc['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
-										$total_amount_with_gst_not_kfc['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									$total_amount_with_gst_not_kfc['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
-										$total_amount_with_gst_not_kfc['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-									}
+									$total_amount_with_gst_not_kfc['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 								}
 							}
 						}
@@ -634,9 +634,9 @@ class ServiceInvoice extends Model {
 			// dump($service_invoice);
 			// dd(1);
 			if (!empty($service_invoice)) {
-				if ($service_invoice->type_id != 1060) {
-					if ($service_invoice->address->state_id) {
-						if ($service_invoice->address->state_id == 3 && $service_invoice->branch->primaryAddress->state_id == 3) {
+				if ($service_invoice->address->state_id) {
+					if ($service_invoice->address->state_id == 3 && $service_invoice->branch->primaryAddress->state_id == 3) {
+						if ($service_invoice->type_id != 1060) {
 							if (empty($service_invoice->address->gst_number)) {
 								//FOR AXAPTA EXPORT WHILE GETING KFC ADD SEPERATE TAX LIKE CGST,SGST
 								if (!empty($invoice_item->serviceItem->taxCode)) {
@@ -699,65 +699,65 @@ class ServiceInvoice extends Model {
 
 								}
 							}
-						} else {
-							if (!empty($invoice_item->serviceItem->taxCode)) {
-								foreach ($invoice_item->serviceItem->taxCode->taxes as $tax) {
-									//FOR CGST
-									if ($tax->name == 'CGST' && $invoice_cgst_percentage != 0.00) {
-										if ($this->type_id == 1061) {
-											$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-										} elseif ($this->type_id == 1062) {
-											$params['AmountCurCredit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-										} else {
-											$params['AmountCurCredit'] = '';
-										}
-
-										$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-										$params['LedgerDimension'] = $this->branch->primaryAddress->state->cgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
-
-										//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
-										$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
-										// dump($params);
-										$this->exportRowToAxapta($params);
+						}
+					} else {
+						if (!empty($invoice_item->serviceItem->taxCode)) {
+							foreach ($invoice_item->serviceItem->taxCode->taxes as $tax) {
+								//FOR CGST
+								if ($tax->name == 'CGST' && $invoice_cgst_percentage != 0.00) {
+									if ($this->type_id == 1061) {
+										$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									} elseif ($this->type_id == 1062) {
+										$params['AmountCurCredit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									} else {
+										$params['AmountCurCredit'] = '';
 									}
-									//FOR CGST
-									if ($tax->name == 'SGST' && $invoice_sgst_percentage != 0.00) {
-										if ($this->type_id == 1061) {
-											$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-										} elseif ($this->type_id == 1062) {
-											$params['AmountCurCredit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-										} else {
-											$params['AmountCurCredit'] = '';
-										}
 
-										$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-										$params['LedgerDimension'] = $this->branch->primaryAddress->state->sgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
+									$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									$params['LedgerDimension'] = $this->branch->primaryAddress->state->cgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-										//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
-										$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
-
-										// dump($params);
-										$this->exportRowToAxapta($params);
+									//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
+									$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
+									// dump($params);
+									$this->exportRowToAxapta($params);
+								}
+								//FOR CGST
+								if ($tax->name == 'SGST' && $invoice_sgst_percentage != 0.00) {
+									if ($this->type_id == 1061) {
+										$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									} elseif ($this->type_id == 1062) {
+										$params['AmountCurCredit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									} else {
+										$params['AmountCurCredit'] = '';
 									}
-									//FOR IGST
-									if ($tax->name == 'IGST' && $invoice_igst_percentage != 0.00) {
-										if ($this->type_id == 1061) {
-											$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-										} elseif ($this->type_id == 1062) {
-											$params['AmountCurCredit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-										} else {
-											$params['AmountCurCredit'] = '';
-										}
 
-										$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-										$params['LedgerDimension'] = $this->branch->primaryAddress->state->igst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
+									$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									$params['LedgerDimension'] = $this->branch->primaryAddress->state->sgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-										//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
-										$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
+									//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
+									$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
 
-										// dump($params);
-										$this->exportRowToAxapta($params);
+									// dump($params);
+									$this->exportRowToAxapta($params);
+								}
+								//FOR IGST
+								if ($tax->name == 'IGST' && $invoice_igst_percentage != 0.00) {
+									if ($this->type_id == 1061) {
+										$params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									} elseif ($this->type_id == 1062) {
+										$params['AmountCurCredit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									} else {
+										$params['AmountCurCredit'] = '';
 									}
+
+									$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									$params['LedgerDimension'] = $this->branch->primaryAddress->state->igst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+									//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
+									$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
+
+									// dump($params);
+									$this->exportRowToAxapta($params);
 								}
 							}
 						}
@@ -938,10 +938,10 @@ class ServiceInvoice extends Model {
 			}
 
 			if (!empty($service_invoice)) {
-				if ($service_invoice->type_id != 1060) {
 
-					if ($service_invoice->address->state_id) {
-						if ($service_invoice->address->state_id == 3 && $service_invoice->branch->primaryAddress->state_id == 3) {
+				if ($service_invoice->address->state_id) {
+					if ($service_invoice->address->state_id == 3 && $service_invoice->branch->primaryAddress->state_id == 3) {
+						if ($service_invoice->type_id != 1060) {
 							if (empty($service_invoice->address->gst_number)) {
 								if (!empty($invoice_item->serviceItem->taxCode)) {
 									$KFC_IN = 1;
@@ -979,34 +979,34 @@ class ServiceInvoice extends Model {
 									}
 								}
 							}
-						} else {
-							if (!empty($invoice_item->serviceItem->taxCode)) {
-								foreach ($invoice_item->serviceItem->taxCode->taxes as $tax) {
-									if ($tax->name == 'CGST' && $invoice_cgst_percentage != 0.00) {
-										$total_amount_with_gst_not_kfc['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+						}
+					} else {
+						if (!empty($invoice_item->serviceItem->taxCode)) {
+							foreach ($invoice_item->serviceItem->taxCode->taxes as $tax) {
+								if ($tax->name == 'CGST' && $invoice_cgst_percentage != 0.00) {
+									$total_amount_with_gst_not_kfc['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
-										$total_amount_with_gst_not_kfc['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									$total_amount_with_gst_not_kfc['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
-										$total_amount_with_gst_not_kfc['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									$total_amount_with_gst_not_kfc['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
-									}
-									//FOR SGST
-									if ($tax->name == 'SGST' && $invoice_sgst_percentage != 0.00) {
-										$total_amount_with_gst_not_kfc['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+								}
+								//FOR SGST
+								if ($tax->name == 'SGST' && $invoice_sgst_percentage != 0.00) {
+									$total_amount_with_gst_not_kfc['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
-										$total_amount_with_gst_not_kfc['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									$total_amount_with_gst_not_kfc['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
-										$total_amount_with_gst_not_kfc['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-									}
+									$total_amount_with_gst_not_kfc['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+								}
 
-									//FOR IGST
-									if ($tax->name == 'IGST' && $invoice_igst_percentage != 0.00) {
-										$total_amount_with_gst_not_kfc['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+								//FOR IGST
+								if ($tax->name == 'IGST' && $invoice_igst_percentage != 0.00) {
+									$total_amount_with_gst_not_kfc['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
-										$total_amount_with_gst_not_kfc['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									$total_amount_with_gst_not_kfc['debit'] += $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 
-										$total_amount_with_gst_not_kfc['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-									}
+									$total_amount_with_gst_not_kfc['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 								}
 							}
 						}
@@ -1252,10 +1252,10 @@ class ServiceInvoice extends Model {
 			// dump($service_invoice);
 			// dd(1);
 			if (!empty($service_invoice)) {
-				if ($service_invoice->type_id != 1060) {
 
-					if ($service_invoice->address->state_id) {
-						if ($service_invoice->address->state_id == 3 && $service_invoice->branch->primaryAddress->state_id == 3) {
+				if ($service_invoice->address->state_id) {
+					if ($service_invoice->address->state_id == 3 && $service_invoice->branch->primaryAddress->state_id == 3) {
+						if ($service_invoice->type_id != 1060) {
 							if (empty($service_invoice->address->gst_number)) {
 								//FOR AXAPTA EXPORT WHILE GETING KFC ADD SEPERATE TAX LIKE CGST,SGST
 								if (!empty($invoice_item->serviceItem->taxCode)) {
@@ -1318,65 +1318,65 @@ class ServiceInvoice extends Model {
 
 								}
 							}
-						} else {
-							if (!empty($invoice_item->serviceItem->taxCode)) {
-								foreach ($invoice_item->serviceItem->taxCode->taxes as $tax) {
-									//FOR CGST
-									if ($tax->name == 'CGST' && $invoice_cgst_percentage != 0.00) {
-										if ($this->type_id == 1061) {
-											$params['AmountCurDebit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-										} elseif ($this->type_id == 1062) {
-											$params['AmountCurDebit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-										} else {
-											$params['AmountCurDebit'] = '';
-										}
-
-										$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-										$params['LedgerDimension'] = $this->branch->primaryAddress->state->cgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
-
-										//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
-										$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
-										// dump($params);
-										$this->exportRowToAxapta($params);
+						}
+					} else {
+						if (!empty($invoice_item->serviceItem->taxCode)) {
+							foreach ($invoice_item->serviceItem->taxCode->taxes as $tax) {
+								//FOR CGST
+								if ($tax->name == 'CGST' && $invoice_cgst_percentage != 0.00) {
+									if ($this->type_id == 1061) {
+										$params['AmountCurDebit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									} elseif ($this->type_id == 1062) {
+										$params['AmountCurDebit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									} else {
+										$params['AmountCurDebit'] = '';
 									}
-									//FOR CGST
-									if ($tax->name == 'SGST' && $invoice_sgst_percentage != 0.00) {
-										if ($this->type_id == 1061) {
-											$params['AmountCurDebit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-										} elseif ($this->type_id == 1062) {
-											$params['AmountCurDebit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-										} else {
-											$params['AmountCurDebit'] = '';
-										}
 
-										$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-										$params['LedgerDimension'] = $this->branch->primaryAddress->state->sgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
+									$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									$params['LedgerDimension'] = $this->branch->primaryAddress->state->cgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-										//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
-										$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
-
-										// dump($params);
-										$this->exportRowToAxapta($params);
+									//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
+									$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
+									// dump($params);
+									$this->exportRowToAxapta($params);
+								}
+								//FOR CGST
+								if ($tax->name == 'SGST' && $invoice_sgst_percentage != 0.00) {
+									if ($this->type_id == 1061) {
+										$params['AmountCurDebit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									} elseif ($this->type_id == 1062) {
+										$params['AmountCurDebit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									} else {
+										$params['AmountCurDebit'] = '';
 									}
-									//FOR IGST
-									if ($tax->name == 'IGST' && $invoice_igst_percentage != 0.00) {
-										if ($this->type_id == 1061) {
-											$params['AmountCurDebit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-										} elseif ($this->type_id == 1062) {
-											$params['AmountCurDebit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-										} else {
-											$params['AmountCurDebit'] = '';
-										}
 
-										$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-										$params['LedgerDimension'] = $this->branch->primaryAddress->state->igst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
+									$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									$params['LedgerDimension'] = $this->branch->primaryAddress->state->sgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-										//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
-										$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
+									//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
+									$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
 
-										// dump($params);
-										$this->exportRowToAxapta($params);
+									// dump($params);
+									$this->exportRowToAxapta($params);
+								}
+								//FOR IGST
+								if ($tax->name == 'IGST' && $invoice_igst_percentage != 0.00) {
+									if ($this->type_id == 1061) {
+										$params['AmountCurDebit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									} elseif ($this->type_id == 1062) {
+										$params['AmountCurDebit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									} else {
+										$params['AmountCurDebit'] = '';
 									}
+
+									$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+									$params['LedgerDimension'] = $this->branch->primaryAddress->state->igst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+									//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
+									$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
+
+									// dump($params);
+									$this->exportRowToAxapta($params);
 								}
 							}
 						}
