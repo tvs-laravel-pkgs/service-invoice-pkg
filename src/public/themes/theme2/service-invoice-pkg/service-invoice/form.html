@@ -35,6 +35,22 @@
                                 <ul class="flex-list bordered">
                                     <li class="flex-md-4">
                                         <ul class="table-form-list">
+                                            <li ng-if="$ctrl.allow_e_invoice_selection">
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">E-Invoice Selection <span class="mandatory">*</span></label>
+                                                    <div class="table-form-list-control">
+                                                        <md-select class="type-sm" ng-model="$ctrl.service_invoice.e_invoice_registration" placeholder="Select E-Invoice" md-on-close="clearSearchEInvoice()" data-md-container-class="selectdemoSelectHeader">
+                                                            <md-select-header class="demo-select-header">
+                                                                <input ng-model="searchEInvoice" type="search" placeholder="Select E-Invoice Registration" class="demo-header-searchbox md-text">
+                                                            </md-select-header>
+                                                            <md-optgroup label="e_invoice_registration">
+                                                                <md-option ng-value="e_invoice_registration.id" ng-repeat="e_invoice_registration in $ctrl.e_invoice_registration | filter:searchEInvoice">{{e_invoice_registration.name}}</md-option>
+                                                            </md-optgroup>
+                                                        </md-select>
+                                                        <input type="hidden" name="e_invoice_registration" id="e_invoice_registration" value="{{$ctrl.service_invoice.e_invoice_registration}}" class="required">
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
                                             <li>
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Branch <span class="mandatory">*</span></label>

@@ -549,6 +549,9 @@ app.component('serviceInvoiceForm', {
         $form_data_url = typeof($routeParams.id) == 'undefined' ? service_invoice_get_form_data_url + '/' + $routeParams.type_id : service_invoice_get_form_data_url + '/' + $routeParams.type_id + '/' + $routeParams.id;
         var self = this;
         self.hasPermission = HelperService.hasPermission;
+        self.allow_e_invoice_selection = self.hasPermission('allow-e-invoice-selection');
+        self.e_invoice_only = self.hasPermission('e-invoice-only');
+        self.without_e_invoice_only = self.hasPermission('without-e-invoice-only');
         self.angular_routes = angular_routes;
         self.type_id = $routeParams.type_id;
         self.enable_service_item_md_change = true;
@@ -630,6 +633,42 @@ app.component('serviceInvoiceForm', {
             }
             $rootScope.loading = false;
         });
+
+        //FOR FILTER
+        if (self.e_invoice_only && self.without_e_invoice_only) {
+            self.e_invoice_registration = [
+                { id: '', name: 'Selcet E-Invoice' },
+                { id: '1', name: 'E-Invoice Only' },
+                { id: '0', name: 'Without E-Invoice only' },
+            ];
+        } else if (self.e_invoice_only) {
+            self.e_invoice_registration = [
+                { id: '', name: 'Selcet E-Invoice' },
+                { id: '1', name: 'E-Invoice Only' },
+            ];
+        } else if (self.without_e_invoice_only) {
+            self.e_invoice_registration = [
+                { id: '', name: 'Selcet E-Invoice' },
+                { id: '0', name: 'Without E-Invoice only' },
+            ];
+        } else {
+            self.e_invoice_registration = [
+                { id: '', name: 'Selcet E-Invoice' },
+            ];
+        }
+        // setTimeout(function() {
+        //     $scope.onSelectedEInvoice = function(val) {
+        //         console.log(val);
+        //         var e_invoice_selection = val;
+        //         if (e_invoice_selection) {
+        //             console.log('if');
+        //             self.e_invoice_selection = e_invoice_selection;
+        //         } else {
+        //             console.log('else');
+        //             self.e_invoice_selection = 1;
+        //         }
+        //     }
+        // }, 1500);
 
         /* Tab Funtion */
         $('.btn-nxt').on("click", function() {
@@ -854,86 +893,94 @@ app.component('serviceInvoiceForm', {
 
         $scope.checkCustomerGSTIN = function(gstin, customer) {
             // console.log(gstin);
-            var customer_name = customer.toLowerCase();
-            console.log(customer_name);
-            $('#pace').css("display", "block");
-            $('#pace').addClass('pace-active');
+            if(self.allow_e_invoice_selection){
+                var e_invoice_selection = $("#e_invoice_registration").val();
+            }else{
+                var e_invoice_selection = 1;
+            }
+            console.log(e_invoice_selection);
+            if (e_invoice_selection == 1) {
+                var customer_name = customer.toLowerCase();
+                console.log(customer_name);
+                $('#pace').css("display", "block");
+                $('#pace').addClass('pace-active');
 
-            if (gstin) {
-                $http.get(
-                    get_gstin_details + '/' + gstin,
+                if (gstin) {
+                    $http.get(
+                        get_gstin_details + '/' + gstin,
 
-                ).then(function(response) {
-                    $('#pace').css("display", "none");
-                    $('#pace').addClass('pace-inactive');
-                    console.log(response);
-                    if (!response.data.success) {
-                        // showErrorNoty(response);
-                        custom_noty('error', response.data.error);
-                        return;
-                    } else {
-                        if (response.data.trade_name || response.data.legal_name) {
+                    ).then(function(response) {
+                        $('#pace').css("display", "none");
+                        $('#pace').addClass('pace-inactive');
+                        console.log(response);
+                        if (!response.data.success) {
+                            // showErrorNoty(response);
+                            custom_noty('error', response.data.error);
+                            return;
+                        } else {
+                            if (response.data.trade_name || response.data.legal_name) {
 
-                            var trade_name = response.data.trade_name.toLowerCase();
-                            var legal_name = response.data.legal_name.toLowerCase();
-                            console.log("trade_name = " + trade_name);
-                            console.log("legal_name = " + legal_name);
-                            if (customer_name === legal_name) {
-                                $noty = new Noty({
-                                    type: 'success',
-                                    layout: 'topRight',
-                                    text: 'GSTIN Registred Legal Name: ' + response.data.legal_name,
-                                    animation: {
-                                        speed: 1000 // unavailable - no need
-                                    },
-                                }).show();
-                                setTimeout(function() {
-                                    $noty.close();
-                                }, 12000);
-                                custom_noty('success', 'Customer Name Matched');
-                                $('#submit').show();
-                                $('.add_item_btn').show();
-                            } else if (customer_name === trade_name) {
-                                $noty = new Noty({
-                                    type: 'success',
-                                    layout: 'topRight',
-                                    text: 'GSTIN Registred Trade Name: ' + response.data.trade_name,
-                                    animation: {
-                                        speed: 1000 // unavailable - no need
-                                    },
-                                }).show();
-                                setTimeout(function() {
-                                    $noty.close();
-                                }, 12000);
-                                custom_noty('success', 'Customer Name Matched');
-                                $('#submit').show();
-                                $('.add_item_btn').show();
+                                var trade_name = response.data.trade_name.toLowerCase();
+                                var legal_name = response.data.legal_name.toLowerCase();
+                                console.log("trade_name = " + trade_name);
+                                console.log("legal_name = " + legal_name);
+                                if (customer_name === legal_name) {
+                                    $noty = new Noty({
+                                        type: 'success',
+                                        layout: 'topRight',
+                                        text: 'GSTIN Registred Legal Name: ' + response.data.legal_name,
+                                        animation: {
+                                            speed: 1000 // unavailable - no need
+                                        },
+                                    }).show();
+                                    setTimeout(function() {
+                                        $noty.close();
+                                    }, 12000);
+                                    custom_noty('success', 'Customer Name Matched');
+                                    $('#submit').show();
+                                    $('.add_item_btn').show();
+                                } else if (customer_name === trade_name) {
+                                    $noty = new Noty({
+                                        type: 'success',
+                                        layout: 'topRight',
+                                        text: 'GSTIN Registred Trade Name: ' + response.data.trade_name,
+                                        animation: {
+                                            speed: 1000 // unavailable - no need
+                                        },
+                                    }).show();
+                                    setTimeout(function() {
+                                        $noty.close();
+                                    }, 12000);
+                                    custom_noty('success', 'Customer Name Matched');
+                                    $('#submit').show();
+                                    $('.add_item_btn').show();
+                                } else {
+                                    $noty = new Noty({
+                                        type: 'success',
+                                        layout: 'topRight',
+                                        text: 'GSTIN Registred Legal Name: ' + response.data.legal_name + ', and  GSTIN Registred Trade Name: ' + response.data.trade_name,
+                                        animation: {
+                                            speed: 1000 // unavailable - no need
+                                        },
+                                    }).show();
+                                    setTimeout(function() {
+                                        $noty.close();
+                                    }, 15000);
+                                    custom_noty('error', 'Customer Name Not Matched!');
+                                    custom_noty('error', 'Not Allow To Add Invoives!');
+                                    $('#submit').hide();
+                                    $('.add_item_btn').hide();
+                                }
                             } else {
-                                $noty = new Noty({
-                                    type: 'success',
-                                    layout: 'topRight',
-                                    text: 'GSTIN Registred Legal Name: ' + response.data.legal_name + ', and  GSTIN Registred Trade Name: ' + response.data.trade_name,
-                                    animation: {
-                                        speed: 1000 // unavailable - no need
-                                    },
-                                }).show();
-                                setTimeout(function() {
-                                    $noty.close();
-                                }, 15000);
-                                custom_noty('error', 'Customer Name Not Matched!');
+                                custom_noty('error', response.data.error);
                                 custom_noty('error', 'Not Allow To Add Invoives!');
                                 $('#submit').hide();
                                 $('.add_item_btn').hide();
                             }
-                        } else {
-                            custom_noty('error', response.data.error);
-                            custom_noty('error', 'Not Allow To Add Invoives!');
-                            $('#submit').hide();
-                            $('.add_item_btn').hide();
                         }
-                    }
 
-                });
+                    });
+                }
             }
         }
 
@@ -1331,7 +1378,7 @@ app.component('serviceInvoiceForm', {
                 // }
                 //FOR KFC TAX
                 if ($routeParams.type_id != 1060) {
-                        console.log('in');
+                    console.log('in');
                     if (self.service_invoice.branch.primary_address.state_id && self.customer.state_id) {
                         if (self.service_invoice.branch.primary_address.state_id == 3 && self.customer.state_id == 3) {
                             if (self.customer.gst_number == null) {
