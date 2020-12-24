@@ -19,7 +19,7 @@ class ServiceItem extends Model {
 	];
 
 	public function fieldGroups() {
-		return $this->belongsToMany('Abs\AttributePkg\FieldGroup', 'service_item_field_group', 'service_item_id', 'field_group_id');
+		return $this->belongsToMany('Abs\AttributePkg\Models\FieldGroup', 'service_item_field_group', 'service_item_id', 'field_group_id');
 	}
 
 	public function coaCode() {
