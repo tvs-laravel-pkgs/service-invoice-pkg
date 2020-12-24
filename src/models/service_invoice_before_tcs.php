@@ -1,7 +1,7 @@
 <?php
 
 namespace Abs\ServiceInvoicePkg;
-use Abs\AttributePkg\Field;
+use Abs\AttributePkg\Models\Field;
 use Abs\AxaptaExportPkg\AxaptaExport;
 use Abs\ImportCronJobPkg\ImportCronJob;
 use Abs\SerialNumberPkg\SerialNumberGroup;
