@@ -2,10 +2,10 @@
 namespace Abs\ServiceInvoicePkg;
 use Abs\ApprovalPkg\ApprovalLevel;
 use Abs\ApprovalPkg\ApprovalTypeStatus;
-use Abs\AttributePkg\Field;
-use Abs\AttributePkg\FieldConfigSource;
-use Abs\AttributePkg\FieldGroup;
-use Abs\AttributePkg\FieldSourceTable;
+use Abs\AttributePkg\Models\Field;
+use Abs\AttributePkg\Models\FieldConfigSource;
+use Abs\AttributePkg\Models\FieldGroup;
+use Abs\AttributePkg\Models\FieldSourceTable;
 use Abs\AxaptaExportPkg\AxaptaExport;
 use Abs\SerialNumberPkg\SerialNumberGroup;
 use Abs\ServiceInvoicePkg\ServiceInvoice;
