@@ -54,7 +54,8 @@ class ServiceInvoice extends Model {
 		'invoice_number',
 		'round_off_amount',
 		'final_amount',
-		'irn_number',
+		'final_amount',
+		'e_invoice_registration',
 		'qr_image',
 		'ack_no',
 		'ack_date',
@@ -392,6 +393,8 @@ class ServiceInvoice extends Model {
 				}
 
 				// dump($total_amount_with_gst['credit'], $total_amount_with_gst['debit'], $total_amount_with_gst['invoice']);
+				// dump($total_amount_with_gst_not_kfc['credit'], $total_amount_with_gst_not_kfc['debit'], $total_amount_with_gst_not_kfc['invoice']);
+				// dd(1);
 				// dump($invoice_cgst_percentage, $invoice_sgst_percentage, $invoice_igst_percentage);
 				// dump($invoice_item->sub_total);
 				// dump($invoice_kfc_percentage);

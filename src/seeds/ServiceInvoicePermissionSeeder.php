@@ -160,21 +160,18 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 
 			3054 => [
 				'display_order' => 1,
-				// 'display_order' => 12,
 				'parent_id' => 3053,
 				'name' => 'tcs-export-own',
 				'display_name' => 'TCS Export Own',
 			],
 			3055 => [
 				'display_order' => 2,
-				// 'display_order' => 13,
 				'parent_id' => 3053,
 				'name' => 'tcs-export-all',
 				'display_name' => 'TCS Export All',
 			],
 			3056 => [
 				'display_order' => 3,
-				// 'display_order' => 14,
 				'parent_id' => 3053,
 				'name' => 'tcs-export-outlet-based',
 				'display_name' => 'TCS Export outlet-based',
@@ -182,14 +179,12 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 
 			3057 => [
 				'display_order' => 4,
-				// 'display_order' => 15,
 				'parent_id' => 3053,
 				'name' => 'gst-export',
 				'display_name' => 'GST Export',
 			],
 
 			3058 => [
-				// 'display_order' => 5,
 				'display_order' => 14,
 				'parent_id' => 3040,
 				'name' => 'service-invoice-irn-cancel',
@@ -197,11 +192,28 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 			],
 
 			3059 => [
-				// 'display_order' => 5,
 				'display_order' => 14,
 				'parent_id' => 3040,
 				'name' => 'service-invoice-cancel',
 				'display_name' => 'B2C Service Invoice Cancelation',
+			],
+			3060 => [
+				'display_order' => 15,
+				'parent_id' => 3040,
+				'name' => 'allow-e-invoice-selection',
+				'display_name' => 'Allow E-Invoice Selection',
+			],
+			3061 => [
+				'display_order' => 16,
+				'parent_id' => 3040,
+				'name' => 'e-invoice-only',
+				'display_name' => 'E-Invoice Only',
+			],
+			3062 => [
+				'display_order' => 17,
+				'parent_id' => 3040,
+				'name' => 'without-e-invoice-only',
+				'display_name' => 'Without E-Invoice Only',
 			],
 
 		];
