@@ -1,7 +1,7 @@
 <?php
 
 namespace Abs\ServiceInvoicePkg;
-use Abs\AttributePkg\FieldGroup;
+use Abs\AttributePkg\Models\FieldGroup;
 use Abs\CoaPkg\CoaCode;
 use Abs\TaxPkg\TaxCode;
 use App\Company;
