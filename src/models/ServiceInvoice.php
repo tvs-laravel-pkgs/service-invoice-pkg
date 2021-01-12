@@ -5,6 +5,7 @@ use Abs\AttributePkg\Models\Field;
 use Abs\AxaptaExportPkg\AxaptaExport;
 use Abs\ImportCronJobPkg\ImportCronJob;
 use Abs\SerialNumberPkg\SerialNumberGroup;
+use Abs\ServiceInvoicePkg\ServiceInvoiceController;
 use Abs\TaxPkg\Tax;
 use Abs\TaxPkg\TaxCode;
 use App\Address;
@@ -1698,6 +1699,9 @@ class ServiceInvoice extends Model {
 					} else {
 						$customer = '';
 						if ($to_account_type_id == 1440) {
+							//UPDATE CUSTOMER AND ADDRESS
+							$customer = ServiceInvoiceController::searchCustomerImport(trim($record['Customer/Vendor Code']));
+
 							//CUSTOMER
 							$customer = Customer::where([
 								'company_id' => $job->company_id,
@@ -1711,9 +1715,9 @@ class ServiceInvoice extends Model {
 									'company_id' => $job->company_id,
 									'entity_id' => $customer->id,
 									'address_of_id' => 24, //CUSTOMER
-									// 'is_primary' => 1, //PRIMARY
+									'is_primary' => 1, //PRIMARY
 								])
-									->orderBy('id', 'desc')
+								// ->orderBy('id', 'desc')
 									->first();
 							}
 							if (!$customer_address) {
