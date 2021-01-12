@@ -1711,8 +1711,9 @@ class ServiceInvoice extends Model {
 									'company_id' => $job->company_id,
 									'entity_id' => $customer->id,
 									'address_of_id' => 24, //CUSTOMER
+									'is_primary' => 1, //PRIMARY
 								])
-									->orderBy('id', 'desc')
+								// ->orderBy('id', 'desc')
 									->first();
 							}
 							if (!$customer_address) {
@@ -1817,6 +1818,14 @@ class ServiceInvoice extends Model {
 						$status['errors'][] = 'Initial CN/DN Status has not mapped.!';
 					}
 					// dd($customer->id);
+					if (count($status['errors']) > 0) {
+						// dump($status['errors']);
+						$original_record['Record No'] = $k + 1;
+						$original_record['Error Details'] = implode(',', $status['errors']);
+						$all_error_records[] = $original_record;
+						$job->incrementError();
+						continue;
+					}
 
 					//STATICALLY GET SECOND SHEET FROM EXCEL
 					$objPHPExcel = PHPExcel_IOFactory::load(storage_path('app/' . $job->src_file));
