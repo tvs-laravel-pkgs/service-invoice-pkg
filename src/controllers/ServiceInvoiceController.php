@@ -3859,4 +3859,177 @@ class ServiceInvoiceController extends Controller {
 			'file_name_path' => url('storage/app/public/service-invoice-pdf/chola-pdf') . '/' . $service_invoice->number . '.pdf',
 		]);
 	}
+
+	//IMPORTANT FUNCTION FOR IMPORT SEARCH CUSTOMER VIJAY-S 12 JAN 2020 START *******DONT REMOVE**********
+	public static function searchCustomerImport($code) {
+		// return $this->customerImport($code);
+		return (new self)->customerImport($code);
+	}
+
+	public function customerImport($code) {
+		// dd($code);
+		$this->soapWrapper->add('customerImport', function ($service) {
+			$service
+				->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
+				->trace(true);
+		});
+		$params = ['ACCOUNTNUM' => $code];
+		$getResult = $this->soapWrapper->call('customerImport.GetNewCustMasterDetails_Search', [$params]);
+		$customer_data = $getResult->GetNewCustMasterDetails_SearchResult;
+		if (empty($customer_data)) {
+			return response()->json(['success' => false, 'error' => 'Customer Not Available!.']);
+		}
+
+		// Convert xml string into an object
+		$xml_customer_data = simplexml_load_string($customer_data->any);
+		// dd($xml_customer_data);
+		// Convert into json
+		$customer_encode = json_encode($xml_customer_data);
+
+		// Convert into associative array
+		$customer_data = json_decode($customer_encode, true);
+
+		$api_customer_data = $customer_data['Table'];
+		if (count($api_customer_data) == 0) {
+			return response()->json(['success' => false, 'error' => 'Customer Not Available!.']);
+		}
+		// dd($api_customer_data);
+		$search_list = [];
+		if (isset($api_customer_data)) {
+			$data = [];
+			$array_count = array_filter($api_customer_data, 'is_array');
+			if (count($array_count) > 0) {
+				// if (count($api_customer_data) > 0) {
+				foreach ($api_customer_data as $key => $customer_data) {
+					$data['code'] = $customer_data['ACCOUNTNUM'];
+					$data['name'] = $customer_data['NAME'];
+					$data['mobile_no'] = isset($customer_data['LOCATOR']) && $customer_data['LOCATOR'] != 'Not available' ? $customer_data['LOCATOR'] : NULL;
+					$data['cust_group'] = isset($customer_data['CUSTGROUP']) && $customer_data['CUSTGROUP'] != 'Not available' ? $customer_data['CUSTGROUP'] : NULL;
+					$data['pan_number'] = isset($customer_data['PANNO']) && $customer_data['PANNO'] != 'Not available' ? $customer_data['PANNO'] : NULL;
+
+					$search_list[] = $data;
+				}
+			} else {
+				$data['code'] = $api_customer_data['ACCOUNTNUM'];
+				$data['name'] = $api_customer_data['NAME'];
+				$data['mobile_no'] = isset($api_customer_data['LOCATOR']) && $api_customer_data['LOCATOR'] != 'Not available' ? $api_customer_data['LOCATOR'] : NULL;
+				$data['cust_group'] = isset($api_customer_data['CUSTGROUP']) && $api_customer_data['CUSTGROUP'] != 'Not available' ? $api_customer_data['CUSTGROUP'] : NULL;
+				$data['pan_number'] = isset($api_customer_data['PANNO']) && $api_customer_data['PANNO'] != 'Not available' ? $api_customer_data['PANNO'] : NULL;
+
+				$search_list[] = $data;
+			}
+		}
+		// dump($search_list[0]);
+		// dd(1);
+		if ($search_list) {
+			$this->soapWrapper->add('address', function ($service) {
+				$service
+					->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
+					->trace(true);
+			});
+			$params = ['ACCOUNTNUM' => $code];
+			$getResult = $this->soapWrapper->call('address.GetNewCustomerAddress_Search', [$params]);
+			$customer_data = $getResult->GetNewCustomerAddress_SearchResult;
+			if (empty($customer_data)) {
+				return response()->json(['success' => false, 'error' => 'Address Not Available!.']);
+			}
+
+			// Convert xml string into an object
+			$xml_customer_data = simplexml_load_string($customer_data->any);
+			// dd($xml_customer_data);
+
+			// Convert into json
+			$customer_encode = json_encode($xml_customer_data);
+			// Convert into associative array
+			$customer_data = json_decode($customer_encode, true);
+			// dd($customer_data);
+
+			$api_customer_data = $customer_data['Table'];
+			// dd($api_customer_data);
+			if (count($api_customer_data) == 0) {
+				return response()->json(['success' => false, 'error' => 'Address Not Available!.']);
+			}
+
+			$customer = Customer::firstOrNew(['code' => $code]);
+			$customer->company_id = Auth::user()->company_id;
+			$customer->name = $search_list[0]['name'];
+			$customer->cust_group = empty($search_list[0]['cust_group']) ? NULL : $search_list[0]['cust_group'];
+			$customer->gst_number = empty($search_list[0]['gst_number']) ? NULL : $search_list[0]['gst_number'];
+			$customer->pan_number = empty($search_list[0]['pan_number']) ? NULL : $search_list[0]['pan_number'];
+			$customer->mobile_no = empty($search_list[0]['mobile_no']) ? NULL : $search_list[0]['mobile_no'];
+			$customer->address = NULL;
+			$customer->city = NULL; //$customer_data['CITY'];
+			$customer->zipcode = NULL; //$customer_data['ZIPCODE'];
+			$customer->created_at = Carbon::now();
+			$customer->save();
+
+			$list = [];
+			if ($api_customer_data) {
+				$data = [];
+				if (isset($api_customer_data)) {
+					$array_count = array_filter($api_customer_data, 'is_array');
+					if (count($array_count) > 0) {
+						// dd('mu;l');
+						foreach ($api_customer_data as $key => $customer_data) {
+
+							$address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $customer_data['RECID']]); //CUSTOMER
+							// dd($address);
+							$address->company_id = Auth::user()->company_id;
+							$address->entity_id = $customer->id;
+							$address->ax_id = $customer_data['RECID'];
+							$address->gst_number = isset($customer_data['GST_NUMBER']) ? $customer_data['GST_NUMBER'] : NULL;
+
+							$address->ax_customer_location_id = isset($customer_data['CUSTOMER_LOCATION_ID']) ? $customer_data['CUSTOMER_LOCATION_ID'] : NULL;
+
+							$address->address_of_id = 24;
+							$address->address_type_id = 40;
+							$address->name = 'Primary Address_' . $customer_data['RECID'];
+							$address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
+							$city = City::where('name', $customer_data['CITY'])->first();
+							$state = State::where('code', $customer_data['STATE'])->first();
+							$address->country_id = $state ? $state->country_id : NULL;
+							$address->state_id = $state ? $state->id : NULL;
+							$address->city_id = $city ? $city->id : NULL;
+							$address->pincode = $customer_data['ZIPCODE'] == 'Not available' ? NULL : $customer_data['ZIPCODE'];
+							$address->is_primary = isset($customer_data['ISPRIMARY']) ? $customer_data['ISPRIMARY'] : 0;
+
+							$address->save();
+							$customer_address[] = $address;
+						}
+					} else {
+						// dd('sing');
+						$address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $api_customer_data['RECID']]); //CUSTOMER
+						// dd($address);
+						$address->company_id = Auth::user()->company_id;
+						$address->entity_id = $customer->id;
+						$address->ax_id = $api_customer_data['RECID'];
+						$address->gst_number = isset($api_customer_data['GST_NUMBER']) ? $api_customer_data['GST_NUMBER'] : NULL;
+
+						$address->ax_customer_location_id = isset($api_customer_data['CUSTOMER_LOCATION_ID']) ? $api_customer_data['CUSTOMER_LOCATION_ID'] : NULL;
+
+						$address->address_of_id = 24;
+						$address->address_type_id = 40;
+						$address->name = 'Primary Address_' . $api_customer_data['RECID'];
+						$address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
+						$city = City::where('name', $api_customer_data['CITY'])->first();
+						// if ($city) {
+						$state = State::where('code', $api_customer_data['STATE'])->first();
+						$address->country_id = $state ? $state->country_id : NULL;
+						$address->state_id = $state ? $state->id : NULL;
+						// }
+						$address->city_id = $city ? $city->id : NULL;
+						$address->pincode = $api_customer_data['ZIPCODE'] == 'Not available' ? NULL : $api_customer_data['ZIPCODE'];
+						$address->is_primary = isset($api_customer_data['ISPRIMARY']) ? $api_customer_data['ISPRIMARY'] : NULL;
+						$address->save();
+						// dd($address);
+						$customer_address[] = $address;
+					}
+				} else {
+					$customer_address = [];
+				}
+			}
+		}
+	}
+	//IMPORTANT FUNCTION FOR IMPORT SEARCH CUSTOMER VIJAY-S 12 JAN 2020 END *******DONT REMOVE**********
+
 }
