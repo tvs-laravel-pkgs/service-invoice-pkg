@@ -1711,9 +1711,9 @@ class ServiceInvoice extends Model {
 									'company_id' => $job->company_id,
 									'entity_id' => $customer->id,
 									'address_of_id' => 24, //CUSTOMER
-									'is_primary' => 1, //PRIMARY
+									// 'is_primary' => 1, //PRIMARY
 								])
-								// ->orderBy('id', 'desc')
+									->orderBy('id', 'desc')
 									->first();
 							}
 							if (!$customer_address) {
