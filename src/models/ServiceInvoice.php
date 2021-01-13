@@ -1700,7 +1700,7 @@ class ServiceInvoice extends Model {
 						$customer = '';
 						if ($to_account_type_id == 1440) {
 							//UPDATE CUSTOMER AND ADDRESS
-							$customer = ServiceInvoiceController::searchCustomerImport(trim($record['Customer/Vendor Code']));
+							$customer = ServiceInvoiceController::searchCustomerImport(trim($record['Customer/Vendor Code']), $job);
 
 							//CUSTOMER
 							$customer = Customer::where([
