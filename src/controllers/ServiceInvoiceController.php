@@ -4029,6 +4029,7 @@ class ServiceInvoiceController extends Controller {
 				}
 			}
 		}
+		return true;
 	}
 	//IMPORTANT FUNCTION FOR IMPORT SEARCH CUSTOMER VIJAY-S 12 JAN 2020 END *******DONT REMOVE**********
 
