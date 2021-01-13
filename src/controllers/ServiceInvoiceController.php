@@ -3861,12 +3861,12 @@ class ServiceInvoiceController extends Controller {
 	}
 
 	//IMPORTANT FUNCTION FOR IMPORT SEARCH CUSTOMER VIJAY-S 12 JAN 2020 START *******DONT REMOVE**********
-	public static function searchCustomerImport($code) {
+	public static function searchCustomerImport($code, $job) {
 		// return $this->customerImport($code);
-		return (new self)->customerImport($code);
+		return (new self)->customerImport($code, $job);
 	}
 
-	public function customerImport($code) {
+	public function customerImport($code, $job) {
 		// dd($code);
 		$this->soapWrapper->add('customerImport', function ($service) {
 			$service
@@ -3951,7 +3951,7 @@ class ServiceInvoiceController extends Controller {
 			}
 
 			$customer = Customer::firstOrNew(['code' => $code]);
-			$customer->company_id = Auth::user()->company_id;
+			$customer->company_id = $job->company_id;
 			$customer->name = $search_list[0]['name'];
 			$customer->cust_group = empty($search_list[0]['cust_group']) ? NULL : $search_list[0]['cust_group'];
 			$customer->gst_number = empty($search_list[0]['gst_number']) ? NULL : $search_list[0]['gst_number'];
@@ -3974,7 +3974,7 @@ class ServiceInvoiceController extends Controller {
 
 							$address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $customer_data['RECID']]); //CUSTOMER
 							// dd($address);
-							$address->company_id = Auth::user()->company_id;
+							$address->company_id = $job->company_id;
 							$address->entity_id = $customer->id;
 							$address->ax_id = $customer_data['RECID'];
 							$address->gst_number = isset($customer_data['GST_NUMBER']) ? $customer_data['GST_NUMBER'] : NULL;
@@ -4000,7 +4000,7 @@ class ServiceInvoiceController extends Controller {
 						// dd('sing');
 						$address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $api_customer_data['RECID']]); //CUSTOMER
 						// dd($address);
-						$address->company_id = Auth::user()->company_id;
+						$address->company_id = $job->company_id;
 						$address->entity_id = $customer->id;
 						$address->ax_id = $api_customer_data['RECID'];
 						$address->gst_number = isset($api_customer_data['GST_NUMBER']) ? $api_customer_data['GST_NUMBER'] : NULL;
