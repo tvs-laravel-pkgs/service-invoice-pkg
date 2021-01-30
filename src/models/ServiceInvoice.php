@@ -2076,8 +2076,8 @@ class ServiceInvoice extends Model {
 								$sub_total += $item_record['Quantity'] * $item_record['Amount'];
 								$service_invoice->sub_total = $sub_total;
 								// $service_invoice->sub_total = 1 * $item_record['Amount'];
-								$total += $item_record['Quantity'] * $item_record['Amount'] + $total_tax_amount;
-								$service_invoice->total = $total;
+								// $total += $item_record['Quantity'] * $item_record['Amount'] + $total_tax_amount + $KFC_tax_amount + $TCS_tax_amount + $cess_gst_tax_amount;
+								// $service_invoice->total = $total;
 
 								$invoice_amount += $item_record['Quantity'] * $item_record['Amount'] + $total_tax_amount + $KFC_tax_amount + $TCS_tax_amount + $cess_gst_tax_amount;
 
@@ -2087,6 +2087,7 @@ class ServiceInvoice extends Model {
 								} else {
 									$round_off = $invoice_amount - round($invoice_amount);
 								}
+								$service_invoice->total = round($invoice_amount);
 								$service_invoice->round_off_amount = number_format($round_off, 2);
 								$service_invoice->final_amount = round($invoice_amount);
 								$service_invoice->save();
