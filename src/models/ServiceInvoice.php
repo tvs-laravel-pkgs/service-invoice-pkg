@@ -2076,7 +2076,7 @@ class ServiceInvoice extends Model {
 								$sub_total += $item_record['Quantity'] * $item_record['Amount'];
 								$service_invoice->sub_total = $sub_total;
 								// $service_invoice->sub_total = 1 * $item_record['Amount'];
-								$total += $item_record['Quantity'] * $item_record['Amount']+$$total_tax_amount + $KFC_tax_amount + $TCS_tax_amount + $cess_gst_tax_amount;
+								$total += $item_record['Quantity'] * $item_record['Amount'] + $total_tax_amount + $KFC_tax_amount + $TCS_tax_amount + $cess_gst_tax_amount;
 
 								$service_invoice->total = $total;
 
