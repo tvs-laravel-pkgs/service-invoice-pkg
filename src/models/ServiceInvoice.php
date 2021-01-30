@@ -2022,8 +2022,10 @@ class ServiceInvoice extends Model {
 								$KFC_tax_amount = 0;
 								// if ($service_invoice->type_id != 1060) {
 								//NOT CN
-								if ($service_invoice->customer->primaryAddress->state_id) {
-									if (($service_invoice->customer->primaryAddress->state_id == 3) && ($service_invoice->outlet->state_id == 3) && $service_invoice->type_id != 1060) {
+								if ($service_invoice->address->state_id) {
+									if ($service_invoice->address->state_id == 3 && $service_invoice->branch->primaryAddress->state_id == 3 && empty($service_invoice->address->gst_number) && $service_invoice->type_id != 1060) {
+										// if ($service_invoice->customer->primaryAddress->state_id) {
+										// if (($service_invoice->customer->primaryAddress->state_id == 3) && ($service_invoice->outlet->state_id == 3) && $service_invoice->type_id != 1060) {
 										//3 FOR KERALA
 										//check customer state and outlet states are equal KL.  //add KFC tax
 										if (!$customer->gst_number) {
@@ -2077,8 +2079,8 @@ class ServiceInvoice extends Model {
 								$total += $item_record['Quantity'] * $item_record['Amount'] + $total_tax_amount;
 								$service_invoice->total = $total;
 
-								$invoice_amount += $item_record['Quantity'] * $item_record['Amount'] + $total_tax_amount;
-								// dump($invoice_amount, $round_off_invoice_amount);
+								$invoice_amount += $item_record['Quantity'] * $item_record['Amount'] + $total_tax_amount + $KFC_tax_amount + $TCS_tax_amount + $cess_gst_tax_amount;
+
 								//FOR ROUND OFF
 								if ($invoice_amount <= round($invoice_amount)) {
 									$round_off = round($invoice_amount) - $invoice_amount;
