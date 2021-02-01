@@ -1883,12 +1883,39 @@ class ServiceInvoice extends Model {
 								if (empty($item_record['Item Code'])) {
 									$status['errors'][] = 'Item Code is empty';
 								} else {
-									$item_code = ServiceItem::where([
-										'company_id' => $job->company_id,
-										'code' => trim($item_record['Item Code']),
-									])->first();
+									$list = ServiceItem::
+										leftJoin('service_item_sub_categories', 'service_item_sub_categories.id', 'service_items.sub_category_id')->leftJoin('tax_codes', 'tax_codes.id', 'service_items.sac_code_id')
+										->where(['service_items.company_id' => $job->company_id, 'service_item_sub_categories.category_id' => $category->id])
+										->select(
+											'service_items.id',
+											'service_items.name',
+											'service_items.code',
+											'tax_codes.type_id'
+										)
+									;
+									if ($is_service == 1) {
+										$list = $list->where('tax_codes.type_id', 1021); //SAC CODE
+									} elseif ($is_service == 0) {
+										$list = $list->where('tax_codes.type_id', 1020); //HSN CODE
+									} else {
+										$list = $list->whereNull('sac_code_id'); //No Tax Code
+									}
+
+									$input_item_code = $item_record['Item Code'];
+									// dump($input_item_code);
+									$list = $list->where(function ($q) use ($input_item_code) {
+										$q->where('service_items.code', $input_item_code);
+									})
+									// // ->where([
+									// // 	'company_id' => $job->company_id,
+									// // 	'code' => trim($item_record['Item Code']),
+									// // ])
+									// dd($list->get());
+										->first();
+									$item_code = $list;
+									// 	dd($item_code);
 									if (!$item_code) {
-										$status['errors'][] = 'Invalid Item Code';
+										$status['errors'][] = 'Invalid Item Code. Not Mapped with Tax code or Category!';
 									}
 								}
 
