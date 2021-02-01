@@ -1883,12 +1883,39 @@ class ServiceInvoice extends Model {
 								if (empty($item_record['Item Code'])) {
 									$status['errors'][] = 'Item Code is empty';
 								} else {
-									$item_code = ServiceItem::where([
-										'company_id' => $job->company_id,
-										'code' => trim($item_record['Item Code']),
-									])->first();
+									$list = ServiceItem::
+										leftJoin('service_item_sub_categories', 'service_item_sub_categories.id', 'service_items.sub_category_id')->leftJoin('tax_codes', 'tax_codes.id', 'service_items.sac_code_id')
+										->where(['service_items.company_id' => $job->company_id, 'service_item_sub_categories.category_id' => $category->id])
+										->select(
+											'service_items.id',
+											'service_items.name',
+											'service_items.code',
+											'tax_codes.type_id'
+										)
+									;
+									if ($is_service == 1) {
+										$list = $list->where('tax_codes.type_id', 1021); //SAC CODE
+									} elseif ($is_service == 0) {
+										$list = $list->where('tax_codes.type_id', 1020); //HSN CODE
+									} else {
+										$list = $list->whereNull('sac_code_id'); //No Tax Code
+									}
+
+									$input_item_code = $item_record['Item Code'];
+									// dump($input_item_code);
+									$list = $list->where(function ($q) use ($input_item_code) {
+										$q->where('service_items.code', $input_item_code);
+									})
+									// // ->where([
+									// // 	'company_id' => $job->company_id,
+									// // 	'code' => trim($item_record['Item Code']),
+									// // ])
+									// dd($list->get());
+										->first();
+									$item_code = $list;
+									// 	dd($item_code);
 									if (!$item_code) {
-										$status['errors'][] = 'Invalid Item Code';
+										$status['errors'][] = 'Invalid Item Code. Not Mapped with Tax code or Category!';
 									}
 								}
 
@@ -2022,8 +2049,10 @@ class ServiceInvoice extends Model {
 								$KFC_tax_amount = 0;
 								// if ($service_invoice->type_id != 1060) {
 								//NOT CN
-								if ($service_invoice->customer->primaryAddress->state_id) {
-									if (($service_invoice->customer->primaryAddress->state_id == 3) && ($service_invoice->outlet->state_id == 3) && $service_invoice->type_id != 1060) {
+								if ($service_invoice->address->state_id) {
+									if ($service_invoice->address->state_id == 3 && $service_invoice->branch->primaryAddress->state_id == 3 && empty($service_invoice->address->gst_number) && $service_invoice->type_id != 1060) {
+										// if ($service_invoice->customer->primaryAddress->state_id) {
+										// if (($service_invoice->customer->primaryAddress->state_id == 3) && ($service_invoice->outlet->state_id == 3) && $service_invoice->type_id != 1060) {
 										//3 FOR KERALA
 										//check customer state and outlet states are equal KL.  //add KFC tax
 										if (!$customer->gst_number) {
@@ -2074,11 +2103,12 @@ class ServiceInvoice extends Model {
 								$sub_total += $item_record['Quantity'] * $item_record['Amount'];
 								$service_invoice->sub_total = $sub_total;
 								// $service_invoice->sub_total = 1 * $item_record['Amount'];
-								$total += $item_record['Quantity'] * $item_record['Amount'] + $total_tax_amount;
+								$total += $item_record['Quantity'] * $item_record['Amount'] + $total_tax_amount + $KFC_tax_amount + $TCS_tax_amount + $cess_gst_tax_amount;
+
 								$service_invoice->total = $total;
 
-								$invoice_amount += $item_record['Quantity'] * $item_record['Amount'] + $total_tax_amount;
-								// dump($invoice_amount, $round_off_invoice_amount);
+								$invoice_amount += $item_record['Quantity'] * $item_record['Amount'] + $total_tax_amount + $KFC_tax_amount + $TCS_tax_amount + $cess_gst_tax_amount;
+
 								//FOR ROUND OFF
 								if ($invoice_amount <= round($invoice_amount)) {
 									$round_off = round($invoice_amount) - $invoice_amount;
