@@ -1514,6 +1514,14 @@ class ServiceInvoiceController extends Controller {
 		// 		'errors' => ['Customer Pincode Required. Customer Pincode Not Found!'],
 		// 	];
 		// 	// DB::commit();
+
+		if (empty($service_invoice->address->state_id)) {
+			$errors[] = 'Customer State Required. Customer State Not Found!';
+			return [
+				'success' => false,
+				'errors' => ['Customer State Required. Customer State Not Found!'],
+			];
+		}
 		// }
 		if ($service_invoice->e_invoice_registration == 1) {
 			// dd(1);
