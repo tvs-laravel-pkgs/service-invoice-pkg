@@ -1515,6 +1515,14 @@ class ServiceInvoiceController extends Controller {
 		// 	];
 		// 	// DB::commit();
 		// }
+		if (empty($service_invoice->address->state_id)) {
+			$errors[] = 'Customer State Required. Customer State Not Found!';
+			return [
+				'success' => false,
+				'errors' => ['Customer State Required. Customer State Not Found!'],
+			];
+		}
+
 		if ($service_invoice->e_invoice_registration == 1) {
 			// dd(1);
 			//FOR IRN REGISTRATION
