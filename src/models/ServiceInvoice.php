@@ -631,6 +631,22 @@ class ServiceInvoice extends Model {
 				->first();
 
 			$service_invoice->address;
+
+			foreach ($invoice_item->taxes as $invoice_tax) {
+				// dump($invoice_tax);
+				if ($invoice_tax->name == 'CGST') {
+					$invoice_cgst_percentage = $invoice_tax->pivot->percentage;
+				}
+				if ($invoice_tax->name == 'SGST') {
+					$invoice_sgst_percentage = $invoice_tax->pivot->percentage;
+				}
+				if ($invoice_tax->name == 'IGST') {
+					$invoice_igst_percentage = $invoice_tax->pivot->percentage;
+				}
+				if ($invoice_tax->name == 'KFC') {
+					$invoice_kfc_percentage = $invoice_tax->pivot->percentage;
+				}
+			}
 			// $service_invoice->customer->primaryAddress;
 			// dump($service_invoice);
 			// dd(1);
@@ -1249,6 +1265,21 @@ class ServiceInvoice extends Model {
 				->first();
 
 			$service_invoice->address;
+			foreach ($invoice_item->taxes as $invoice_tax) {
+				// dump($invoice_tax);
+				if ($invoice_tax->name == 'CGST') {
+					$invoice_cgst_percentage = $invoice_tax->pivot->percentage;
+				}
+				if ($invoice_tax->name == 'SGST') {
+					$invoice_sgst_percentage = $invoice_tax->pivot->percentage;
+				}
+				if ($invoice_tax->name == 'IGST') {
+					$invoice_igst_percentage = $invoice_tax->pivot->percentage;
+				}
+				if ($invoice_tax->name == 'KFC') {
+					$invoice_kfc_percentage = $invoice_tax->pivot->percentage;
+				}
+			}
 			// $service_invoice->customer->primaryAddress;
 			// dump($service_invoice);
 			// dd(1);
