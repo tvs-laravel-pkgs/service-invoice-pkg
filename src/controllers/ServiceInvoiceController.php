@@ -1604,7 +1604,7 @@ class ServiceInvoiceController extends Controller {
 
 				// dump($bdo_login_url);
 				// dump($bdo_generate_irn_url);
-				// dd($client_secret_key, $client_secret_key, $bdo_cancel_irn_url, $bdo_cancel_irn_url);
+				// dd($clientid, $client_secret_key, $bdo_login_url, $bdo_generate_irn_url, $bdo_cancel_irn_url);
 
 				$ch = curl_init($bdo_login_url);
 				// Setup request to send json via POST`
