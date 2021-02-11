@@ -631,6 +631,22 @@ class ServiceInvoice extends Model {
 				->first();
 
 			$service_invoice->address;
+
+			foreach ($invoice_item->taxes as $invoice_tax) {
+				// dump($invoice_tax);
+				if ($invoice_tax->name == 'CGST') {
+					$invoice_cgst_percentage = $invoice_tax->pivot->percentage;
+				}
+				if ($invoice_tax->name == 'SGST') {
+					$invoice_sgst_percentage = $invoice_tax->pivot->percentage;
+				}
+				if ($invoice_tax->name == 'IGST') {
+					$invoice_igst_percentage = $invoice_tax->pivot->percentage;
+				}
+				if ($invoice_tax->name == 'KFC') {
+					$invoice_kfc_percentage = $invoice_tax->pivot->percentage;
+				}
+			}
 			// $service_invoice->customer->primaryAddress;
 			// dump($service_invoice);
 			// dd(1);
@@ -1249,6 +1265,21 @@ class ServiceInvoice extends Model {
 				->first();
 
 			$service_invoice->address;
+			foreach ($invoice_item->taxes as $invoice_tax) {
+				// dump($invoice_tax);
+				if ($invoice_tax->name == 'CGST') {
+					$invoice_cgst_percentage = $invoice_tax->pivot->percentage;
+				}
+				if ($invoice_tax->name == 'SGST') {
+					$invoice_sgst_percentage = $invoice_tax->pivot->percentage;
+				}
+				if ($invoice_tax->name == 'IGST') {
+					$invoice_igst_percentage = $invoice_tax->pivot->percentage;
+				}
+				if ($invoice_tax->name == 'KFC') {
+					$invoice_kfc_percentage = $invoice_tax->pivot->percentage;
+				}
+			}
 			// $service_invoice->customer->primaryAddress;
 			// dump($service_invoice);
 			// dd(1);
@@ -1653,7 +1684,7 @@ class ServiceInvoice extends Model {
 						} elseif ($record['Is Service'] == 'Non-Taxable') {
 							$is_service = 2;
 						}
-						if (!$is_service) {
+						if (!$is_service && $is_service != 0) {
 							$status['errors'][] = 'Invalid Service';
 						}
 					}
@@ -1849,7 +1880,6 @@ class ServiceInvoice extends Model {
 					$sub_total = 0;
 					$total = 0;
 					$invoice_amount = 0;
-
 					foreach ($rows as $k => $row) {
 						$item_record = [];
 						foreach ($header as $key => $column) {
@@ -1863,7 +1893,6 @@ class ServiceInvoice extends Model {
 						if (count(array_filter($row)) == 0) {
 							// $status['errors'][] = 'Row is empty';
 							continue;
-
 						} else {
 							// dump($customer->id);
 							// dump('2 Sheet');
@@ -1908,6 +1937,7 @@ class ServiceInvoice extends Model {
 
 									$input_item_code = $item_record['Item Code'];
 									// dump($input_item_code);
+
 									$list = $list->where(function ($q) use ($input_item_code) {
 										$q->where('service_items.code', $input_item_code);
 									})
@@ -1915,14 +1945,16 @@ class ServiceInvoice extends Model {
 									// // 	'company_id' => $job->company_id,
 									// // 	'code' => trim($item_record['Item Code']),
 									// // ])
-									// dd($list->get());
+									// ->get()
 										->first();
+
 									$item_code = $list;
-									// 	dd($item_code);
+									// dump($item_code);
 									if (!$item_code) {
 										$status['errors'][] = 'Invalid Item Code. Not Mapped with Tax code or Category!';
 									}
 								}
+								// dd($status['errors']);
 
 								if (empty($item_record['UOM'])) {
 									$status['errors'][] = 'UOM is empty';
@@ -1958,13 +1990,17 @@ class ServiceInvoice extends Model {
 										$status['errors'][] = $taxes['error'];
 									}
 								}
-
-								if ($item_code) {
+								// dump($taxes);
+								// dd($item_code);
+								if (!empty($item_code) && !empty($taxes)) {
+									// dd('in');
 									$service_item = ServiceItem::with([
 										'coaCode',
 										'taxCode',
 										'taxCode.taxes' => function ($query) use ($taxes) {
-											$query->whereIn('tax_id', $taxes['tax_ids']);
+											if (!empty($taxes)) {
+												$query->whereIn('tax_id', $taxes['tax_ids']);
+											}
 										},
 									])
 										->find($item_code->id);
@@ -1972,9 +2008,11 @@ class ServiceInvoice extends Model {
 									if (!$service_item) {
 										$status['errors'][] = 'Service Item not found';
 									}
+								} else {
+									// dd('else');
+									$status['errors'][] = 'Item is not mapped and taxes are empty!';
 								}
 
-								// dd($taxes);
 								// dd($status['errors']);
 								if (count($status['errors']) > 0) {
 									dump($status['errors']);
@@ -2021,6 +2059,7 @@ class ServiceInvoice extends Model {
 								$service_invoice->address_id = $to_account_type_id == 1440 ? ($customer_address ? $customer_address->id : NULL) : ($vendor_address ? $vendor_address->id : NULL);
 								$message = 'Service invoice added successfully';
 								$service_invoice->items_count = 1;
+								$service_invoice->e_invoice_registration = 0; //FOR ONLY B2C CUSTOMERS
 								$service_invoice->status_id = $status_id;
 								$service_invoice->created_by_id = $job->created_by_id;
 								$service_invoice->updated_at = NULL;
@@ -2058,28 +2097,56 @@ class ServiceInvoice extends Model {
 										//TAX CALCULATION
 										if (count($service_item->taxCode->taxes) > 0) {
 											foreach ($service_item->taxCode->taxes as $key => $value) {
+												// dump($value->id);
 												$gst_total += round(($value->pivot->percentage / 100) * ($item_record['Quantity'] * $item_record['Amount']), 2);
-												$item_taxes[$value->id] = [
-													'percentage' => round($value->pivot->percentage, 2),
-													'amount' => round(($value->pivot->percentage / 100) * ($item_record['Quantity'] * $item_record['Amount']), 2),
-												];
+												if ($value->id == 1 || $value->id == 2) {
+													//CGST AND SGST
+													$item_taxes[$value->id] = [
+														'percentage' => round($value->pivot->percentage, 2),
+														'amount' => round(($value->pivot->percentage / 100) * ($item_record['Quantity'] * $item_record['Amount']), 2),
+													];
+													//IGST
+													$item_taxes[3] = [
+														'percentage' => 0,
+														'amount' => 0,
+													];
+												} elseif ($value->id == 3) {
+													//IGST
+													$item_taxes[$value->id] = [
+														'percentage' => round($value->pivot->percentage, 2),
+														'amount' => round(($value->pivot->percentage / 100) * ($item_record['Quantity'] * $item_record['Amount']), 2),
+													];
+													//CGST
+													$item_taxes[1] = [
+														'percentage' => 0,
+														'amount' => 0,
+													];
+													//SGST
+													$item_taxes[2] = [
+														'percentage' => 0,
+														'amount' => 0,
+													];
+												}
 											}
 										}
 
 										//CALCULATE KFC
-										if (($customer_address->state_id == 3) && ($branch->state_id == 3)) {
+										if (($customer_address->state_id == 3) && ($branch->state_id == 3) && (empty($customer_address->gst_number) && ($type->id != 1060))) {
 											//3 FOR KERALA
 											//check customer state and outlet states are equal KL.  //add KFC tax
-											if (!$customer_address->gst_number) {
-												//customer dont't have GST
-												//customer have HSN and SAC Code
-												$gst_total += round((1 / 100) * ($item_record['Quantity'] * $item_record['Amount']), 2);
-												$KFC_tax_amount = round($item_record['Quantity'] * $item_record['Amount'] * 1 / 100, 2); //ONE PERCENTAGE
-												$item_taxes[4] = [ //4 for KFC
-													'percentage' => 1,
-													'amount' => $KFC_tax_amount,
-												];
-											}
+											//customer dont't have GST
+											//customer have HSN and SAC Code
+											$gst_total += round((1 / 100) * ($item_record['Quantity'] * $item_record['Amount']), 2);
+											$KFC_tax_amount = round($item_record['Quantity'] * $item_record['Amount'] * 1 / 100, 2); //ONE PERCENTAGE
+											$item_taxes[4] = [ //4 for KFC
+												'percentage' => 1,
+												'amount' => $KFC_tax_amount,
+											];
+										} else {
+											$item_taxes[4] = [ //4 for KFC
+												'percentage' => 0,
+												'amount' => 0,
+											];
 										}
 
 										//TCS PERCANTAGE
@@ -2092,64 +2159,65 @@ class ServiceInvoice extends Model {
 												'percentage' => $service_item->tcs_percentage,
 												'amount' => $TCS_tax_amount,
 											];
+										} else {
+											$item_taxes[5] = [ // for TCS
+												'percentage' => 0,
+												'amount' => 0,
+											];
 										}
 
-										if ($service_item) {
-											if ($service_item->cess_on_gst_percentage) {
-												$cess_gst_total += round(($item_record['Quantity'] * $item_record['Amount']) * $service_item->cess_on_gst_percentage / 100, 2);
-												$cess_gst_tax_amount = round(($item_record['Quantity'] * $item_record['Amount']) * $service_item->cess_on_gst_percentage / 100, 2); //PERCENTAGE FOR CESS on GST
-												$item_taxes[6] = [ // for CESS on GST
-													'percentage' => $service_item->cess_on_gst_percentage,
-													'amount' => $cess_gst_tax_amount,
-												];
-											}
+										if ($service_item->cess_on_gst_percentage) {
+											$cess_gst_total += round(($item_record['Quantity'] * $item_record['Amount']) * $service_item->cess_on_gst_percentage / 100, 2);
+											$cess_gst_tax_amount = round(($item_record['Quantity'] * $item_record['Amount']) * $service_item->cess_on_gst_percentage / 100, 2); //PERCENTAGE FOR CESS on GST
+											$item_taxes[6] = [ // for CESS on GST
+												'percentage' => $service_item->cess_on_gst_percentage,
+												'amount' => $cess_gst_tax_amount,
+											];
+										} else {
+											$item_taxes[6] = [ // for CESS on GST
+												'percentage' => 0,
+												'amount' => 0,
+											];
 										}
 									}
+									// dump($item_taxes);
 									$service_invoice_item->taxes()->sync($item_taxes);
 								}
 								// dump($gst_total);
-								// dump($KFC_tax_amount);
-								// dump($TCS_tax_amount);
 								// dump($tcs_total);
-								// dump($cess_gst_tax_amount);
-								// dd($cess_gst_total);
+								// dump($cess_gst_total);
+
 								$amount_total += $item_record['Amount'];
 								// dump($amount_total);
-								// $service_invoice->amount_total = $amount_total;
-
-								// dump($gst_total + $tcs_total + $cess_gst_total);
-
-								// $service_invoice->tax_total = $gst_total + $tcs_total + $cess_gst_total;
-
 								$sub_total += $item_record['Quantity'] * $item_record['Amount'];
-								// dump($sub_total);
-								// $service_invoice->sub_total = $sub_total;
-								// $service_invoice->sub_total = 1 * $item_record['Amount'];
 								$total += ($item_record['Quantity'] * $item_record['Amount']) + $gst_total + $tcs_total + $cess_gst_total;
-								// dump($total);
-								// $service_invoice->total = $total;
-
 								$invoice_amount += ($item_record['Quantity'] * $item_record['Amount']) + $gst_total + $tcs_total + $cess_gst_total;
 
-								//FOR ROUND OFF
-								// if ($invoice_amount <= round($invoice_amount)) {
-								// 	$round_off = round($invoice_amount) - $invoice_amount;
-								// } else {
-								// 	$round_off = $invoice_amount - round($invoice_amount);
-								// }
-								// // dump(number_format($round_off, 2));
-								// // dd(round($invoice_amount));
-								// $service_invoice->round_off_amount = number_format($round_off, 2);
-								// $service_invoice->final_amount = round($invoice_amount);
-								// $service_invoice->save();
+								$service_invoice->amount_total = $amount_total;
+								$service_invoice->tax_total = $gst_total + $tcs_total + $cess_gst_total;
+								$service_invoice->sub_total = $sub_total;
+								$service_invoice->total = $total;
 
-								// DB::commit();
+								//FOR ROUND OFF
+								if ($invoice_amount <= round($invoice_amount)) {
+									$round_off = round($invoice_amount) - $invoice_amount;
+								} else {
+									$round_off = $invoice_amount - round($invoice_amount);
+								}
+								// dump(number_format($round_off, 2));
+								// dd(round($invoice_amount));
+								$service_invoice->round_off_amount = number_format($round_off, 2);
+								$service_invoice->final_amount = round($invoice_amount);
+								$service_invoice->save();
+
+								DB::commit();
 								//UPDATING PROGRESS FOR EVERY FIVE RECORDS
 								if (($k + 1) % 5 == 0) {
 									$job->save();
 								}
 							}
 						}
+
 					}
 					$job->incrementNew();
 					$i++;
@@ -2162,26 +2230,6 @@ class ServiceInvoice extends Model {
 					$rows = $sheet->rangeToArray('A' . $i . ':N' . $i . $highestRow, NULL, TRUE, FALSE);
 					// dump('-------------------------------------------------------');
 				}
-
-				$service_invoice->amount_total = $amount_total;
-				$service_invoice->tax_total = $gst_total + $tcs_total + $cess_gst_total;
-				$service_invoice->sub_total = $sub_total;
-				$service_invoice->total = $total;
-
-				//FOR ROUND OFF
-				if ($invoice_amount <= round($invoice_amount)) {
-					$round_off = round($invoice_amount) - $invoice_amount;
-				} else {
-					$round_off = $invoice_amount - round($invoice_amount);
-				}
-				// dump(number_format($round_off, 2));
-				// dd(round($invoice_amount));
-				$service_invoice->round_off_amount = number_format($round_off, 2);
-				$service_invoice->final_amount = round($invoice_amount);
-				$service_invoice->save();
-
-				DB::commit();
-
 			}
 			// dd(1);
 			//COMPLETED or completed with errors
