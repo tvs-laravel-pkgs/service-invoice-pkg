@@ -1515,6 +1515,8 @@ class ServiceInvoiceController extends Controller {
 		// 	];
 		// 	// DB::commit();
 
+		// }
+
 		if (empty($service_invoice->address->state_id)) {
 			$errors[] = 'Customer State Required. Customer State Not Found!';
 			return [
@@ -1522,7 +1524,7 @@ class ServiceInvoiceController extends Controller {
 				'errors' => ['Customer State Required. Customer State Not Found!'],
 			];
 		}
-		// }
+
 		if ($service_invoice->e_invoice_registration == 1) {
 			// dd(1);
 			//FOR IRN REGISTRATION
@@ -1563,14 +1565,19 @@ class ServiceInvoiceController extends Controller {
 
 				// $clientid = "prakashr@featsolutions.in"; //PROVIDE FROM BDO COMPANY
 				// $clientid = "amutha@sundarammotors.com"; //PROVIDE FROM BDO COMPANY
-				$clientid = "61b27a26bd86cbb93c5c11be0c2856"; //LIVE
+				// $clientid = "61b27a26bd86cbb93c5c11be0c2856"; //LIVE
+				$clientid = config('custom.CLIENT_ID');
+				// dump($clientid);
 				// dump('clientid ' . $clientid);
 
 				$rsa->loadKey($public_key);
 				$rsa->setEncryptionMode(2);
 				// $client_secret_key = 'BBAkBDB0YzZiYThkYTg4ZDZBBDJjZBUyBGFkBBB0BWB='; // CLIENT SECRET KEY
 				// $client_secret_key = 'TQAkSDQ0YzZiYTTkYTg4ZDZSSDJjZSUySGFkSSQ0SWQ='; // CLIENT SECRET KEY
-				$client_secret_key = '7dd55886594bccadb03c48eb3f448e'; // LIVE
+				// $client_secret_key = '7dd55886594bccadb03c48eb3f448e'; // LIVE
+				$client_secret_key = config('custom.CLIENT_SECRET_KEY');
+				// dump($client_secret_key);
+
 				$ClientSecret = $rsa->encrypt($client_secret_key);
 				$clientsecretencrypted = base64_encode($ClientSecret);
 				// dump('ClientSecret ' . $clientsecretencrypted);
@@ -1583,7 +1590,14 @@ class ServiceInvoiceController extends Controller {
 				// dump('appsecretkey ' . $appsecretkey);
 
 				// $bdo_login_url = 'https://sandboxeinvoiceapi.bdo.in/bdoauth/bdoauthenticate';
-				$bdo_login_url = 'https://einvoiceapi.bdo.in/bdoauth/bdoauthenticate'; // LIVE
+				// $bdo_login_url = 'https://einvoiceapi.bdo.in/bdoauth/bdoauthenticate'; // LIVE
+				$bdo_login_url = config('custom.BDO_LOGIN_URL');
+				// $bdo_generate_irn_url = config('custom.BDO_IRN_REGISTRATION_URL');
+				// $bdo_cancel_irn_url = config('custom.BDO_IRN_CANCEL_URL');
+
+				// dump($bdo_login_url);
+				// dump($bdo_generate_irn_url);
+				// dd($clientid, $client_secret_key, $bdo_login_url, $bdo_generate_irn_url, $bdo_cancel_irn_url);
 
 				$ch = curl_init($bdo_login_url);
 				// Setup request to send json via POST`
@@ -2004,7 +2018,8 @@ class ServiceInvoiceController extends Controller {
 
 				//ENCRYPTED GIVEN DATA TO DBO
 				// $bdo_generate_irn_url = 'https://sandboxeinvoiceapi.bdo.in/bdoapi/public/generateIRN';
-				$bdo_generate_irn_url = 'https://einvoiceapi.bdo.in/bdoapi/public/generateIRN'; //LIVE
+				// $bdo_generate_irn_url = 'https://einvoiceapi.bdo.in/bdoapi/public/generateIRN'; //LIVE
+				$bdo_generate_irn_url = config('custom.BDO_IRN_REGISTRATION_URL');
 
 				$ch = curl_init($bdo_generate_irn_url);
 				// Setup request to send json via POST`
@@ -2122,6 +2137,8 @@ class ServiceInvoiceController extends Controller {
 				$api_params['errors'] = NULL;
 				$api_logs[4] = $api_params;
 
+				// dump($generate_irn_output['Data']);
+
 				//AES DECRYPTION AFTER GENERATE IRN
 				$irn_decrypt_data = self::decryptAesData($decrypt_data_with_bdo_sek, $generate_irn_output['Data']);
 				// dd($irn_decrypt_data);
@@ -2129,7 +2146,7 @@ class ServiceInvoiceController extends Controller {
 					$errors[] = 'IRN Decryption Error!';
 					return response()->json(['success' => false, 'error' => 'IRN Decryption Error!']);
 				}
-
+				// dump($irn_decrypt_data);
 				$final_json_decode = json_decode($irn_decrypt_data);
 				// dd($final_json_decode);
 
@@ -3180,7 +3197,8 @@ class ServiceInvoiceController extends Controller {
 
 		// $clientid = "prakashr@featsolutions.in"; //PROVIDE FROM BDO COMPANY
 		// $clientid = "amutha@sundarammotors.com"; //PROVIDE FROM BDO COMPANY
-		$clientid = "61b27a26bd86cbb93c5c11be0c2856"; //LIVE
+		// $clientid = "61b27a26bd86cbb93c5c11be0c2856"; //LIVE
+		$clientid = config('custom.CLIENT_ID');
 
 		// dump('clientid ' . $clientid);
 
@@ -3188,7 +3206,8 @@ class ServiceInvoiceController extends Controller {
 		$rsa->setEncryptionMode(2);
 		// $client_secret_key = 'BBAkBDB0YzZiYThkYTg4ZDZBBDJjZBUyBGFkBBB0BWB='; // CLIENT SECRET KEY
 		// $client_secret_key = 'TQAkSDQ0YzZiYTTkYTg4ZDZSSDJjZSUySGFkSSQ0SWQ='; // CLIENT SECRET KEY
-		$client_secret_key = '7dd55886594bccadb03c48eb3f448e'; // LIVE
+		// $client_secret_key = '7dd55886594bccadb03c48eb3f448e'; // LIVE
+		$client_secret_key = config('custom.CLIENT_SECRET_KEY');
 
 		$ClientSecret = $rsa->encrypt($client_secret_key);
 		$clientsecretencrypted = base64_encode($ClientSecret);
@@ -3202,7 +3221,8 @@ class ServiceInvoiceController extends Controller {
 		// dump('appsecretkey ' . $appsecretkey);
 
 		// $bdo_login_url = 'https://sandboxeinvoiceapi.bdo.in/bdoauth/bdoauthenticate';
-		$bdo_login_url = 'https://einvoiceapi.bdo.in/bdoauth/bdoauthenticate'; //LIVE
+		// $bdo_login_url = 'https://einvoiceapi.bdo.in/bdoauth/bdoauthenticate'; //LIVE
+		$bdo_login_url = config('custom.BDO_LOGIN_URL');
 
 		$ch = curl_init($bdo_login_url);
 		// Setup request to send json via POST`
@@ -3299,7 +3319,8 @@ class ServiceInvoiceController extends Controller {
 		}
 
 		// $bdo_cancel_irn_url = 'https://sandboxeinvoiceapi.bdo.in/bdoapi/public/cancelIRN';
-		$bdo_cancel_irn_url = 'https://einvoiceapi.bdo.in/bdoapi/public/cancelIRN'; //LIVE
+		// $bdo_cancel_irn_url = 'https://einvoiceapi.bdo.in/bdoapi/public/cancelIRN'; //LIVE
+		$bdo_cancel_irn_url = config('custom.BDO_IRN_CANCEL_URL');
 
 		$ch = curl_init($bdo_cancel_irn_url);
 		// Setup request to send json via POST`

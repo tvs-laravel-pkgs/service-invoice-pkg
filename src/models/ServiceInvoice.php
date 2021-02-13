@@ -10,6 +10,7 @@ use Abs\TaxPkg\Tax;
 use Abs\TaxPkg\TaxCode;
 use App\Address;
 use App\ApiLog;
+use App\AxExportStatus;
 use App\City;
 use App\Company;
 use App\Config;
@@ -495,6 +496,7 @@ class ServiceInvoice extends Model {
 				'Txt' => $Txt . '-' . $this->number,
 				// 'AmountCurDebit' => ($this->type_id == 1061 || $this->type_id == 1062) ? $this->serviceInvoiceItems()->sum('sub_total') : 0,
 				'TaxGroup' => '',
+				'LineNum' => 1,
 			];
 			//ADDED FOR ROUND OFF
 			if ($amount_diff > 0) {
@@ -506,7 +508,7 @@ class ServiceInvoice extends Model {
 				} elseif ($this->type_id == 1062) {
 					$params['AmountCurDebit'] = $this->type_id == 1062 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff + $total_amount_with_gst_not_kfc['invoice'] + $tcs_total['invoice'] + $cess_on_gst_total['invoice'] : 0;
 				} else {
-					$params['AmountCurDebit'] = '';
+					$params['AmountCurDebit'] = 0;
 				}
 			} else {
 				// dump('else');
@@ -519,7 +521,7 @@ class ServiceInvoice extends Model {
 
 					$params['AmountCurDebit'] = $this->type_id == 1062 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff + $total_amount_with_gst_not_kfc['invoice'] + $tcs_total['invoice'] + $cess_on_gst_total['invoice'] : 0;
 				} else {
-					$params['AmountCurDebit'] = '';
+					$params['AmountCurDebit'] = 0;
 				}
 			}
 		} else {
@@ -531,6 +533,7 @@ class ServiceInvoice extends Model {
 				'Txt' => $Txt . '-' . $this->number,
 				// 'AmountCurDebit' => $this->type_id == 1061 ? ($total_amount_with_gst['debit'] + ($this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') : 0)) : 0,
 				'TaxGroup' => '',
+				'LineNum' => 1,
 			];
 			//ADDED FOR ROUND OFF
 			if ($amount_diff > 0) {
@@ -540,7 +543,7 @@ class ServiceInvoice extends Model {
 				} elseif ($this->type_id == 1062) {
 					$params['AmountCurDebit'] = $this->type_id == 1062 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff + $total_amount_with_gst['invoice'] + $tcs_total['invoice'] + $cess_on_gst_total['invoice'] : 0;
 				} else {
-					$params['AmountCurDebit'] = '';
+					$params['AmountCurDebit'] = 0;
 				}
 				$params['AmountCurCredit'] = $this->type_id == 1060 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff + $total_amount_with_gst['credit'] + $tcs_total['credit'] + $cess_on_gst_total['credit'] : 0;
 			} else {
@@ -551,7 +554,7 @@ class ServiceInvoice extends Model {
 				} elseif ($this->type_id == 1062) {
 					$params['AmountCurDebit'] = $this->type_id == 1062 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff + $total_amount_with_gst['invoice'] + $tcs_total['invoice'] + $cess_on_gst_total['invoice'] : 0;
 				} else {
-					$params['AmountCurDebit'] = '';
+					$params['AmountCurDebit'] = 0;
 				}
 				$params['AmountCurCredit'] = $this->type_id == 1060 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff + $total_amount_with_gst['credit'] + $tcs_total['credit'] + $cess_on_gst_total['credit'] : 0;
 			}
@@ -587,6 +590,7 @@ class ServiceInvoice extends Model {
 			];
 		}
 
+		$line_number = 2;
 		foreach ($this->serviceInvoiceItems as $invoice_item) {
 			$params = [
 				'Voucher' => 'D',
@@ -596,6 +600,7 @@ class ServiceInvoice extends Model {
 				'AmountCurDebit' => $this->type_id == 1060 ? $invoice_item->sub_total : 0,
 				// 'AmountCurCredit' => $this->type_id == 1061 ? $invoice_item->sub_total : 0,
 				'TaxGroup' => '',
+				'LineNum' => $line_number,
 				// 'TVSSACCode' => ($invoice_item->serviceItem->taxCode != null) ? $invoice_item->serviceItem->taxCode->code : NULL,
 			];
 			if ($this->type_id == 1061) {
@@ -603,7 +608,7 @@ class ServiceInvoice extends Model {
 			} elseif ($this->type_id == 1062) {
 				$params['AmountCurCredit'] = $this->type_id == 1062 ? $invoice_item->sub_total : 0;
 			} else {
-				$params['AmountCurCredit'] = '';
+				$params['AmountCurCredit'] = 0;
 			}
 
 			if ($invoice_item->serviceItem->taxCode && $KFC_IN == 0) {
@@ -665,11 +670,15 @@ class ServiceInvoice extends Model {
 									} elseif ($this->type_id == 1062) {
 										$params['AmountCurCredit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									} else {
-										$params['AmountCurCredit'] = '';
+										$params['AmountCurCredit'] = 0;
 									}
 
 									$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = '7132' . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+									$params['LineNum'] = $line_number + 1;
+									// dump($params['LineNum']);
+									$line_number = $params['LineNum'];
 
 									//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
 									$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
@@ -683,7 +692,7 @@ class ServiceInvoice extends Model {
 									} elseif ($this->type_id == 1062) {
 										$params['AmountCurCredit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									} else {
-										$params['AmountCurCredit'] = '';
+										$params['AmountCurCredit'] = 0;
 									}
 
 									$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
@@ -703,10 +712,14 @@ class ServiceInvoice extends Model {
 								} elseif ($this->type_id == 1062) {
 									$params['AmountCurCredit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
 								} else {
-									$params['AmountCurCredit'] = '';
+									$params['AmountCurCredit'] = 0;
 								}
 								$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
 								$params['LedgerDimension'] = '2230' . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+								$params['LineNum'] = $line_number + 1;
+								// dump($params['LineNum']);
+								$line_number = $params['LineNum'];
 
 								//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
 								$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
@@ -727,11 +740,15 @@ class ServiceInvoice extends Model {
 									} elseif ($this->type_id == 1062) {
 										$params['AmountCurCredit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									} else {
-										$params['AmountCurCredit'] = '';
+										$params['AmountCurCredit'] = 0;
 									}
 
 									$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = $this->branch->primaryAddress->state->cgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+									$params['LineNum'] = $line_number + 1;
+									// dump($params['LineNum']);
+									$line_number = $params['LineNum'];
 
 									//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
 									$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
@@ -745,11 +762,15 @@ class ServiceInvoice extends Model {
 									} elseif ($this->type_id == 1062) {
 										$params['AmountCurCredit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									} else {
-										$params['AmountCurCredit'] = '';
+										$params['AmountCurCredit'] = 0;
 									}
 
 									$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = $this->branch->primaryAddress->state->sgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+									$params['LineNum'] = $line_number + 1;
+									// dump($params['LineNum']);
+									$line_number = $params['LineNum'];
 
 									//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
 									$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
@@ -764,11 +785,15 @@ class ServiceInvoice extends Model {
 									} elseif ($this->type_id == 1062) {
 										$params['AmountCurCredit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									} else {
-										$params['AmountCurCredit'] = '';
+										$params['AmountCurCredit'] = 0;
 									}
 
 									$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = $this->branch->primaryAddress->state->igst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+									$params['LineNum'] = $line_number + 1;
+									// dump($params['LineNum']);
+									$line_number = $params['LineNum'];
 
 									//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
 									$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
@@ -793,10 +818,14 @@ class ServiceInvoice extends Model {
 			} elseif ($this->type_id == 1062) {
 				$params['AmountCurCredit'] = $this->type_id == 1062 ? round($tcs_total['invoice'], 2) : 0;
 			} else {
-				$params['AmountCurCredit'] = '';
+				$params['AmountCurCredit'] = 0;
 			}
 			$params['AmountCurDebit'] = $this->type_id == 1060 ? round($tcs_total['credit'], 2) : 0;
 			$params['LedgerDimension'] = '2269' . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+			$params['LineNum'] = $line_number + 1;
+			// dump($params['LineNum']);
+			$line_number = $params['LineNum'];
 
 			//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
 			$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
@@ -813,10 +842,14 @@ class ServiceInvoice extends Model {
 			} elseif ($this->type_id == 1062) {
 				$params['AmountCurCredit'] = $this->type_id == 1062 ? round($cess_on_gst_total['invoice'], 2) : 0;
 			} else {
-				$params['AmountCurCredit'] = '';
+				$params['AmountCurCredit'] = 0;
 			}
 			$params['AmountCurDebit'] = $this->type_id == 1060 ? round($cess_on_gst_total['credit'], 2) : 0;
 			$params['LedgerDimension'] = $this->branch->primaryAddress->state->cess_on_gst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+			$params['LineNum'] = $line_number + 1;
+			// dump($params['LineNum']);
+			$line_number = $params['LineNum'];
 			// dd($params);
 			//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
 			$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
@@ -827,27 +860,36 @@ class ServiceInvoice extends Model {
 		if (!empty($service_invoice->round_off_amount) && $service_invoice->round_off_amount != '0.00') {
 			if ($amount_diff > 0) {
 				if ($this->type_id == 1061) {
-					$params['AmountCurCredit'] = $this->type_id == 1061 ? $amount_diff : "";
+					$params['AmountCurCredit'] = $this->type_id == 1061 ? $amount_diff : 0;
 				} elseif ($this->type_id == 1062) {
-					$params['AmountCurCredit'] = $this->type_id == 1062 ? $amount_diff : "";
+					$params['AmountCurCredit'] = $this->type_id == 1062 ? $amount_diff : 0;
 				} else {
-					$params['AmountCurCredit'] = '';
+					$params['AmountCurCredit'] = 0;
 				}
-				$params['AmountCurDebit'] = $this->type_id == 1060 ? $amount_diff : "";
+				$params['AmountCurDebit'] = $this->type_id == 1060 ? $amount_diff : 0;
 				$params['LedgerDimension'] = '3198' . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+				$params['LineNum'] = $line_number + 1;
+				// dump($params['LineNum']);
+				$line_number = $params['LineNum'];
+
 				// dump('if');
 				// dd($params);
 				$this->exportRowToAxapta($params);
 			} else {
 				if ($this->type_id == 1061) {
-					$params['AmountCurDebit'] = $this->type_id == 1061 ? ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : "";
+					$params['AmountCurDebit'] = $this->type_id == 1061 ? ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : 0;
 				} elseif ($this->type_id == 1062) {
-					$params['AmountCurDebit'] = $this->type_id == 1062 ? ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : "";
+					$params['AmountCurDebit'] = $this->type_id == 1062 ? ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : 0;
 				} else {
-					$params['AmountCurDebit'] = '';
+					$params['AmountCurDebit'] = 0;
 				}
-				$params['AmountCurCredit'] = $this->type_id == 1060 ? ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : "";
+				$params['AmountCurCredit'] = $this->type_id == 1060 ? ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : 0;
 				$params['LedgerDimension'] = '3198' . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+				$params['LineNum'] = $line_number + 1;
+				// dump($params['LineNum']);
+				$line_number = $params['LineNum'];
 				// dump('else');
 				// dd($params);
 				$this->exportRowToAxapta($params);
@@ -1129,6 +1171,7 @@ class ServiceInvoice extends Model {
 				'Txt' => $Txt . '-' . $this->number,
 				// 'AmountCurDebit' => ($this->type_id == 1061 || $this->type_id == 1062) ? $this->serviceInvoiceItems()->sum('sub_total') : 0,
 				'TaxGroup' => '',
+				'LineNum' => 1,
 			];
 			//ADDED FOR ROUND OFF
 			if ($amount_diff > 0) {
@@ -1140,7 +1183,7 @@ class ServiceInvoice extends Model {
 				} elseif ($this->type_id == 1062) {
 					$params['AmountCurCredit'] = $this->type_id == 1062 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff + $total_amount_with_gst_not_kfc['invoice'] + $tcs_total['invoice'] + $cess_on_gst_total['invoice'] : 0;
 				} else {
-					$params['AmountCurCredit'] = '';
+					$params['AmountCurCredit'] = 0;
 				}
 			} else {
 				// dump('else');
@@ -1153,7 +1196,7 @@ class ServiceInvoice extends Model {
 
 					$params['AmountCurCredit'] = $this->type_id == 1062 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff + $total_amount_with_gst_not_kfc['invoice'] + $tcs_total['invoice'] + $cess_on_gst_total['invoice'] : 0;
 				} else {
-					$params['AmountCurCredit'] = '';
+					$params['AmountCurCredit'] = 0;
 				}
 			}
 		} else {
@@ -1165,6 +1208,7 @@ class ServiceInvoice extends Model {
 				'Txt' => $Txt . '-' . $this->number,
 				// 'AmountCurDebit' => $this->type_id == 1061 ? ($total_amount_with_gst['debit'] + ($this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') : 0)) : 0,
 				'TaxGroup' => '',
+				'LineNum' => 1,
 			];
 			//ADDED FOR ROUND OFF
 			if ($amount_diff > 0) {
@@ -1174,7 +1218,7 @@ class ServiceInvoice extends Model {
 				} elseif ($this->type_id == 1062) {
 					$params['AmountCurCredit'] = $this->type_id == 1062 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff + $total_amount_with_gst['invoice'] + $tcs_total['invoice'] + $cess_on_gst_total['invoice'] : 0;
 				} else {
-					$params['AmountCurCredit'] = '';
+					$params['AmountCurCredit'] = 0;
 				}
 				$params['AmountCurDebit'] = $this->type_id == 1060 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff + $total_amount_with_gst['credit'] + $tcs_total['credit'] + $cess_on_gst_total['credit'] : 0;
 			} else {
@@ -1185,7 +1229,7 @@ class ServiceInvoice extends Model {
 				} elseif ($this->type_id == 1062) {
 					$params['AmountCurCredit'] = $this->type_id == 1062 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff + $total_amount_with_gst['invoice'] + $tcs_total['invoice'] + $cess_on_gst_total['invoice'] : 0;
 				} else {
-					$params['AmountCurCredit'] = '';
+					$params['AmountCurCredit'] = 0;
 				}
 				$params['AmountCurDebit'] = $this->type_id == 1060 ? $this->serviceInvoiceItems()->sum('sub_total') + $amount_diff + $total_amount_with_gst['credit'] + $tcs_total['credit'] + $cess_on_gst_total['credit'] : 0;
 			}
@@ -1221,6 +1265,7 @@ class ServiceInvoice extends Model {
 			];
 		}
 
+		$line_number = 2;
 		foreach ($this->serviceInvoiceItems as $invoice_item) {
 			$params = [
 				'Voucher' => 'D',
@@ -1230,6 +1275,7 @@ class ServiceInvoice extends Model {
 				'AmountCurCredit' => $this->type_id == 1060 ? $invoice_item->sub_total : 0,
 				// 'AmountCurCredit' => $this->type_id == 1061 ? $invoice_item->sub_total : 0,
 				'TaxGroup' => '',
+				'LineNum' => $line_number,
 				// 'TVSSACCode' => ($invoice_item->serviceItem->taxCode != null) ? $invoice_item->serviceItem->taxCode->code : NULL,
 			];
 			if ($this->type_id == 1061) {
@@ -1237,7 +1283,7 @@ class ServiceInvoice extends Model {
 			} elseif ($this->type_id == 1062) {
 				$params['AmountCurDebit'] = $this->type_id == 1062 ? $invoice_item->sub_total : 0;
 			} else {
-				$params['AmountCurDebit'] = '';
+				$params['AmountCurDebit'] = 0;
 			}
 
 			if ($invoice_item->serviceItem->taxCode && $KFC_IN == 0) {
@@ -1299,11 +1345,15 @@ class ServiceInvoice extends Model {
 									} elseif ($this->type_id == 1062) {
 										$params['AmountCurDebit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									} else {
-										$params['AmountCurDebit'] = '';
+										$params['AmountCurDebit'] = 0;
 									}
 
 									$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = '7132' . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+									$params['LineNum'] = $line_number + 1;
+									// dump($params['LineNum']);
+									$line_number = $params['LineNum'];
 
 									//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
 									$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
@@ -1317,11 +1367,15 @@ class ServiceInvoice extends Model {
 									} elseif ($this->type_id == 1062) {
 										$params['AmountCurDebit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									} else {
-										$params['AmountCurDebit'] = '';
+										$params['AmountCurDebit'] = 0;
 									}
 
 									$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = '7432' . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+									$params['LineNum'] = $line_number + 1;
+									// dump($params['LineNum']);
+									$line_number = $params['LineNum'];
 
 									//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
 									$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
@@ -1337,10 +1391,14 @@ class ServiceInvoice extends Model {
 								} elseif ($this->type_id == 1062) {
 									$params['AmountCurDebit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
 								} else {
-									$params['AmountCurDebit'] = '';
+									$params['AmountCurDebit'] = 0;
 								}
 								$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
 								$params['LedgerDimension'] = '2230' . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+								$params['LineNum'] = $line_number + 1;
+								// dump($params['LineNum']);
+								$line_number = $params['LineNum'];
 
 								//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
 								$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
@@ -1361,11 +1419,15 @@ class ServiceInvoice extends Model {
 									} elseif ($this->type_id == 1062) {
 										$params['AmountCurDebit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									} else {
-										$params['AmountCurDebit'] = '';
+										$params['AmountCurDebit'] = 0;
 									}
 
 									$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = $this->branch->primaryAddress->state->cgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+									$params['LineNum'] = $line_number + 1;
+									// dump($params['LineNum']);
+									$line_number = $params['LineNum'];
 
 									//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
 									$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
@@ -1379,11 +1441,15 @@ class ServiceInvoice extends Model {
 									} elseif ($this->type_id == 1062) {
 										$params['AmountCurDebit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									} else {
-										$params['AmountCurDebit'] = '';
+										$params['AmountCurDebit'] = 0;
 									}
 
 									$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = $this->branch->primaryAddress->state->sgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+									$params['LineNum'] = $line_number + 1;
+									// dump($params['LineNum']);
+									$line_number = $params['LineNum'];
 
 									//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
 									$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
@@ -1398,11 +1464,15 @@ class ServiceInvoice extends Model {
 									} elseif ($this->type_id == 1062) {
 										$params['AmountCurDebit'] = $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									} else {
-										$params['AmountCurDebit'] = '';
+										$params['AmountCurDebit'] = 0;
 									}
 
 									$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = $this->branch->primaryAddress->state->igst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+									$params['LineNum'] = $line_number + 1;
+									// dump($params['LineNum']);
+									$line_number = $params['LineNum'];
 
 									//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
 									$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
@@ -1427,10 +1497,14 @@ class ServiceInvoice extends Model {
 			} elseif ($this->type_id == 1062) {
 				$params['AmountCurDebit'] = $this->type_id == 1062 ? round($tcs_total['invoice'], 2) : 0;
 			} else {
-				$params['AmountCurDebit'] = '';
+				$params['AmountCurDebit'] = 0;
 			}
 			$params['AmountCurCredit'] = $this->type_id == 1060 ? round($tcs_total['credit'], 2) : 0;
 			$params['LedgerDimension'] = '2269' . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+			$params['LineNum'] = $line_number + 1;
+			// dump($params['LineNum']);
+			$line_number = $params['LineNum'];
 
 			//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
 			$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
@@ -1447,10 +1521,14 @@ class ServiceInvoice extends Model {
 			} elseif ($this->type_id == 1062) {
 				$params['AmountCurDebit'] = $this->type_id == 1062 ? round($cess_on_gst_total['invoice'], 2) : 0;
 			} else {
-				$params['AmountCurDebit'] = '';
+				$params['AmountCurDebit'] = 0;
 			}
 			$params['AmountCurCredit'] = $this->type_id == 1060 ? round($cess_on_gst_total['credit'], 2) : 0;
 			$params['LedgerDimension'] = $this->branch->primaryAddress->state->cess_on_gst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+			$params['LineNum'] = $line_number + 1;
+			// dump($params['LineNum']);
+			$line_number = $params['LineNum'];
 
 			//REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
 			$params['TVSHSNCode'] = $params['TVSSACCode'] = NULL;
@@ -1461,27 +1539,35 @@ class ServiceInvoice extends Model {
 		if (!empty($service_invoice->round_off_amount) && $service_invoice->round_off_amount != '0.00') {
 			if ($amount_diff > 0) {
 				if ($this->type_id == 1061) {
-					$params['AmountCurDebit'] = $this->type_id == 1061 ? $amount_diff : "";
+					$params['AmountCurDebit'] = $this->type_id == 1061 ? $amount_diff : 0;
 				} elseif ($this->type_id == 1062) {
-					$params['AmountCurDebit'] = $this->type_id == 1062 ? $amount_diff : "";
+					$params['AmountCurDebit'] = $this->type_id == 1062 ? $amount_diff : 0;
 				} else {
-					$params['AmountCurDebit'] = '';
+					$params['AmountCurDebit'] = 0;
 				}
 				$params['AmountCurCredit'] = $this->type_id == 1060 ? $amount_diff : "";
 				$params['LedgerDimension'] = '3198' . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+				$params['LineNum'] = $line_number + 1;
+				// dump($params['LineNum']);
+				$line_number = $params['LineNum'];
 				// dump('if');
 				// dd($params);
 				$this->exportRowToAxapta($params);
 			} else {
 				if ($this->type_id == 1061) {
-					$params['AmountCurCredit'] = $this->type_id == 1061 ? ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : "";
+					$params['AmountCurCredit'] = $this->type_id == 1061 ? ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : 0;
 				} elseif ($this->type_id == 1062) {
-					$params['AmountCurCredit'] = $this->type_id == 1062 ? ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : "";
+					$params['AmountCurCredit'] = $this->type_id == 1062 ? ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : 0;
 				} else {
-					$params['AmountCurCredit'] = '';
+					$params['AmountCurCredit'] = 0;
 				}
-				$params['AmountCurDebit'] = $this->type_id == 1060 ? ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : "";
+				$params['AmountCurDebit'] = $this->type_id == 1060 ? ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : 0;
 				$params['LedgerDimension'] = '3198' . '-' . $this->branch->code . '-' . $this->sbu->name;
+
+				$params['LineNum'] = $line_number + 1;
+				// dump($params['LineNum']);
+				$line_number = $params['LineNum'];
 				// dump('else');
 				// dd($params);
 				$this->exportRowToAxapta($params);
@@ -1493,8 +1579,8 @@ class ServiceInvoice extends Model {
 	}
 
 	protected function exportRowToAxapta($params) {
-
-// $invoice, $sno, $TransDate, $owner, $outlet, $coa_code, $ratio, $bank_detail, $rent_details, $debit, $credit, $voucher, $txt, $payment_modes, $flip, $account_type, $ledger_dimention, $sac_code, $sharing_type_id, $hsn_code = '', $tds_group_in = ''
+		// dd($params);
+		// $invoice, $sno, $TransDate, $owner, $outlet, $coa_code, $ratio, $bank_detail, $rent_details, $debit, $credit, $voucher, $txt, $payment_modes, $flip, $account_type, $ledger_dimention, $sac_code, $sharing_type_id, $hsn_code = '', $tds_group_in = ''
 
 		$export = new AxaptaExport([
 			'company_id' => $this->company_id,
@@ -1504,10 +1590,13 @@ class ServiceInvoice extends Model {
 		]);
 
 		$params['TVSHSNCode'] = isset($params['TVSHSNCode']) ? $params['TVSHSNCode'] : '';
+		$export->Application = 'VIMS';
+		$export->ApplicationType = 'CNDN';
 		$export->CurrencyCode = 'INR';
 		$export->JournalName = 'BPAS_NJV';
 		$export->JournalNum = "";
 		$export->Voucher = $params['Voucher'];
+		$export->LineNum = $params['LineNum'];
 		$export->ApproverPersonnelNumber = $this->createdBy->employee->code;
 		$export->Approved = 1;
 		$export->TransDate = date("Y-m-d", strtotime($this->document_date));
@@ -1516,8 +1605,8 @@ class ServiceInvoice extends Model {
 
 		$export->DefaultDimension = $this->sbu->name . '-' . $this->outlet->code;
 		$export->Txt = $params['Txt'];
-		$export->AmountCurDebit = $params['AmountCurDebit'] > 0 ? $params['AmountCurDebit'] : NULL;
-		$export->AmountCurCredit = $params['AmountCurCredit'] > 0 ? $params['AmountCurCredit'] : NULL;
+		$export->AmountCurDebit = $params['AmountCurDebit'] > 0 ? $params['AmountCurDebit'] : 0;
+		$export->AmountCurCredit = $params['AmountCurCredit'] > 0 ? $params['AmountCurCredit'] : 0;
 		$export->OffsetAccountType = '';
 		$export->OffsetLedgerDimension = '';
 		$export->OffsetDefaultDimension = '';
@@ -1538,6 +1627,8 @@ class ServiceInvoice extends Model {
 		// $export->TVSCustomerLocationID = $params['TVSHSNCode'] || $params['TVSSACCode'] ? $this->customer->axapta_location_id : ''; //SINGLE ADDRESS
 		$export->TVSCustomerLocationID = $params['TVSHSNCode'] || $params['TVSSACCode'] ? $this->address->ax_customer_location_id : ''; //AFTER CHANGE MULTIPLE ADDRESS
 		$export->TVSCompanyLocationId = ($params['TVSHSNCode'] || $params['TVSSACCode']) && $this->outlet->axapta_location_id ? $this->outlet->axapta_location_id : '';
+		$ax_export_status = AxExportStatus::where('code', 'pending')->first();
+		$export->sync_status_id = $ax_export_status->id;
 		$export->save();
 
 	}
@@ -1684,7 +1775,7 @@ class ServiceInvoice extends Model {
 						} elseif ($record['Is Service'] == 'Non-Taxable') {
 							$is_service = 2;
 						}
-						if (!$is_service) {
+						if (!$is_service && $is_service != 0) {
 							$status['errors'][] = 'Invalid Service';
 						}
 					}
@@ -1880,7 +1971,6 @@ class ServiceInvoice extends Model {
 					$sub_total = 0;
 					$total = 0;
 					$invoice_amount = 0;
-
 					foreach ($rows as $k => $row) {
 						$item_record = [];
 						foreach ($header as $key => $column) {
@@ -1894,7 +1984,6 @@ class ServiceInvoice extends Model {
 						if (count(array_filter($row)) == 0) {
 							// $status['errors'][] = 'Row is empty';
 							continue;
-
 						} else {
 							// dump($customer->id);
 							// dump('2 Sheet');
@@ -1939,6 +2028,7 @@ class ServiceInvoice extends Model {
 
 									$input_item_code = $item_record['Item Code'];
 									// dump($input_item_code);
+
 									$list = $list->where(function ($q) use ($input_item_code) {
 										$q->where('service_items.code', $input_item_code);
 									})
@@ -1946,14 +2036,16 @@ class ServiceInvoice extends Model {
 									// // 	'company_id' => $job->company_id,
 									// // 	'code' => trim($item_record['Item Code']),
 									// // ])
-									// dd($list->get());
+									// ->get()
 										->first();
+
 									$item_code = $list;
-									// 	dd($item_code);
+									// dump($item_code);
 									if (!$item_code) {
 										$status['errors'][] = 'Invalid Item Code. Not Mapped with Tax code or Category!';
 									}
 								}
+								// dd($status['errors']);
 
 								if (empty($item_record['UOM'])) {
 									$status['errors'][] = 'UOM is empty';
@@ -1989,13 +2081,17 @@ class ServiceInvoice extends Model {
 										$status['errors'][] = $taxes['error'];
 									}
 								}
-
-								if ($item_code) {
+								// dump($taxes);
+								// dd($item_code);
+								if (!empty($item_code) && !empty($taxes)) {
+									// dd('in');
 									$service_item = ServiceItem::with([
 										'coaCode',
 										'taxCode',
 										'taxCode.taxes' => function ($query) use ($taxes) {
-											$query->whereIn('tax_id', $taxes['tax_ids']);
+											if (!empty($taxes)) {
+												$query->whereIn('tax_id', $taxes['tax_ids']);
+											}
 										},
 									])
 										->find($item_code->id);
@@ -2003,9 +2099,11 @@ class ServiceInvoice extends Model {
 									if (!$service_item) {
 										$status['errors'][] = 'Service Item not found';
 									}
+								} else {
+									// dd('else');
+									$status['errors'][] = 'Item is not mapped and taxes are empty!';
 								}
 
-								// dd($taxes);
 								// dd($status['errors']);
 								if (count($status['errors']) > 0) {
 									dump($status['errors']);
@@ -2052,6 +2150,7 @@ class ServiceInvoice extends Model {
 								$service_invoice->address_id = $to_account_type_id == 1440 ? ($customer_address ? $customer_address->id : NULL) : ($vendor_address ? $vendor_address->id : NULL);
 								$message = 'Service invoice added successfully';
 								$service_invoice->items_count = 1;
+								$service_invoice->e_invoice_registration = 0; //FOR ONLY B2C CUSTOMERS
 								$service_invoice->status_id = $status_id;
 								$service_invoice->created_by_id = $job->created_by_id;
 								$service_invoice->updated_at = NULL;
@@ -2089,28 +2188,56 @@ class ServiceInvoice extends Model {
 										//TAX CALCULATION
 										if (count($service_item->taxCode->taxes) > 0) {
 											foreach ($service_item->taxCode->taxes as $key => $value) {
+												// dump($value->id);
 												$gst_total += round(($value->pivot->percentage / 100) * ($item_record['Quantity'] * $item_record['Amount']), 2);
-												$item_taxes[$value->id] = [
-													'percentage' => round($value->pivot->percentage, 2),
-													'amount' => round(($value->pivot->percentage / 100) * ($item_record['Quantity'] * $item_record['Amount']), 2),
-												];
+												if ($value->id == 1 || $value->id == 2) {
+													//CGST AND SGST
+													$item_taxes[$value->id] = [
+														'percentage' => round($value->pivot->percentage, 2),
+														'amount' => round(($value->pivot->percentage / 100) * ($item_record['Quantity'] * $item_record['Amount']), 2),
+													];
+													//IGST
+													$item_taxes[3] = [
+														'percentage' => 0,
+														'amount' => 0,
+													];
+												} elseif ($value->id == 3) {
+													//IGST
+													$item_taxes[$value->id] = [
+														'percentage' => round($value->pivot->percentage, 2),
+														'amount' => round(($value->pivot->percentage / 100) * ($item_record['Quantity'] * $item_record['Amount']), 2),
+													];
+													//CGST
+													$item_taxes[1] = [
+														'percentage' => 0,
+														'amount' => 0,
+													];
+													//SGST
+													$item_taxes[2] = [
+														'percentage' => 0,
+														'amount' => 0,
+													];
+												}
 											}
 										}
 
 										//CALCULATE KFC
-										if (($customer_address->state_id == 3) && ($branch->state_id == 3)) {
+										if (($customer_address->state_id == 3) && ($branch->state_id == 3) && (empty($customer_address->gst_number) && ($type->id != 1060))) {
 											//3 FOR KERALA
 											//check customer state and outlet states are equal KL.  //add KFC tax
-											if (!$customer_address->gst_number) {
-												//customer dont't have GST
-												//customer have HSN and SAC Code
-												$gst_total += round((1 / 100) * ($item_record['Quantity'] * $item_record['Amount']), 2);
-												$KFC_tax_amount = round($item_record['Quantity'] * $item_record['Amount'] * 1 / 100, 2); //ONE PERCENTAGE
-												$item_taxes[4] = [ //4 for KFC
-													'percentage' => 1,
-													'amount' => $KFC_tax_amount,
-												];
-											}
+											//customer dont't have GST
+											//customer have HSN and SAC Code
+											$gst_total += round((1 / 100) * ($item_record['Quantity'] * $item_record['Amount']), 2);
+											$KFC_tax_amount = round($item_record['Quantity'] * $item_record['Amount'] * 1 / 100, 2); //ONE PERCENTAGE
+											$item_taxes[4] = [ //4 for KFC
+												'percentage' => 1,
+												'amount' => $KFC_tax_amount,
+											];
+										} else {
+											$item_taxes[4] = [ //4 for KFC
+												'percentage' => 0,
+												'amount' => 0,
+											];
 										}
 
 										//TCS PERCANTAGE
@@ -2123,64 +2250,65 @@ class ServiceInvoice extends Model {
 												'percentage' => $service_item->tcs_percentage,
 												'amount' => $TCS_tax_amount,
 											];
+										} else {
+											$item_taxes[5] = [ // for TCS
+												'percentage' => 0,
+												'amount' => 0,
+											];
 										}
 
-										if ($service_item) {
-											if ($service_item->cess_on_gst_percentage) {
-												$cess_gst_total += round(($item_record['Quantity'] * $item_record['Amount']) * $service_item->cess_on_gst_percentage / 100, 2);
-												$cess_gst_tax_amount = round(($item_record['Quantity'] * $item_record['Amount']) * $service_item->cess_on_gst_percentage / 100, 2); //PERCENTAGE FOR CESS on GST
-												$item_taxes[6] = [ // for CESS on GST
-													'percentage' => $service_item->cess_on_gst_percentage,
-													'amount' => $cess_gst_tax_amount,
-												];
-											}
+										if ($service_item->cess_on_gst_percentage) {
+											$cess_gst_total += round(($item_record['Quantity'] * $item_record['Amount']) * $service_item->cess_on_gst_percentage / 100, 2);
+											$cess_gst_tax_amount = round(($item_record['Quantity'] * $item_record['Amount']) * $service_item->cess_on_gst_percentage / 100, 2); //PERCENTAGE FOR CESS on GST
+											$item_taxes[6] = [ // for CESS on GST
+												'percentage' => $service_item->cess_on_gst_percentage,
+												'amount' => $cess_gst_tax_amount,
+											];
+										} else {
+											$item_taxes[6] = [ // for CESS on GST
+												'percentage' => 0,
+												'amount' => 0,
+											];
 										}
 									}
+									// dump($item_taxes);
 									$service_invoice_item->taxes()->sync($item_taxes);
 								}
 								// dump($gst_total);
-								// dump($KFC_tax_amount);
-								// dump($TCS_tax_amount);
 								// dump($tcs_total);
-								// dump($cess_gst_tax_amount);
-								// dd($cess_gst_total);
+								// dump($cess_gst_total);
+
 								$amount_total += $item_record['Amount'];
 								// dump($amount_total);
-								// $service_invoice->amount_total = $amount_total;
-
-								// dump($gst_total + $tcs_total + $cess_gst_total);
-
-								// $service_invoice->tax_total = $gst_total + $tcs_total + $cess_gst_total;
-
 								$sub_total += $item_record['Quantity'] * $item_record['Amount'];
-								// dump($sub_total);
-								// $service_invoice->sub_total = $sub_total;
-								// $service_invoice->sub_total = 1 * $item_record['Amount'];
 								$total += ($item_record['Quantity'] * $item_record['Amount']) + $gst_total + $tcs_total + $cess_gst_total;
-								// dump($total);
-								// $service_invoice->total = $total;
-
 								$invoice_amount += ($item_record['Quantity'] * $item_record['Amount']) + $gst_total + $tcs_total + $cess_gst_total;
 
-								//FOR ROUND OFF
-								// if ($invoice_amount <= round($invoice_amount)) {
-								// 	$round_off = round($invoice_amount) - $invoice_amount;
-								// } else {
-								// 	$round_off = $invoice_amount - round($invoice_amount);
-								// }
-								// // dump(number_format($round_off, 2));
-								// // dd(round($invoice_amount));
-								// $service_invoice->round_off_amount = number_format($round_off, 2);
-								// $service_invoice->final_amount = round($invoice_amount);
-								// $service_invoice->save();
+								$service_invoice->amount_total = $amount_total;
+								$service_invoice->tax_total = $gst_total + $tcs_total + $cess_gst_total;
+								$service_invoice->sub_total = $sub_total;
+								$service_invoice->total = $total;
 
-								// DB::commit();
+								//FOR ROUND OFF
+								if ($invoice_amount <= round($invoice_amount)) {
+									$round_off = round($invoice_amount) - $invoice_amount;
+								} else {
+									$round_off = $invoice_amount - round($invoice_amount);
+								}
+								// dump(number_format($round_off, 2));
+								// dd(round($invoice_amount));
+								$service_invoice->round_off_amount = number_format($round_off, 2);
+								$service_invoice->final_amount = round($invoice_amount);
+								$service_invoice->save();
+
+								DB::commit();
 								//UPDATING PROGRESS FOR EVERY FIVE RECORDS
 								if (($k + 1) % 5 == 0) {
 									$job->save();
 								}
 							}
 						}
+
 					}
 					$job->incrementNew();
 					$i++;
@@ -2193,26 +2321,6 @@ class ServiceInvoice extends Model {
 					$rows = $sheet->rangeToArray('A' . $i . ':N' . $i . $highestRow, NULL, TRUE, FALSE);
 					// dump('-------------------------------------------------------');
 				}
-
-				$service_invoice->amount_total = $amount_total;
-				$service_invoice->tax_total = $gst_total + $tcs_total + $cess_gst_total;
-				$service_invoice->sub_total = $sub_total;
-				$service_invoice->total = $total;
-
-				//FOR ROUND OFF
-				if ($invoice_amount <= round($invoice_amount)) {
-					$round_off = round($invoice_amount) - $invoice_amount;
-				} else {
-					$round_off = $invoice_amount - round($invoice_amount);
-				}
-				// dump(number_format($round_off, 2));
-				// dd(round($invoice_amount));
-				$service_invoice->round_off_amount = number_format($round_off, 2);
-				$service_invoice->final_amount = round($invoice_amount);
-				$service_invoice->save();
-
-				DB::commit();
-
 			}
 			// dd(1);
 			//COMPLETED or completed with errors
