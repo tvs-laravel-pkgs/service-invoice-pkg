@@ -3182,6 +3182,11 @@ class ServiceInvoiceController extends Controller {
 				$service_invoice->type = 'INVOICE(INV)';
 			}
 
+			$r = $service_invoice->exportToAxaptaCancel();
+			if (!$r['success']) {
+				return $r;
+			}
+
 			return response()->json([
 				'success' => true,
 				'service_invoice' => $service_invoice_save,
