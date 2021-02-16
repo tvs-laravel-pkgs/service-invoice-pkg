@@ -3535,7 +3535,8 @@ class ServiceInvoiceController extends Controller {
 							$address->company_id = Auth::user()->company_id;
 							$address->entity_id = $customer->id;
 							$address->ax_id = $customer_data['RECID'];
-							$address->gst_number = isset($customer_data['GST_NUMBER']) ? $customer_data['GST_NUMBER'] : NULL;
+							// $address->gst_number = isset($customer_data['GST_NUMBER']) ? $customer_data['GST_NUMBER'] : NULL;
+							$address->gst_number = isset($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available' ? $customer_data['GST_NUMBER'] : NULL;
 
 							$address->ax_customer_location_id = isset($customer_data['CUSTOMER_LOCATION_ID']) ? $customer_data['CUSTOMER_LOCATION_ID'] : NULL;
 
@@ -3561,7 +3562,8 @@ class ServiceInvoiceController extends Controller {
 						$address->company_id = Auth::user()->company_id;
 						$address->entity_id = $customer->id;
 						$address->ax_id = $api_customer_data['RECID'];
-						$address->gst_number = isset($api_customer_data['GST_NUMBER']) ? $api_customer_data['GST_NUMBER'] : NULL;
+						// $address->gst_number = isset($api_customer_data['GST_NUMBER']) ? $api_customer_data['GST_NUMBER'] : NULL;
+						$address->gst_number = isset($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available' ? $customer_data['GST_NUMBER'] : NULL;
 
 						$address->ax_customer_location_id = isset($api_customer_data['CUSTOMER_LOCATION_ID']) ? $api_customer_data['CUSTOMER_LOCATION_ID'] : NULL;
 
@@ -3745,7 +3747,8 @@ class ServiceInvoiceController extends Controller {
 						$address->company_id = Auth::user()->company_id;
 						$address->entity_id = $vendor->id;
 						$address->ax_id = $api_vendor_data['RECID'];
-						$address->gst_number = isset($api_vendor_data['GST_NUMBER']) ? $api_vendor_data['GST_NUMBER'] : NULL;
+						// $address->gst_number = isset($api_vendor_data['GST_NUMBER']) ? $api_vendor_data['GST_NUMBER'] : NULL;
+						$address->gst_number = isset($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available' ? $customer_data['GST_NUMBER'] : NULL;
 						$address->address_of_id = 21;
 						$address->address_type_id = 40;
 						$address->name = 'Primary Address_' . $api_vendor_data['RECID'];
