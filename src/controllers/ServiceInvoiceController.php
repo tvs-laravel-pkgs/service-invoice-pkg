@@ -1515,14 +1515,8 @@ class ServiceInvoiceController extends Controller {
 		// 	];
 		// 	// DB::commit();
 
-		if (empty($service_invoice->address->state_id)) {
-			$errors[] = 'Customer State Required. Customer State Not Found!';
-			return [
-				'success' => false,
-				'errors' => ['Customer State Required. Customer State Not Found!'],
-			];
-		}
 		// }
+
 		if (empty($service_invoice->address->state_id)) {
 			$errors[] = 'Customer State Required. Customer State Not Found!';
 			return [
@@ -1574,7 +1568,6 @@ class ServiceInvoiceController extends Controller {
 				// $clientid = "61b27a26bd86cbb93c5c11be0c2856"; //LIVE
 				$clientid = config('custom.CLIENT_ID');
 				// dump($clientid);
-
 				// dump('clientid ' . $clientid);
 
 				$rsa->loadKey($public_key);
@@ -3542,7 +3535,8 @@ class ServiceInvoiceController extends Controller {
 							$address->company_id = Auth::user()->company_id;
 							$address->entity_id = $customer->id;
 							$address->ax_id = $customer_data['RECID'];
-							$address->gst_number = isset($customer_data['GST_NUMBER']) ? $customer_data['GST_NUMBER'] : NULL;
+							// $address->gst_number = isset($customer_data['GST_NUMBER']) ? $customer_data['GST_NUMBER'] : NULL;
+							$address->gst_number = isset($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available' ? $customer_data['GST_NUMBER'] : NULL;
 
 							$address->ax_customer_location_id = isset($customer_data['CUSTOMER_LOCATION_ID']) ? $customer_data['CUSTOMER_LOCATION_ID'] : NULL;
 
@@ -3568,7 +3562,8 @@ class ServiceInvoiceController extends Controller {
 						$address->company_id = Auth::user()->company_id;
 						$address->entity_id = $customer->id;
 						$address->ax_id = $api_customer_data['RECID'];
-						$address->gst_number = isset($api_customer_data['GST_NUMBER']) ? $api_customer_data['GST_NUMBER'] : NULL;
+						// $address->gst_number = isset($api_customer_data['GST_NUMBER']) ? $api_customer_data['GST_NUMBER'] : NULL;
+						$address->gst_number = isset($api_customer_data['GST_NUMBER']) && $api_customer_data['GST_NUMBER'] != 'Not available' ? $api_customer_data['GST_NUMBER'] : NULL;
 
 						$address->ax_customer_location_id = isset($api_customer_data['CUSTOMER_LOCATION_ID']) ? $api_customer_data['CUSTOMER_LOCATION_ID'] : NULL;
 
@@ -3753,7 +3748,7 @@ class ServiceInvoiceController extends Controller {
 						$address->entity_id = $vendor->id;
 						$address->ax_id = $api_vendor_data['RECID'];
 						// $address->gst_number = isset($api_vendor_data['GST_NUMBER']) ? $api_vendor_data['GST_NUMBER'] : NULL;
-						$address->gst_number = isset($api_vendor_data['GST_NUMBER']) && $api_vendor_data['GST_NUMBER'] != 'Not available' ? $api_vendor_data['GST_NUMBER'] : NULL;
+						$address->gst_number = isset($api_customer_data['GST_NUMBER']) && $api_customer_data['GST_NUMBER'] != 'Not available' ? $api_customer_data['GST_NUMBER'] : NULL;
 
 						$address->address_of_id = 21;
 						$address->address_type_id = 40;
