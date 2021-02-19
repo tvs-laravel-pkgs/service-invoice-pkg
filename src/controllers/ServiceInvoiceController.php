@@ -3748,7 +3748,7 @@ class ServiceInvoiceController extends Controller {
 						$address->entity_id = $vendor->id;
 						$address->ax_id = $api_vendor_data['RECID'];
 						// $address->gst_number = isset($api_vendor_data['GST_NUMBER']) ? $api_vendor_data['GST_NUMBER'] : NULL;
-						$address->gst_number = isset($api_customer_data['GST_NUMBER']) && $api_customer_data['GST_NUMBER'] != 'Not available' ? $api_customer_data['GST_NUMBER'] : NULL;
+						$address->gst_number = isset($api_vendor_data['GST_NUMBER']) && $api_vendor_data['GST_NUMBER'] != 'Not available' ? $api_vendor_data['GST_NUMBER'] : NULL;
 
 						$address->address_of_id = 21;
 						$address->address_type_id = 40;
