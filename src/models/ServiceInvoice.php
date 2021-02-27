@@ -1729,13 +1729,16 @@ class ServiceInvoice extends Model {
 						])->first();
 						if (!$sbu) {
 							$status['errors'][] = 'Invalid SBU';
-						}
-						if (empty($sbu->business_id)) {
-							$status['errors'][] = 'Business Not Mapped with this SBU';
-						}
-						$outlet_sbu = $branch->outlet_sbu;
-						if (!$outlet_sbu) {
-							$status['errors'][] = 'SBU is not mapped for this branch';
+						} else {
+							if (empty($sbu->business_id)) {
+								$status['errors'][] = 'Business Not Mapped with this SBU';
+							}
+							if (!empty($branch)) {
+								$outlet_sbu = $branch->outlet_sbu;
+								if (!$outlet_sbu) {
+									$status['errors'][] = 'SBU is not mapped for this branch';
+								}
+							}
 						}
 					}
 
