@@ -2289,9 +2289,12 @@ class ServiceInvoice extends Model {
 
 								$amount_total += $item_record['Amount'];
 								// dump($amount_total);
-								$sub_total += $item_record['Quantity'] * $item_record['Amount'];
-								$total += ($item_record['Quantity'] * $item_record['Amount']) + $gst_total + $tcs_total + $cess_gst_total;
-								$invoice_amount += ($item_record['Quantity'] * $item_record['Amount']) + $gst_total + $tcs_total + $cess_gst_total;
+
+								$sub_total += number_format(($item_record['Quantity'] * $item_record['Amount']), 2);
+
+								$total += number_format(($item_record['Quantity'] * $item_record['Amount']) + $gst_total + $tcs_total + $cess_gst_total, 2);
+
+								$invoice_amount += number_format(($item_record['Quantity'] * $item_record['Amount']) + $gst_total + $tcs_total + $cess_gst_total, 2);
 
 								$service_invoice->amount_total = $amount_total;
 								$service_invoice->tax_total = $gst_total + $tcs_total + $cess_gst_total;
