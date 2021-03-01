@@ -2290,22 +2290,25 @@ class ServiceInvoice extends Model {
 								$amount_total += $item_record['Amount'];
 								// dump($amount_total);
 
-								$sub_total += number_format(($item_record['Quantity'] * $item_record['Amount']), 2);
+								$sub_total += ($item_record['Quantity'] * $item_record['Amount']);
+								$total += ($item_record['Quantity'] * $item_record['Amount']) + $gst_total + $tcs_total + $cess_gst_total;
 
-								$total += number_format(($item_record['Quantity'] * $item_record['Amount']) + $gst_total + $tcs_total + $cess_gst_total, 2);
-
-								$invoice_amount += number_format(($item_record['Quantity'] * $item_record['Amount']) + $gst_total + $tcs_total + $cess_gst_total, 2);
-
+								$invoice_amount += ($item_record['Quantity'] * $item_record['Amount']) + $gst_total + $tcs_total + $cess_gst_total;
 								$service_invoice->amount_total = $amount_total;
 								$service_invoice->tax_total = $gst_total + $tcs_total + $cess_gst_total;
 								$service_invoice->sub_total = $sub_total;
 								$service_invoice->total = $total;
+								$invoice_amount = number_format($invoice_amount, 2);
+								// dump($invoice_amount);
 
 								//FOR ROUND OFF
-								if ($invoice_amount <= round($invoice_amount)) {
+								$round_off = 0;
+								if ($invoice_amount < round($invoice_amount)) {
 									$round_off = round($invoice_amount) - $invoice_amount;
-								} else {
+								} else if ($invoice_amount > round($invoice_amount)) {
 									$round_off = $invoice_amount - round($invoice_amount);
+								} else {
+									$round_off = 0;
 								}
 								// dump(number_format($round_off, 2));
 								// dd(round($invoice_amount));
