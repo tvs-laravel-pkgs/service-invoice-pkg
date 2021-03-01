@@ -1729,13 +1729,16 @@ class ServiceInvoice extends Model {
 						])->first();
 						if (!$sbu) {
 							$status['errors'][] = 'Invalid SBU';
-						}
-						if (empty($sbu->business_id)) {
-							$status['errors'][] = 'Business Not Mapped with this SBU';
-						}
-						$outlet_sbu = $branch->outlet_sbu;
-						if (!$outlet_sbu) {
-							$status['errors'][] = 'SBU is not mapped for this branch';
+						} else {
+							if (empty($sbu->business_id)) {
+								$status['errors'][] = 'Business Not Mapped with this SBU';
+							}
+							if (!empty($branch)) {
+								$outlet_sbu = $branch->outlet_sbu;
+								if (!$outlet_sbu) {
+									$status['errors'][] = 'SBU is not mapped for this branch';
+								}
+							}
 						}
 					}
 
@@ -1823,7 +1826,13 @@ class ServiceInvoice extends Model {
 						$customer = '';
 						if ($to_account_type_id == 1440) {
 							//UPDATE CUSTOMER AND ADDRESS
-							$customer = ServiceInvoiceController::searchCustomerImport(trim($record['Customer/Vendor Code']), $job);
+							try {
+								$customer = ServiceInvoiceController::searchCustomerImport(trim($record['Customer/Vendor Code']), $job);
+							} catch (\SoapFault $e) {
+								$status['errors'][] = 'Somthing went worng in SOAP Service Call!';
+							} catch (\Exception $e) {
+								$status['errors'][] = 'Somthing went worng. Try again later!';
+							}
 							// dd($customer);
 							//CUSTOMER
 							$customer = Customer::where([
@@ -1831,7 +1840,7 @@ class ServiceInvoice extends Model {
 								'code' => trim($record['Customer/Vendor Code']),
 							])->first();
 							if (!$customer) {
-								$status['errors'][] = 'Invalid Customer' . $record['Customer/Vendor Code'];
+								$status['errors'][] = 'Invalid Customer: ' . $record['Customer/Vendor Code'];
 							}
 							if ($customer->id) {
 								$customer_address = Address::where([
@@ -1844,10 +1853,10 @@ class ServiceInvoice extends Model {
 									->first();
 							}
 							if (!$customer_address) {
-								$status['errors'][] = 'Address Not Mapped with Customer' . $record['Customer/Vendor Code'];
+								$status['errors'][] = 'Address Not Mapped with Customer: ' . $record['Customer/Vendor Code'];
 							} else {
 								if (!$customer_address->state_id) {
-									$status['errors'][] = 'State Not Mapped with this Customer' . $record['Customer/Vendor Code'];
+									$status['errors'][] = 'State Not Mapped with this Customer: ' . $record['Customer/Vendor Code'];
 								}
 							}
 						} elseif ($to_account_type_id == 1441) {
@@ -2280,9 +2289,12 @@ class ServiceInvoice extends Model {
 
 								$amount_total += $item_record['Amount'];
 								// dump($amount_total);
-								$sub_total += $item_record['Quantity'] * $item_record['Amount'];
-								$total += ($item_record['Quantity'] * $item_record['Amount']) + $gst_total + $tcs_total + $cess_gst_total;
-								$invoice_amount += ($item_record['Quantity'] * $item_record['Amount']) + $gst_total + $tcs_total + $cess_gst_total;
+
+								$sub_total += number_format(($item_record['Quantity'] * $item_record['Amount']), 2);
+
+								$total += number_format(($item_record['Quantity'] * $item_record['Amount']) + $gst_total + $tcs_total + $cess_gst_total, 2);
+
+								$invoice_amount += number_format(($item_record['Quantity'] * $item_record['Amount']) + $gst_total + $tcs_total + $cess_gst_total, 2);
 
 								$service_invoice->amount_total = $amount_total;
 								$service_invoice->tax_total = $gst_total + $tcs_total + $cess_gst_total;
