@@ -1826,7 +1826,13 @@ class ServiceInvoice extends Model {
 						$customer = '';
 						if ($to_account_type_id == 1440) {
 							//UPDATE CUSTOMER AND ADDRESS
-							$customer = ServiceInvoiceController::searchCustomerImport(trim($record['Customer/Vendor Code']), $job);
+							try {
+								$customer = ServiceInvoiceController::searchCustomerImport(trim($record['Customer/Vendor Code']), $job);
+							} catch (\SoapFault $e) {
+								$status['errors'][] = 'Somthing went worng in SOAP Service Call!';
+							} catch (\Exception $e) {
+								$status['errors'][] = 'Somthing went worng. Try again later!';
+							}
 							// dd($customer);
 							//CUSTOMER
 							$customer = Customer::where([
@@ -1834,7 +1840,7 @@ class ServiceInvoice extends Model {
 								'code' => trim($record['Customer/Vendor Code']),
 							])->first();
 							if (!$customer) {
-								$status['errors'][] = 'Invalid Customer' . $record['Customer/Vendor Code'];
+								$status['errors'][] = 'Invalid Customer: ' . $record['Customer/Vendor Code'];
 							}
 							if ($customer->id) {
 								$customer_address = Address::where([
@@ -1847,10 +1853,10 @@ class ServiceInvoice extends Model {
 									->first();
 							}
 							if (!$customer_address) {
-								$status['errors'][] = 'Address Not Mapped with Customer' . $record['Customer/Vendor Code'];
+								$status['errors'][] = 'Address Not Mapped with Customer: ' . $record['Customer/Vendor Code'];
 							} else {
 								if (!$customer_address->state_id) {
-									$status['errors'][] = 'State Not Mapped with this Customer' . $record['Customer/Vendor Code'];
+									$status['errors'][] = 'State Not Mapped with this Customer: ' . $record['Customer/Vendor Code'];
 								}
 							}
 						} elseif ($to_account_type_id == 1441) {
