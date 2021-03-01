@@ -2298,7 +2298,9 @@ class ServiceInvoice extends Model {
 								$service_invoice->tax_total = $gst_total + $tcs_total + $cess_gst_total;
 								$service_invoice->sub_total = $sub_total;
 								$service_invoice->total = $total;
+
 								$invoice_amount = number_format($invoice_amount, 2);
+								$invoice_amount = str_replace(',', '', $invoice_amount);
 								// dump($invoice_amount);
 
 								//FOR ROUND OFF
