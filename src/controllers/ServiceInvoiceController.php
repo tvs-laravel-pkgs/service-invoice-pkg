@@ -2842,21 +2842,28 @@ class ServiceInvoiceController extends Controller {
 							// }
 							// dd($serviceInvoiceItem->serviceItem);
 							//TAX CALC AND PUSH
+							$service_invoice_item_taxs = DB::table('service_invoice_item_tax')->where('service_invoice_item_id', $serviceInvoiceItem->id)->get();
+							// dd($service_invoice_item_taxs);
 							if (!is_null($serviceInvoiceItem->serviceItem->sac_code_id)) {
 								if (count($serviceInvoiceItem->serviceItem->taxCode->taxes) > 0) {
-									foreach ($serviceInvoiceItem->serviceItem->taxCode->taxes as $key => $value) {
-										// dd($value);
-										//FOR CGST
-										if ($value->name == 'CGST') {
-											$cgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+									// foreach ($serviceInvoiceItem->serviceItem->taxCode->taxes as $key => $value) {
+									foreach ($service_invoice_item_taxs as $key => $tax) {
+										// dump($tax);
+										// dump($value->pivot->percentage);
+										// FOR CGST
+										if ($tax->tax_id == 1) {
+											$cgst_amt = $tax->amount;
+											// $cgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 										}
 										//FOR SGST
-										if ($value->name == 'SGST') {
-											$sgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+										if ($tax->tax_id == 2) {
+											$sgst_amt = $tax->amount;
+											// $sgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 										}
 										//FOR IGST
-										if ($value->name == 'IGST') {
-											$igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+										if ($tax->tax_id == 3) {
+											$igst_amt = $tax->amount;
+											// $igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 										}
 									}
 									if ($service_invoice->type_id != 1060) {
@@ -2869,8 +2876,12 @@ class ServiceInvoiceController extends Controller {
 												if (!$service_invoice->address->gst_number) {
 													//customer dont't have GST
 													if (!is_null($serviceInvoiceItem->serviceItem->sac_code_id)) {
-														//customer have HSN and SAC Code
-														$kfc_amt = round($serviceInvoiceItem->sub_total * 1 / 100, 2);
+														if ($tax->tax_id == 4) {
+															$kfc_amt = $tax->amount;
+															// $igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+															//customer have HSN and SAC Code
+															// $kfc_amt = round($serviceInvoiceItem->sub_total * 1 / 100, 2);
+														}
 													}
 												}
 											}
@@ -3033,24 +3044,35 @@ class ServiceInvoiceController extends Controller {
 							// 	return response()->json(['success' => false, 'error' => 'Service Item not found']);
 							// }
 							// dd($serviceInvoiceItem->serviceItem);
+							$service_invoice_item_taxs = DB::table('service_invoice_item_tax')->where('service_invoice_item_id', $serviceInvoiceItem->id)->get();
 							//TAX CALC AND PUSH
 							if (!is_null($serviceInvoiceItem->serviceItem->sac_code_id)) {
 								if (count($serviceInvoiceItem->serviceItem->taxCode->taxes) > 0) {
-									foreach ($serviceInvoiceItem->serviceItem->taxCode->taxes as $key => $value) {
-										//FOR CGST
-										if ($value->name == 'CGST') {
-											$cgst_percentage = $value->pivot->percentage;
-											$cgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+									// foreach ($serviceInvoiceItem->serviceItem->taxCode->taxes as $key => $value) {
+									foreach ($service_invoice_item_taxs as $key => $tax) {
+
+										if ($tax->tax_id == 1) {
+											$cgst_percentage = $tax->percentage;
+											$cgst_amt = $tax->amount;
+
+											// $cgst_percentage = $value->pivot->percentage;
+											// $cgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 										}
 										//FOR SGST
-										if ($value->name == 'SGST') {
-											$sgst_percentage = $value->pivot->percentage;
-											$sgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+										if ($tax->tax_id == 2) {
+											$sgst_percentage = $tax->percentage;
+											$sgst_amt = $tax->amount;
+
+											// $sgst_percentage = $value->pivot->percentage;
+											// $sgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 										}
 										//FOR IGST
-										if ($value->name == 'IGST') {
-											$igst_percentage = $value->pivot->percentage;
-											$igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+										if ($tax->tax_id == 3) {
+											$igst_percentage = $tax->percentage;
+											$igst_amt = $tax->amount;
+
+											// $igst_percentage = $value->pivot->percentage;
+											// $igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 										}
 									}
 
@@ -3064,8 +3086,10 @@ class ServiceInvoiceController extends Controller {
 														//customer dont't have GST
 														if (!is_null($serviceInvoiceItem->serviceItem->sac_code_id)) {
 															$kfc_percentage = 1;
+															$kfc_amt = $tax->amount;
+
 															//customer have HSN and SAC Code
-															$kfc_amt = round($serviceInvoiceItem->sub_total * 1 / 100, 2);
+															// $kfc_amt = round($serviceInvoiceItem->sub_total * 1 / 100, 2);
 														}
 													}
 												}
