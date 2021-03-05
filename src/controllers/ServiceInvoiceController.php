@@ -2736,6 +2736,7 @@ class ServiceInvoiceController extends Controller {
 		} elseif ($request->export_type == "TCS Export") {
 			$query = ServiceInvoice::with([
 				'company',
+				'type',
 				// 'customer',
 				'toAccountType',
 				'address',
@@ -2748,12 +2749,13 @@ class ServiceInvoiceController extends Controller {
 				//  => function ($query) {
 				// 	$query->whereNotNull('tcs_percentage');
 				// },
-				'serviceInvoiceItems.eavVarchars',
-				'serviceInvoiceItems.eavInts',
-				'serviceInvoiceItems.eavDatetimes',
-				'serviceInvoiceItems.eInvoiceUom',
+				// 'serviceInvoiceItems.eavVarchars',
+				// 'serviceInvoiceItems.eavInts',
+				// 'serviceInvoiceItems.eavDatetimes',
+				// 'serviceInvoiceItems.eInvoiceUom',
 				'serviceInvoiceItems.serviceItem.taxCode',
-				'serviceInvoiceItems.taxes',
+				'serviceInvoiceItems.serviceItem.taxCode.taxes',
+				// 'serviceInvoiceItems.taxes',
 			])
 				->where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
 				->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
@@ -2798,16 +2800,16 @@ class ServiceInvoiceController extends Controller {
 						// 	dd($serviceInvoiceItem->serviceItem);
 						// }
 						// dump($service_invoice);
-						if ($service_invoice->type_id == 1060) {
-							$type = 'CN';
-							$sign_value = '-';
-						} elseif ($service_invoice->type_id == 1061) {
-							$type = 'DN';
-							$sign_value = '';
-						} elseif ($service_invoice->type_id == 1062) {
-							$type = 'INV';
-							$sign_value = '';
-						}
+						// if ($service_invoice->type_id == 1060) {
+						// 	// $type = 'CN';
+						// 	$sign_value = '-';
+						// } elseif ($service_invoice->type_id == 1061) {
+						// 	// $type = 'DN';
+						// 	$sign_value = '';
+						// } elseif ($service_invoice->type_id == 1062) {
+						// 	// $type = 'INV';
+						// 	$sign_value = '';
+						// }
 						$gst_total = 0;
 						$cgst_amt = 0;
 						$sgst_amt = 0;
@@ -2816,32 +2818,33 @@ class ServiceInvoiceController extends Controller {
 						$tcs_total = 0;
 
 						foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
+							// dump($serviceInvoiceItem);
+							// $state_id = $service_invoice->address ? $service_invoice->address->state_id ? $service_invoice->address->state_id : '' : '';
 
-							$state_id = $service_invoice->address ? $service_invoice->address->state_id ? $service_invoice->address->state_id : '' : '';
+							// $taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id, $state_id);
 
-							$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id, $state_id);
+							// if (!$taxes['success']) {
+							// 	return response()->json(['success' => false, 'error' => $taxes['error']]);
+							// }
 
-							if (!$taxes['success']) {
-								return response()->json(['success' => false, 'error' => $taxes['error']]);
-							}
-
-							$service_item = ServiceItem::with([
-								'coaCode',
-								'taxCode',
-								'taxCode.taxes' => function ($query) use ($taxes) {
-									$query->whereIn('tax_id', $taxes['tax_ids']);
-								},
-							])
-								->find($serviceInvoiceItem->service_item_id);
-							// dd($service_item->taxCode->code);
-							if (!$service_item) {
-								return response()->json(['success' => false, 'error' => 'Service Item not found']);
-							}
+							// $service_item = ServiceItem::with([
+							// 	'coaCode',
+							// 	'taxCode',
+							// 	'taxCode.taxes' => function ($query) use ($taxes) {
+							// 		$query->whereIn('tax_id', $taxes['tax_ids']);
+							// 	},
+							// ])
+							// 	->find($serviceInvoiceItem->service_item_id);
+							// // dd($service_item->taxCode->code);
+							// if (!$service_item) {
+							// 	return response()->json(['success' => false, 'error' => 'Service Item not found']);
+							// }
 							// dd($serviceInvoiceItem->serviceItem);
 							//TAX CALC AND PUSH
-							if (!is_null($service_item->sac_code_id)) {
-								if (count($service_item->taxCode->taxes) > 0) {
-									foreach ($service_item->taxCode->taxes as $key => $value) {
+							if (!is_null($serviceInvoiceItem->serviceItem->sac_code_id)) {
+								if (count($serviceInvoiceItem->serviceItem->taxCode->taxes) > 0) {
+									foreach ($serviceInvoiceItem->serviceItem->taxCode->taxes as $key => $value) {
+										// dd($value);
 										//FOR CGST
 										if ($value->name == 'CGST') {
 											$cgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
@@ -2864,7 +2867,7 @@ class ServiceInvoiceController extends Controller {
 												//check customer state and outlet states are equal KL.  //add KFC tax
 												if (!$service_invoice->address->gst_number) {
 													//customer dont't have GST
-													if (!is_null($service_item->sac_code_id)) {
+													if (!is_null($serviceInvoiceItem->serviceItem->sac_code_id)) {
 														//customer have HSN and SAC Code
 														$kfc_amt = round($serviceInvoiceItem->sub_total * 1 / 100, 2);
 													}
@@ -2875,10 +2878,10 @@ class ServiceInvoiceController extends Controller {
 								}
 							}
 							//FOR TCS TAX
-							if (!empty($service_item->tcs_percentage)) {
+							if (!empty($serviceInvoiceItem->serviceItem->tcs_percentage)) {
 								$gst_total = 0;
 								$gst_total = $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt;
-								$tcs_total = round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
+								$tcs_total = round(($gst_total + $serviceInvoiceItem->sub_total) * $serviceInvoiceItem->serviceItem->tcs_percentage / 100, 2);
 							}
 
 							if ($serviceInvoiceItem->serviceItem && $serviceInvoiceItem->serviceItem->tcs_percentage > 0) {
@@ -2888,30 +2891,31 @@ class ServiceInvoiceController extends Controller {
 									$service_invoice->outlets->code,
 									$service_invoice->number,
 									date('d/m/Y', strtotime($service_invoice->document_date)),
-									$service_item->name,
+									$serviceInvoiceItem->serviceItem->name,
 									$service_invoice->toAccountType->name,
 									$service_invoice->customer->name,
 									$service_invoice->address->address_line1 . ',' . $service_invoice->address->address_line2,
 									$service_invoice->address->pincode,
 									$service_invoice->customer->pan_number,
 									// $service_item->taxCode->code,
-									$sign_value . (float) $serviceInvoiceItem->sub_total,
-									$cgst_amt ? $sign_value . $cgst_amt : 0,
-									$sgst_amt ? $sign_value . $sgst_amt : 0,
-									$igst_amt ? $sign_value . $igst_amt : 0,
-									$kfc_amt ? $sign_value . $kfc_amt : 0,
-									$sign_value . ($serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt),
+									($service_invoice->type_id == 1060 ? '-' : '') . (float) $serviceInvoiceItem->sub_total,
+									$cgst_amt ? ($service_invoice->type_id == 1060 ? '-' : '') . $cgst_amt : 0,
+									$sgst_amt ? ($service_invoice->type_id == 1060 ? '-' : '') . $sgst_amt : 0,
+									$igst_amt ? ($service_invoice->type_id == 1060 ? '-' : '') . $igst_amt : 0,
+									$kfc_amt ? ($service_invoice->type_id == 1060 ? '-' : '') . $kfc_amt : 0,
+									($service_invoice->type_id == 1060 ? '-' : '') . ($serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt),
 									'-',
 									'-',
-									(float) $service_item->tcs_percentage,
-									$sign_value . $tcs_total,
-									$sign_value . ($serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt + $tcs_total),
+									(float) $serviceInvoiceItem->serviceItem->tcs_percentage,
+									($service_invoice->type_id == 1060 ? '-' : '') . $tcs_total,
+									($service_invoice->type_id == 1060 ? '-' : '') . ($serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt + $tcs_total),
 								];
 							}
 						}
 					}
 				}
 			}
+			// dd($service_invoice_details);
 			$file_name = 'cn-dn-tcs-export-' . date('Y-m-d-H-i-s');
 			Excel::create($file_name, function ($excel) use ($service_invoice_header, $service_invoice_details) {
 				$excel->sheet('cn-dn-tcs', function ($sheet) use ($service_invoice_header, $service_invoice_details) {
@@ -2929,6 +2933,7 @@ class ServiceInvoiceController extends Controller {
 			// dd($request->gstin);
 			$query = ServiceInvoice::with([
 				'company',
+				'type',
 				// 'customer',
 				'toAccountType',
 				'address',
@@ -2940,12 +2945,13 @@ class ServiceInvoiceController extends Controller {
 				'sbus',
 				'serviceInvoiceItems',
 				'serviceInvoiceItems.serviceItem',
-				'serviceInvoiceItems.eavVarchars',
-				'serviceInvoiceItems.eavInts',
-				'serviceInvoiceItems.eavDatetimes',
+				// 'serviceInvoiceItems.eavVarchars',
+				// 'serviceInvoiceItems.eavInts',
+				// 'serviceInvoiceItems.eavDatetimes',
 				'serviceInvoiceItems.eInvoiceUom',
 				'serviceInvoiceItems.serviceItem.taxCode',
-				'serviceInvoiceItems.taxes',
+				'serviceInvoiceItems.serviceItem.taxCode.taxes',
+				// 'serviceInvoiceItems.taxes',
 			])
 				->where('document_date', '>=', date('Y-m-d', strtotime($date_range[0])))
 				->where('document_date', '<=', date('Y-m-d', strtotime($date_range[1])))
@@ -2985,16 +2991,16 @@ class ServiceInvoiceController extends Controller {
 
 					foreach ($service_invoices as $key => $service_invoice) {
 
-						if ($service_invoice->type_id == 1060) {
-							$type = 'CN';
-							$sign_value = '-';
-						} elseif ($service_invoice->type_id == 1061) {
-							$type = 'DN';
-							$sign_value = '';
-						} elseif ($service_invoice->type_id == 1062) {
-							$type = 'INV';
-							$sign_value = '';
-						}
+						// if ($service_invoice->type_id == 1060) {
+						// 	$type = 'CN';
+						// 	$sign_value = '-';
+						// } elseif ($service_invoice->type_id == 1061) {
+						// 	$type = 'DN';
+						// 	$sign_value = '';
+						// } elseif ($service_invoice->type_id == 1062) {
+						// 	$type = 'INV';
+						// 	$sign_value = '';
+						// }
 
 						$gst_total = 0;
 						$cgst_amt = 0;
@@ -3006,30 +3012,30 @@ class ServiceInvoiceController extends Controller {
 						$sgst_percentage = 0;
 						$igst_percentage = 0;
 						foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
-							$state_id = $service_invoice->address ? $service_invoice->address->state_id ? $service_invoice->address->state_id : '' : '';
-							$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id, $state_id);
+							// $state_id = $service_invoice->address ? $service_invoice->address->state_id ? $service_invoice->address->state_id : '' : '';
+							// $taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id, $state_id);
 
-							if (!$taxes['success']) {
-								return response()->json(['success' => false, 'error' => $taxes['error']]);
-							}
+							// if (!$taxes['success']) {
+							// 	return response()->json(['success' => false, 'error' => $taxes['error']]);
+							// }
 
-							$service_item = ServiceItem::with([
-								'coaCode',
-								'taxCode',
-								'taxCode.taxes' => function ($query) use ($taxes) {
-									$query->whereIn('tax_id', $taxes['tax_ids']);
-								},
-							])
-								->find($serviceInvoiceItem->service_item_id);
-							// dd($service_item->taxCode->code);
-							if (!$service_item) {
-								return response()->json(['success' => false, 'error' => 'Service Item not found']);
-							}
+							// $service_item = ServiceItem::with([
+							// 	'coaCode',
+							// 	'taxCode',
+							// 	'taxCode.taxes' => function ($query) use ($taxes) {
+							// 		$query->whereIn('tax_id', $taxes['tax_ids']);
+							// 	},
+							// ])
+							// 	->find($serviceInvoiceItem->service_item_id);
+							// // dd($service_item->taxCode->code);
+							// if (!$service_item) {
+							// 	return response()->json(['success' => false, 'error' => 'Service Item not found']);
+							// }
 							// dd($serviceInvoiceItem->serviceItem);
 							//TAX CALC AND PUSH
-							if (!is_null($service_item->sac_code_id)) {
-								if (count($service_item->taxCode->taxes) > 0) {
-									foreach ($service_item->taxCode->taxes as $key => $value) {
+							if (!is_null($serviceInvoiceItem->serviceItem->sac_code_id)) {
+								if (count($serviceInvoiceItem->serviceItem->taxCode->taxes) > 0) {
+									foreach ($serviceInvoiceItem->serviceItem->taxCode->taxes as $key => $value) {
 										//FOR CGST
 										if ($value->name == 'CGST') {
 											$cgst_percentage = $value->pivot->percentage;
@@ -3055,7 +3061,7 @@ class ServiceInvoiceController extends Controller {
 													//check customer state and outlet states are equal KL.  //add KFC tax
 													if (!$service_invoice->address->gst_number) {
 														//customer dont't have GST
-														if (!is_null($service_item->sac_code_id)) {
+														if (!is_null($serviceInvoiceItem->serviceItem->sac_code_id)) {
 															$kfc_percentage = 1;
 															//customer have HSN and SAC Code
 															$kfc_amt = round($serviceInvoiceItem->sub_total * 1 / 100, 2);
@@ -3070,23 +3076,23 @@ class ServiceInvoiceController extends Controller {
 
 							//FOR TCS TAX
 							$tcs_total = 0;
-							if (!empty($service_item->tcs_percentage)) {
+							if (!empty($serviceInvoiceItem->serviceItem->tcs_percentage)) {
 								$gst_total = 0;
 								$gst_total = $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt;
-								$tcs_total = round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
+								$tcs_total = round(($gst_total + $serviceInvoiceItem->sub_total) * $serviceInvoiceItem->serviceItem->tcs_percentage / 100, 2);
 							}
 
 							//FOR CESS ON GST
 							$cess_on_gst_total = 0;
-							if (!empty($service_item->cess_on_gst_percentage)) {
-								$cess_on_gst_total = round($serviceInvoiceItem->sub_total * $service_item->cess_on_gst_percentage / 100, 2);
+							if (!empty($serviceInvoiceItem->serviceItem->cess_on_gst_percentage)) {
+								$cess_on_gst_total = round($serviceInvoiceItem->sub_total * $serviceInvoiceItem->serviceItem->cess_on_gst_percentage / 100, 2);
 							}
-							// dump($service_item->taxCode);
+							// dump($serviceInvoiceItem->serviceItem->taxCode);
 
-							if ($service_invoice->outlets && $service_item->taxCode) {
+							if ($service_invoice->outlets && $serviceInvoiceItem->serviceItem->taxCode) {
 								// dump(1);
 								$service_invoice_details[] = [
-									$type,
+									$service_invoice->type->name,
 									$service_invoice->toAccountType->name,
 									$service_invoice->customer->code,
 									$service_invoice->number,
@@ -3096,23 +3102,23 @@ class ServiceInvoiceController extends Controller {
 									$service_invoice->customer->name,
 									$service_invoice->address->gst_number,
 									$service_invoice->address->address_line1 . ',' . $service_invoice->address->address_line2,
-									$sign_value . ($serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt + $tcs_total + $cess_on_gst_total),
-									$service_item->taxCode->code,
+									($service_invoice->type_id == 1060 ? '-' : '') . ($serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt + $tcs_total + $cess_on_gst_total),
+									$serviceInvoiceItem->serviceItem->taxCode->code,
 									$serviceInvoiceItem->eInvoiceUom->code,
 									$serviceInvoiceItem->qty,
-									$sign_value . (float) ($serviceInvoiceItem->sub_total / $serviceInvoiceItem->qty),
+									($service_invoice->type_id == 1060 ? '-' : '') . (float) ($serviceInvoiceItem->sub_total / $serviceInvoiceItem->qty),
 									$cgst_percentage,
 									$sgst_percentage,
 									$igst_percentage,
 									$kfc_percentage,
-									$service_item->tcs_percentage,
-									$service_item->cess_on_gst_percentage,
-									$cgst_amt ? $sign_value . $cgst_amt : 0,
-									$sgst_amt ? $sign_value . $sgst_amt : 0,
-									$igst_amt ? $sign_value . $igst_amt : 0,
-									$kfc_amt ? $sign_value . $kfc_amt : 0,
-									$tcs_total ? $sign_value . $tcs_total : 0,
-									$cess_on_gst_total ? $sign_value . $cess_on_gst_total : 0,
+									$serviceInvoiceItem->serviceItem->tcs_percentage,
+									$serviceInvoiceItem->serviceItem->cess_on_gst_percentage,
+									$cgst_amt ? ($service_invoice->type_id == 1060 ? '-' : '') . $cgst_amt : 0,
+									$sgst_amt ? ($service_invoice->type_id == 1060 ? '-' : '') . $sgst_amt : 0,
+									$igst_amt ? ($service_invoice->type_id == 1060 ? '-' : '') . $igst_amt : 0,
+									$kfc_amt ? ($service_invoice->type_id == 1060 ? '-' : '') . $kfc_amt : 0,
+									$tcs_total ? ($service_invoice->type_id == 1060 ? '-' : '') . $tcs_total : 0,
+									$cess_on_gst_total ? ($service_invoice->type_id == 1060 ? '-' : '') . $cess_on_gst_total : 0,
 								];
 							}
 						}
@@ -3121,7 +3127,7 @@ class ServiceInvoiceController extends Controller {
 			}
 			$file_name = 'cn-dn-gst-export-' . date('Y-m-d-H-i-s');
 			Excel::create($file_name, function ($excel) use ($service_invoice_header, $service_invoice_details) {
-				$excel->sheet('cn-dn-tcs', function ($sheet) use ($service_invoice_header, $service_invoice_details) {
+				$excel->sheet('cn-dn-gst', function ($sheet) use ($service_invoice_header, $service_invoice_details) {
 					$sheet->fromArray($service_invoice_details, NULL, 'A1');
 					$sheet->row(1, $service_invoice_header);
 					$sheet->row(1, function ($row) {

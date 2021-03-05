@@ -134,6 +134,10 @@ class ServiceInvoice extends Model {
 		return $this->belongsTo('App\Sbu', 'sbu_id', 'id');
 	}
 
+	public function type() {
+		return $this->belongsTo('App\Config', 'type_id', 'id');
+	}
+
 	public function serviceInvoiceItems() {
 		return $this->hasMany('Abs\ServiceInvoicePkg\ServiceInvoiceItem', 'service_invoice_id', 'id');
 	}
