@@ -2865,22 +2865,21 @@ class ServiceInvoiceController extends Controller {
 											$igst_amt = $tax->amount;
 											// $igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 										}
-									}
-									if ($service_invoice->type_id != 1060) {
+										if ($tax->tax_id == 4) {
+											if ($service_invoice->type_id != 1060) {
 
-										if ($service_invoice->address->state_id) {
-											// dd('in');
-											if (($service_invoice->address->state_id == 3) && ($service_invoice->outlets->state_id == 3)) {
-												//3 FOR KERALA
-												//check customer state and outlet states are equal KL.  //add KFC tax
-												if (!$service_invoice->address->gst_number) {
-													//customer dont't have GST
-													if (!is_null($serviceInvoiceItem->serviceItem->sac_code_id)) {
-														if ($tax->tax_id == 4) {
-															$kfc_amt = $tax->amount;
-															// $igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
-															//customer have HSN and SAC Code
-															// $kfc_amt = round($serviceInvoiceItem->sub_total * 1 / 100, 2);
+												if ($service_invoice->address->state_id) {
+													// dd('in');
+													if (($service_invoice->address->state_id == 3) && ($service_invoice->outlets->state_id == 3)) {
+														//3 FOR KERALA
+														//check customer state and outlet states are equal KL.  //add KFC tax
+														if (!$service_invoice->address->gst_number) {
+															//customer dont't have GST
+															if (!is_null($serviceInvoiceItem->serviceItem->sac_code_id)) {
+																$kfc_amt = $tax->amount;
+																//customer have HSN and SAC Code
+																// $kfc_amt = round($serviceInvoiceItem->sub_total * 1 / 100, 2);
+															}
 														}
 													}
 												}
@@ -3074,28 +3073,31 @@ class ServiceInvoiceController extends Controller {
 											// $igst_percentage = $value->pivot->percentage;
 											// $igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 										}
-									}
+										//FOR KFC
+										if ($tax->tax_id == 4) {
+											if ($service_invoice->type_id != 1060) {
+												if ($service_invoice->address->state_id && $service_invoice->outlets) {
+													if ($service_invoice->address->state_id == 3) {
+														if (($service_invoice->address->state_id == 3) && ($service_invoice->outlets->state_id == 3)) {
+															//3 FOR KERALA
+															//check customer state and outlet states are equal KL.  //add KFC tax
+															if (!$service_invoice->address->gst_number) {
+																//customer dont't have GST
+																if (!is_null($serviceInvoiceItem->serviceItem->sac_code_id)) {
+																	$kfc_percentage = 1;
+																	$kfc_amt = $tax->amount;
 
-									if ($service_invoice->type_id != 1060) {
-										if ($service_invoice->address->state_id && $service_invoice->outlets) {
-											if ($service_invoice->address->state_id == 3) {
-												if (($service_invoice->address->state_id == 3) && ($service_invoice->outlets->state_id == 3)) {
-													//3 FOR KERALA
-													//check customer state and outlet states are equal KL.  //add KFC tax
-													if (!$service_invoice->address->gst_number) {
-														//customer dont't have GST
-														if (!is_null($serviceInvoiceItem->serviceItem->sac_code_id)) {
-															$kfc_percentage = 1;
-															$kfc_amt = $tax->amount;
-
-															//customer have HSN and SAC Code
-															// $kfc_amt = round($serviceInvoiceItem->sub_total * 1 / 100, 2);
+																	//customer have HSN and SAC Code
+																	// $kfc_amt = round($serviceInvoiceItem->sub_total * 1 / 100, 2);
+																}
+															}
 														}
 													}
 												}
 											}
 										}
 									}
+
 								}
 							}
 
