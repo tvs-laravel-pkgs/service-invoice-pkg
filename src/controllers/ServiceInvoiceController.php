@@ -2230,7 +2230,14 @@ class ServiceInvoiceController extends Controller {
 
 				// dd('no error');
 
+			} else {
+				// dd('in');
+				//QR CODE ONLY FOR B2C CUSTOMER
+				$this->qrCodeGeneration($service_invoice);
+				// return ServiceInvoice::b2cQrCodeGenerate();
 			}
+		} else {
+			$this->qrCodeGeneration($service_invoice);
 		}
 		//  else {
 		// 	$service_invoice_save = ServiceInvoice::find($service_invoice_id);
@@ -2841,35 +2848,45 @@ class ServiceInvoiceController extends Controller {
 							// }
 							// dd($serviceInvoiceItem->serviceItem);
 							//TAX CALC AND PUSH
+							$service_invoice_item_taxs = DB::table('service_invoice_item_tax')->where('service_invoice_item_id', $serviceInvoiceItem->id)->get();
+							// dd($service_invoice_item_taxs);
 							if (!is_null($serviceInvoiceItem->serviceItem->sac_code_id)) {
 								if (count($serviceInvoiceItem->serviceItem->taxCode->taxes) > 0) {
-									foreach ($serviceInvoiceItem->serviceItem->taxCode->taxes as $key => $value) {
-										// dd($value);
-										//FOR CGST
-										if ($value->name == 'CGST') {
-											$cgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+									// foreach ($serviceInvoiceItem->serviceItem->taxCode->taxes as $key => $value) {
+									foreach ($service_invoice_item_taxs as $key => $tax) {
+										// dump($tax);
+										// dump($value->pivot->percentage);
+										// FOR CGST
+										if ($tax->tax_id == 1) {
+											$cgst_amt = $tax->amount;
+											// $cgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 										}
 										//FOR SGST
-										if ($value->name == 'SGST') {
-											$sgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+										if ($tax->tax_id == 2) {
+											$sgst_amt = $tax->amount;
+											// $sgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 										}
 										//FOR IGST
-										if ($value->name == 'IGST') {
-											$igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+										if ($tax->tax_id == 3) {
+											$igst_amt = $tax->amount;
+											// $igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 										}
-									}
-									if ($service_invoice->type_id != 1060) {
+										if ($tax->tax_id == 4) {
+											if ($service_invoice->type_id != 1060) {
 
-										if ($service_invoice->address->state_id) {
-											// dd('in');
-											if (($service_invoice->address->state_id == 3) && ($service_invoice->outlets->state_id == 3)) {
-												//3 FOR KERALA
-												//check customer state and outlet states are equal KL.  //add KFC tax
-												if (!$service_invoice->address->gst_number) {
-													//customer dont't have GST
-													if (!is_null($serviceInvoiceItem->serviceItem->sac_code_id)) {
-														//customer have HSN and SAC Code
-														$kfc_amt = round($serviceInvoiceItem->sub_total * 1 / 100, 2);
+												if ($service_invoice->address->state_id) {
+													// dd('in');
+													if (($service_invoice->address->state_id == 3) && ($service_invoice->outlets->state_id == 3)) {
+														//3 FOR KERALA
+														//check customer state and outlet states are equal KL.  //add KFC tax
+														if (!$service_invoice->address->gst_number) {
+															//customer dont't have GST
+															if (!is_null($serviceInvoiceItem->serviceItem->sac_code_id)) {
+																$kfc_amt = $tax->amount;
+																//customer have HSN and SAC Code
+																// $kfc_amt = round($serviceInvoiceItem->sub_total * 1 / 100, 2);
+															}
+														}
 													}
 												}
 											}
@@ -3032,45 +3049,61 @@ class ServiceInvoiceController extends Controller {
 							// 	return response()->json(['success' => false, 'error' => 'Service Item not found']);
 							// }
 							// dd($serviceInvoiceItem->serviceItem);
+							$service_invoice_item_taxs = DB::table('service_invoice_item_tax')->where('service_invoice_item_id', $serviceInvoiceItem->id)->get();
 							//TAX CALC AND PUSH
 							if (!is_null($serviceInvoiceItem->serviceItem->sac_code_id)) {
 								if (count($serviceInvoiceItem->serviceItem->taxCode->taxes) > 0) {
-									foreach ($serviceInvoiceItem->serviceItem->taxCode->taxes as $key => $value) {
-										//FOR CGST
-										if ($value->name == 'CGST') {
-											$cgst_percentage = $value->pivot->percentage;
-											$cgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+									// foreach ($serviceInvoiceItem->serviceItem->taxCode->taxes as $key => $value) {
+									foreach ($service_invoice_item_taxs as $key => $tax) {
+
+										if ($tax->tax_id == 1) {
+											$cgst_percentage = $tax->percentage;
+											$cgst_amt = $tax->amount;
+
+											// $cgst_percentage = $value->pivot->percentage;
+											// $cgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 										}
 										//FOR SGST
-										if ($value->name == 'SGST') {
-											$sgst_percentage = $value->pivot->percentage;
-											$sgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+										if ($tax->tax_id == 2) {
+											$sgst_percentage = $tax->percentage;
+											$sgst_amt = $tax->amount;
+
+											// $sgst_percentage = $value->pivot->percentage;
+											// $sgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 										}
 										//FOR IGST
-										if ($value->name == 'IGST') {
-											$igst_percentage = $value->pivot->percentage;
-											$igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
-										}
-									}
+										if ($tax->tax_id == 3) {
+											$igst_percentage = $tax->percentage;
+											$igst_amt = $tax->amount;
 
-									if ($service_invoice->type_id != 1060) {
-										if ($service_invoice->address->state_id && $service_invoice->outlets) {
-											if ($service_invoice->address->state_id == 3) {
-												if (($service_invoice->address->state_id == 3) && ($service_invoice->outlets->state_id == 3)) {
-													//3 FOR KERALA
-													//check customer state and outlet states are equal KL.  //add KFC tax
-													if (!$service_invoice->address->gst_number) {
-														//customer dont't have GST
-														if (!is_null($serviceInvoiceItem->serviceItem->sac_code_id)) {
-															$kfc_percentage = 1;
-															//customer have HSN and SAC Code
-															$kfc_amt = round($serviceInvoiceItem->sub_total * 1 / 100, 2);
+											// $igst_percentage = $value->pivot->percentage;
+											// $igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+										}
+										//FOR KFC
+										if ($tax->tax_id == 4) {
+											if ($service_invoice->type_id != 1060) {
+												if ($service_invoice->address->state_id && $service_invoice->outlets) {
+													if ($service_invoice->address->state_id == 3) {
+														if (($service_invoice->address->state_id == 3) && ($service_invoice->outlets->state_id == 3)) {
+															//3 FOR KERALA
+															//check customer state and outlet states are equal KL.  //add KFC tax
+															if (!$service_invoice->address->gst_number) {
+																//customer dont't have GST
+																if (!is_null($serviceInvoiceItem->serviceItem->sac_code_id)) {
+																	$kfc_percentage = 1;
+																	$kfc_amt = $tax->amount;
+
+																	//customer have HSN and SAC Code
+																	// $kfc_amt = round($serviceInvoiceItem->sub_total * 1 / 100, 2);
+																}
+															}
 														}
 													}
 												}
 											}
 										}
 									}
+
 								}
 							}
 
@@ -4077,5 +4110,124 @@ class ServiceInvoiceController extends Controller {
 		return true;
 	}
 	//IMPORTANT FUNCTION FOR IMPORT SEARCH CUSTOMER VIJAY-S 12 JAN 2020 END *******DONT REMOVE**********
+
+	public function qrCodeGeneration($service_invoice) {
+		$cgst_total = 0;
+		$sgst_total = 0;
+		$igst_total = 0;
+		$cgst_amt = 0;
+		$sgst_amt = 0;
+		$igst_amt = 0;
+		$tcs_total = 0;
+		$cess_on_gst_total = 0;
+		foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
+			$item = [];
+			// dd($serviceInvoiceItem);
+
+			//GET TAXES
+			$state_id = $service_invoice->address ? $service_invoice->address->state_id ? $service_invoice->address->state_id : '' : '';
+
+			$taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id, $state_id);
+			if (!$taxes['success']) {
+				$errors[] = $taxes['error'];
+				// return response()->json(['success' => false, 'error' => $taxes['error']]);
+			}
+
+			$service_item = ServiceItem::with([
+				'coaCode',
+				'taxCode',
+				'taxCode.taxes' => function ($query) use ($taxes) {
+					$query->whereIn('tax_id', $taxes['tax_ids']);
+				},
+			])
+				->find($serviceInvoiceItem->service_item_id);
+			if (!$service_item) {
+				$errors[] = 'Service Item not found';
+				// return response()->json(['success' => false, 'error' => 'Service Item not found']);
+			}
+
+			//TAX CALC AND PUSH
+			if (!is_null($service_item->sac_code_id)) {
+				if (count($service_item->taxCode->taxes) > 0) {
+					foreach ($service_item->taxCode->taxes as $key => $value) {
+						//FOR CGST
+						if ($value->name == 'CGST') {
+							$cgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+							$cgst_total += round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+						}
+						//FOR CGST
+						if ($value->name == 'SGST') {
+							$sgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+							$sgst_total += round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+						}
+						//FOR CGST
+						if ($value->name == 'IGST') {
+							$igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+							$igst_total += round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+						}
+					}
+				}
+			} else {
+				return [
+					'success' => false,
+					'errors' => 'Item Not Mapped with Tax code!. Item Code: ' . $service_item->code,
+				];
+				$errors[] = 'Item Not Mapped with Tax code!. Item Code: ' . $service_item->code;
+			}
+
+			//FOR TCS TAX
+			if ($service_item->tcs_percentage) {
+				$gst_total = 0;
+				$gst_total = $cgst_amt + $sgst_amt + $igst_amt;
+				$tcs_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
+			}
+
+			//FOR CESS on GST TAX
+			if ($service_item->cess_on_gst_percentage) {
+				$cess_on_gst_total += round(($serviceInvoiceItem->sub_total) * $service_item->cess_on_gst_percentage / 100, 2);
+			}
+		}
+		// dd($cgst_total, $sgst_total, $igst_total, $tcs_total, $cess_on_gst_total);
+
+		$base_url_with_invoice_details = url('/pay?invno=' . $service_invoice->number . '&invdate=' . date('d-m-Y', strtotime($service_invoice->document_date)) . '&invamt=' . number_format($service_invoice->final_amount, 2) . '&dc=' . $service_invoice->outlets->code . '&cc=' . $service_invoice->customer->code . '&cgst=' . $cgst_total . '&sgst=' . $sgst_total . '&igst=' . $igst_total . '&cess=' . $cess_on_gst_total . '&oc=' . $service_invoice->outlets->code);
+		// dd($base_url_with_invoice_details);
+
+		$B2C_images_des = storage_path('app/public/service-invoice/B2C_images');
+		File::makeDirectory($B2C_images_des, $mode = 0777, true, true);
+
+		$url = QRCode::URL($base_url_with_invoice_details)->setSize(4)->setOutfile('storage/app/public/service-invoice/B2C_images/' . $service_invoice->number . '.png')->png();
+
+		// $file_name = $service_invoice->number . '.png';
+
+		$qr_attachment_path = base_path("storage/app/public/service-invoice/B2C_images/" . $service_invoice->number . '.png');
+		// dump($qr_attachment_path);
+		if (file_exists($qr_attachment_path)) {
+			$ext = pathinfo(base_path("storage/app/public/service-invoice/B2C_images/" . $service_invoice->number . '.png'), PATHINFO_EXTENSION);
+			// dump($ext);
+			if ($ext == 'png') {
+				$image = imagecreatefrompng($qr_attachment_path);
+				// dump($image);
+				$bg = imagecreatetruecolor(imagesx($image), imagesy($image));
+				// dump($bg);
+				imagefill($bg, 0, 0, imagecolorallocate($bg, 255, 255, 255));
+				imagealphablending($bg, TRUE);
+				imagecopy($bg, $image, 0, 0, 0, 0, imagesx($image), imagesy($image));
+				// imagedestroy($image);
+				$quality = 70; // 0 = worst / smaller file, 100 = better / bigger file
+				imagejpeg($bg, $qr_attachment_path . ".jpg", $quality);
+				// imagedestroy($bg);
+
+				$service_invoice->qr_image = base_path("storage/app/public/service-invoice/B2C_images/" . $service_invoice->number . '.png') . '.jpg';
+			}
+		} else {
+			$service_invoice->qr_image = '';
+		}
+
+		$service_invoice_save = ServiceInvoice::find($service_invoice->id);
+		$service_invoice_save->qr_image = $service_invoice->number . '.png' . '.jpg';
+		$service_invoice_save->save();
+
+		return $service_invoice;
+	}
 
 }
