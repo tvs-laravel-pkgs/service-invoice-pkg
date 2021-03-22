@@ -451,6 +451,7 @@ app.component('serviceInvoiceApprovalView', {
         self.approval_type_id = $routeParams.approval_type_id;
         self.enable_service_item_md_change = true;
         self.ref_attachements_url_link = ref_service_invoice_attachements_url;
+        self.show_approve_button = true;
 
         if (self.type_id == 1060) {
             self.minus_value = '-';
@@ -741,6 +742,7 @@ app.component('serviceInvoiceApprovalView', {
         $scope.approvalConfirm = function() {
             $('#pace').css("display", "block");
             $('#pace').addClass('pace-active');
+            self.show_approve_button = false;
             $id = $('#approval_id').val();
             $send_to_approval = $('#next_status').val();
             var ButtonValue = $('#approve').attr("id");
@@ -762,6 +764,7 @@ app.component('serviceInvoiceApprovalView', {
                     $scope.$apply()
                 } else {
                     custom_noty('error', response.data.errors);
+                    self.show_approve_button = true;                    
                 }
             });
         }
