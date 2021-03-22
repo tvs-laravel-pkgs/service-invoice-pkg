@@ -594,7 +594,7 @@ class ServiceInvoice extends Model {
 			];
 		}
 
-		$line_number = 2;
+		$line_number = 1;
 		foreach ($this->serviceInvoiceItems as $invoice_item) {
 			$params = [
 				'Voucher' => 'D',
@@ -604,7 +604,7 @@ class ServiceInvoice extends Model {
 				'AmountCurDebit' => $this->type_id == 1060 ? $invoice_item->sub_total : 0,
 				// 'AmountCurCredit' => $this->type_id == 1061 ? $invoice_item->sub_total : 0,
 				'TaxGroup' => '',
-				'LineNum' => $line_number,
+				'LineNum' => ++$line_number,
 				// 'TVSSACCode' => ($invoice_item->serviceItem->taxCode != null) ? $invoice_item->serviceItem->taxCode->code : NULL,
 			];
 			if ($this->type_id == 1061) {
@@ -1269,7 +1269,7 @@ class ServiceInvoice extends Model {
 			];
 		}
 
-		$line_number = 2;
+		$line_number = 1;
 		foreach ($this->serviceInvoiceItems as $invoice_item) {
 			$params = [
 				'Voucher' => 'D',
@@ -1279,7 +1279,7 @@ class ServiceInvoice extends Model {
 				'AmountCurCredit' => $this->type_id == 1060 ? $invoice_item->sub_total : 0,
 				// 'AmountCurCredit' => $this->type_id == 1061 ? $invoice_item->sub_total : 0,
 				'TaxGroup' => '',
-				'LineNum' => $line_number,
+				'LineNum' => ++$line_number,
 				// 'TVSSACCode' => ($invoice_item->serviceItem->taxCode != null) ? $invoice_item->serviceItem->taxCode->code : NULL,
 			];
 			if ($this->type_id == 1061) {
