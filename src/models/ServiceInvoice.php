@@ -680,7 +680,7 @@ class ServiceInvoice extends Model {
 									$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = '7132' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-									$params['LineNum'] = $line_number + 1;
+									$params['LineNum'] = ++$line_number;
 									// dump($params['LineNum']);
 									$line_number = $params['LineNum'];
 
@@ -721,7 +721,7 @@ class ServiceInvoice extends Model {
 								$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
 								$params['LedgerDimension'] = '2230' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-								$params['LineNum'] = $line_number + 1;
+								$params['LineNum'] = ++$line_number;
 								// dump($params['LineNum']);
 								$line_number = $params['LineNum'];
 
@@ -750,7 +750,7 @@ class ServiceInvoice extends Model {
 									$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = $this->branch->primaryAddress->state->cgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-									$params['LineNum'] = $line_number + 1;
+									$params['LineNum'] = ++$line_number;
 									// dump($params['LineNum']);
 									$line_number = $params['LineNum'];
 
@@ -772,7 +772,7 @@ class ServiceInvoice extends Model {
 									$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = $this->branch->primaryAddress->state->sgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-									$params['LineNum'] = $line_number + 1;
+									$params['LineNum'] = ++$line_number;
 									// dump($params['LineNum']);
 									$line_number = $params['LineNum'];
 
@@ -795,7 +795,7 @@ class ServiceInvoice extends Model {
 									$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = $this->branch->primaryAddress->state->igst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-									$params['LineNum'] = $line_number + 1;
+									$params['LineNum'] = ++$line_number;
 									// dump($params['LineNum']);
 									$line_number = $params['LineNum'];
 
@@ -827,7 +827,7 @@ class ServiceInvoice extends Model {
 			$params['AmountCurDebit'] = $this->type_id == 1060 ? round($tcs_total['credit'], 2) : 0;
 			$params['LedgerDimension'] = '2269' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-			$params['LineNum'] = $line_number + 1;
+			$params['LineNum'] = ++$line_number;
 			// dump($params['LineNum']);
 			$line_number = $params['LineNum'];
 
@@ -851,7 +851,7 @@ class ServiceInvoice extends Model {
 			$params['AmountCurDebit'] = $this->type_id == 1060 ? round($cess_on_gst_total['credit'], 2) : 0;
 			$params['LedgerDimension'] = $this->branch->primaryAddress->state->cess_on_gst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-			$params['LineNum'] = $line_number + 1;
+			$params['LineNum'] = ++$line_number;
 			// dump($params['LineNum']);
 			$line_number = $params['LineNum'];
 			// dd($params);
@@ -873,7 +873,7 @@ class ServiceInvoice extends Model {
 				$params['AmountCurDebit'] = $this->type_id == 1060 ? $amount_diff : 0;
 				$params['LedgerDimension'] = '3198' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-				$params['LineNum'] = $line_number + 1;
+				$params['LineNum'] = ++$line_number;
 				// dump($params['LineNum']);
 				$line_number = $params['LineNum'];
 
@@ -891,7 +891,7 @@ class ServiceInvoice extends Model {
 				$params['AmountCurCredit'] = $this->type_id == 1060 ? ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : 0;
 				$params['LedgerDimension'] = '3198' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-				$params['LineNum'] = $line_number + 1;
+				$params['LineNum'] = ++$line_number;
 				// dump($params['LineNum']);
 				$line_number = $params['LineNum'];
 				// dump('else');
@@ -1355,7 +1355,7 @@ class ServiceInvoice extends Model {
 									$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = '7132' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-									$params['LineNum'] = $line_number + 1;
+									$params['LineNum'] = ++$line_number;
 									// dump($params['LineNum']);
 									$line_number = $params['LineNum'];
 
@@ -1377,7 +1377,7 @@ class ServiceInvoice extends Model {
 									$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = '7432' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-									$params['LineNum'] = $line_number + 1;
+									$params['LineNum'] = ++$line_number;
 									// dump($params['LineNum']);
 									$line_number = $params['LineNum'];
 
@@ -1400,7 +1400,7 @@ class ServiceInvoice extends Model {
 								$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
 								$params['LedgerDimension'] = '2230' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-								$params['LineNum'] = $line_number + 1;
+								$params['LineNum'] = ++$line_number;
 								// dump($params['LineNum']);
 								$line_number = $params['LineNum'];
 
@@ -1429,7 +1429,7 @@ class ServiceInvoice extends Model {
 									$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = $this->branch->primaryAddress->state->cgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-									$params['LineNum'] = $line_number + 1;
+									$params['LineNum'] = ++$line_number;
 									// dump($params['LineNum']);
 									$line_number = $params['LineNum'];
 
@@ -1451,7 +1451,7 @@ class ServiceInvoice extends Model {
 									$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = $this->branch->primaryAddress->state->sgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-									$params['LineNum'] = $line_number + 1;
+									$params['LineNum'] = ++$line_number;
 									// dump($params['LineNum']);
 									$line_number = $params['LineNum'];
 
@@ -1474,7 +1474,7 @@ class ServiceInvoice extends Model {
 									$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = $this->branch->primaryAddress->state->igst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-									$params['LineNum'] = $line_number + 1;
+									$params['LineNum'] = ++$line_number;
 									// dump($params['LineNum']);
 									$line_number = $params['LineNum'];
 
@@ -1506,7 +1506,7 @@ class ServiceInvoice extends Model {
 			$params['AmountCurCredit'] = $this->type_id == 1060 ? round($tcs_total['credit'], 2) : 0;
 			$params['LedgerDimension'] = '2269' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-			$params['LineNum'] = $line_number + 1;
+			$params['LineNum'] = ++$line_number;
 			// dump($params['LineNum']);
 			$line_number = $params['LineNum'];
 
@@ -1530,7 +1530,7 @@ class ServiceInvoice extends Model {
 			$params['AmountCurCredit'] = $this->type_id == 1060 ? round($cess_on_gst_total['credit'], 2) : 0;
 			$params['LedgerDimension'] = $this->branch->primaryAddress->state->cess_on_gst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-			$params['LineNum'] = $line_number + 1;
+			$params['LineNum'] = ++$line_number;
 			// dump($params['LineNum']);
 			$line_number = $params['LineNum'];
 
@@ -1552,7 +1552,7 @@ class ServiceInvoice extends Model {
 				$params['AmountCurCredit'] = $this->type_id == 1060 ? $amount_diff : "";
 				$params['LedgerDimension'] = '3198' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-				$params['LineNum'] = $line_number + 1;
+				$params['LineNum'] = ++$line_number;
 				// dump($params['LineNum']);
 				$line_number = $params['LineNum'];
 				// dump('if');
@@ -1569,7 +1569,7 @@ class ServiceInvoice extends Model {
 				$params['AmountCurDebit'] = $this->type_id == 1060 ? ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : 0;
 				$params['LedgerDimension'] = '3198' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-				$params['LineNum'] = $line_number + 1;
+				$params['LineNum'] = ++$line_number;
 				// dump($params['LineNum']);
 				$line_number = $params['LineNum'];
 				// dump('else');
