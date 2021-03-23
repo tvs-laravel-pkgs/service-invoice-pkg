@@ -233,14 +233,24 @@ class ServiceInvoice extends Model {
 
 	public function exportToAxapta($delete = false) {
 		// DB::beginTransaction();
-
-		if ($delete) {
-			AxaptaExport::where([
-				'company_id' => $this->company_id,
-				'entity_type_id' => 1400,
-				'entity_id' => $this->id,
-			])->delete();
+		$axaptaExports = AxaptaExport::where([
+			'DocumentNum' => $this->number
+		])->get();
+		if(count($axaptaExports) > 0){
+			$errors[] = 'Already approved and exported to AX staging table';
+			return [
+				'success' => false,
+				'errors' => $errors,
+			];
 		}
+
+		//if ($delete) {
+		//	AxaptaExport::where([
+		//		'company_id' => $this->company_id,
+		//		'entity_type_id' => 1400,
+		//		'entity_id' => $this->id,
+		//	])->delete();
+		//}
 		// try {
 		$item_codes = [];
 		$total_amount_with_gst['debit'] = 0;
@@ -913,10 +923,7 @@ class ServiceInvoice extends Model {
 	}
 
 	public function exportToAxaptaCancel() {
-		// dd('in');
-		// DB::beginTransaction();
 
-		// try {
 		$item_codes = [];
 
 		$total_amount_with_gst['debit'] = 0;

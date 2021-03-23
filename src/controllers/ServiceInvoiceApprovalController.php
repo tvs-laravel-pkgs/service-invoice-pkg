@@ -204,15 +204,17 @@ class ServiceInvoiceApprovalController extends Controller {
 				/*<a href="#!/service-invoice-pkg/cn-dn/approval/approval-level/' . $approval_type_id . '/view/' . $type_id . '/' . $cn_dn_approval_list->id . '" class="">
 	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
 	                    	</a>*/
+				//return '';
+				//disabled to prevent creating repeated approval
 				return '
 				<a href="#!/service-invoice-pkg/cn-dn/approval/approval-level/' . $approval_status_id . '/view/' . $type_id . '/' . $cn_dn_approval_list->id . '" class="">
 				                    <img class="img-responsive" src="' . $img_view . '" alt="View" />
 				                	</a>
-
-	                    	<a href="javascript:;" data-toggle="modal" data-target="#cn-dn-approval-modal"
-					onclick="angular.element(this).scope().sendApproval(' . $cn_dn_approval_list->id . ',' . $next_status . ')" title="Approval">
-					<img src="' . $img_approval . '" alt="Approval" class="img-responsive">
-					</a>';
+				';
+				//<a href="javascript:;" data-toggle="modal" data-target="#cn-dn-approval-modal"
+				//	onclick="angular.element(this).scope().sendApproval(' . $cn_dn_approval_list->id . ',' . $next_status . ')" title="Approval">
+				//	<img src="' . $img_approval . '" alt="Approval" class="img-responsive">
+				//	</a>
 			})
 			->rawColumns(['child_checkbox', 'action'])
 			->make(true);
