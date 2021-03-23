@@ -4188,10 +4188,26 @@ class ServiceInvoiceController extends Controller {
 				$cess_on_gst_total += round(($serviceInvoiceItem->sub_total) * $service_item->cess_on_gst_percentage / 100, 2);
 			}
 		}
-		// dd($cgst_total, $sgst_total, $igst_total, $tcs_total, $cess_on_gst_total);
 
-		$base_url_with_invoice_details = url('/pay?invno=' . $service_invoice->number . '&invdate=' . date('d-m-Y', strtotime($service_invoice->document_date)) . '&invamt=' . number_format($service_invoice->final_amount, 2) . '&dc=' . $service_invoice->outlets->code . '&cc=' . $service_invoice->customer->code . '&cgst=' . $cgst_total . '&sgst=' . $sgst_total . '&igst=' . $igst_total . '&cess=' . $cess_on_gst_total . '&oc=' . $service_invoice->outlets->code);
-		// dd($base_url_with_invoice_details);
+		$qrPaymentApp = QRPaymentApp::where([
+			'reference_name' => 'VIMS'
+		])->first();
+		if(!$qrPaymentApp){
+			throw new \Exception('QR Payment App not found : VIMS');
+		}
+		$base_url_with_invoice_details = url(
+			'/pay'.
+			'?invNo=' . $service_invoice->number .
+			'&date=' . date('d-m-Y', strtotime($service_invoice->document_date)) .
+			'&invAmt=' . number_format($service_invoice->final_amount, 2) .
+			'&oc=' . $service_invoice->outlets->code .
+			'&cc=' . $service_invoice->customer->code .
+			'&cgst=' . $cgst_total .
+			'&sgst=' . $sgst_total .
+			'&igst=' . $igst_total .
+			'&cess=' . $cess_on_gst_total .
+			'&appCode=' . $qrPaymentApp->app_code
+		);
 
 		$B2C_images_des = storage_path('app/public/service-invoice/B2C_images');
 		File::makeDirectory($B2C_images_des, $mode = 0777, true, true);

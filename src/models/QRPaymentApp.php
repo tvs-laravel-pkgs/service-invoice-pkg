@@ -15,12 +15,12 @@ class QRPaymentApp extends Model {
 		'deleted_by_id',
 	];
 	public function company() {
-		return $this->belongsTo('Abs\BusinessPkg\Company', 'company_id', 'id');
+		return $this->belongsTo(Company::class, 'company_id', 'id');
 	}
 	public function sbu() {
-		return $this->belongsTo('Abs\BusinessPkg\Sbu', 'sbu_id', 'id');
+		return $this->belongsTo(Sbu::class, 'sbu_id', 'id');
 	}
 	public function referenceCompany() {
-		return $this->belongsTo('Abs\BusinessPkg\Company', 'reference_company', 'id');
+		return $this->belongsTo(Company::class, 'reference_company_id', 'id');
 	}
 }
