@@ -69,6 +69,12 @@ class ServiceInvoice extends Model {
 		'deleted_by_id',
 	];
 
+	private $lineNumber;
+	public function __construct()
+	{
+		$this->lineNumber = 1;
+	}
+
 	public function getInvoiceDateAttribute($value) {
 		return empty($value) ? '' : date('d-m-Y', strtotime($value));
 	}
@@ -232,6 +238,7 @@ class ServiceInvoice extends Model {
 	}
 
 	public function exportToAxapta($delete = false) {
+		$this->lineNumber = 1;
 		// DB::beginTransaction();
 		$axaptaExports = AxaptaExport::where([
 			'DocumentNum' => $this->number
@@ -923,7 +930,7 @@ class ServiceInvoice extends Model {
 	}
 
 	public function exportToAxaptaCancel() {
-
+		$this->lineNumber = 1;
 		$item_codes = [];
 
 		$total_amount_with_gst['debit'] = 0;
@@ -1607,7 +1614,8 @@ class ServiceInvoice extends Model {
 		$export->JournalName = 'BPAS_NJV';
 		$export->JournalNum = "";
 		$export->Voucher = $params['Voucher'];
-		$export->LineNum = $params['LineNum'];
+		//$export->LineNum = $params['LineNum'];
+		$export->LineNum = $this->lineNumber++;
 		$export->ApproverPersonnelNumber = $this->createdBy->employee->code;
 		$export->Approved = 1;
 		$export->TransDate = date("Y-m-d", strtotime($this->document_date));
