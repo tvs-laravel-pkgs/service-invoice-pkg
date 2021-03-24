@@ -2338,9 +2338,24 @@ class ServiceInvoice extends Model {
 								// dd(round($invoice_amount));
 								$service_invoice->round_off_amount = number_format($round_off, 2);
 								$service_invoice->final_amount = round($invoice_amount);
-								$service_invoice->save();
+								try{
+									$service_invoice->save();
+									DB::commit();
+								}
+								catch(\Exception $e){
+									DB::rollback();
+									$status['errors'][] = $e->getMessage();
+									if (count($status['errors']) > 0) {
+										dump($status['errors']);
+										$original_record['Record No'] = $k + 1;
+										$original_record['Error Details'] = implode(',', $status['errors']);
+										$all_error_records[] = $original_record;
+										$job->incrementError();
+										continue;
+									}
 
-								DB::commit();
+								}
+
 								//UPDATING PROGRESS FOR EVERY FIVE RECORDS
 								if (($k + 1) % 5 == 0) {
 									$job->save();
