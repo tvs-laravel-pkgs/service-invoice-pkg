@@ -1966,7 +1966,7 @@ class ServiceInvoice extends Model {
 						}
 
 					}
-					// dd($generateNumber);
+					dump($generateNumber);
 					// dd($status);
 
 					$approval_status = Entity::select('entities.name')->where('company_id', $job->company_id)->where('entity_type_id', 18)->first();
@@ -2134,7 +2134,7 @@ class ServiceInvoice extends Model {
 									$status['errors'][] = 'No Serial number found';
 								}
 
-								// dd($status['errors']);
+								//dump($status['errors']);
 								if (count($status['errors']) > 0) {
 									dump($status['errors']);
 									$original_record['Record No'] = $k + 1;
@@ -2148,10 +2148,16 @@ class ServiceInvoice extends Model {
 
 								// dd(Auth::user()->company_id);
 
-								$service_invoice = ServiceInvoice::firstOrNew([
+								$service_invoice = ServiceInvoice::where([
 									'company_id' => $job->company_id,
 									'number' => $generateNumber['number'],
-								]);
+								])->first();
+								if(!$service_invoice){
+									$service_invoice = new ServiceInvoice();
+								}
+
+								$service_invoice->company_id = $job->company_id;
+								$service_invoice->number = $generateNumber['number'];
 								dump($generateNumber);
 								// dump($service_invoice);
 								if ($type->id == 1061) {
