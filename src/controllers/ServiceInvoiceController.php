@@ -4199,7 +4199,7 @@ class ServiceInvoiceController extends Controller {
 			'/pay' .
 			'?invNo=' . $service_invoice->number .
 			'&date=' . date('d-m-Y', strtotime($service_invoice->document_date)) .
-			'&invAmt=' . number_format($service_invoice->final_amount, 2) .
+			'&invAmt=' . str_replace(',', '', $service_invoice->final_amount) .
 			'&oc=' . $service_invoice->outlets->code .
 			'&cc=' . $service_invoice->customer->code .
 			'&cgst=' . $cgst_total .
