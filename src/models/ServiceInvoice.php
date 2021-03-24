@@ -1654,7 +1654,6 @@ class ServiceInvoice extends Model {
 
 	public static function importFromExcel($job) {
 		try {
-			// dd($job);
 			$response = ImportCronJob::getRecordsFromExcel($job, 'N');
 			$rows = $response['rows'];
 			$header = $response['header'];
@@ -2131,6 +2130,9 @@ class ServiceInvoice extends Model {
 									// dd('else');
 									$status['errors'][] = 'Item is not mapped and taxes are empty!';
 								}
+								if (!isset($generateNumber) || !$generateNumber['success'] || empty($generateNumber['success'])) {
+									$status['errors'][] = 'No Serial number found';
+								}
 
 								// dd($status['errors']);
 								if (count($status['errors']) > 0) {
@@ -2145,6 +2147,7 @@ class ServiceInvoice extends Model {
 								DB::beginTransaction();
 
 								// dd(Auth::user()->company_id);
+
 								$service_invoice = ServiceInvoice::firstOrNew([
 									'company_id' => $job->company_id,
 									'number' => $generateNumber['number'],
