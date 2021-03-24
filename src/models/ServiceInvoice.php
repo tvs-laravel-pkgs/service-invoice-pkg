@@ -2152,6 +2152,7 @@ class ServiceInvoice extends Model {
 									'company_id' => $job->company_id,
 									'number' => $generateNumber['number'],
 								]);
+								dump($generateNumber);
 								// dump($service_invoice);
 								if ($type->id == 1061) {
 									//DN
