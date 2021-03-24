@@ -57,8 +57,9 @@ class ServiceInvoiceApprovalController extends Controller {
 			$last_date_this_month = '';
 		}
 		$invoice_number_filter = $request->invoice_number;
-		$cn_dn_approval_list = ServiceInvoice::withTrashed()
-			->select(
+		$cn_dn_approval_list = ServiceInvoice::
+		//withTrashed()
+			select(
 				'service_invoices.id',
 				'service_invoices.number',
 				'service_invoices.document_date',
