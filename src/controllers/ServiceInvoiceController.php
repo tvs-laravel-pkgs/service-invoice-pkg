@@ -75,8 +75,9 @@ class ServiceInvoiceController extends Controller {
 			$last_date_this_month = '';
 		}
 		$invoice_number_filter = $request->invoice_number;
-		$service_invoice_list = ServiceInvoice::withTrashed()
-			->select(
+		$service_invoice_list = ServiceInvoice::
+		//withTrashed()
+			select(
 				'service_invoices.id',
 				'service_invoices.number',
 				'service_invoices.document_date',
@@ -4246,5 +4247,4 @@ class ServiceInvoiceController extends Controller {
 
 		return $service_invoice;
 	}
-
 }

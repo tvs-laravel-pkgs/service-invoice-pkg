@@ -69,6 +69,12 @@ class ServiceInvoice extends Model {
 		'deleted_by_id',
 	];
 
+	private $lineNumber;
+	public function __construct()
+	{
+		$this->lineNumber = 1;
+	}
+
 	public function getInvoiceDateAttribute($value) {
 		return empty($value) ? '' : date('d-m-Y', strtotime($value));
 	}
@@ -232,15 +238,26 @@ class ServiceInvoice extends Model {
 	}
 
 	public function exportToAxapta($delete = false) {
+		$this->lineNumber = 1;
 		// DB::beginTransaction();
-
-		if ($delete) {
-			AxaptaExport::where([
-				'company_id' => $this->company_id,
-				'entity_type_id' => 1400,
-				'entity_id' => $this->id,
-			])->delete();
+		$axaptaExports = AxaptaExport::where([
+			'DocumentNum' => $this->number
+		])->get();
+		if(count($axaptaExports) > 0){
+			$errors[] = 'Already approved and exported to AX staging table';
+			return [
+				'success' => false,
+				'errors' => $errors,
+			];
 		}
+
+		//if ($delete) {
+		//	AxaptaExport::where([
+		//		'company_id' => $this->company_id,
+		//		'entity_type_id' => 1400,
+		//		'entity_id' => $this->id,
+		//	])->delete();
+		//}
 		// try {
 		$item_codes = [];
 		$total_amount_with_gst['debit'] = 0;
@@ -594,7 +611,7 @@ class ServiceInvoice extends Model {
 			];
 		}
 
-		$line_number = 2;
+		$line_number = 1;
 		foreach ($this->serviceInvoiceItems as $invoice_item) {
 			$params = [
 				'Voucher' => 'D',
@@ -604,7 +621,7 @@ class ServiceInvoice extends Model {
 				'AmountCurDebit' => $this->type_id == 1060 ? $invoice_item->sub_total : 0,
 				// 'AmountCurCredit' => $this->type_id == 1061 ? $invoice_item->sub_total : 0,
 				'TaxGroup' => '',
-				'LineNum' => $line_number,
+				'LineNum' => ++$line_number,
 				// 'TVSSACCode' => ($invoice_item->serviceItem->taxCode != null) ? $invoice_item->serviceItem->taxCode->code : NULL,
 			];
 			if ($this->type_id == 1061) {
@@ -680,7 +697,7 @@ class ServiceInvoice extends Model {
 									$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = '7132' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-									$params['LineNum'] = $line_number + 1;
+									$params['LineNum'] = ++$line_number;
 									// dump($params['LineNum']);
 									$line_number = $params['LineNum'];
 
@@ -721,7 +738,7 @@ class ServiceInvoice extends Model {
 								$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
 								$params['LedgerDimension'] = '2230' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-								$params['LineNum'] = $line_number + 1;
+								$params['LineNum'] = ++$line_number;
 								// dump($params['LineNum']);
 								$line_number = $params['LineNum'];
 
@@ -750,7 +767,7 @@ class ServiceInvoice extends Model {
 									$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = $this->branch->primaryAddress->state->cgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-									$params['LineNum'] = $line_number + 1;
+									$params['LineNum'] = ++$line_number;
 									// dump($params['LineNum']);
 									$line_number = $params['LineNum'];
 
@@ -772,7 +789,7 @@ class ServiceInvoice extends Model {
 									$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = $this->branch->primaryAddress->state->sgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-									$params['LineNum'] = $line_number + 1;
+									$params['LineNum'] = ++$line_number;
 									// dump($params['LineNum']);
 									$line_number = $params['LineNum'];
 
@@ -795,7 +812,7 @@ class ServiceInvoice extends Model {
 									$params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = $this->branch->primaryAddress->state->igst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-									$params['LineNum'] = $line_number + 1;
+									$params['LineNum'] = ++$line_number;
 									// dump($params['LineNum']);
 									$line_number = $params['LineNum'];
 
@@ -827,7 +844,7 @@ class ServiceInvoice extends Model {
 			$params['AmountCurDebit'] = $this->type_id == 1060 ? round($tcs_total['credit'], 2) : 0;
 			$params['LedgerDimension'] = '2269' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-			$params['LineNum'] = $line_number + 1;
+			$params['LineNum'] = ++$line_number;
 			// dump($params['LineNum']);
 			$line_number = $params['LineNum'];
 
@@ -851,7 +868,7 @@ class ServiceInvoice extends Model {
 			$params['AmountCurDebit'] = $this->type_id == 1060 ? round($cess_on_gst_total['credit'], 2) : 0;
 			$params['LedgerDimension'] = $this->branch->primaryAddress->state->cess_on_gst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-			$params['LineNum'] = $line_number + 1;
+			$params['LineNum'] = ++$line_number;
 			// dump($params['LineNum']);
 			$line_number = $params['LineNum'];
 			// dd($params);
@@ -873,7 +890,7 @@ class ServiceInvoice extends Model {
 				$params['AmountCurDebit'] = $this->type_id == 1060 ? $amount_diff : 0;
 				$params['LedgerDimension'] = '3198' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-				$params['LineNum'] = $line_number + 1;
+				$params['LineNum'] = ++$line_number;
 				// dump($params['LineNum']);
 				$line_number = $params['LineNum'];
 
@@ -891,7 +908,7 @@ class ServiceInvoice extends Model {
 				$params['AmountCurCredit'] = $this->type_id == 1060 ? ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : 0;
 				$params['LedgerDimension'] = '3198' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-				$params['LineNum'] = $line_number + 1;
+				$params['LineNum'] = ++$line_number;
 				// dump($params['LineNum']);
 				$line_number = $params['LineNum'];
 				// dump('else');
@@ -913,10 +930,7 @@ class ServiceInvoice extends Model {
 	}
 
 	public function exportToAxaptaCancel() {
-		// dd('in');
-		// DB::beginTransaction();
-
-		// try {
+		$this->lineNumber = 1;
 		$item_codes = [];
 
 		$total_amount_with_gst['debit'] = 0;
@@ -1269,7 +1283,7 @@ class ServiceInvoice extends Model {
 			];
 		}
 
-		$line_number = 2;
+		$line_number = 1;
 		foreach ($this->serviceInvoiceItems as $invoice_item) {
 			$params = [
 				'Voucher' => 'D',
@@ -1279,7 +1293,7 @@ class ServiceInvoice extends Model {
 				'AmountCurCredit' => $this->type_id == 1060 ? $invoice_item->sub_total : 0,
 				// 'AmountCurCredit' => $this->type_id == 1061 ? $invoice_item->sub_total : 0,
 				'TaxGroup' => '',
-				'LineNum' => $line_number,
+				'LineNum' => ++$line_number,
 				// 'TVSSACCode' => ($invoice_item->serviceItem->taxCode != null) ? $invoice_item->serviceItem->taxCode->code : NULL,
 			];
 			if ($this->type_id == 1061) {
@@ -1355,7 +1369,7 @@ class ServiceInvoice extends Model {
 									$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = '7132' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-									$params['LineNum'] = $line_number + 1;
+									$params['LineNum'] = ++$line_number;
 									// dump($params['LineNum']);
 									$line_number = $params['LineNum'];
 
@@ -1377,7 +1391,7 @@ class ServiceInvoice extends Model {
 									$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = '7432' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-									$params['LineNum'] = $line_number + 1;
+									$params['LineNum'] = ++$line_number;
 									// dump($params['LineNum']);
 									$line_number = $params['LineNum'];
 
@@ -1400,7 +1414,7 @@ class ServiceInvoice extends Model {
 								$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
 								$params['LedgerDimension'] = '2230' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-								$params['LineNum'] = $line_number + 1;
+								$params['LineNum'] = ++$line_number;
 								// dump($params['LineNum']);
 								$line_number = $params['LineNum'];
 
@@ -1429,7 +1443,7 @@ class ServiceInvoice extends Model {
 									$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = $this->branch->primaryAddress->state->cgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-									$params['LineNum'] = $line_number + 1;
+									$params['LineNum'] = ++$line_number;
 									// dump($params['LineNum']);
 									$line_number = $params['LineNum'];
 
@@ -1451,7 +1465,7 @@ class ServiceInvoice extends Model {
 									$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = $this->branch->primaryAddress->state->sgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-									$params['LineNum'] = $line_number + 1;
+									$params['LineNum'] = ++$line_number;
 									// dump($params['LineNum']);
 									$line_number = $params['LineNum'];
 
@@ -1474,7 +1488,7 @@ class ServiceInvoice extends Model {
 									$params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
 									$params['LedgerDimension'] = $this->branch->primaryAddress->state->igst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-									$params['LineNum'] = $line_number + 1;
+									$params['LineNum'] = ++$line_number;
 									// dump($params['LineNum']);
 									$line_number = $params['LineNum'];
 
@@ -1506,7 +1520,7 @@ class ServiceInvoice extends Model {
 			$params['AmountCurCredit'] = $this->type_id == 1060 ? round($tcs_total['credit'], 2) : 0;
 			$params['LedgerDimension'] = '2269' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-			$params['LineNum'] = $line_number + 1;
+			$params['LineNum'] = ++$line_number;
 			// dump($params['LineNum']);
 			$line_number = $params['LineNum'];
 
@@ -1530,7 +1544,7 @@ class ServiceInvoice extends Model {
 			$params['AmountCurCredit'] = $this->type_id == 1060 ? round($cess_on_gst_total['credit'], 2) : 0;
 			$params['LedgerDimension'] = $this->branch->primaryAddress->state->cess_on_gst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-			$params['LineNum'] = $line_number + 1;
+			$params['LineNum'] = ++$line_number;
 			// dump($params['LineNum']);
 			$line_number = $params['LineNum'];
 
@@ -1552,7 +1566,7 @@ class ServiceInvoice extends Model {
 				$params['AmountCurCredit'] = $this->type_id == 1060 ? $amount_diff : "";
 				$params['LedgerDimension'] = '3198' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-				$params['LineNum'] = $line_number + 1;
+				$params['LineNum'] = ++$line_number;
 				// dump($params['LineNum']);
 				$line_number = $params['LineNum'];
 				// dump('if');
@@ -1569,7 +1583,7 @@ class ServiceInvoice extends Model {
 				$params['AmountCurDebit'] = $this->type_id == 1060 ? ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : 0;
 				$params['LedgerDimension'] = '3198' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
-				$params['LineNum'] = $line_number + 1;
+				$params['LineNum'] = ++$line_number;
 				// dump($params['LineNum']);
 				$line_number = $params['LineNum'];
 				// dump('else');
@@ -1600,7 +1614,8 @@ class ServiceInvoice extends Model {
 		$export->JournalName = 'BPAS_NJV';
 		$export->JournalNum = "";
 		$export->Voucher = $params['Voucher'];
-		$export->LineNum = $params['LineNum'];
+		//$export->LineNum = $params['LineNum'];
+		$export->LineNum = $this->lineNumber++;
 		$export->ApproverPersonnelNumber = $this->createdBy->employee->code;
 		$export->Approved = 1;
 		$export->TransDate = date("Y-m-d", strtotime($this->document_date));
@@ -1639,7 +1654,6 @@ class ServiceInvoice extends Model {
 
 	public static function importFromExcel($job) {
 		try {
-			// dd($job);
 			$response = ImportCronJob::getRecordsFromExcel($job, 'N');
 			$rows = $response['rows'];
 			$header = $response['header'];
@@ -1952,7 +1966,7 @@ class ServiceInvoice extends Model {
 						}
 
 					}
-					// dd($generateNumber);
+					dump($generateNumber);
 					// dd($status);
 
 					$approval_status = Entity::select('entities.name')->where('company_id', $job->company_id)->where('entity_type_id', 18)->first();
@@ -2116,8 +2130,11 @@ class ServiceInvoice extends Model {
 									// dd('else');
 									$status['errors'][] = 'Item is not mapped and taxes are empty!';
 								}
+								if (!isset($generateNumber) || !$generateNumber['success'] || empty($generateNumber['success'])) {
+									$status['errors'][] = 'No Serial number found';
+								}
 
-								// dd($status['errors']);
+								//dump($status['errors']);
 								if (count($status['errors']) > 0) {
 									dump($status['errors']);
 									$original_record['Record No'] = $k + 1;
@@ -2130,10 +2147,18 @@ class ServiceInvoice extends Model {
 								DB::beginTransaction();
 
 								// dd(Auth::user()->company_id);
-								$service_invoice = ServiceInvoice::firstOrNew([
+
+								$service_invoice = ServiceInvoice::where([
 									'company_id' => $job->company_id,
 									'number' => $generateNumber['number'],
-								]);
+								])->first();
+								if(!$service_invoice){
+									$service_invoice = new ServiceInvoice();
+								}
+
+								$service_invoice->company_id = $job->company_id;
+								$service_invoice->number = $generateNumber['number'];
+								dump($generateNumber);
 								// dump($service_invoice);
 								if ($type->id == 1061) {
 									//DN
@@ -2320,9 +2345,24 @@ class ServiceInvoice extends Model {
 								// dd(round($invoice_amount));
 								$service_invoice->round_off_amount = number_format($round_off, 2);
 								$service_invoice->final_amount = round($invoice_amount);
-								$service_invoice->save();
+								try{
+									$service_invoice->save();
+									DB::commit();
+								}
+								catch(\Exception $e){
+									DB::rollback();
+									$status['errors'][] = $e->getMessage();
+									if (count($status['errors']) > 0) {
+										dump($status['errors']);
+										$original_record['Record No'] = $k + 1;
+										$original_record['Error Details'] = implode(',', $status['errors']);
+										$all_error_records[] = $original_record;
+										$job->incrementError();
+										continue;
+									}
 
-								DB::commit();
+								}
+
 								//UPDATING PROGRESS FOR EVERY FIVE RECORDS
 								if (($k + 1) % 5 == 0) {
 									$job->save();
