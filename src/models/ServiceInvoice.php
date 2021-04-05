@@ -70,8 +70,7 @@ class ServiceInvoice extends Model {
 	];
 
 	private $lineNumber;
-	public function __construct()
-	{
+	public function __construct() {
 		$this->lineNumber = 1;
 	}
 
@@ -241,9 +240,9 @@ class ServiceInvoice extends Model {
 		$this->lineNumber = 1;
 		// DB::beginTransaction();
 		$axaptaExports = AxaptaExport::where([
-			'DocumentNum' => $this->number
+			'DocumentNum' => $this->number,
 		])->get();
-		if(count($axaptaExports) > 0){
+		if (count($axaptaExports) > 0) {
 			$errors[] = 'Already approved and exported to AX staging table';
 			return [
 				'success' => false,
@@ -302,6 +301,7 @@ class ServiceInvoice extends Model {
 		$kfc_amt['invoice'] = 0;
 
 		$errors = [];
+		$item_descriptions = [];
 		foreach ($this->serviceInvoiceItems as $invoice_item) {
 			$service_invoice = $invoice_item->serviceInvoice()->with([
 				'toAccountType',
@@ -2152,7 +2152,7 @@ class ServiceInvoice extends Model {
 									'company_id' => $job->company_id,
 									'number' => $generateNumber['number'],
 								])->first();
-								if(!$service_invoice){
+								if (!$service_invoice) {
 									$service_invoice = new ServiceInvoice();
 								}
 
@@ -2345,11 +2345,10 @@ class ServiceInvoice extends Model {
 								// dd(round($invoice_amount));
 								$service_invoice->round_off_amount = number_format($round_off, 2);
 								$service_invoice->final_amount = round($invoice_amount);
-								try{
+								try {
 									$service_invoice->save();
 									DB::commit();
-								}
-								catch(\Exception $e){
+								} catch (\Exception $e) {
 									DB::rollback();
 									$status['errors'][] = $e->getMessage();
 									if (count($status['errors']) > 0) {

@@ -76,38 +76,38 @@ class ServiceInvoiceController extends Controller {
 		}
 		$invoice_number_filter = $request->invoice_number;
 		$service_invoice_list = ServiceInvoice::
-		//withTrashed()
+			//withTrashed()
 			select(
-				'service_invoices.id',
-				'service_invoices.number',
-				'service_invoices.document_date',
-				'service_invoices.total as invoice_amount',
-				'service_invoices.is_cn_created',
-				'service_invoices.status_id',
-				'service_invoices.ack_date',
-				'outlets.code as branch',
-				'sbus.name as sbu',
-				'service_item_categories.name as category',
-				'service_item_sub_categories.name as sub_category',
-				// DB::raw('IF(service_invoices.to_account_type_id=1440,customers.code,vendors.code) as customer_code'),
-				// DB::raw('IF(service_invoices.to_account_type_id=1440,customers.name,vendors.name) as customer_name'),
-				'customers.pdf_format_id',
-				DB::raw('CASE
+			'service_invoices.id',
+			'service_invoices.number',
+			'service_invoices.document_date',
+			'service_invoices.total as invoice_amount',
+			'service_invoices.is_cn_created',
+			'service_invoices.status_id',
+			'service_invoices.ack_date',
+			'outlets.code as branch',
+			'sbus.name as sbu',
+			'service_item_categories.name as category',
+			'service_item_sub_categories.name as sub_category',
+			// DB::raw('IF(service_invoices.to_account_type_id=1440,customers.code,vendors.code) as customer_code'),
+			// DB::raw('IF(service_invoices.to_account_type_id=1440,customers.name,vendors.name) as customer_name'),
+			'customers.pdf_format_id',
+			DB::raw('CASE
                     WHEN service_invoices.to_account_type_id = "1440" THEN customers.code
                     WHEN service_invoices.to_account_type_id = "1441" THEN vendors.code
                     ELSE customers.code END AS customer_code'),
-				DB::raw('CASE
+			DB::raw('CASE
                     WHEN service_invoices.to_account_type_id = "1440" THEN customers.name
                     WHEN service_invoices.to_account_type_id = "1441" THEN vendors.name
                     ELSE customers.name END AS customer_name'),
-				// 'customers.code as customer_code',
-				// 'customers.name as customer_name',
-				'configs.name as type_name',
-				'configs.id as si_type_id',
-				DB::raw('IF(to_account_type.name IS NULL,"Customer",to_account_type.name) as to_account_type'),
-				'approval_type_statuses.status',
-				'service_invoices.created_by_id'
-			)
+			// 'customers.code as customer_code',
+			// 'customers.name as customer_name',
+			'configs.name as type_name',
+			'configs.id as si_type_id',
+			DB::raw('IF(to_account_type.name IS NULL,"Customer",to_account_type.name) as to_account_type'),
+			'approval_type_statuses.status',
+			'service_invoices.created_by_id'
+		)
 			->join('outlets', 'outlets.id', 'service_invoices.branch_id')
 			->join('sbus', 'sbus.id', 'service_invoices.sbu_id')
 			->leftJoin('service_item_sub_categories', 'service_item_sub_categories.id', 'service_invoices.sub_category_id')
@@ -885,12 +885,22 @@ class ServiceInvoiceController extends Controller {
 		$tcs_total = 0;
 		if ($service_item) {
 			if ($service_item->tcs_percentage) {
+
+				$document_date = (string) $request->hid_document_date;
+				$date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
+				$date2 = Carbon::createFromFormat('d-m-Y', $document_date);
+				$result = $date1->gte($date2);
+
+				$tcs_percentage = $service_item->tcs_percentage;
+				if (!$result) {
+					$tcs_percentage = 1;
+				}
 				// $gst_total += round(($service_item->tcs_percentage / 100) * ($request->qty * $request->amount), 2);
-				$tcs_total = round(($gst_total + $request->qty * $request->amount) * $service_item->tcs_percentage / 100, 2);
+				$tcs_total = round(($gst_total + $request->qty * $request->amount) * $tcs_percentage / 100, 2);
 				// dd($tcs_total);
-				$TCS_tax_amount = round(($gst_total + $request->qty * $request->amount) * $service_item->tcs_percentage / 100, 2); //ONE PERCENTAGE FOR TCS
+				$TCS_tax_amount = round(($gst_total + $request->qty * $request->amount) * $tcs_percentage / 100, 2); //ONE PERCENTAGE FOR TCS
 				$service_item['TCS'] = [ // for TCS
-					'percentage' => $service_item->tcs_percentage,
+					'percentage' => $tcs_percentage,
 					'amount' => $TCS_tax_amount,
 				];
 			}
