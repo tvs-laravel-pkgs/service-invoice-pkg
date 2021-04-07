@@ -70,8 +70,7 @@ class ServiceInvoice extends Model {
 	];
 
 	private $lineNumber;
-	public function __construct()
-	{
+	public function __construct() {
 		$this->lineNumber = 1;
 	}
 
@@ -241,9 +240,9 @@ class ServiceInvoice extends Model {
 		$this->lineNumber = 1;
 		// DB::beginTransaction();
 		$axaptaExports = AxaptaExport::where([
-			'DocumentNum' => $this->number
+			'DocumentNum' => $this->number,
 		])->get();
-		if(count($axaptaExports) > 0){
+		if (count($axaptaExports) > 0) {
 			$errors[] = 'Already approved and exported to AX staging table';
 			return [
 				'success' => false,
@@ -302,6 +301,7 @@ class ServiceInvoice extends Model {
 		$kfc_amt['invoice'] = 0;
 
 		$errors = [];
+		$item_descriptions = [];
 		foreach ($this->serviceInvoiceItems as $invoice_item) {
 			$service_invoice = $invoice_item->serviceInvoice()->with([
 				'toAccountType',
@@ -1654,7 +1654,6 @@ class ServiceInvoice extends Model {
 
 	public static function importFromExcel($job) {
 		try {
-			// dd($job);
 			$response = ImportCronJob::getRecordsFromExcel($job, 'N');
 			$rows = $response['rows'];
 			$header = $response['header'];
@@ -1967,7 +1966,7 @@ class ServiceInvoice extends Model {
 						}
 
 					}
-					// dd($generateNumber);
+					dump($generateNumber);
 					// dd($status);
 
 					$approval_status = Entity::select('entities.name')->where('company_id', $job->company_id)->where('entity_type_id', 18)->first();
@@ -2131,8 +2130,11 @@ class ServiceInvoice extends Model {
 									// dd('else');
 									$status['errors'][] = 'Item is not mapped and taxes are empty!';
 								}
+								if (!isset($generateNumber) || !$generateNumber['success'] || empty($generateNumber['success'])) {
+									$status['errors'][] = 'No Serial number found';
+								}
 
-								// dd($status['errors']);
+								//dump($status['errors']);
 								if (count($status['errors']) > 0) {
 									dump($status['errors']);
 									$original_record['Record No'] = $k + 1;
@@ -2145,10 +2147,18 @@ class ServiceInvoice extends Model {
 								DB::beginTransaction();
 
 								// dd(Auth::user()->company_id);
-								$service_invoice = ServiceInvoice::firstOrNew([
+
+								$service_invoice = ServiceInvoice::where([
 									'company_id' => $job->company_id,
 									'number' => $generateNumber['number'],
-								]);
+								])->first();
+								if (!$service_invoice) {
+									$service_invoice = new ServiceInvoice();
+								}
+
+								$service_invoice->company_id = $job->company_id;
+								$service_invoice->number = $generateNumber['number'];
+								dump($generateNumber);
 								// dump($service_invoice);
 								if ($type->id == 1061) {
 									//DN
@@ -2335,9 +2345,23 @@ class ServiceInvoice extends Model {
 								// dd(round($invoice_amount));
 								$service_invoice->round_off_amount = number_format($round_off, 2);
 								$service_invoice->final_amount = round($invoice_amount);
-								$service_invoice->save();
+								try {
+									$service_invoice->save();
+									DB::commit();
+								} catch (\Exception $e) {
+									DB::rollback();
+									$status['errors'][] = $e->getMessage();
+									if (count($status['errors']) > 0) {
+										dump($status['errors']);
+										$original_record['Record No'] = $k + 1;
+										$original_record['Error Details'] = implode(',', $status['errors']);
+										$all_error_records[] = $original_record;
+										$job->incrementError();
+										continue;
+									}
 
-								DB::commit();
+								}
+
 								//UPDATING PROGRESS FOR EVERY FIVE RECORDS
 								if (($k + 1) % 5 == 0) {
 									$job->save();
