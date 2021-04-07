@@ -548,7 +548,6 @@ app.component('serviceInvoiceForm', {
         }
         $form_data_url = typeof($routeParams.id) == 'undefined' ? service_invoice_get_form_data_url + '/' + $routeParams.type_id : service_invoice_get_form_data_url + '/' + $routeParams.type_id + '/' + $routeParams.id;
         var self = this;
-        alert('go')
         self.hasPermission = HelperService.hasPermission;
         self.allow_e_invoice_selection = self.hasPermission('allow-e-invoice-selection');
         self.e_invoice_only = self.hasPermission('e-invoice-only');
