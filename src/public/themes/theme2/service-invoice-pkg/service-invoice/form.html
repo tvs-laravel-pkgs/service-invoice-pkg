@@ -14,7 +14,7 @@
                     <a href="{{$ctrl.list_url}}" type="button" class="btn-back btn-img"><img class="img-responsive my-tooltip" src="./public/theme/img/content/previous.svg" alt="Back" ng-shortcut="'meta+shift+left'" ng-shortcut-click data-title="ctrl+shift+left" /></a>
                 </div><!-- Page Header Content -->
                 <div class="page-header-content title-block">
-                    <h1 class="title" ng-show="$ctrl.type_id == 1060"><b> Credit Note</b></h1>
+                    <h1 class="title" ng-show="$ctrl.type_id == 1060"><b> Credit Noteeeeee</b></h1>
                     <h1 class="title" ng-show="$ctrl.type_id == 1061"><b> Debit Note</b></h1>
                     <h1 class="title" ng-show="$ctrl.type_id == 1062"><b> Invoice</b></h1>
                     <!-- <p class="subtitle">Service Item category List / Form</p> -->
@@ -463,6 +463,7 @@
     <div class="modal-dialog modal-md fixed" role="document">
         <form id="service-invoice-item-form" enctype="multipart-formdata" autocomplete="off">
             <input type="hidden" name="to_account_type_id" value="{{$ctrl.service_invoice.to_account_type_id}}">
+            <input type="hidden" id="hid_document_date" name="hid_document_date" value="{{$ctrl.service_invoice.document_date}}">
             <div class="modal-content">
                 <div class="modal-header">
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" class="icon ion-md-close"></span></button>
@@ -690,7 +691,8 @@
                                         <span class="modal-footer-list-value">{{$ctrl.KFC_total | number : 2}}</span>
                                     </li>
                                     <li ng-show="$ctrl.service_item_detail.tcs_percentage != NULL">
-                                        <span class="modal-footer-list-label">TCS ({{$ctrl.service_item_detail.tcs_percentage}}%)</span>
+                                        <!-- <span class="modal-footer-list-label">TCS ({{$ctrl.service_item_detail.tcs_percentage}}%)</span> -->
+                                        <span class="modal-footer-list-label">TCS ({{ calculateTcsPercentage() }}%)</span>
                                         <span class="modal-footer-list-value">{{$ctrl.tcs_total | number : 2}}</span>
                                     </li>
                                     <li ng-show="$ctrl.service_item_detail.cess_on_gst_percentage != NULL">
