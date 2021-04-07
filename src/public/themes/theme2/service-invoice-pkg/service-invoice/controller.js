@@ -548,6 +548,7 @@ app.component('serviceInvoiceForm', {
         }
         $form_data_url = typeof($routeParams.id) == 'undefined' ? service_invoice_get_form_data_url + '/' + $routeParams.type_id : service_invoice_get_form_data_url + '/' + $routeParams.type_id + '/' + $routeParams.id;
         var self = this;
+        alert('go')
         self.hasPermission = HelperService.hasPermission;
         self.allow_e_invoice_selection = self.hasPermission('allow-e-invoice-selection');
         self.e_invoice_only = self.hasPermission('e-invoice-only');
@@ -627,6 +628,7 @@ app.component('serviceInvoiceForm', {
                 // console.log(val);
                 setTimeout(function() {
                     $("#doc_date").val(val);
+                    $("#hid_document_date").val(val);
                 }, 1000);
                 self.service_invoice.is_reverse_charge_applicable = 0;
                 self.service_invoice.is_service = 1;
@@ -893,9 +895,9 @@ app.component('serviceInvoiceForm', {
 
         $scope.checkCustomerGSTIN = function(gstin, customer) {
             // console.log(gstin);
-            if(self.allow_e_invoice_selection){
+            if (self.allow_e_invoice_selection) {
                 var e_invoice_selection = $("#e_invoice_registration").val();
-            }else{
+            } else {
                 var e_invoice_selection = 1;
             }
             console.log(e_invoice_selection);
@@ -1348,6 +1350,28 @@ app.component('serviceInvoiceForm', {
             $scope.serviceInvoiceItemCalc();
         }
 
+
+        $scope.calculateTcsPercentage = function() {
+            if (self.service_item_detail) {
+                if (self.service_item_detail.tcs_percentage) {
+                    $("#doc_date").val();
+                    var d = $("#doc_date").val();
+                    var d1 = new Date(d.split("-").reverse().join("-")); //yyyy-mm-dd  
+                    var d2 = new Date('2021-03-31'); //yyyy-mm-dd  
+
+
+
+                    if (d1 > d2) {
+                        var tcs_percentage = 1;
+                    } else {
+                        var tcs_percentage = self.service_item_detail.tcs_percentage;
+                    }
+                }
+                console.log(tcs_percentage);
+                return tcs_percentage;
+            }
+        }
+
         //ITEM TO INVOICE TOTAL AMOUNT CALC
         $scope.totalAmountCalc = function() {
             // console.log(self.service_invoice);
@@ -1400,7 +1424,18 @@ app.component('serviceInvoiceForm', {
                 // }
                 //FOR TCS TAX
                 if (self.service_item_detail.tcs_percentage) {
-                    self.tcs_total = $scope.percentage(self.sub_total + self.gst_total + self.KFC_total, self.service_item_detail.tcs_percentage).toFixed(2);
+                    $("#doc_date").val();
+                    var d = $("#doc_date").val();
+                    var d1 = new Date(d.split("-").reverse().join("-")); //yyyy-mm-dd  
+                    var d2 = new Date('2021-03-31'); //yyyy-mm-dd  
+
+                    if (d1 > d2) {
+                        var tcs_percentage = 1;
+                    } else {
+                        var tcs_percentage = self.service_item_detail.tcs_percentage;
+                    }
+                    // self.tcs_total = $scope.percentage(self.sub_total + self.gst_total + self.KFC_total, self.service_item_detail.tcs_percentage).toFixed(2);
+                    self.tcs_total = $scope.percentage(self.sub_total + self.gst_total + self.KFC_total, tcs_percentage).toFixed(2);
                 }
 
                 //FOR CESS GST TAX
