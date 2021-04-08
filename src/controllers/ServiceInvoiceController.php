@@ -1762,9 +1762,21 @@ class ServiceInvoiceController extends Controller {
 
 					//FOR TCS TAX
 					if ($service_item->tcs_percentage) {
+						$date = date('d-m-Y', strtotime($service_invoice->document_date));
+						$document_date = (string) $date;
+						$date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
+						$date2 = Carbon::createFromFormat('d-m-Y', $document_date);
+						$result = $date1->gte($date2);
+
+						$tcs_percentage = $service_item->tcs_percentage;
+						if (!$result) {
+							$tcs_percentage = 1;
+						}
+
 						$gst_total = 0;
 						$gst_total = $cgst_amt + $sgst_amt + $igst_amt;
-						$tcs_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
+						// $tcs_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
+						$tcs_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $tcs_percentage / 100, 2);
 					}
 
 					//FOR CESS on GST TAX
@@ -1775,10 +1787,6 @@ class ServiceInvoiceController extends Controller {
 						$cess_on_gst_total += round(($serviceInvoiceItem->sub_total) * $service_item->cess_on_gst_percentage / 100, 2);
 					}
 
-					// dd(1);
-					// dump($serviceInvoiceItem->sub_total ? $serviceInvoiceItem->sub_total : 0);
-					// dump(number_format($igst_total));
-					// dd($cgst_total, $sgst_total, $igst_total);
 					$item['SlNo'] = $sno; //Statically assumed
 					$item['PrdDesc'] = $serviceInvoiceItem->serviceItem->name;
 					$item['IsServc'] = "Y"; //ALWAYS Y
