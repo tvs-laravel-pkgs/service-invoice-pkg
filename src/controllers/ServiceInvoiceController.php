@@ -2995,6 +2995,7 @@ class ServiceInvoiceController extends Controller {
 				->where('service_invoices.company_id', Auth::user()->company_id)
 			// ->where('status_id', 4)
 				->whereIn('status_id', [4, 7, 8])
+				->where('service_invoices.e_invoice_registration', 1)
 			// ->get()
 			;
 			// dd(count($query));
