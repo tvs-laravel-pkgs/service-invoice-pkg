@@ -728,7 +728,12 @@ app.component('serviceInvoiceApprovalView', {
                 };
                 // console.log(parseFloat(self.table_sub_total));
                 self.table_total = parseFloat(self.table_total) + parseFloat(service_invoice_item.total); // parseFloat(self.table_sub_total) + parseFloat(self.table_gst_total);
-                self.service_invoice.final_amount = Math.round(self.table_total).toFixed(2);
+                // self.service_invoice.final_amount = Math.round(self.table_total).toFixed(2);
+                if(self.table_total > 1){
+                    self.service_invoice.final_amount = Math.round(self.table_total).toFixed(2);
+                } else {
+                    self.service_invoice.final_amount = self.table_total.toFixed(2);
+                }
                 self.service_invoice.round_off_amount = parseFloat(self.service_invoice.final_amount - self.table_total).toFixed(2);
             });
             $scope.$apply()

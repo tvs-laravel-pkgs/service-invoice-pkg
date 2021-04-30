@@ -1488,7 +1488,11 @@ app.component('serviceInvoiceForm', {
                     }
                 };
                 self.table_total = parseFloat(self.table_total) + parseFloat(service_invoice_item.total); // parseFloat(self.table_sub_total) + parseFloat(self.table_gst_total);
-                self.service_invoice.final_amount = Math.round(self.table_total).toFixed(2);
+                if(self.table_total > 1){
+                    self.service_invoice.final_amount = Math.round(self.table_total).toFixed(2);
+                } else {
+                    self.service_invoice.final_amount = self.table_total.toFixed(2);
+                }
                 // self.service_invoice.round_off_amount = self.service_invoice.final_amount - self.table_total;
                 self.service_invoice.round_off_amount = parseFloat(self.service_invoice.final_amount - self.table_total).toFixed(2);
             });
@@ -1578,7 +1582,6 @@ app.component('serviceInvoiceForm', {
         });
 
 
-
         var form_id = '#form';
         var v = jQuery(form_id).validate({
             invalidHandler: function(event, validator) {
@@ -1626,36 +1629,39 @@ app.component('serviceInvoiceForm', {
                 },
             },
             submitHandler: function(form) {
-
-                let formData = new FormData($(form_id)[0]);
-                $('#submit').button('loading');
-                $.ajax({
-                        url: laravel_routes['saveServiceInvoice'],
-                        method: "POST",
-                        data: formData,
-                        processData: false,
-                        contentType: false,
-                    })
-                    .done(function(res) {
-                        // console.log(res.success);
-                        if (!res.success) {
-                            $('#submit').button('reset');
-                            var errors = '';
-                            for (var i in res.errors) {
-                                errors += '<li>' + res.errors[i] + '</li>';
+                if(self.service_invoice.final_amount == parseInt(0).toFixed(2)) {
+                    custom_noty('success', 'Service Invoice total must not be 0');
+                } else {
+                    let formData = new FormData($(form_id)[0]);
+                    $('#submit').button('loading');
+                    $.ajax({
+                            url: laravel_routes['saveServiceInvoice'],
+                            method: "POST",
+                            data: formData,
+                            processData: false,
+                            contentType: false,
+                        })
+                        .done(function(res) {
+                            // console.log(res.success);
+                            if (!res.success) {
+                                $('#submit').button('reset');
+                                var errors = '';
+                                for (var i in res.errors) {
+                                    errors += '<li>' + res.errors[i] + '</li>';
+                                }
+                                custom_noty('error', errors);
+                            } else {
+                                custom_noty('success', res.message);
+                                // $location.path('/service-invoice-pkg/service-invoice/list');
+                                $location.path('/service-invoice-pkg/service-invoice/view/' + $routeParams.type_id + '/' + res.service_invoice_id);
+                                $scope.$apply()
                             }
-                            custom_noty('error', errors);
-                        } else {
-                            custom_noty('success', res.message);
-                            // $location.path('/service-invoice-pkg/service-invoice/list');
-                            $location.path('/service-invoice-pkg/service-invoice/view/' + $routeParams.type_id + '/' + res.service_invoice_id);
-                            $scope.$apply()
-                        }
-                    })
-                    .fail(function(xhr) {
-                        $('#submit').button('reset');
-                        custom_noty('error', 'Something went wrong at server');
-                    });
+                        })
+                        .fail(function(xhr) {
+                            $('#submit').button('reset');
+                            custom_noty('error', 'Something went wrong at server');
+                        });
+                }
             },
         });
     }
@@ -1992,7 +1998,12 @@ app.component('serviceInvoiceView', {
                 };
                 // console.log(parseFloat(self.table_sub_total));
                 self.table_total = parseFloat(self.table_total) + parseFloat(service_invoice_item.total); // parseFloat(self.table_sub_total) + parseFloat(self.table_gst_total);
-                self.service_invoice.final_amount = Math.round(self.table_total).toFixed(2);
+                // self.service_invoice.final_amount = Math.round(self.table_total).toFixed(2);
+                if(self.table_total > 1){
+                    self.service_invoice.final_amount = Math.round(self.table_total).toFixed(2);
+                } else {
+                    self.service_invoice.final_amount = self.table_total.toFixed(2);
+                }
                 self.service_invoice.round_off_amount = parseFloat(self.service_invoice.final_amount - self.table_total).toFixed(2);
             });
             $scope.$apply()
