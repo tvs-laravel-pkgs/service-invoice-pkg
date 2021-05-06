@@ -2916,12 +2916,36 @@ class ServiceInvoiceController extends Controller {
 							}
 							//FOR TCS TAX
 							if (!empty($serviceInvoiceItem->serviceItem->tcs_percentage)) {
+								$document_date = (string) $service_invoice->document_date;
+								$date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
+								$date2 = Carbon::createFromFormat('d-m-Y', $document_date);
+								$result = $date1->gte($date2);
+
+								$tcs_percentage = $serviceInvoiceItem->serviceItem->tcs_percentage;
+								if (!$result) {
+									$tcs_percentage = 1;
+								}
+								
 								$gst_total = 0;
 								$gst_total = $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt;
-								$tcs_total = round(($gst_total + $serviceInvoiceItem->sub_total) * $serviceInvoiceItem->serviceItem->tcs_percentage / 100, 2);
+								// $tcs_total = round(($gst_total + $serviceInvoiceItem->sub_total) * $serviceInvoiceItem->serviceItem->tcs_percentage / 100, 2);
+								$tcs_total = round(($gst_total + $serviceInvoiceItem->sub_total) * $tcs_percentage / 100, 2);
 							}
 
 							if ($serviceInvoiceItem->serviceItem && $serviceInvoiceItem->serviceItem->tcs_percentage > 0) {
+								$tcs_percentage = '';
+								if($serviceInvoiceItem->serviceItem->tcs_percentage){
+									$document_date = (string) $service_invoice->document_date;
+									$date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
+									$date2 = Carbon::createFromFormat('d-m-Y', $document_date);
+									$result = $date1->gte($date2);
+
+									$tcs_percentage = $serviceInvoiceItem->serviceItem->tcs_percentage;
+									if (!$result) {
+										$tcs_percentage = 1;
+									}
+								}
+								
 								// dd($serviceInvoiceItem->sub_total);
 								$service_invoice_details[] = [
 									// $type,
@@ -2943,7 +2967,8 @@ class ServiceInvoiceController extends Controller {
 									($service_invoice->type_id == 1060 ? '-' : '') . ($serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt),
 									'-',
 									'-',
-									(float) $serviceInvoiceItem->serviceItem->tcs_percentage,
+									// (float) $serviceInvoiceItem->serviceItem->tcs_percentage,
+									(float) $tcs_percentage,
 									($service_invoice->type_id == 1060 ? '-' : '') . $tcs_total,
 									($service_invoice->type_id == 1060 ? '-' : '') . ($serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt + $tcs_total),
 								];
@@ -3131,9 +3156,19 @@ class ServiceInvoiceController extends Controller {
 							//FOR TCS TAX
 							$tcs_total = 0;
 							if (!empty($serviceInvoiceItem->serviceItem->tcs_percentage)) {
+								$document_date = (string) $service_invoice->document_date;
+								$date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
+								$date2 = Carbon::createFromFormat('d-m-Y', $document_date);
+								$result = $date1->gte($date2);
+
+								$tcs_percentage = $serviceInvoiceItem->serviceItem->tcs_percentage;
+								if (!$result) {
+									$tcs_percentage = 1;
+								}
 								$gst_total = 0;
 								$gst_total = $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt;
-								$tcs_total = round(($gst_total + $serviceInvoiceItem->sub_total) * $serviceInvoiceItem->serviceItem->tcs_percentage / 100, 2);
+								// $tcs_total = round(($gst_total + $serviceInvoiceItem->sub_total) * $serviceInvoiceItem->serviceItem->tcs_percentage / 100, 2);
+								$tcs_total = round(($gst_total + $serviceInvoiceItem->sub_total) * $tcs_percentage / 100, 2);
 							}
 
 							//FOR CESS ON GST
@@ -3145,6 +3180,19 @@ class ServiceInvoiceController extends Controller {
 
 							if ($service_invoice->outlets && $serviceInvoiceItem->serviceItem->taxCode) {
 								// dump(1);
+								$tcs_percentage = '';
+								if($serviceInvoiceItem->serviceItem->tcs_percentage){
+									$document_date = (string) $service_invoice->document_date;
+									$date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
+									$date2 = Carbon::createFromFormat('d-m-Y', $document_date);
+									$result = $date1->gte($date2);
+
+									$tcs_percentage = $serviceInvoiceItem->serviceItem->tcs_percentage;
+									if (!$result) {
+										$tcs_percentage = 1;
+									}
+								}
+
 								$service_invoice_details[] = [
 									$service_invoice->type->name,
 									$service_invoice->toAccountType->name,
@@ -3165,7 +3213,8 @@ class ServiceInvoiceController extends Controller {
 									$sgst_percentage,
 									$igst_percentage,
 									$kfc_percentage,
-									$serviceInvoiceItem->serviceItem->tcs_percentage,
+									// $serviceInvoiceItem->serviceItem->tcs_percentage,
+									$tcs_percentage,
 									$serviceInvoiceItem->serviceItem->cess_on_gst_percentage,
 									$cgst_amt ? ($service_invoice->type_id == 1060 ? '-' : '') . $cgst_amt : 0,
 									$sgst_amt ? ($service_invoice->type_id == 1060 ? '-' : '') . $sgst_amt : 0,
