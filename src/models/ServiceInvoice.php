@@ -2366,18 +2366,24 @@ class ServiceInvoice extends Model {
 								// dump($invoice_amount);
 
 								//FOR ROUND OFF
-								$round_off = 0;
-								if ($invoice_amount < round($invoice_amount)) {
-									$round_off = round($invoice_amount) - $invoice_amount;
-								} else if ($invoice_amount > round($invoice_amount)) {
-									$round_off = $invoice_amount - round($invoice_amount);
-								} else {
+								if($invoice_amount > 1){
 									$round_off = 0;
+									if ($invoice_amount < round($invoice_amount)) {
+										$round_off = round($invoice_amount) - $invoice_amount;
+									} else if ($invoice_amount > round($invoice_amount)) {
+										$round_off = $invoice_amount - round($invoice_amount);
+									} else {
+										$round_off = 0;
+									}
+									$service_invoice->final_amount = round($invoice_amount);
+								}  else {
+									$round_off = 0;
+									$service_invoice->final_amount = $invoice_amount;
 								}
 								// dump(number_format($round_off, 2));
 								// dd(round($invoice_amount));
 								$service_invoice->round_off_amount = number_format($round_off, 2);
-								$service_invoice->final_amount = round($invoice_amount);
+								// $service_invoice->final_amount = round($invoice_amount);
 								try {
 									$service_invoice->save();
 									DB::commit();
