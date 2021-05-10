@@ -6,6 +6,7 @@ use Abs\AxaptaExportPkg\AxaptaExport;
 use Abs\ImportCronJobPkg\ImportCronJob;
 use Abs\SerialNumberPkg\SerialNumberGroup;
 use Abs\ServiceInvoicePkg\ServiceInvoiceController;
+use Abs\ServiceInvoicePkg\ServiceInvoiceApprovalController;
 use Abs\TaxPkg\Tax;
 use Abs\TaxPkg\TaxCode;
 use App\Address;
@@ -1859,7 +1860,11 @@ class ServiceInvoice extends Model {
 						if ($to_account_type_id == 1440) {
 							//UPDATE CUSTOMER AND ADDRESS
 							try {
-								$customer = ServiceInvoiceController::searchCustomerImport(trim($record['Customer/Vendor Code']), $job);
+								// $customer = ServiceInvoiceController::searchCustomerImport(trim($record['Customer/Vendor Code']), $job);
+								// $obj = new ServiceInvoiceApprovalController;
+								$obj = new ServiceInvoiceController;
+								$customer = $obj->customerImportNew(trim($record['Customer/Vendor Code']), $job);
+								// dd(123);
 							} catch (\SoapFault $e) {
 								$status['errors'][] = 'Somthing went worng in SOAP Service Call!';
 							} catch (\Exception $e) {
@@ -2294,17 +2299,15 @@ class ServiceInvoice extends Model {
 
 										//TCS PERCANTAGE
 										if ($service_item->tcs_percentage) {
-											$tcs_percentage = '';
-											if($serviceItem->tcs_percentage){
-												$document_date = (string) $service_invoice->document_date;
-												$date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
-												$date2 = Carbon::createFromFormat('d-m-Y', $document_date);
-												$result = $date1->gte($date2);
 
-												$tcs_percentage = $serviceInvoiceItem->serviceItem->tcs_percentage;
-												if (!$result) {
-													$tcs_percentage = 1;
-												}
+											$document_date = (string) $service_invoice->document_date;
+											$date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
+											$date2 = Carbon::createFromFormat('d-m-Y', $document_date);
+											$result = $date1->gte($date2);
+
+											$tcs_percentage = $service_item->tcs_percentage;
+											if (!$result) {
+												$tcs_percentage = 1;
 											}
 
 											// $gst_total += round(($service_item->tcs_percentage / 100) * ($request->qty * $request->amount), 2);
@@ -2314,7 +2317,8 @@ class ServiceInvoice extends Model {
 											// $TCS_tax_amount = round(($gst_total + $item_record['Quantity'] * $item_record['Amount']) * $service_item->tcs_percentage / 100, 2); //ONE PERCENTAGE FOR TCS
 											$TCS_tax_amount = round(($gst_total + $item_record['Quantity'] * $item_record['Amount']) * $tcs_percentage / 100, 2); //ONE PERCENTAGE FOR TCS
 											$item_taxes[5] = [ // for TCS
-												'percentage' => $service_item->tcs_percentage,
+												// 'percentage' => $service_item->tcs_percentage,
+												'percentage' => $tcs_percentage,
 												'amount' => $TCS_tax_amount,
 											];
 										} else {

@@ -2933,17 +2933,15 @@ class ServiceInvoiceController extends Controller {
 							}
 
 							if ($serviceInvoiceItem->serviceItem && $serviceInvoiceItem->serviceItem->tcs_percentage > 0) {
-								$tcs_percentage = '';
-								if($serviceInvoiceItem->serviceItem->tcs_percentage){
-									$document_date = (string) $service_invoice->document_date;
-									$date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
-									$date2 = Carbon::createFromFormat('d-m-Y', $document_date);
-									$result = $date1->gte($date2);
 
-									$tcs_percentage = $serviceInvoiceItem->serviceItem->tcs_percentage;
-									if (!$result) {
-										$tcs_percentage = 1;
-									}
+								$document_date = (string) $service_invoice->document_date;
+								$date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
+								$date2 = Carbon::createFromFormat('d-m-Y', $document_date);
+								$result = $date1->gte($date2);
+
+								$tcs_percentage = $serviceInvoiceItem->serviceItem->tcs_percentage;
+								if (!$result) {
+									$tcs_percentage = 1;
 								}
 								
 								// dd($serviceInvoiceItem->sub_total);
@@ -3585,6 +3583,182 @@ class ServiceInvoiceController extends Controller {
 
 	}
 
+	public function customerImportNew($code, $job) {
+		try {
+			$key = $code;
+
+			$this->soapWrapper->add('customer', function ($service) {
+				$service
+					->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
+					->trace(true);
+			});
+			$params = ['ACCOUNTNUM' => $code];
+			$getResult = $this->soapWrapper->call('customer.GetNewCustMasterDetails_Search', [$params]);
+			$customer_data = $getResult->GetNewCustMasterDetails_SearchResult;
+			if (empty($customer_data)) {
+				return response()->json(['success' => false, 'error' => 'Customer Not Available!.']);
+			}
+
+			// Convert xml string into an object
+			$xml_customer_data = simplexml_load_string($customer_data->any);
+			// dd($xml_customer_data);
+			// Convert into json
+			$customer_encode = json_encode($xml_customer_data);
+
+			// Convert into associative array
+			$customer_data = json_decode($customer_encode, true);
+
+			$api_customer_data = $customer_data['Table'];
+			if (count($api_customer_data) == 0) {
+				return response()->json(['success' => false, 'error' => 'Customer Not Available!.']);
+			}
+			// dd($api_customer_data);
+			$search_list = [];
+			if (isset($api_customer_data)) {
+				$data = [];
+				$array_count = array_filter($api_customer_data, 'is_array');
+				if (count($array_count) > 0) {
+					// if (count($api_customer_data) > 0) {
+					foreach ($api_customer_data as $key => $customer_data) {
+						$data['code'] = $customer_data['ACCOUNTNUM'];
+						$data['name'] = $customer_data['NAME'];
+						$data['mobile_no'] = isset($customer_data['LOCATOR']) && $customer_data['LOCATOR'] != 'Not available' ? $customer_data['LOCATOR'] : NULL;
+						$data['cust_group'] = isset($customer_data['CUSTGROUP']) && $customer_data['CUSTGROUP'] != 'Not available' ? $customer_data['CUSTGROUP'] : NULL;
+						$data['pan_number'] = isset($customer_data['PANNO']) && $customer_data['PANNO'] != 'Not available' ? $customer_data['PANNO'] : NULL;
+
+						$search_list[] = $data;
+					}
+				} else {
+					$data['code'] = $api_customer_data['ACCOUNTNUM'];
+					$data['name'] = $api_customer_data['NAME'];
+					$data['mobile_no'] = isset($api_customer_data['LOCATOR']) && $api_customer_data['LOCATOR'] != 'Not available' ? $api_customer_data['LOCATOR'] : NULL;
+					$data['cust_group'] = isset($api_customer_data['CUSTGROUP']) && $api_customer_data['CUSTGROUP'] != 'Not available' ? $api_customer_data['CUSTGROUP'] : NULL;
+					$data['pan_number'] = isset($api_customer_data['PANNO']) && $api_customer_data['PANNO'] != 'Not available' ? $api_customer_data['PANNO'] : NULL;
+
+					$search_list[] = $data;
+				}
+
+				if ($search_list) {
+					$this->soapWrapper->add('address', function ($service) {
+						$service
+							->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
+							->trace(true);
+					});
+					$params = ['ACCOUNTNUM' => $code];
+					$getResult = $this->soapWrapper->call('address.GetNewCustomerAddress_Search', [$params]);
+					$customer_data = $getResult->GetNewCustomerAddress_SearchResult;
+					if (empty($customer_data)) {
+						return response()->json(['success' => false, 'error' => 'Address Not Available!.']);
+					}
+		
+					// Convert xml string into an object
+					$xml_customer_data = simplexml_load_string($customer_data->any);
+					// dd($xml_customer_data);
+		
+					// Convert into json
+					$customer_encode = json_encode($xml_customer_data);
+					// Convert into associative array
+					$customer_data = json_decode($customer_encode, true);
+					// dd($customer_data);
+		
+					$api_customer_data = $customer_data['Table'];
+					// dd($api_customer_data);
+					if (count($api_customer_data) == 0) {
+						return response()->json(['success' => false, 'error' => 'Address Not Available!.']);
+					}
+		
+					$customer = Customer::firstOrNew(['code' => $code]);
+					$customer->company_id = $job->company_id;
+					$customer->name = $search_list[0]['name'];
+					$customer->cust_group = empty($search_list[0]['cust_group']) ? NULL : $search_list[0]['cust_group'];
+					$customer->gst_number = empty($search_list[0]['gst_number']) ? NULL : $search_list[0]['gst_number'];
+					$customer->pan_number = empty($search_list[0]['pan_number']) ? NULL : $search_list[0]['pan_number'];
+					$customer->mobile_no = empty($search_list[0]['mobile_no']) ? NULL : $search_list[0]['mobile_no'];
+					$customer->address = NULL;
+					$customer->city = NULL; //$customer_data['CITY'];
+					$customer->zipcode = NULL; //$customer_data['ZIPCODE'];
+					$customer->created_at = Carbon::now();
+					$customer->save();
+		
+					$list = [];
+					if ($api_customer_data) {
+						$data = [];
+						if (isset($api_customer_data)) {
+							$array_count = array_filter($api_customer_data, 'is_array');
+							if (count($array_count) > 0) {
+								// dd('mu;l');
+								foreach ($api_customer_data as $key => $customer_data) {
+		
+									$address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $customer_data['RECID']]); //CUSTOMER
+									// dd($address);
+									$address->company_id = $job->company_id;
+									$address->entity_id = $customer->id;
+									$address->ax_id = $customer_data['RECID'];
+									$address->gst_number = isset($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available' ? $customer_data['GST_NUMBER'] : NULL;
+		
+									$address->ax_customer_location_id = isset($customer_data['CUSTOMER_LOCATION_ID']) ? $customer_data['CUSTOMER_LOCATION_ID'] : NULL;
+		
+									$address->address_of_id = 24;
+									$address->address_type_id = 40;
+									$address->name = 'Primary Address_' . $customer_data['RECID'];
+									$address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
+									$city = City::where('name', $customer_data['CITY'])->first();
+									$state = State::where('code', $customer_data['STATE'])->first();
+									$address->country_id = $state ? $state->country_id : NULL;
+									$address->state_id = $state ? $state->id : NULL;
+									$address->city_id = $city ? $city->id : NULL;
+									$address->pincode = $customer_data['ZIPCODE'] == 'Not available' ? NULL : $customer_data['ZIPCODE'];
+									$address->is_primary = isset($customer_data['ISPRIMARY']) ? $customer_data['ISPRIMARY'] : 0;
+		
+									$address->save();
+									$customer_address[] = $address;
+								}
+							} else {
+								// dd('sing');
+								$address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $api_customer_data['RECID']]); //CUSTOMER
+								// dd($address);
+								$address->company_id = $job->company_id;
+								$address->entity_id = $customer->id;
+								$address->ax_id = $api_customer_data['RECID'];
+		
+								$address->gst_number = isset($api_customer_data['GST_NUMBER']) && $api_customer_data['GST_NUMBER'] != 'Not available' ? $api_customer_data['GST_NUMBER'] : NULL;
+		
+								$address->ax_customer_location_id = isset($api_customer_data['CUSTOMER_LOCATION_ID']) ? $api_customer_data['CUSTOMER_LOCATION_ID'] : NULL;
+		
+								$address->address_of_id = 24;
+								$address->address_type_id = 40;
+								$address->name = 'Primary Address_' . $api_customer_data['RECID'];
+								$address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
+								$city = City::where('name', $api_customer_data['CITY'])->first();
+								// if ($city) {
+								$state = State::where('code', $api_customer_data['STATE'])->first();
+								$address->country_id = $state ? $state->country_id : NULL;
+								$address->state_id = $state ? $state->id : NULL;
+								// }
+								$address->city_id = $city ? $city->id : NULL;
+								$address->pincode = $api_customer_data['ZIPCODE'] == 'Not available' ? NULL : $api_customer_data['ZIPCODE'];
+								$address->is_primary = isset($api_customer_data['ISPRIMARY']) ? $api_customer_data['ISPRIMARY'] : NULL;
+								$address->save();
+								// dd($address);
+								$customer_address[] = $address;
+							}
+						} else {
+							$customer_address = [];
+						}
+					}
+				}
+				return true;
+				
+			}
+			// return response()->json($list);
+		} catch (\SoapFault $e) {
+			return response()->json(['success' => false, 'error' => 'Somthing went worng in SOAP Service!']);
+		} catch (\Exception $e) {
+			return response()->json(['success' => false, 'error' => 'Somthing went worng!']);
+		}
+
+	}
+
 	public function getCustomerAddress(Request $request) {
 		// dd($request->all());
 		try {
@@ -4015,13 +4189,15 @@ class ServiceInvoiceController extends Controller {
 
 	public function customerImport($code, $job) {
 		// dd($code);
-		$this->soapWrapper->add('customerImport', function ($service) {
+		$this->soapWrapper->add('customer', function ($service) {
 			$service
 				->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
 				->trace(true);
 		});
 		$params = ['ACCOUNTNUM' => $code];
-		$getResult = $this->soapWrapper->call('customerImport.GetNewCustMasterDetails_Search', [$params]);
+		dump($code);
+		$getResult = $this->soapWrapper->call('customer.GetNewCustMasterDetails_Search', [$params]);
+		dd($getresult);
 		$customer_data = $getResult->GetNewCustMasterDetails_SearchResult;
 		if (empty($customer_data)) {
 			return response()->json(['success' => false, 'error' => 'Customer Not Available!.']);
@@ -4247,9 +4423,20 @@ class ServiceInvoiceController extends Controller {
 
 			//FOR TCS TAX
 			if ($service_item->tcs_percentage) {
+				$document_date = (string) $service_invoice->document_date;
+				$date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
+				$date2 = Carbon::createFromFormat('d-m-Y', $document_date);
+				$result = $date1->gte($date2);
+
+				$tcs_percentage = $service_item->tcs_percentage;
+				if (!$result) {
+					$tcs_percentage = 1;
+				}
+
 				$gst_total = 0;
 				$gst_total = $cgst_amt + $sgst_amt + $igst_amt;
-				$tcs_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
+				// $tcs_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
+				$tcs_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $tcs_percentage / 100, 2);
 			}
 
 			//FOR CESS on GST TAX
