@@ -3193,7 +3193,7 @@ class ServiceInvoiceController extends Controller {
 
 								$service_invoice_details[] = [
 									$service_invoice->type->name,
-									$service_invoice->customer->gst_number != NULL ? 'B2B' : 'B2C',
+									$service_invoice->address->gst_number != NULL ? 'B2B' : 'B2C',
 									$service_invoice->toAccountType->name,
 									$service_invoice->customer->code,
 									$service_invoice->number,
