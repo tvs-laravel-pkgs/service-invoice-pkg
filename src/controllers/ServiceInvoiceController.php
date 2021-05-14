@@ -3018,7 +3018,7 @@ class ServiceInvoiceController extends Controller {
 				->where('service_invoices.company_id', Auth::user()->company_id)
 			// ->where('status_id', 4)
 				->whereIn('status_id', [4, 7, 8])
-				->where('service_invoices.e_invoice_registration', 1)
+				// ->where('service_invoices.e_invoice_registration', 1)
 			// ->get()
 			;
 			// dd(count($query));
@@ -3042,7 +3042,7 @@ class ServiceInvoiceController extends Controller {
 			$service_invoices = $service_invoices->get();
 			// dd($service_invoices);
 
-			$service_invoice_header = ['Service Type', 'Account Type', 'Customer/Vendor Code', 'Invoice No', 'Invoice Date', 'Ref. Invoice Number', 'Ref. Invoice Date', 'Customer/Vendor Name', 'GSTIN', 'Billing Address', 'Invoice Value', 'HSN/SAC Code', 'Unit Of Measure', 'Qty', 'Item Taxable Value', 'CGST Rate', 'SGST Rate', 'IGST Rate', 'KFC Rate', 'TCS Rate', 'CESS on GST Rate', 'CGST Amount', 'SGST Amount', 'IGST Amount', 'KFC Amount', 'TCS Amount', 'CESS on GST Amount',
+			$service_invoice_header = ['Service Type', 'Supply Type', 'Account Type', 'Customer/Vendor Code', 'Invoice No', 'Invoice Date', 'Ref. Invoice Number', 'Ref. Invoice Date', 'Customer/Vendor Name', 'GSTIN', 'Billing Address', 'Invoice Value', 'HSN/SAC Code', 'Unit Of Measure', 'Qty', 'Item Taxable Value', 'CGST Rate', 'SGST Rate', 'IGST Rate', 'KFC Rate', 'TCS Rate', 'CESS on GST Rate', 'CGST Amount', 'SGST Amount', 'IGST Amount', 'KFC Amount', 'TCS Amount', 'CESS on GST Amount', 'IRN Number', 
 			];
 			$service_invoice_details = array();
 
@@ -3179,7 +3179,7 @@ class ServiceInvoiceController extends Controller {
 							if ($service_invoice->outlets && $serviceInvoiceItem->serviceItem->taxCode) {
 								// dump(1);
 								$tcs_percentage = '';
-								if($serviceInvoiceItem->serviceItem->tcs_percentage){
+								if($serviceInvoiceItem->serviceItem->tcs_percentage) {
 									$document_date = (string) $service_invoice->document_date;
 									$date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
 									$date2 = Carbon::createFromFormat('d-m-Y', $document_date);
@@ -3193,6 +3193,7 @@ class ServiceInvoiceController extends Controller {
 
 								$service_invoice_details[] = [
 									$service_invoice->type->name,
+									$service_invoice->customer->gst_number != NULL ? 'B2B' : 'B2C',
 									$service_invoice->toAccountType->name,
 									$service_invoice->customer->code,
 									$service_invoice->number,
@@ -3220,6 +3221,7 @@ class ServiceInvoiceController extends Controller {
 									$kfc_amt ? ($service_invoice->type_id == 1060 ? '-' : '') . $kfc_amt : 0,
 									$tcs_total ? ($service_invoice->type_id == 1060 ? '-' : '') . $tcs_total : 0,
 									$cess_on_gst_total ? ($service_invoice->type_id == 1060 ? '-' : '') . $cess_on_gst_total : 0,
+									$service_invoice->irn_number ? $service_invoice->irn_number : '-',
 								];
 							}
 						}
