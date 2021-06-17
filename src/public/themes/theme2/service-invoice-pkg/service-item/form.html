@@ -153,6 +153,17 @@
                                                 </div>
                                             </div><!-- Form Group -->
                                         </div><!-- Row -->
+                                        <div class="col-md-3">
+                                            <div class="input-text form-group">
+                                                <label>TCS <sup class="mandatory">*</sup></label>
+                                                <div class="tab-switch">
+                                                    <md-switch ng-model="$ctrl.tcs_value" aria-label="Switch 1" ng-true-value="'No'" ng-false-value="'Yes'" class="md-warn">
+                                                        {{ $ctrl.tcs_value }}
+                                                    </md-switch>
+                                                    <input type="hidden" name="tcs" value="{{$ctrl.tcs_value}}">
+                                                </div>
+                                            </div><!-- Form Group -->
+                                        </div><!-- Row -->
                                         <div class="tab-pane-footer">
                                             <div class="row">
                                                 <div class="col-md-12">

@@ -27,6 +27,7 @@ use App\User;
 use App\Vendor;
 use Carbon\Carbon;
 use DB;
+use Auth;
 use File;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -466,15 +467,19 @@ class ServiceInvoice extends Model {
 				// dump($tcs_calc_gst['credit'], $tcs_calc_gst['debit'], $tcs_calc_gst['invoice'], $invoice_item->sub_total);
 				// dump($kfc['credit'], $kfc['debit'], $kfc['invoice'], $invoice_item->sub_total);
 				// dump($kfc['invoice'], $tcs_calc_gst['invoice'], $invoice_item->sub_total);
-				if ($invoice_item->serviceItem->tcs_percentage) {
+				if ($invoice_item->serviceItem->tcs_percentage && $invoice_item->serviceItem->is_tcs == 1) {
 					$document_date = (string) $service_invoice->document_date;
 					$date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
 					$date2 = Carbon::createFromFormat('d-m-Y', $document_date);
 					$result = $date1->gte($date2);
 
-					$tcs_percentage = $invoice_item->serviceItem->tcs_percentage;
-					if (!$result) {
-						$tcs_percentage = 1;
+					$tcs_limit = Entity::where('entity_type_id', 38)->where('company_id', Auth::user()->company_id)->pluck('name')->first();
+					$tcs_percentage = 0;
+					if($invoice_item->sub_total >= $tcs_limit) {
+						$tcs_percentage = $invoice_item->serviceItem->tcs_percentage;
+						if (!$result) {
+							$tcs_percentage = 1;
+						}
 					}
 
 					// $tcs_total['credit'] += $this->type_id == 1060 ? round(($kfc_amt['credit'] + $igst_amt['credit'] + $sgst_amt['credit'] + $cgst_amt['credit'] + $invoice_item->sub_total) * $invoice_item->serviceItem->tcs_percentage / 100, 2) : 0;
@@ -2298,16 +2303,20 @@ class ServiceInvoice extends Model {
 										}
 
 										//TCS PERCANTAGE
-										if ($service_item->tcs_percentage) {
+										if ($service_item->tcs_percentage && $service_item->is_tcs ==1) {
 
 											$document_date = (string) $service_invoice->document_date;
 											$date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
 											$date2 = Carbon::createFromFormat('d-m-Y', $document_date);
 											$result = $date1->gte($date2);
 
-											$tcs_percentage = $service_item->tcs_percentage;
-											if (!$result) {
-												$tcs_percentage = 1;
+											$tcs_limit = Entity::where('entity_type_id', 38)->where('company_id', Auth::user()->company_id)->pluck('name')->first();
+											$tcs_percentage = 0;
+											if( ($item_record['Amount'] * $item_record['Quantity']) >= $tcs_limit) {
+												$tcs_percentage = $service_item->tcs_percentage;
+												if (!$result) {
+													$tcs_percentage = 1;
+												}
 											}
 
 											// $gst_total += round(($service_item->tcs_percentage / 100) * ($request->qty * $request->amount), 2);
