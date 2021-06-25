@@ -292,12 +292,6 @@ app.component('serviceItemForm', {
             } else {
                 self.switch_value = 'Active';
             }
-
-            if (self.service_item.is_tcs == 1) {
-                self.tcs_value = 'Yes';
-            } else {
-                self.tcs_value = 'No';
-            }
             //self.extras = response.data.extras;
             $rootScope.loading = false;
         });

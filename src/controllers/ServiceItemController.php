@@ -203,12 +203,6 @@ class ServiceItemController extends Controller {
 				$service_item->deleted_at = NULL;
 				$service_item->deleted_by_id = NULL;
 			}
-
-			if ($request->tcs == 'Yes') {
-				$service_item->is_tcs = 1;
-			} else {
-				$service_item->is_tcs = 0;
-			}
 			$service_item->fill($request->all());
 			$service_item->company_id = Auth::user()->company_id;
 			$service_item->code = $request->code;

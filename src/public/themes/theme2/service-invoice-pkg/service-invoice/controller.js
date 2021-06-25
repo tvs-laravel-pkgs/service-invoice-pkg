@@ -575,7 +575,6 @@ app.component('serviceInvoiceForm', {
             self.e_invoice_uom = {};
             self.extras = response.data.extras;
             self.config_values = response.data.config_values;
-            self.tcs_limit = response.data.tcs_limit;
             self.action = response.data.action;
             console.log(response);
             if (self.action == 'Edit') {
@@ -1385,9 +1384,9 @@ app.component('serviceInvoiceForm', {
             if (self.qty && self.rate) {
                 self.sub_total = self.qty * self.rate;
                 // self.sub_total = self.rate;
-                // console.log(self.sub_total);
-                // console.log(self.service_item_detail);
-                // console.log('in');
+                console.log(self.sub_total);
+                console.log(self.service_item_detail);
+                console.log('in');
                 if (self.service_item_detail.tax_code != null) {
                     if (self.service_item_detail.tax_code.taxes.length > 0) {
                         $(self.service_item_detail.tax_code.taxes).each(function(key, tax) {
@@ -1423,22 +1422,17 @@ app.component('serviceInvoiceForm', {
                 //     }
                 // }
                 //FOR TCS TAX
-
-                if (self.service_item_detail.tcs_percentage && self.service_item_detail.is_tcs == 1) {
-
+                if (self.service_item_detail.tcs_percentage) {
                     $("#doc_date").val();
                     var d = $("#doc_date").val();
                     var d1 = new Date(d.split("-").reverse().join("-")); //yyyy-mm-dd  
                     var d2 = new Date('2021-03-31'); //yyyy-mm-dd  
 
-                    var tcs_percentage = 0;
-                    if ( self.sub_total >= self.tcs_limit ) {
-                        tcs_percentage = self.service_item_detail.tcs_percentage;                        
-                        if (d1 > d2) {
-                            tcs_percentage = 1;
-                        }
+                    if (d1 > d2) {
+                        var tcs_percentage = 1;
+                    } else {
+                        var tcs_percentage = self.service_item_detail.tcs_percentage;
                     }
-                     
                     // self.tcs_total = $scope.percentage(self.sub_total + self.gst_total + self.KFC_total, self.service_item_detail.tcs_percentage).toFixed(2);
                     self.tcs_total = $scope.percentage(self.sub_total + self.gst_total + self.KFC_total, tcs_percentage).toFixed(2);
                 }
@@ -1715,7 +1709,6 @@ app.component('serviceInvoiceView', {
             self.extras = response.data.extras;
             self.approval_status = response.data.approval_status;
             self.service_invoice_status = response.data.service_invoice_status;
-            self.tcs_limit = response.data.tcs_limit;
             self.action = response.data.action;
             console.log(self.service_invoice);
             if (self.action == 'View') {
@@ -1932,25 +1925,9 @@ app.component('serviceInvoiceView', {
                     }
                 }
                 //FOR TCS TAX
-                if (self.service_item_detail.tcs_percentage && self.service_item_detail.is_tcs == 1) {
-
-                    $(".doc_date").val();
-                    var d = $(".doc_date").val();
-                    var d1 = new Date(d.split("-").reverse().join("-")); //yyyy-mm-dd  
-                    var d2 = new Date('2021-03-31'); //yyyy-mm-dd  
-
-                    var tcs_percentage = 0;
-                    if ( self.sub_total >= self.tcs_limit ) {
-                        tcs_percentage = self.service_item_detail.tcs_percentage;
-                        if (d1 > d2) {
-                            tcs_percentage = 1;
-                        } 
-                    }
-                     
-                    // self.tcs_total = $scope.percentage(self.sub_total + self.gst_total + self.KFC_total, self.service_item_detail.tcs_percentage).toFixed(2);
-                    self.tcs_total = $scope.percentage(self.sub_total + self.gst_total + self.KFC_total, tcs_percentage).toFixed(2);
+                if (self.service_item_detail.tcs_percentage) {
+                    self.tcs_total = $scope.percentage(self.sub_total + self.gst_total + self.KFC_total, self.service_item_detail.tcs_percentage).toFixed(2);
                 }
-
                 //FOR CESS GST TAX
                 // console.log(self.service_invoice.branch.primary_address.state_id+ "state");
                 if (self.service_item_detail.cess_on_gst_percentage) {
