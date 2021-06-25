@@ -1153,10 +1153,21 @@ class ServiceInvoice extends Model {
 				// dump($kfc['credit'], $kfc['debit'], $kfc['invoice'], $invoice_item->sub_total);
 				// dump($kfc['invoice'], $tcs_calc_gst['invoice'], $invoice_item->sub_total);
 				if ($invoice_item->serviceItem->tcs_percentage) {
-					$tcs_total['credit'] += $this->type_id == 1060 ? round(($kfc_amt['credit'] + $igst_amt['credit'] + $sgst_amt['credit'] + $cgst_amt['credit'] + $invoice_item->sub_total) * $invoice_item->serviceItem->tcs_percentage / 100, 2) : 0;
-					$tcs_total['debit'] += $this->type_id == 1061 ? round(($kfc_amt['debit'] + $igst_amt['debit'] + $sgst_amt['debit'] + $cgst_amt['debit'] + $invoice_item->sub_total) * $invoice_item->serviceItem->tcs_percentage / 100, 2) : 0;
 
-					$tcs_total['invoice'] += $this->type_id == 1062 ? round(($kfc_amt['invoice'] + $igst_amt['invoice'] + $sgst_amt['invoice'] + $cgst_amt['invoice'] + $invoice_item->sub_total) * $invoice_item->serviceItem->tcs_percentage / 100, 2) : 0;
+					$document_date = (string) $service_invoice->document_date;
+					$date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
+					$date2 = Carbon::createFromFormat('d-m-Y', $document_date);
+					$result = $date1->gte($date2);
+
+					$tcs_percentage = $invoice_item->serviceItem->tcs_percentage;
+					if (!$result) {
+						$tcs_percentage = 1;
+					}
+
+					$tcs_total['credit'] += $this->type_id == 1060 ? round(($kfc_amt['credit'] + $igst_amt['credit'] + $sgst_amt['credit'] + $cgst_amt['credit'] + $invoice_item->sub_total) * $tcs_percentage / 100, 2) : 0;
+					$tcs_total['debit'] += $this->type_id == 1061 ? round(($kfc_amt['debit'] + $igst_amt['debit'] + $sgst_amt['debit'] + $cgst_amt['debit'] + $invoice_item->sub_total) * $tcs_percentage / 100, 2) : 0;
+
+					$tcs_total['invoice'] += $this->type_id == 1062 ? round(($kfc_amt['invoice'] + $igst_amt['invoice'] + $sgst_amt['invoice'] + $cgst_amt['invoice'] + $invoice_item->sub_total) * $tcs_percentage / 100, 2) : 0;
 				}
 
 				//ONLY APPLICABLE FOR KL OUTLETS

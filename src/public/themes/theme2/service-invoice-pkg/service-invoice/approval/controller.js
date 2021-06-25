@@ -1,11 +1,11 @@
 app.component('serviceInvoiceApprovalList', {
     templateUrl: service_invoice_approval_list_template_url,
-    controller: function($http, $location, HelperService, $scope, $routeParams, $rootScope, $element, $timeout) {
+    controller: function ($http, $location, HelperService, $scope, $routeParams, $rootScope, $element, $timeout) {
         var self = this;
         self.hasPermission = HelperService.hasPermission;
         $http.get(
             approval_type_validation_url
-        ).then(function(response) {
+        ).then(function (response) {
             if (!response.data.success) {
                 new Noty({
                     type: 'error',
@@ -21,13 +21,13 @@ app.component('serviceInvoiceApprovalList', {
         console.log($routeParams.approval_level_id);
         $http.get(
             get_cn_dn_approval_filter_url
-        ).then(function(response) {
+        ).then(function (response) {
             self.extras = response.data.extras;
             $rootScope.loading = false;
             //console.log(self.extras);
         });
         var dataTable;
-        setTimeout(function() {
+        setTimeout(function () {
             var table_scroll;
             table_scroll = $('.page-main-content').height() - 37;
             dataTable = $('#cn-dn-approval-table').DataTable({
@@ -45,10 +45,10 @@ app.component('serviceInvoiceApprovalList', {
                 scrollY: table_scroll + "px",
                 scrollCollapse: true,
                 stateSave: true,
-                stateSaveCallback: function(settings, data) {
+                stateSaveCallback: function (settings, data) {
                     localStorage.setItem('SIDataTables_' + settings.sInstance, JSON.stringify(data));
                 },
-                stateLoadCallback: function(settings) {
+                stateLoadCallback: function (settings) {
                     var state_save_val = JSON.parse(localStorage.getItem('SIDataTables_' + settings.sInstance));
                     if (state_save_val) {
                         $('#search').val(state_save_val.search.search);
@@ -65,7 +65,7 @@ app.component('serviceInvoiceApprovalList', {
                     url: laravel_routes['getServiceInvoiceApprovalList'],
                     type: "GET",
                     dataType: "json",
-                    data: function(d) {
+                    data: function (d) {
                         // d.approval_status_id = self.approval_type_id; //NO DATA AVILABLE FOR APPROVAL TYPE ITS STATIC APPROVAL
                         d.approval_status_id = $routeParams.approval_level_id;
                         d.invoice_number = $('#invoice_number').val();
@@ -96,19 +96,19 @@ app.component('serviceInvoiceApprovalList', {
                     { data: 'customer_name', name: 'customers.name', searchable: true },
                     { data: 'invoice_amount', searchable: false, class: 'text-right' },
                 ],
-                "initComplete": function(settings, json) {
+                "initComplete": function (settings, json) {
                     $('.dataTables_length select').select2();
                 },
-                rowCallback: function(row, data) {
+                rowCallback: function (row, data) {
                     $(row).addClass('highlight-row');
                 },
-                infoCallback: function(settings, start, end, max, total, pre) {
+                infoCallback: function (settings, start, end, max, total, pre) {
                     $('#table_info').html(total)
                     $('.foot_info').html('Showing ' + start + ' to ' + end + ' of ' + max + ' entries')
                 },
             });
         }, 1000);
-        $('.modal').bind('click', function(event) {
+        $('.modal').bind('click', function (event) {
             if ($('.md-select-menu-container').hasClass('md-active')) {
                 $mdSelect.hide();
             }
@@ -118,36 +118,36 @@ app.component('serviceInvoiceApprovalList', {
             $('#cn-dn-approval-table').DataTable().ajax.reload();
         }
 
-        $('#invoice_number').keyup(function() {
-            setTimeout(function() {
+        $('#invoice_number').keyup(function () {
+            setTimeout(function () {
                 dataTable.draw();
             }, 900);
         });
-        $('body').on('click', '.applyBtn', function() { //alert('sd');
-            setTimeout(function() {
+        $('body').on('click', '.applyBtn', function () { //alert('sd');
+            setTimeout(function () {
                 dataTable.draw();
             }, 900);
         });
-        $('body').on('click', '.cancelBtn', function() { //alert('sd');
-            setTimeout(function() {
+        $('body').on('click', '.cancelBtn', function () { //alert('sd');
+            setTimeout(function () {
                 dataTable.draw();
             }, 900);
         });
 
-        $scope.onSelectedType = function(selected_type) {
-            setTimeout(function() {
+        $scope.onSelectedType = function (selected_type) {
+            setTimeout(function () {
                 $('#type_id').val(selected_type);
                 dataTable.draw();
             }, 900);
         }
-        $scope.getSelectedSbu = function(selected_sbu_id) {
-            setTimeout(function() {
+        $scope.getSelectedSbu = function (selected_sbu_id) {
+            setTimeout(function () {
                 $('#sbu_id').val(selected_sbu_id);
                 dataTable.draw();
             }, 900);
         }
-        $scope.getSelectedCategory = function(selected_category_id) {
-            setTimeout(function() {
+        $scope.getSelectedCategory = function (selected_category_id) {
+            setTimeout(function () {
                 $('#category_id').val(selected_category_id);
                 dataTable.draw();
             }, 900);
@@ -158,13 +158,13 @@ app.component('serviceInvoiceApprovalList', {
         //         dataTable.draw();
         //     }, 900);
         // }
-        $scope.getSelectedStatus = function(selected_status_id) {
-            setTimeout(function() {
+        $scope.getSelectedStatus = function (selected_status_id) {
+            setTimeout(function () {
                 $('#status_id').val(selected_status_id);
                 dataTable.draw();
             }, 900);
         }
-        $scope.reset_filter = function() {
+        $scope.reset_filter = function () {
             $('#invoice_number').val('');
             $('#invoice_date').val('');
             $('#type_id').val('');
@@ -207,40 +207,40 @@ app.component('serviceInvoiceApprovalList', {
         //     }
         // }
 
-        $(".search_clear").on("click", function() {
+        $(".search_clear").on("click", function () {
             $('#search').val('');
             $('#cn-dn-approval-table').DataTable().search('').draw();
         });
 
-        $("#search").on('keyup', function() {
+        $("#search").on('keyup', function () {
             dataTable
                 .search(this.value)
                 .draw();
         });
 
         var bulk_approve = 0;
-        $('#send_for_approval').on('click', function() { //alert('dsf');
+        $('#send_for_approval').on('click', function () { //alert('dsf');
             if ($('.service_invoice_checkbox:checked').length > 0) {
                 $('#pace').css("display", "block");
                 $('#pace').addClass('pace-active');
                 if (bulk_approve == 0) {
                     bulk_approve = 1;
                     var send_for_approval = []
-                    $('input[name="child_boxes"]:checked').each(function() {
+                    $('input[name="child_boxes"]:checked').each(function () {
                         send_for_approval.push(this.value);
                     });
                     // console.log(send_for_approval);
                     // $('.bulk_approve').bind('click', false);
                     $http.post(
                         laravel_routes['updateMultipleApproval'], {
-                            send_for_approval: send_for_approval,
-                        }
-                    ).then(function(response) {
+                        send_for_approval: send_for_approval,
+                    }
+                    ).then(function (response) {
                         $('#pace').css("display", "none");
                         $('#pace').addClass('pace-inactive');
                         if (response.data.success == true) {
                             custom_noty('success', response.data.message);
-                            $timeout(function() {
+                            $timeout(function () {
                                 // $('#cn-dn-approval-table').DataTable().ajax.reload();
                                 RefreshTable();
                                 bulk_approve = 0;
@@ -269,21 +269,21 @@ app.component('serviceInvoiceApprovalList', {
                 custom_noty('error', 'Please Select Checkbox');
             }
         })
-        $('.refresh_table').on("click", function() {
+        $('.refresh_table').on("click", function () {
             RefreshTable();
         });
-        $('#parent').on('click', function() {
+        $('#parent').on('click', function () {
             if (this.checked) {
-                $('.service_invoice_checkbox').each(function() {
+                $('.service_invoice_checkbox').each(function () {
                     this.checked = true;
                 });
             } else {
-                $('.service_invoice_checkbox').each(function() {
+                $('.service_invoice_checkbox').each(function () {
                     this.checked = false;
                 });
             }
         });
-        $(document.body).on('click', '.service_invoice_checkbox', function() {
+        $(document.body).on('click', '.service_invoice_checkbox', function () {
             if ($('.service_invoice_checkbox:checked').length == $('.service_invoice_checkbox').length) {
                 $('#parent').prop('checked', true);
             } else {
@@ -300,24 +300,24 @@ app.component('serviceInvoiceApprovalList', {
             }
         });
 
-        $('.daterange').on('apply.daterangepicker', function(ev, picker) {
+        $('.daterange').on('apply.daterangepicker', function (ev, picker) {
             $(this).val(picker.startDate.format('DD-MM-YYYY') + ' to ' + picker.endDate.format('DD-MM-YYYY'));
         });
 
-        $('.daterange').on('cancel.daterangepicker', function(ev, picker) {
+        $('.daterange').on('cancel.daterangepicker', function (ev, picker) {
             $(this).val('');
         });
         //SEARCH BRANCH
-        self.searchBranchFilter = function(query) {
+        self.searchBranchFilter = function (query) {
             if (query) {
-                return new Promise(function(resolve, reject) {
+                return new Promise(function (resolve, reject) {
                     $http
                         .post(
                             search_branch_url, {
-                                key: query,
-                            }
+                            key: query,
+                        }
                         )
-                        .then(function(response) {
+                        .then(function (response) {
                             resolve(response.data);
                         });
                     //reject(response);
@@ -327,7 +327,7 @@ app.component('serviceInvoiceApprovalList', {
             }
         }
         //GET BRANCH DETAILS
-        self.getBranchDetails = function() {
+        self.getBranchDetails = function () {
             if (self.service_invoice.branch == null) {
                 $('#branch_id').val('');
                 dataTable.draw();
@@ -336,16 +336,16 @@ app.component('serviceInvoiceApprovalList', {
             $scope.getSbuByBranch(self.service_invoice.branch.id);
         }
         //GET SBU BY BRANCH
-        $scope.getSbuByBranch = function(branch_id) {
+        $scope.getSbuByBranch = function (branch_id) {
             self.extras.sbu_list = [];
             $('#branch_id').val(branch_id);
             dataTable.draw();
             if (branch_id) {
                 $.ajax({
-                        url: get_sbu_url + '/' + branch_id,
-                        method: "GET",
-                    })
-                    .done(function(res) {
+                    url: get_sbu_url + '/' + branch_id,
+                    method: "GET",
+                })
+                    .done(function (res) {
                         if (!res.success) {
                             new Noty({
                                 type: 'error',
@@ -357,27 +357,27 @@ app.component('serviceInvoiceApprovalList', {
                             $scope.$apply()
                         }
                     })
-                    .fail(function(xhr) {
+                    .fail(function (xhr) {
                         console.log(xhr);
                     });
             }
         }
         //BRANCH CHANGED
-        self.branchChanged = function() {
+        self.branchChanged = function () {
             self.service_invoice.sbu_id = '';
             self.extras.sbu_list = [];
         }
         //SEARCH CUSTOMER
-        self.searchCustomer = function(query) {
+        self.searchCustomer = function (query) {
             if (query) {
-                return new Promise(function(resolve, reject) {
+                return new Promise(function (resolve, reject) {
                     $http
                         .post(
                             search_customer_url, {
-                                key: query,
-                            }
+                            key: query,
+                        }
                         )
-                        .then(function(response) {
+                        .then(function (response) {
                             resolve(response.data);
                         });
                     //reject(response);
@@ -387,17 +387,17 @@ app.component('serviceInvoiceApprovalList', {
             }
         }
         //GET CUSTOMER DETAILS
-        $scope.getCustomerDetails = function(selected_customer_id) {
+        $scope.getCustomerDetails = function (selected_customer_id) {
             $('#customer_id').val(selected_customer_id);
             dataTable.draw();
         }
 
-        $scope.sendApproval = function($id, $send_to_approval) {
+        $scope.sendApproval = function ($id, $send_to_approval) {
             // console.log($id, $send_to_approval);
             $('#approval_id').val($id);
             $('#next_status').val($send_to_approval);
         }
-        $scope.approvalConfirm = function() {
+        $scope.approvalConfirm = function () {
             $('#pace').css("display", "block");
             $('#pace').addClass('pace-active');
             $id = $('#approval_id').val();
@@ -405,11 +405,11 @@ app.component('serviceInvoiceApprovalList', {
             var ButtonValue = $('#approve').attr("id");
             $http.post(
                 laravel_routes['updateApprovalStatus'], {
-                    id: $id,
-                    send_to_approval: $send_to_approval,
-                    status_name: ButtonValue,
-                }
-            ).then(function(response) {
+                id: $id,
+                send_to_approval: $send_to_approval,
+                status_name: ButtonValue,
+            }
+            ).then(function (response) {
                 $('#pace').css("display", "none");
                 $('#pace').addClass('pace-inactive');
                 if (response.data.success == true) {
@@ -437,8 +437,8 @@ app.component('serviceInvoiceApprovalList', {
 //------------------------------------------------------------------------------------------------------------------------
 app.component('serviceInvoiceApprovalView', {
     templateUrl: service_invoice_approval_view_template_url,
-    controller: function($http, $location, HelperService, $routeParams, $rootScope, $scope, $timeout, $mdSelect, $window) {
-        if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061 || $routeParams.type_id == 1062) {} else {
+    controller: function ($http, $location, HelperService, $routeParams, $rootScope, $scope, $timeout, $mdSelect, $window) {
+        if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061 || $routeParams.type_id == 1062) { } else {
             $location.path('/page-not-found')
             return;
         }
@@ -452,6 +452,7 @@ app.component('serviceInvoiceApprovalView', {
         self.enable_service_item_md_change = true;
         self.ref_attachements_url_link = ref_service_invoice_attachements_url;
         self.show_approve_button = true;
+        self.qr_image_url = base_url + '/storage/app/public/service-invoice/IRN_images';
 
         if (self.type_id == 1060) {
             self.minus_value = '-';
@@ -460,7 +461,7 @@ app.component('serviceInvoiceApprovalView', {
         }
         $http.get(
             $form_data_url
-        ).then(function(response) {
+        ).then(function (response) {
             if (!response.data.success) {
                 new Noty({
                     type: 'error',
@@ -479,11 +480,11 @@ app.component('serviceInvoiceApprovalView', {
             self.service_invoice_status = response.data.service_invoice_status;
             // console.log(self.service_invoice);
             if (self.action == 'View') {
-                $timeout(function() {
+                $timeout(function () {
                     $scope.serviceInvoiceItemCalc();
                 }, 1500);
                 if (self.service_invoice.to_account_type_id == 1440 || self.service_invoice.to_account_type_id == 1441) { //CUSTOMER || VENDOE
-                    $timeout(function() {
+                    $timeout(function () {
                         self.customer = self.service_invoice.customer;
                         // $rootScope.getCustomer(self.service_invoice.customer_id);
                         if (self.service_invoice.to_account_type_id == 1441) {
@@ -493,7 +494,7 @@ app.component('serviceInvoiceApprovalView', {
                 }
                 // ATTACHMENTS
                 if (self.service_invoice.attachments.length) {
-                    $(self.service_invoice.attachments).each(function(key, attachment) {
+                    $(self.service_invoice.attachments).each(function (key, attachment) {
                         console.log(attachment);
                         var design = '<div class="imageuploadify-container" data-attachment_id="' + attachment.id + '" style="margin-left: 0px; margin-right: 0px;">' +
                             '<div class="imageuploadify-details"><div class="imageuploadify-file-icon"></div><span class="imageuploadify-file-name">' + attachment.name + '' +
@@ -526,14 +527,14 @@ app.component('serviceInvoiceApprovalView', {
         //         self.service_invoice.service_invoice_items = [];
         //     }
         // }
-        $scope.vendorSelected = function() {
+        $scope.vendorSelected = function () {
             // console.log('vendor');
             $('#pace').css("display", "block");
             $('#pace').addClass('pace-active');
             console.log(self.service_invoice.customer);
             if (self.service_invoice.customer || self.service_invoice.customer != null) {
                 // var res = $rootScope.getCustomer(self.service_invoice.customer).then(function(res) {
-                var res = $rootScope.getVendorAddress(self.service_invoice.customer).then(function(res) {
+                var res = $rootScope.getVendorAddress(self.service_invoice.customer).then(function (res) {
                     console.log(res);
                     if (!res.data.success) {
                         $('#pace').css("display", "none");
@@ -560,7 +561,7 @@ app.component('serviceInvoiceApprovalView', {
                         self.customer_address = res.data.vendor_address[0];
                         console.log(self.customer + 'single');
                         if (res.data.vendor_address[0].gst_number) {
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 $scope.checkCustomerGSTIN(res.data.vendor_address[0].gst_number, self.vendor.name);
                             }, 1000);
                         }
@@ -577,27 +578,27 @@ app.component('serviceInvoiceApprovalView', {
         }
 
         /* Tab Funtion */
-        $('.btn-nxt').on("click", function() {
+        $('.btn-nxt').on("click", function () {
             $('.cndn-tabs li.active').next().children('a').trigger("click");
             tabPaneFooter();
         });
-        $('.btn-prev').on("click", function() {
+        $('.btn-prev').on("click", function () {
             $('.cndn-tabs li.active').prev().children('a').trigger("click");
             tabPaneFooter();
         });
 
         //PERCENTAGE CALC
-        $scope.percentage = function(num, per) {
+        $scope.percentage = function (num, per) {
             return (num / 100) * per;
         }
 
         //PARSEINT
-        self.parseInt = function(num) {
+        self.parseInt = function (num) {
             return parseInt(num);
         }
 
         //EDIT SERVICE INVOICE ITEM
-        $scope.editServiceItem = function(service_invoice_item_id, description, qty, rate, index, e_invoice_uom_id) {
+        $scope.editServiceItem = function (service_invoice_item_id, description, qty, rate, index, e_invoice_uom_id) {
             console.log(self.service_invoice);
             if (service_invoice_item_id) {
                 self.enable_service_item_md_change = false;
@@ -606,15 +607,15 @@ app.component('serviceInvoiceApprovalView', {
                 self.update_item_key = index;
                 $http.post(
                     get_service_item_info_url, {
-                        service_item_id: service_invoice_item_id,
-                        field_groups: self.service_invoice.service_invoice_items[index].field_groups,
-                        btn_action: 'edit',
-                        branch_id: self.service_invoice.branch.id,
-                        customer_id: self.service_invoice.customer.id,
-                        state_id: self.service_invoice.address.state_id,
-                        gst_number: self.service_invoice.address.gst_number,
-                    }
-                ).then(function(response) {
+                    service_item_id: service_invoice_item_id,
+                    field_groups: self.service_invoice.service_invoice_items[index].field_groups,
+                    btn_action: 'edit',
+                    branch_id: self.service_invoice.branch.id,
+                    customer_id: self.service_invoice.customer.id,
+                    state_id: self.service_invoice.address.state_id,
+                    gst_number: self.service_invoice.address.gst_number,
+                }
+                ).then(function (response) {
                     if (response.data.success) {
                         self.service_item_detail = response.data.service_item;
                         self.service_item = response.data.service_item;
@@ -636,7 +637,7 @@ app.component('serviceInvoiceApprovalView', {
         }
 
         //ITEM TO INVOICE TOTAL AMOUNT CALC
-        $scope.totalAmountCalc = function() {
+        $scope.totalAmountCalc = function () {
             self.sub_total = 0;
             self.total = 0;
             self.KFC_total = 0;
@@ -648,7 +649,7 @@ app.component('serviceInvoiceApprovalView', {
                 // self.sub_total = self.rate;
                 if (self.service_item_detail.tax_code != null) {
                     if (self.service_item_detail.tax_code.taxes.length > 0) {
-                        $(self.service_item_detail.tax_code.taxes).each(function(key, tax) {
+                        $(self.service_item_detail.tax_code.taxes).each(function (key, tax) {
                             tax.pivot.amount = $scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2);
                             self.gst_total += parseFloat($scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2));
                         });
@@ -690,7 +691,7 @@ app.component('serviceInvoiceApprovalView', {
         };
 
         //SERVICE INVOICE ITEMS CALCULATION
-        $scope.serviceInvoiceItemCalc = function() {
+        $scope.serviceInvoiceItemCalc = function () {
             self.table_qty = 0;
             self.table_rate = 0;
             self.table_sub_total = 0;
@@ -698,12 +699,12 @@ app.component('serviceInvoiceApprovalView', {
             self.table_gst_total = 0;
             self.tax_wise_total = {};
             for (i = 0; i < self.extras.tax_list.length; i++) {
-                if (typeof(self.extras.tax_list[i].name) != 'undefined') {
+                if (typeof (self.extras.tax_list[i].name) != 'undefined') {
                     self.tax_wise_total[self.extras.tax_list[i].name + '_amount'] = 0;
                 }
             };
 
-            $(self.service_invoice.service_invoice_items).each(function(key, service_invoice_item) {
+            $(self.service_invoice.service_invoice_items).each(function (key, service_invoice_item) {
                 self.table_qty += parseInt(service_invoice_item.qty);
                 self.table_rate = (parseFloat(self.table_rate) + parseFloat(service_invoice_item.rate)).toFixed(2);
                 st = parseFloat(service_invoice_item.sub_total).toFixed(2);
@@ -718,7 +719,7 @@ app.component('serviceInvoiceApprovalView', {
                     if (service_invoice_item[tax_obj.name]) {
                         tax = parseFloat(service_invoice_item[tax_obj.name].amount).toFixed(2);
                         self.table_gst_total = parseFloat(self.table_gst_total) + parseFloat(tax);
-                        if (typeof(self.tax_wise_total[tax_obj.name + '_amount']) == 'undefined') {
+                        if (typeof (self.tax_wise_total[tax_obj.name + '_amount']) == 'undefined') {
                             self.tax_wise_total[tax_obj.name + '_amount'] = 0;
                         }
                         self.tax_wise_total[tax_obj.name + '_amount'] += parseFloat(tax);
@@ -729,7 +730,7 @@ app.component('serviceInvoiceApprovalView', {
                 // console.log(parseFloat(self.table_sub_total));
                 self.table_total = parseFloat(self.table_total) + parseFloat(service_invoice_item.total); // parseFloat(self.table_sub_total) + parseFloat(self.table_gst_total);
                 // self.service_invoice.final_amount = Math.round(self.table_total).toFixed(2);
-                if(self.table_total > 1){
+                if (self.table_total > 1) {
                     self.service_invoice.final_amount = Math.round(self.table_total).toFixed(2);
                 } else {
                     self.service_invoice.final_amount = self.table_total.toFixed(2);
@@ -739,12 +740,12 @@ app.component('serviceInvoiceApprovalView', {
             $scope.$apply()
         }
 
-        $scope.sendApproval = function($id, $send_to_approval) {
+        $scope.sendApproval = function ($id, $send_to_approval) {
             console.log($id, $send_to_approval);
             $('#approval_id').val($id);
             $('#next_status').val($send_to_approval);
         }
-        $scope.approvalConfirm = function() {
+        $scope.approvalConfirm = function () {
             $('#pace').css("display", "block");
             $('#pace').addClass('pace-active');
             self.show_approve_button = false;
@@ -753,23 +754,23 @@ app.component('serviceInvoiceApprovalView', {
             var ButtonValue = $('#approve').attr("id");
             $http.post(
                 laravel_routes['updateApprovalStatus'], {
-                    id: $id,
-                    send_to_approval: $send_to_approval,
-                    status_name: ButtonValue,
-                }
-            ).then(function(response) {
+                id: $id,
+                send_to_approval: $send_to_approval,
+                status_name: ButtonValue,
+            }
+            ).then(function (response) {
                 $('#pace').css("display", "none");
                 $('#pace').addClass('pace-inactive');
                 if (response.data.success == true) {
                     custom_noty('success', 'CN/DN ' + response.data.message + ' Successfully');
                     // $('#cn-dn-approval-table').DataTable().ajax.reload();
-                    $timeout(function() {
+                    $timeout(function () {
                         $location.path('/service-invoice-pkg/cn-dn/approval/approval-level/' + $routeParams.approval_type_id + '/list/');
                     }, 900);
                     $scope.$apply()
                 } else {
                     custom_noty('error', response.data.errors);
-                    self.show_approve_button = true;                    
+                    self.show_approve_button = true;
                 }
             });
         }
@@ -777,7 +778,7 @@ app.component('serviceInvoiceApprovalView', {
         var form_id = '#form';
         var v = jQuery(form_id).validate({
             ignore: '',
-            submitHandler: function(form) {
+            submitHandler: function (form) {
                 // var submitButtonValue =  $(this.submitButton).attr("data-id");
                 var submitButtonId = $(this.submitButton).attr("id");
                 var comment_value = $('#comments').val();
@@ -791,26 +792,26 @@ app.component('serviceInvoiceApprovalView', {
                             speed: 500 // unavailable - no need
                         },
                     }).show();
-                    setTimeout(function() {
+                    setTimeout(function () {
                         $noty.close();
                     }, 2000);
                     return false;
                 }
                 $(submitButtonId).button('loading');
                 $.ajax({
-                        url: laravel_routes['updateApprovalStatus'],
-                        method: "POST",
-                        data: {
-                            id: $('#id').val(),
-                            approval_type_id: $('#approval_type_id').val(),
-                            comments: $('#comments').val(),
-                            status_name: submitButtonId,
-                        },
-                        headers: {
-                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                        },
-                    })
-                    .done(function(res) {
+                    url: laravel_routes['updateApprovalStatus'],
+                    method: "POST",
+                    data: {
+                        id: $('#id').val(),
+                        approval_type_id: $('#approval_type_id').val(),
+                        comments: $('#comments').val(),
+                        status_name: submitButtonId,
+                    },
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                })
+                    .done(function (res) {
                         // console.log(res.success);
                         if (!res.success) {
                             $(submitButtonId).button('reset');
@@ -826,7 +827,7 @@ app.component('serviceInvoiceApprovalView', {
                                     speed: 500 // unavailable - no need
                                 },
                             }).show();
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 $noty.close();
                             }, 3000);
                         } else {
@@ -851,16 +852,16 @@ app.component('serviceInvoiceApprovalView', {
                                     },
                                 }).show();
                             }
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 $noty.close();
                             }, 3000);
-                            $timeout(function() {
+                            $timeout(function () {
                                 $location.path('/service-invoice-pkg/cn-dn/approval/approval-level/' + $routeParams.approval_type_id + '/list/');
                             }, 900);
                             $scope.$apply()
                         }
                     })
-                    .fail(function(xhr) {
+                    .fail(function (xhr) {
                         $(submitButtonId).button('reset');
                         $noty = new Noty({
                             type: 'error',
@@ -870,7 +871,7 @@ app.component('serviceInvoiceApprovalView', {
                                 speed: 500 // unavailable - no need
                             },
                         }).show();
-                        setTimeout(function() {
+                        setTimeout(function () {
                             $noty.close();
                         }, 3000);
                     });
