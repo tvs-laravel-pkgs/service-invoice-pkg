@@ -1758,12 +1758,6 @@ class ServiceInvoiceController extends Controller {
 									$igst_total += round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 								}
 
-								//FOR CGST
-								if ($value->name == 'IGST') {
-									$igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
-									$igst_total += round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
-								}
-
 								//FOR TCS
 								if ($value->name == 'TCS') {
 									$tcs_total += round($value->pivot->amount, 2);
@@ -1779,6 +1773,10 @@ class ServiceInvoiceController extends Controller {
 					}
 
 					// //FOR TCS TAX
+					$tcs_amount = DB::table('service_invoice_item_tax')->where('service_invoice_item_id',$serviceInvoiceItem->id)->where('tax_id',5)->pluck('amount')->first();
+					if($tcs_amount > 0){
+						$tcs_total +=$tcs_amount;
+					}
 					// if ($service_item->tcs_percentage) {
 					// 	$date = date('d-m-Y', strtotime($service_invoice->document_date));
 					// 	$document_date = (string) $date;
@@ -4472,22 +4470,26 @@ class ServiceInvoiceController extends Controller {
 			}
 
 			//FOR TCS TAX
-			if ($service_item->tcs_percentage) {
-				$document_date = (string) $service_invoice->document_date;
-				$date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
-				$date2 = Carbon::createFromFormat('d-m-Y', $document_date);
-				$result = $date1->gte($date2);
-
-				$tcs_percentage = $service_item->tcs_percentage;
-				if (!$result) {
-					$tcs_percentage = 1;
-				}
-
-				$gst_total = 0;
-				$gst_total = $cgst_amt + $sgst_amt + $igst_amt;
-				// $tcs_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
-				$tcs_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $tcs_percentage / 100, 2);
+			$tcs_amount = DB::table('service_invoice_item_tax')->where('service_invoice_item_id',$serviceInvoiceItem->id)->where('tax_id',5)->pluck('amount')->first();
+			if($tcs_amount > 0){
+				$tcs_total +=$tcs_amount;
 			}
+			// if ($service_item->tcs_percentage) {
+			// 	$document_date = (string) $service_invoice->document_date;
+			// 	$date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
+			// 	$date2 = Carbon::createFromFormat('d-m-Y', $document_date);
+			// 	$result = $date1->gte($date2);
+
+			// 	$tcs_percentage = $service_item->tcs_percentage;
+			// 	if (!$result) {
+			// 		$tcs_percentage = 1;
+			// 	}
+
+			// 	$gst_total = 0;
+			// 	$gst_total = $cgst_amt + $sgst_amt + $igst_amt;
+			// 	// $tcs_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
+			// 	$tcs_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $tcs_percentage / 100, 2);
+			// }
 
 			//FOR CESS on GST TAX
 			if ($service_item->cess_on_gst_percentage) {
