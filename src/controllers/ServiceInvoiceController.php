@@ -1234,7 +1234,7 @@ class ServiceInvoiceController extends Controller {
 							}
 							$service_invoice_item->taxes()->sync([]);
 							foreach ($val['taxes'] as $tax_key => $tax_val) {
-								$service_invoice_item->taxes()->attach($tax_val['tax_id'], ['percentage' => $tax_val['percentage'], 'amount' => $tax_val['amount']]);
+								$service_invoice_item->taxes()->attach($tax_val['tax_id'], ['percentage' => isset($tax_val['percentage']) ? $tax_val['percentage'] : 0, 'amount' => isset($tax_val['amount']) ? $tax_val['amount'] : 0 ]);
 							}
 						}
 					}
