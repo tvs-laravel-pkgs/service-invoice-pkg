@@ -1757,11 +1757,6 @@ class ServiceInvoiceController extends Controller {
 									$igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 									$igst_total += round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
 								}
-
-								//FOR TCS
-								if ($value->name == 'TCS') {
-									$tcs_total += round($value->pivot->amount, 2);
-								}
 							}
 						}
 					} else {
