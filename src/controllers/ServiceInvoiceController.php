@@ -2855,6 +2855,7 @@ class ServiceInvoiceController extends Controller {
 						$igst_amt = 0;
 						$kfc_amt = 0;
 						$tcs_total = 0;
+						$tcs_percentage = 0;
 
 						foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
 							// dump($serviceInvoiceItem);
@@ -2927,6 +2928,7 @@ class ServiceInvoiceController extends Controller {
 										//FOR TCS
 										if ($tax->tax_id == 5) {
 											$tcs_total = $tax->amount;
+											$tcs_percentage = $value->pivot->percentage;
 										}
 									}
 								}
@@ -2953,20 +2955,21 @@ class ServiceInvoiceController extends Controller {
 							// 	$tcs_total = round(($gst_total + $serviceInvoiceItem->sub_total) * $tcs_percentage / 100, 2);
 							// }
 
-							if ($serviceInvoiceItem->serviceItem && ($serviceInvoiceItem->serviceItem->tcs_percentage > 0) && ($serviceInvoiceItem->serviceItem->is_tcs == 1)) {
-								$document_date = (string) $service_invoice->document_date;
-								$date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
-								$date2 = Carbon::createFromFormat('d-m-Y', $document_date);
-								$result = $date1->gte($date2);
+							// if ($serviceInvoiceItem->serviceItem && ($serviceInvoiceItem->serviceItem->tcs_percentage > 0) && ($serviceInvoiceItem->serviceItem->is_tcs == 1)) {
+							if ($serviceInvoiceItem->serviceItem && $serviceInvoiceItem->serviceItem->tcs_percentage > 0) {
+								// $document_date = (string) $service_invoice->document_date;
+								// $date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
+								// $date2 = Carbon::createFromFormat('d-m-Y', $document_date);
+								// $result = $date1->gte($date2);
 
-								$tcs_limit = Entity::where('entity_type_id', 38)->where('company_id', Auth::user()->company_id)->pluck('name')->first();
-								$tcs_percentage = 0;
-								if($serviceInvoiceItem->sub_total >= $tcs_limit) {
-									$tcs_percentage = $serviceInvoiceItem->serviceItem->tcs_percentage;
-									if (!$result) {
-										$tcs_percentage = 1;
-									}
-								}
+								// $tcs_limit = Entity::where('entity_type_id', 38)->where('company_id', Auth::user()->company_id)->pluck('name')->first();
+								// $tcs_percentage = 0;
+								// if($serviceInvoiceItem->sub_total >= $tcs_limit) {
+								// 	$tcs_percentage = $serviceInvoiceItem->serviceItem->tcs_percentage;
+								// 	if (!$result) {
+								// 		$tcs_percentage = 1;
+								// 	}
+								// }
 								
 								// dd($serviceInvoiceItem->sub_total);
 								$service_invoice_details[] = [

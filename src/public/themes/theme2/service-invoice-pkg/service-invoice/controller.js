@@ -1,78 +1,78 @@
-app.config(['$routeProvider', function($routeProvider) {
+app.config(['$routeProvider', function ($routeProvider) {
 
     $routeProvider.
-    //SERVICE INVOICE
-    when('/service-invoice-pkg/service-invoice/list', {
-        template: '<service-invoice-list></service-invoice-list>',
-        title: 'CN/DNs',
-    }).
-    when('/service-invoice-pkg/service-invoice/add/:type_id', {
-        // template: '<serv-inv-form></serv-inv-form>',
-        template: '<service-invoice-form></service-invoice-form>',
-        title: 'Add CN/DN',
-    }).
-    when('/service-invoice-pkg/service-invoice/edit/:type_id/:id', {
-        template: '<service-invoice-form></service-invoice-form>',
-        title: 'Edit CN/DN',
-    }).
-    when('/service-invoice-pkg/service-invoice/view/:type_id/:id', {
-        template: '<service-invoice-view></service-invoice-view>',
-        title: 'View CN/DN',
-    }).
+        //SERVICE INVOICE
+        when('/service-invoice-pkg/service-invoice/list', {
+            template: '<service-invoice-list></service-invoice-list>',
+            title: 'CN/DNs',
+        }).
+        when('/service-invoice-pkg/service-invoice/add/:type_id', {
+            // template: '<serv-inv-form></serv-inv-form>',
+            template: '<service-invoice-form></service-invoice-form>',
+            title: 'Add CN/DN',
+        }).
+        when('/service-invoice-pkg/service-invoice/edit/:type_id/:id', {
+            template: '<service-invoice-form></service-invoice-form>',
+            title: 'Edit CN/DN',
+        }).
+        when('/service-invoice-pkg/service-invoice/view/:type_id/:id', {
+            template: '<service-invoice-view></service-invoice-view>',
+            title: 'View CN/DN',
+        }).
 
-    //SERVICE INVOICE APPROVALS
-    when('/service-invoice-pkg/cn-dn/approval/approval-level/:approval_level_id/list/', {
-        template: '<service-invoice-approval-list></service-invoice-approval-list>',
-        title: 'CN/DN Approval List',
-    }).
-    when('/service-invoice-pkg/cn-dn/approval/approval-level/:approval_type_id/view/:type_id/:id', {
-        template: '<service-invoice-approval-view></service-invoice-approval-view>',
-        title: 'CN/DN Approval View',
-    }).
+        //SERVICE INVOICE APPROVALS
+        when('/service-invoice-pkg/cn-dn/approval/approval-level/:approval_level_id/list/', {
+            template: '<service-invoice-approval-list></service-invoice-approval-list>',
+            title: 'CN/DN Approval List',
+        }).
+        when('/service-invoice-pkg/cn-dn/approval/approval-level/:approval_type_id/view/:type_id/:id', {
+            template: '<service-invoice-approval-view></service-invoice-approval-view>',
+            title: 'CN/DN Approval View',
+        }).
 
-    //SERVICE ITEM CATEGORIES
-    when('/service-invoice-pkg/service-item-category/list', {
-        template: '<service-item-category-list></service-item-category-list>',
-        title: 'Service Item Categories',
-    }).
-    when('/service-invoice-pkg/service-item-category/add', {
-        template: '<service-item-category-form></service-item-category-form>',
-        title: 'Add Service Item Category',
-    }).
-    when('/service-invoice-pkg/service-item-category/edit/:id', {
-        template: '<service-item-category-form></service-item-category-form>',
-        title: 'Edit Service Item Category',
-    }).
+        //SERVICE ITEM CATEGORIES
+        when('/service-invoice-pkg/service-item-category/list', {
+            template: '<service-item-category-list></service-item-category-list>',
+            title: 'Service Item Categories',
+        }).
+        when('/service-invoice-pkg/service-item-category/add', {
+            template: '<service-item-category-form></service-item-category-form>',
+            title: 'Add Service Item Category',
+        }).
+        when('/service-invoice-pkg/service-item-category/edit/:id', {
+            template: '<service-item-category-form></service-item-category-form>',
+            title: 'Edit Service Item Category',
+        }).
 
-    //SERVICE ITEMS
-    when('/service-invoice-pkg/service-item/list', {
-        template: '<service-item-list></service-item-list>',
-        title: 'Service Items',
-    }).
-    when('/service-invoice-pkg/service-item/add', {
-        template: '<service-item-form></service-item-form>',
-        title: 'Add Service Item',
-    }).
-    when('/service-invoice-pkg/service-item/edit/:id', {
-        template: '<service-item-form></service-item-form>',
-        title: 'Edit Service Item',
-    }).
+        //SERVICE ITEMS
+        when('/service-invoice-pkg/service-item/list', {
+            template: '<service-item-list></service-item-list>',
+            title: 'Service Items',
+        }).
+        when('/service-invoice-pkg/service-item/add', {
+            template: '<service-item-form></service-item-form>',
+            title: 'Add Service Item',
+        }).
+        when('/service-invoice-pkg/service-item/edit/:id', {
+            template: '<service-item-form></service-item-form>',
+            title: 'Edit Service Item',
+        }).
 
-    //TCS AND GST REPORTS
-    when('/service-invoice-pkg/tcs-report', {
-        template: '<tcs-report-form></tcs-report-form>',
-        title: 'TCS Report',
-    }).
-    when('/service-invoice-pkg/gst-report', {
-        template: '<gst-report-form></gst-report-form>',
-        title: 'GST Report',
-    });
+        //TCS AND GST REPORTS
+        when('/service-invoice-pkg/tcs-report', {
+            template: '<tcs-report-form></tcs-report-form>',
+            title: 'TCS Report',
+        }).
+        when('/service-invoice-pkg/gst-report', {
+            template: '<gst-report-form></gst-report-form>',
+            title: 'GST Report',
+        });
 
 }]);
 
 app.component('serviceInvoiceList', {
     templateUrl: service_invoice_list_template_url,
-    controller: function($http, $location, HelperService, $scope, $routeParams, $rootScope, $element, $mdSelect, $timeout) {
+    controller: function ($http, $location, HelperService, $scope, $routeParams, $rootScope, $element, $mdSelect, $timeout) {
         var self = this;
         self.hasPermission = HelperService.hasPermission;
         self.create_cn = self.hasPermission('create-cn');
@@ -83,13 +83,13 @@ app.component('serviceInvoiceList', {
         self.gst_export = self.hasPermission('gst-export');
         $http.get(
             get_service_invoice_filter_url
-        ).then(function(response) {
+        ).then(function (response) {
             self.extras = response.data.extras;
             $rootScope.loading = false;
             //console.log(self.extras);
         });
         var dataTable;
-        setTimeout(function() {
+        setTimeout(function () {
             var table_scroll;
             table_scroll = $('.page-main-content').height() - 37;
             dataTable = $('#service-invoice-table').DataTable({
@@ -107,10 +107,10 @@ app.component('serviceInvoiceList', {
                 scrollY: table_scroll + "px",
                 scrollCollapse: true,
                 stateSave: true,
-                stateSaveCallback: function(settings, data) {
+                stateSaveCallback: function (settings, data) {
                     localStorage.setItem('SIDataTables_' + settings.sInstance, JSON.stringify(data));
                 },
-                stateLoadCallback: function(settings) {
+                stateLoadCallback: function (settings) {
                     var state_save_val = JSON.parse(localStorage.getItem('SIDataTables_' + settings.sInstance));
                     if (state_save_val) {
                         $('#search').val(state_save_val.search.search);
@@ -126,7 +126,7 @@ app.component('serviceInvoiceList', {
                     url: laravel_routes['getServiceInvoiceList'],
                     type: "GET",
                     dataType: "json",
-                    data: function(d) {
+                    data: function (d) {
                         d.invoice_number = $('#invoice_number').val();
                         d.invoice_date = $('#invoice_date').val();
                         d.type_id = $('#type_id').val();
@@ -155,19 +155,19 @@ app.component('serviceInvoiceList', {
                     { data: 'customer_name', name: 'customers.name', searchable: true },
                     { data: 'invoice_amount', searchable: false, class: 'text-right' },
                 ],
-                "initComplete": function(settings, json) {
+                "initComplete": function (settings, json) {
                     $('.dataTables_length select').select2();
                 },
-                rowCallback: function(row, data) {
+                rowCallback: function (row, data) {
                     $(row).addClass('highlight-row');
                 },
-                infoCallback: function(settings, start, end, max, total, pre) {
+                infoCallback: function (settings, start, end, max, total, pre) {
                     $('#table_info').html(total)
                     $('.foot_info').html('Showing ' + start + ' to ' + end + ' of ' + max + ' entries')
                 },
             });
         }, 1000);
-        $('.modal').bind('click', function(event) {
+        $('.modal').bind('click', function (event) {
             if ($('.md-select-menu-container').hasClass('md-active')) {
                 $mdSelect.hide();
             }
@@ -177,36 +177,36 @@ app.component('serviceInvoiceList', {
             $('#service-invoice-table').DataTable().ajax.reload();
         }
 
-        $('#invoice_number').keyup(function() {
-            setTimeout(function() {
+        $('#invoice_number').keyup(function () {
+            setTimeout(function () {
                 dataTable.draw();
             }, 900);
         });
-        $('body').on('click', '.applyBtn', function() { //alert('sd');
-            setTimeout(function() {
+        $('body').on('click', '.applyBtn', function () { //alert('sd');
+            setTimeout(function () {
                 dataTable.draw();
             }, 900);
         });
-        $('body').on('click', '.cancelBtn', function() { //alert('sd');
-            setTimeout(function() {
+        $('body').on('click', '.cancelBtn', function () { //alert('sd');
+            setTimeout(function () {
                 dataTable.draw();
             }, 900);
         });
 
-        $scope.onSelectedType = function(selected_type) {
-            setTimeout(function() {
+        $scope.onSelectedType = function (selected_type) {
+            setTimeout(function () {
                 $('#type_id').val(selected_type);
                 dataTable.draw();
             }, 900);
         }
-        $scope.getSelectedSbu = function(selected_sbu_id) {
-            setTimeout(function() {
+        $scope.getSelectedSbu = function (selected_sbu_id) {
+            setTimeout(function () {
                 $('#sbu_id').val(selected_sbu_id);
                 dataTable.draw();
             }, 900);
         }
-        $scope.getSelectedCategory = function(selected_category_id) {
-            setTimeout(function() {
+        $scope.getSelectedCategory = function (selected_category_id) {
+            setTimeout(function () {
                 $('#category_id').val(selected_category_id);
                 dataTable.draw();
             }, 900);
@@ -217,13 +217,13 @@ app.component('serviceInvoiceList', {
         //         dataTable.draw();
         //     }, 900);
         // }
-        $scope.getSelectedStatus = function(selected_status_id) {
-            setTimeout(function() {
+        $scope.getSelectedStatus = function (selected_status_id) {
+            setTimeout(function () {
                 $('#status_id').val(selected_status_id);
                 dataTable.draw();
             }, 900);
         }
-        $scope.reset_filter = function() {
+        $scope.reset_filter = function () {
             $('#invoice_number').val('');
             $('#invoice_date').val('');
             $('#created_date').val('');
@@ -267,7 +267,7 @@ app.component('serviceInvoiceList', {
         //             });
         //     }
         // }
-        self.export_value = function(value) {
+        self.export_value = function (value) {
             console.log(value);
             $("#export_type").val(value);
         }
@@ -276,7 +276,7 @@ app.component('serviceInvoiceList', {
         self.csrf_token = $('meta[name="csrf-token"]').attr('content');
         var filter_form_id = '#filter-form';
         var filter_form_v = jQuery(filter_form_id).validate({
-            errorPlacement: function(error, element) {
+            errorPlacement: function (error, element) {
                 if (element.hasClass("dynamic_date")) {
                     error.insertAfter(element.parent("div"));
                 } else {
@@ -289,7 +289,7 @@ app.component('serviceInvoiceList', {
                     required: true,
                 },
                 'gstin': {
-                    required: function() {
+                    required: function () {
                         if ($('#export_type').val() == 3) {
                             return true;
                         } else {
@@ -298,42 +298,42 @@ app.component('serviceInvoiceList', {
                     }
                 }
             },
-            submitHandler: function(form) {
+            submitHandler: function (form) {
                 form.submit();
                 $('#addServiceItem').button('loading');
             },
         });
 
-        $(".search_clear").on("click", function() {
+        $(".search_clear").on("click", function () {
             $('#search').val('');
             $('#service-invoice-table').DataTable().search('').draw();
         });
 
-        $("#search").on('keyup', function() {
+        $("#search").on('keyup', function () {
             dataTable
                 .search(this.value)
                 .draw();
         });
 
-        $('#send_for_approval').on('click', function() { //alert('dsf');
+        $('#send_for_approval').on('click', function () { //alert('dsf');
             if ($('.service_invoice_checkbox:checked').length > 0) {
                 $('#pace').css("display", "block");
                 $('#pace').addClass('pace-active');
                 var send_for_approval = []
-                $('input[name="child_boxes"]:checked').each(function() {
+                $('input[name="child_boxes"]:checked').each(function () {
                     send_for_approval.push(this.value);
                 });
                 // console.log(send_for_approval);
                 $http.post(
                     laravel_routes['sendMultipleApproval'], {
-                        send_for_approval: send_for_approval,
-                    }
-                ).then(function(response) {
+                    send_for_approval: send_for_approval,
+                }
+                ).then(function (response) {
                     $('#pace').css("display", "none");
                     $('#pace').addClass('pace-inactive');
                     if (response.data.success == true) {
                         custom_noty('success', response.data.message);
-                        $timeout(function() {
+                        $timeout(function () {
                             // $('#service-invoice-table').DataTable().ajax.reload();
                             RefreshTable();
                             // $scope.$apply();
@@ -346,21 +346,21 @@ app.component('serviceInvoiceList', {
                 custom_noty('error', 'Please Select Checkbox');
             }
         })
-        $('.refresh_table').on("click", function() {
+        $('.refresh_table').on("click", function () {
             RefreshTable();
         });
-        $('#parent').on('click', function() {
+        $('#parent').on('click', function () {
             if (this.checked) {
-                $('.service_invoice_checkbox').each(function() {
+                $('.service_invoice_checkbox').each(function () {
                     this.checked = true;
                 });
             } else {
-                $('.service_invoice_checkbox').each(function() {
+                $('.service_invoice_checkbox').each(function () {
                     this.checked = false;
                 });
             }
         });
-        $(document.body).on('click', '.service_invoice_checkbox', function() {
+        $(document.body).on('click', '.service_invoice_checkbox', function () {
             if ($('.service_invoice_checkbox:checked').length == $('.service_invoice_checkbox').length) {
                 $('#parent').prop('checked', true);
             } else {
@@ -371,16 +371,16 @@ app.component('serviceInvoiceList', {
         dateRangePicker();
 
         //SEARCH BRANCH
-        self.searchBranchFilter = function(query) {
+        self.searchBranchFilter = function (query) {
             if (query) {
-                return new Promise(function(resolve, reject) {
+                return new Promise(function (resolve, reject) {
                     $http
                         .post(
                             search_branch_url, {
-                                key: query,
-                            }
+                            key: query,
+                        }
                         )
-                        .then(function(response) {
+                        .then(function (response) {
                             resolve(response.data);
                         });
                     //reject(response);
@@ -390,7 +390,7 @@ app.component('serviceInvoiceList', {
             }
         }
         //GET BRANCH DETAILS
-        self.getBranchDetails = function() {
+        self.getBranchDetails = function () {
             if (self.service_invoice.branch == null) {
                 $('#branch_id').val('');
                 dataTable.draw();
@@ -399,16 +399,16 @@ app.component('serviceInvoiceList', {
             $scope.getSbuByBranch(self.service_invoice.branch.id);
         }
         //GET SBU BY BRANCH
-        $scope.getSbuByBranch = function(branch_id) {
+        $scope.getSbuByBranch = function (branch_id) {
             self.extras.sbu_list = [];
             $('#branch_id').val(branch_id);
             dataTable.draw();
             if (branch_id) {
                 $.ajax({
-                        url: get_sbu_url + '/' + branch_id,
-                        method: "GET",
-                    })
-                    .done(function(res) {
+                    url: get_sbu_url + '/' + branch_id,
+                    method: "GET",
+                })
+                    .done(function (res) {
                         if (!res.success) {
                             new Noty({
                                 type: 'error',
@@ -420,27 +420,27 @@ app.component('serviceInvoiceList', {
                             $scope.$apply()
                         }
                     })
-                    .fail(function(xhr) {
+                    .fail(function (xhr) {
                         console.log(xhr);
                     });
             }
         }
         //BRANCH CHANGED
-        self.branchChanged = function() {
+        self.branchChanged = function () {
             self.service_invoice.sbu_id = '';
             self.extras.sbu_list = [];
         }
         //SEARCH CUSTOMER
-        self.searchCustomer = function(query) {
+        self.searchCustomer = function (query) {
             if (query) {
-                return new Promise(function(resolve, reject) {
+                return new Promise(function (resolve, reject) {
                     $http
                         .post(
                             service_invoice_search_customer_url, {
-                                key: query,
-                            }
+                            key: query,
+                        }
                         )
-                        .then(function(response) {
+                        .then(function (response) {
                             resolve(response.data);
                         });
                     //reject(response);
@@ -450,26 +450,26 @@ app.component('serviceInvoiceList', {
             }
         }
         //GET CUSTOMER DETAILS
-        $scope.getCustomerDetails = function(selected_customer_id) {
+        $scope.getCustomerDetails = function (selected_customer_id) {
             $('#customer_id').val(selected_customer_id);
             dataTable.draw();
         }
 
-        $scope.sendApproval = function($id, $send_to_approval) {
+        $scope.sendApproval = function ($id, $send_to_approval) {
             $('#approval_id').val($id);
             $('#next_status').val($send_to_approval);
         }
-        $scope.approvalConfirm = function() {
+        $scope.approvalConfirm = function () {
             $id = $('#approval_id').val();
             $send_to_approval = $('#next_status').val();
             $('#pace').css("display", "block");
             $('#pace').addClass('pace-active');
             $http.post(
                 laravel_routes['saveApprovalStatus'], {
-                    id: $id,
-                    send_to_approval: $send_to_approval,
-                }
-            ).then(function(response) {
+                id: $id,
+                send_to_approval: $send_to_approval,
+            }
+            ).then(function (response) {
                 $('#pace').css("display", "none");
                 $('#pace').addClass('pace-inactive');
                 if (response.data.success == true) {
@@ -482,15 +482,15 @@ app.component('serviceInvoiceList', {
             });
         }
 
-        $scope.deleteIRN = function($id) {
+        $scope.deleteIRN = function ($id) {
             $("#cancel_irn_id").val($id);
             $("#cancel_type").val("IRN");
         }
-        $scope.deleteB2C = function($id) {
+        $scope.deleteB2C = function ($id) {
             $("#cancel_irn_id").val($id);
             $("#cancel_type").val("B2C");
         }
-        $scope.cancelIRN = function() {
+        $scope.cancelIRN = function () {
             $('#pace').css("display", "block");
             $('#pace').addClass('pace-active');
             $id = $('#cancel_irn_id').val();
@@ -500,12 +500,12 @@ app.component('serviceInvoiceList', {
             // return;
             $http.get(
                 laravel_routes['cancelIrn'], {
-                    params: {
-                        id: $id,
-                        type: $cancel_type,
-                    }
+                params: {
+                    id: $id,
+                    type: $cancel_type,
                 }
-            ).then(function(response) {
+            }
+            ).then(function (response) {
                 $('#pace').css("display", "none");
                 $('#pace').addClass('pace-inactive');
                 if (response.data.success == true) {
@@ -518,14 +518,14 @@ app.component('serviceInvoiceList', {
             });
         }
 
-        $scope.cholaPdfDownload = function(service_invoice_id) {
+        $scope.cholaPdfDownload = function (service_invoice_id) {
             $http.get(
                 laravel_routes['cholaPdfCreate'], {
-                    params: {
-                        id: service_invoice_id,
-                    }
+                params: {
+                    id: service_invoice_id,
                 }
-            ).then(function(res) {
+            }
+            ).then(function (res) {
                 console.log(res);
                 base_url + '/' + window.open(res.data.file_name_path, '_blank').focus();
             });
@@ -541,12 +541,12 @@ app.component('serviceInvoiceList', {
 //------------------------------------------------------------------------------------------------------------------------
 app.component('serviceInvoiceForm', {
     templateUrl: service_invoice_form_template_url,
-    controller: function($http, $location, HelperService, $routeParams, $rootScope, $scope, $timeout, $mdSelect, $window) {
-        if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061 || $routeParams.type_id == 1062) {} else {
+    controller: function ($http, $location, HelperService, $routeParams, $rootScope, $scope, $timeout, $mdSelect, $window) {
+        if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061 || $routeParams.type_id == 1062) { } else {
             $location.path('/page-not-found')
             return;
         }
-        $form_data_url = typeof($routeParams.id) == 'undefined' ? service_invoice_get_form_data_url + '/' + $routeParams.type_id : service_invoice_get_form_data_url + '/' + $routeParams.type_id + '/' + $routeParams.id;
+        $form_data_url = typeof ($routeParams.id) == 'undefined' ? service_invoice_get_form_data_url + '/' + $routeParams.type_id : service_invoice_get_form_data_url + '/' + $routeParams.type_id + '/' + $routeParams.id;
         var self = this;
         self.hasPermission = HelperService.hasPermission;
         self.allow_e_invoice_selection = self.hasPermission('allow-e-invoice-selection');
@@ -559,7 +559,7 @@ app.component('serviceInvoiceForm', {
 
         $http.get(
             $form_data_url
-        ).then(function(response) {
+        ).then(function (response) {
             if (!response.data.success) {
                 new Noty({
                     type: 'error',
@@ -584,7 +584,7 @@ app.component('serviceInvoiceForm', {
                 // }, 1000);
                 // console.log(self.service_invoice.to_account_type_id);
                 if (self.service_invoice.to_account_type_id == 1440 || self.service_invoice.to_account_type_id == 1441) { //CUSTOMER || VENDOE
-                    $timeout(function() {
+                    $timeout(function () {
                         self.customer = self.service_invoice.customer;
                         self.customer_addresses = response.data.extras.addresses;
                         // $rootScope.getCustomer(self.service_invoice.customer_id);
@@ -598,10 +598,10 @@ app.component('serviceInvoiceForm', {
 
                     }, 1200);
                 }
-                $timeout(function() {
+                $timeout(function () {
                     $scope.getSbuByBranch(self.service_invoice.branch_id);
                 }, 1200);
-                $timeout(function() {
+                $timeout(function () {
                     $scope.serviceInvoiceItemCalc();
                 }, 1500);
                 // $timeout(function() {
@@ -611,7 +611,7 @@ app.component('serviceInvoiceForm', {
 
                 //ATTACHMENTS
                 if (self.service_invoice.attachments.length) {
-                    $(self.service_invoice.attachments).each(function(key, attachment) {
+                    $(self.service_invoice.attachments).each(function (key, attachment) {
                         var design = '<div class="imageuploadify-container" data-attachment_id="' + attachment.id + '" style="margin-left: 0px; margin-right: 0px;">' +
                             '<div class="imageuploadify-btn-remove"><button type="button" class="btn btn-danger glyphicon glyphicon-remove"></button></div>' +
                             '<div class="imageuploadify-details"><div class="imageuploadify-file-icon"></div><span class="imageuploadify-file-name">' + attachment.name + '' +
@@ -626,7 +626,7 @@ app.component('serviceInvoiceForm', {
                 var d = new Date();
                 var val = ('0' + d.getDate()).slice(-2) + "-" + ('0' + (d.getMonth() + 1)).slice(-2) + "-" + d.getFullYear();
                 // console.log(val);
-                setTimeout(function() {
+                setTimeout(function () {
                     $("#doc_date").val(val);
                     $("#hid_document_date").val(val);
                 }, 1000);
@@ -673,17 +673,17 @@ app.component('serviceInvoiceForm', {
         // }, 1500);
 
         /* Tab Funtion */
-        $('.btn-nxt').on("click", function() {
+        $('.btn-nxt').on("click", function () {
             $('.cndn-tabs li.active').next().children('a').trigger("click");
             tabPaneFooter();
         });
-        $('.btn-prev').on("click", function() {
+        $('.btn-prev').on("click", function () {
             $('.cndn-tabs li.active').prev().children('a').trigger("click");
             tabPaneFooter();
         });
 
         /* Modal Md Select Hide */
-        $('.modal').bind('click', function(event) {
+        $('.modal').bind('click', function (event) {
             if ($('.md-select-menu-container').hasClass('md-active')) {
                 $mdSelect.hide();
             }
@@ -700,9 +700,9 @@ app.component('serviceInvoiceForm', {
 
         var min_offset = '';
         var max_offset = '';
-        setTimeout(function() {
+        setTimeout(function () {
             if (self.config_values != '') {
-                $.each(self.config_values, function(index, value) {
+                $.each(self.config_values, function (index, value) {
                     if (value.entity_type_id == '15' && value.name != '') {
                         min_offset = '-' + value.name + 'd';
                     } else if (value.entity_type_id == '15' && value.name == '') {
@@ -743,24 +743,24 @@ app.component('serviceInvoiceForm', {
         // });
 
         //OBJECT EMPTY CHECK
-        $scope.isObjectEmpty = function(objvar) {
+        $scope.isObjectEmpty = function (objvar) {
             if (objvar) {
                 return Object.keys(objvar).length === 0;
             }
         }
 
         //SEARCH FIELD
-        self.searchField = function(query, field_id) {
+        self.searchField = function (query, field_id) {
             if (query && field_id) {
-                return new Promise(function(resolve, reject) {
+                return new Promise(function (resolve, reject) {
                     $http
                         .post(
                             search_field_url, {
-                                key: query,
-                                field_id: field_id,
-                            }
+                            key: query,
+                            field_id: field_id,
+                        }
                         )
-                        .then(function(response) {
+                        .then(function (response) {
                             resolve(response.data);
                         });
                     //reject(response);
@@ -771,16 +771,16 @@ app.component('serviceInvoiceForm', {
         }
 
         //SEARCH BRANCH
-        self.searchBranch = function(query) {
+        self.searchBranch = function (query) {
             if (query) {
-                return new Promise(function(resolve, reject) {
+                return new Promise(function (resolve, reject) {
                     $http
                         .post(
                             search_branch_url, {
-                                key: query,
-                            }
+                            key: query,
+                        }
                         )
-                        .then(function(response) {
+                        .then(function (response) {
                             resolve(response.data);
                         });
                     //reject(response);
@@ -791,7 +791,7 @@ app.component('serviceInvoiceForm', {
         }
 
         //GET BRANCH DETAILS
-        self.getBranchDetails = function() {
+        self.getBranchDetails = function () {
             if (self.service_invoice.branch == null) {
                 return
             }
@@ -799,18 +799,18 @@ app.component('serviceInvoiceForm', {
         }
 
         //BRANCH CHANGED
-        self.branchChanged = function() {
+        self.branchChanged = function () {
             self.service_invoice.sbu_id = '';
             self.extras.sbu_list = [];
 
             self.service_invoice.service_invoice_items = [];
             //SERVICE INVOICE ITEMS TABLE CALC
-            $timeout(function() {
+            $timeout(function () {
                 $scope.serviceInvoiceItemCalc();
             }, 1000);
         }
 
-        $scope.getAccountType = function(id) {
+        $scope.getAccountType = function (id) {
             console.log(id);
             self.CustomerSearchText = "";
             self.customer = {};
@@ -821,14 +821,14 @@ app.component('serviceInvoiceForm', {
         // console.log(self.searchCustomer);
 
         //GET CUSTOMER DETAILS
-        $scope.customerSelected = function() {
+        $scope.customerSelected = function () {
             console.log('test');
             $('#pace').css("display", "block");
             $('#pace').addClass('pace-active');
             console.log(self.service_invoice.customer);
             if (self.service_invoice.customer || self.service_invoice.customer != null) {
                 // var res = $rootScope.getCustomer(self.service_invoice.customer).then(function(res) {
-                var res = $rootScope.getCustomerAddress(self.service_invoice.customer).then(function(res) {
+                var res = $rootScope.getCustomerAddress(self.service_invoice.customer).then(function (res) {
                     console.log(res);
                     if (!res.data.success) {
                         $('#pace').css("display", "none");
@@ -856,7 +856,7 @@ app.component('serviceInvoiceForm', {
                         self.customer_address = res.data.customer_address[0];
                         console.log(self.customer + 'single');
                         if (res.data.customer_address[0].gst_number) {
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 $scope.checkCustomerGSTIN(res.data.customer_address[0].gst_number, self.customer.name);
                             }, 1000);
                         }
@@ -872,7 +872,7 @@ app.component('serviceInvoiceForm', {
             }
         }
 
-        $scope.selectedAddress = function(address) {
+        $scope.selectedAddress = function (address) {
             console.log(address);
             self.service_invoice.service_invoice_items = [];
             if ($('.address:checked').length > 1) {
@@ -885,7 +885,7 @@ app.component('serviceInvoiceForm', {
                 console.log(self.customer);
                 if (address.gst_number) {
                     if ($('.address').is(":checked") == true) {
-                        setTimeout(function() {
+                        setTimeout(function () {
                             $scope.checkCustomerGSTIN(address.gst_number, self.customer.name);
                         }, 1000);
                     }
@@ -893,7 +893,7 @@ app.component('serviceInvoiceForm', {
             }
         }
 
-        $scope.checkCustomerGSTIN = function(gstin, customer) {
+        $scope.checkCustomerGSTIN = function (gstin, customer) {
             // console.log(gstin);
             if (self.allow_e_invoice_selection) {
                 var e_invoice_selection = $("#e_invoice_registration").val();
@@ -911,7 +911,7 @@ app.component('serviceInvoiceForm', {
                     $http.get(
                         get_gstin_details + '/' + gstin,
 
-                    ).then(function(response) {
+                    ).then(function (response) {
                         $('#pace').css("display", "none");
                         $('#pace').addClass('pace-inactive');
                         console.log(response);
@@ -935,7 +935,7 @@ app.component('serviceInvoiceForm', {
                                             speed: 1000 // unavailable - no need
                                         },
                                     }).show();
-                                    setTimeout(function() {
+                                    setTimeout(function () {
                                         $noty.close();
                                     }, 12000);
                                     custom_noty('success', 'Customer Name Matched');
@@ -950,7 +950,7 @@ app.component('serviceInvoiceForm', {
                                             speed: 1000 // unavailable - no need
                                         },
                                     }).show();
-                                    setTimeout(function() {
+                                    setTimeout(function () {
                                         $noty.close();
                                     }, 12000);
                                     custom_noty('success', 'Customer Name Matched');
@@ -965,7 +965,7 @@ app.component('serviceInvoiceForm', {
                                             speed: 1000 // unavailable - no need
                                         },
                                     }).show();
-                                    setTimeout(function() {
+                                    setTimeout(function () {
                                         $noty.close();
                                     }, 15000);
                                     custom_noty('error', 'Customer Name Not Matched!');
@@ -988,14 +988,14 @@ app.component('serviceInvoiceForm', {
 
         self.searchVendor = $rootScope.searchVendor;
 
-        $scope.vendorSelected = function() {
+        $scope.vendorSelected = function () {
             console.log('test');
             $('#pace').css("display", "block");
             $('#pace').addClass('pace-active');
             console.log(self.service_invoice.customer);
             if (self.service_invoice.customer || self.service_invoice.customer != null) {
                 // var res = $rootScope.getCustomer(self.service_invoice.customer).then(function(res) {
-                var res = $rootScope.getVendorAddress(self.service_invoice.customer).then(function(res) {
+                var res = $rootScope.getVendorAddress(self.service_invoice.customer).then(function (res) {
                     console.log(res);
                     if (!res.data.success) {
                         $('#pace').css("display", "none");
@@ -1022,7 +1022,7 @@ app.component('serviceInvoiceForm', {
                         self.customer_address = res.data.vendor_address[0];
                         console.log(self.customer + 'single');
                         if (res.data.vendor_address[0].gst_number) {
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 $scope.checkCustomerGSTIN(res.data.vendor_address[0].gst_number, self.vendor.name);
                             }, 1000);
                         }
@@ -1142,20 +1142,20 @@ app.component('serviceInvoiceForm', {
         // }
 
         //SEARCH SERVICE ITEM
-        self.searchServiceItem = function(query, $to_account_type_id) {
+        self.searchServiceItem = function (query, $to_account_type_id) {
             if (query) {
-                return new Promise(function(resolve, reject) {
+                return new Promise(function (resolve, reject) {
                     $http
                         .post(
                             search_service_item_url, {
-                                key: query,
-                                type_id: self.type_id,
-                                category_id: $('#category_id').val(),
-                                sub_category_id: $('#sub_category_id').val(),
-                                is_service: $("input[name='is_service']:checked").val(),
-                            }
+                            key: query,
+                            type_id: self.type_id,
+                            category_id: $('#category_id').val(),
+                            sub_category_id: $('#sub_category_id').val(),
+                            is_service: $("input[name='is_service']:checked").val(),
+                        }
                         )
-                        .then(function(response) {
+                        .then(function (response) {
                             resolve(response.data);
                             if ($to_account_type_id == undefined || $to_account_type_id == null) {
                                 custom_noty('error', 'Select Account Type!');
@@ -1184,22 +1184,22 @@ app.component('serviceInvoiceForm', {
         }
 
         //GET SERVICE ITEM DETAILS
-        self.getServiceItemDetails = function($to_account_type_id) {
+        self.getServiceItemDetails = function ($to_account_type_id) {
             if (!self.service_item) {
                 return
             }
             if (self.enable_service_item_md_change) {
                 $http.post(
                     get_service_item_info_url, {
-                        service_item_id: self.service_item.id,
-                        btn_action: 'add',
-                        branch_id: self.service_invoice.branch.id,
-                        customer_id: self.service_invoice.customer.id,
-                        to_account_type_id: $to_account_type_id,
-                        state_id: self.customer.state_id,
-                        gst_number: self.customer.gst_number,
-                    }
-                ).then(function(response) {
+                    service_item_id: self.service_item.id,
+                    btn_action: 'add',
+                    branch_id: self.service_invoice.branch.id,
+                    customer_id: self.service_invoice.customer.id,
+                    to_account_type_id: $to_account_type_id,
+                    state_id: self.customer.state_id,
+                    gst_number: self.customer.gst_number,
+                }
+                ).then(function (response) {
                     console.log(response);
                     if (response.data.success) {
                         self.service_item_detail = response.data.service_item;
@@ -1213,20 +1213,20 @@ app.component('serviceInvoiceForm', {
             }
         }
 
-        self.serviceItemChanged = function() {
+        self.serviceItemChanged = function () {
             self.service_item_detail = {};
         }
 
 
         //GET SBU BY BRANCH
-        $scope.getSbuByBranch = function(branch_id) {
+        $scope.getSbuByBranch = function (branch_id) {
             self.extras.sbu_list = [];
             if (branch_id) {
                 $.ajax({
-                        url: get_sbu_url + '/' + branch_id,
-                        method: "GET",
-                    })
-                    .done(function(res) {
+                    url: get_sbu_url + '/' + branch_id,
+                    method: "GET",
+                })
+                    .done(function (res) {
                         if (!res.success) {
                             new Noty({
                                 type: 'error',
@@ -1238,21 +1238,21 @@ app.component('serviceInvoiceForm', {
                             $scope.$apply()
                         }
                     })
-                    .fail(function(xhr) {
+                    .fail(function (xhr) {
                         console.log(xhr);
                     });
             }
         }
 
         //GET SERVICE ITEM SUB CATEGORY BY CATEGORY
-        $scope.getServiceItemSubCategoryByServiceItemCategory = function(category_id) {
+        $scope.getServiceItemSubCategoryByServiceItemCategory = function (category_id) {
             self.extras.sub_category_list = [];
             if (category_id) {
                 $.ajax({
-                        url: get_service_item_sub_category_url + '/' + category_id,
-                        method: "GET",
-                    })
-                    .done(function(res) {
+                    url: get_service_item_sub_category_url + '/' + category_id,
+                    method: "GET",
+                })
+                    .done(function (res) {
                         if (!res.success) {
                             new Noty({
                                 type: 'error',
@@ -1264,25 +1264,25 @@ app.component('serviceInvoiceForm', {
                             $scope.$apply()
                         }
                     })
-                    .fail(function(xhr) {
+                    .fail(function (xhr) {
                         console.log(xhr);
                     });
             }
         }
 
         //PERCENTAGE CALC
-        $scope.percentage = function(num, per) {
+        $scope.percentage = function (num, per) {
             return (num / 100) * per;
         }
 
         //PARSEINT
-        self.parseInt = function(num) {
+        self.parseInt = function (num) {
             return parseInt(num);
         }
 
         // $("#qty").val(1);
         //ADD SERVICE INVOICE ITEM
-        $scope.addItem = function() {
+        $scope.addItem = function () {
             self.add_service_action = 'add';
             self.action_title = 'Add';
             self.update_item_key = '';
@@ -1299,7 +1299,7 @@ app.component('serviceInvoiceForm', {
             // console.log(self.service_item_detail);
         }
         //EDIT SERVICE INVOICE ITEM
-        $scope.editServiceItem = function(service_invoice_item_id, description, qty, rate, index, e_invoice_uom_id) {
+        $scope.editServiceItem = function (service_invoice_item_id, description, qty, rate, index, e_invoice_uom_id) {
             console.log(service_invoice_item_id, description, qty, rate, index, e_invoice_uom_id);
             if (service_invoice_item_id) {
                 self.enable_service_item_md_change = false;
@@ -1308,15 +1308,15 @@ app.component('serviceInvoiceForm', {
                 self.update_item_key = index;
                 $http.post(
                     get_service_item_info_url, {
-                        service_item_id: service_invoice_item_id,
-                        field_groups: self.service_invoice.service_invoice_items[index].field_groups,
-                        btn_action: 'edit',
-                        branch_id: self.service_invoice.branch.id,
-                        customer_id: self.service_invoice.customer.id,
-                        state_id: self.customer.state_id,
-                        gst_number: self.customer.gst_number,
-                    }
-                ).then(function(response) {
+                    service_item_id: service_invoice_item_id,
+                    field_groups: self.service_invoice.service_invoice_items[index].field_groups,
+                    btn_action: 'edit',
+                    branch_id: self.service_invoice.branch.id,
+                    customer_id: self.service_invoice.customer.id,
+                    state_id: self.customer.state_id,
+                    gst_number: self.customer.gst_number,
+                }
+                ).then(function (response) {
                     console.log(response);
                     if (response.data.success) {
                         self.service_item_detail = response.data.service_item;
@@ -1338,7 +1338,7 @@ app.component('serviceInvoiceForm', {
         }
 
         //REMOVE SERVICE INVOICE ITEM
-        $scope.removeServiceItem = function(service_invoice_item_id, index) {
+        $scope.removeServiceItem = function (service_invoice_item_id, index) {
             self.service_invoice_item_removal_id = [];
             if (service_invoice_item_id) {
                 self.service_invoice_item_removal_id.push(service_invoice_item_id);
@@ -1351,15 +1351,13 @@ app.component('serviceInvoiceForm', {
         }
 
 
-        $scope.calculateTcsPercentage = function() {
+        $scope.calculateTcsPercentage = function () {
             if (self.service_item_detail) {
                 if (self.service_item_detail.tcs_percentage) {
                     $("#doc_date").val();
                     var d = $("#doc_date").val();
                     var d1 = new Date(d.split("-").reverse().join("-")); //yyyy-mm-dd  
                     var d2 = new Date('2021-03-31'); //yyyy-mm-dd  
-
-
 
                     if (d1 > d2) {
                         var tcs_percentage = 1;
@@ -1373,7 +1371,7 @@ app.component('serviceInvoiceForm', {
         }
 
         //ITEM TO INVOICE TOTAL AMOUNT CALC
-        $scope.totalAmountCalc = function() {
+        $scope.totalAmountCalc = function () {
             // console.log(self.service_invoice);
             // console.log(self.customer);
             self.sub_total = 0;
@@ -1390,7 +1388,7 @@ app.component('serviceInvoiceForm', {
                 // console.log('in');
                 if (self.service_item_detail.tax_code != null) {
                     if (self.service_item_detail.tax_code.taxes.length > 0) {
-                        $(self.service_item_detail.tax_code.taxes).each(function(key, tax) {
+                        $(self.service_item_detail.tax_code.taxes).each(function (key, tax) {
                             tax.pivot.amount = $scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2);
                             self.gst_total += parseFloat($scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2));
                         });
@@ -1424,7 +1422,7 @@ app.component('serviceInvoiceForm', {
                 // }
                 //FOR TCS TAX
 
-                if (self.service_item_detail.tcs_percentage && self.service_item_detail.is_tcs == 1) {
+                if (self.service_item_detail.tcs_percentage) {
 
                     $("#doc_date").val();
                     var d = $("#doc_date").val();
@@ -1432,13 +1430,13 @@ app.component('serviceInvoiceForm', {
                     var d2 = new Date('2021-03-31'); //yyyy-mm-dd  
 
                     var tcs_percentage = 0;
-                    if ( self.sub_total >= self.tcs_limit ) {
-                        tcs_percentage = self.service_item_detail.tcs_percentage;                        
+                    if (self.sub_total >= self.tcs_limit) {
+                        tcs_percentage = self.service_item_detail.tcs_percentage;
                         if (d1 > d2) {
                             tcs_percentage = 1;
                         }
                     }
-                     
+
                     // self.tcs_total = $scope.percentage(self.sub_total + self.gst_total + self.KFC_total, self.service_item_detail.tcs_percentage).toFixed(2);
                     self.tcs_total = $scope.percentage(self.sub_total + self.gst_total + self.KFC_total, tcs_percentage).toFixed(2);
                 }
@@ -1453,40 +1451,40 @@ app.component('serviceInvoiceForm', {
                 self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total) + parseFloat(self.tcs_total) + parseFloat(self.cess_gst_total);
                 console.log(self.total);
             }
-        };       
-        
+        };
+
         //SERVICE ITEM -TCS CALCULATION BY SURYA    
-        $scope.serviceInvoiceItemTcsCal = function(){
+        $scope.serviceInvoiceItemTcsCal = function () {
             $("#doc_date").val();
             var d = $("#doc_date").val();
             var d1 = new Date(d.split("-").reverse().join("-")); //yyyy-mm-dd  
             var d2 = new Date('2021-03-31'); //yyyy-mm-dd
-            self.tcs_total = 0;    
+            self.tcs_total = 0;
             var overall_tcs_total = 0;
             self.service_inv_items = self.service_invoice.service_invoice_items;
             // console.log(self.service_inv_items);
             console.log('++++');
-            $(self.service_invoice.service_invoice_items).each(function(key, service_invoice_item) {
+            $(self.service_invoice.service_invoice_items).each(function (key, service_invoice_item) {
                 console.log(service_invoice_item);
-                if(service_invoice_item.service_item){
+                if (service_invoice_item.service_item) {
                     var is_tcs = service_invoice_item.service_item.is_tcs;
                     var tcs_percentage = service_invoice_item.service_item.tcs_percentage;
-                }else{
+                } else {
                     var is_tcs = service_invoice_item.is_tcs;
                     var tcs_percentage = service_invoice_item.tcs_percentage;
                 }
 
-                if(service_invoice_item.TCS){
+                if (service_invoice_item.TCS) {
                     var item_tcs_amount = parseInt(service_invoice_item.TCS['amount']);
                     console.log(item_tcs_amount);
                     var inv_total = parseInt(service_invoice_item.total) - item_tcs_amount;
-                }else{
+                } else {
                     var inv_total = service_invoice_item.total;
                 }
 
-                console.log(is_tcs,service_invoice_item.total,inv_total);
+                console.log(is_tcs, service_invoice_item.total, inv_total);
 
-                if(is_tcs === 1  && tcs_percentage){
+                if (is_tcs === 1 && tcs_percentage) {
                     // console.log(service_invoice_item);  
                     // self.invoice_amount = 0;
                     var tcs_percentage = 0;
@@ -1498,69 +1496,84 @@ app.component('serviceInvoiceForm', {
                     }
 
                     var item_count = 0;
-                    $(self.service_inv_items).each(function(item_key, service_invoice_item_cpy) {
-                        console.log(service_invoice_item_cpy.code,service_invoice_item.code);
-                        if(service_invoice_item_cpy.code == service_invoice_item.code){
+                    $(self.service_inv_items).each(function (item_key, service_invoice_item_cpy) {
+                        console.log(service_invoice_item_cpy.code, service_invoice_item.code);
+                        if (service_invoice_item_cpy.code == service_invoice_item.code) {
                             if (item_count >= 1) {
-                                var sub_total =parseInt(service_invoice_item_cpy.sub_total)  + parseInt(self.sub_total);   
-                                item_count++; 
+                                var sub_total = parseInt(service_invoice_item_cpy.sub_total) + parseInt(self.sub_total);
+                                item_count++;
                                 self.sub_total = sub_total;
                                 console.log('if');
-                                console.log(self.sub_total); 
+                                console.log(self.sub_total);
                             } else {
                                 var sub_total = parseInt(service_invoice_item_cpy.sub_total);
-                                item_count++; 
+                                item_count++;
                                 self.sub_total = sub_total;
                                 console.log('else');
-                                console.log(self.sub_total);  
-                            }   
+                                console.log(self.sub_total);
+                            }
                         }
                     });
 
-                    console.log(is_tcs,tcs_percentage,self.sub_total,self.tcs_limit,inv_total);
-                    if(is_tcs === 1  && tcs_percentage && self.sub_total >= self.tcs_limit){
+                    console.log(is_tcs, tcs_percentage, self.sub_total, self.tcs_limit, inv_total);
+                    if (is_tcs === 1 && tcs_percentage && self.sub_total >= self.tcs_limit) {
                         console.log(inv_total);
                         console.log(tcs_percentage);
 
                         var tcs_total = $scope.percentage(inv_total, tcs_percentage).toFixed(2);
-                        console.log('Tcs : ' +tcs_total);
+                        console.log('Tcs : ' + tcs_total);
                         overall_tcs_total += parseInt(tcs_total);
 
-                        if(tcs_total > 0){
+                        if (tcs_total > 0) {
                             var tcs_tax_values = {};
                             tcs_tax_values['amount'] = tcs_total;
                             tcs_tax_values['percentage'] = tcs_percentage;
-        
+
                             service_invoice_item.TCS = tcs_tax_values;
-                            service_invoice_item.total =  parseInt(tcs_total) + parseInt(inv_total);
+                            service_invoice_item.total = parseInt(tcs_total) + parseInt(inv_total);
                         }
-                    }else
-                    {
+                    } else {
                         var tcs_tax_values = {};
                         tcs_tax_values['amount'] = 0;
                         tcs_tax_values['percentage'] = tcs_percentage;
-    
+
                         service_invoice_item.TCS = tcs_tax_values;
                         service_invoice_item.total = parseInt(inv_total);
-                    }                            
-                }else{
+                    }
+                } else if (tcs_percentage) {
+                    console.log(inv_total);
+                    console.log(tcs_percentage);
+
+                    var tcs_total = $scope.percentage(inv_total, tcs_percentage).toFixed(2);
+                    console.log('Tcs : ' + tcs_total);
+                    overall_tcs_total += parseInt(tcs_total);
+
+                    if (tcs_total > 0) {
+                        var tcs_tax_values = {};
+                        tcs_tax_values['amount'] = tcs_total;
+                        tcs_tax_values['percentage'] = tcs_percentage;
+
+                        service_invoice_item.TCS = tcs_tax_values;
+                        service_invoice_item.total = parseInt(tcs_total) + parseInt(inv_total);
+                    }
+                } else {
                     var tcs_tax_values = {};
                     tcs_tax_values['amount'] = 0;
                     tcs_tax_values['percentage'] = tcs_percentage;
 
                     service_invoice_item.TCS = tcs_tax_values;
                     service_invoice_item.total = parseInt(inv_total);
-                }    
+                }
                 console.log(service_invoice_item);
             });
 
-            self.tcs_total = overall_tcs_total;        
-              
+            self.tcs_total = overall_tcs_total;
+
             $scope.$apply();
         }
 
         //SERVICE INVOICE ITEMS CALCULATION
-        $scope.serviceInvoiceItemCalc = function() {
+        $scope.serviceInvoiceItemCalc = function () {
             self.table_qty = 0;
             self.table_rate = 0;
             self.table_gst_total = 0;
@@ -1568,12 +1581,12 @@ app.component('serviceInvoiceForm', {
             self.table_total = 0;
             self.tax_wise_total = {};
             for (i = 0; i < self.extras.tax_list.length; i++) {
-                if (typeof(self.extras.tax_list[i].name) != 'undefined') {
+                if (typeof (self.extras.tax_list[i].name) != 'undefined') {
                     self.tax_wise_total[self.extras.tax_list[i].name + '_amount'] = 0;
                 }
             };
 
-            $(self.service_invoice.service_invoice_items).each(function(key, service_invoice_item) {
+            $(self.service_invoice.service_invoice_items).each(function (key, service_invoice_item) {
                 self.table_qty += parseInt(service_invoice_item.qty);
                 self.table_rate = (parseFloat(self.table_rate) + parseFloat(service_invoice_item.rate)).toFixed(2);
                 st = parseFloat(service_invoice_item.sub_total).toFixed(2);
@@ -1590,7 +1603,7 @@ app.component('serviceInvoiceForm', {
                     if (service_invoice_item[tax_obj.name]) {
                         tax = parseFloat(service_invoice_item[tax_obj.name].amount).toFixed(2);
                         self.table_gst_total = parseFloat(self.table_gst_total) + parseFloat(tax);
-                        if (typeof(self.tax_wise_total[tax_obj.name + '_amount']) == 'undefined') {
+                        if (typeof (self.tax_wise_total[tax_obj.name + '_amount']) == 'undefined') {
                             self.tax_wise_total[tax_obj.name + '_amount'] = 0;
                         }
                         self.tax_wise_total[tax_obj.name + '_amount'] += parseFloat(tax);
@@ -1599,7 +1612,7 @@ app.component('serviceInvoiceForm', {
                     }
                 };
                 self.table_total = parseFloat(self.table_total) + parseFloat(service_invoice_item.total); // parseFloat(self.table_sub_total) + parseFloat(self.table_gst_total);
-                if(self.table_total > 1){
+                if (self.table_total > 1) {
                     self.service_invoice.final_amount = Math.round(self.table_total).toFixed(2);
                 } else {
                     self.service_invoice.final_amount = self.table_total.toFixed(2);
@@ -1610,7 +1623,7 @@ app.component('serviceInvoiceForm', {
             $scope.$apply()
         }
 
-        jQuery.validator.addMethod("mdselect_multiselect_required", function(value, element) {
+        jQuery.validator.addMethod("mdselect_multiselect_required", function (value, element) {
             if ($(element).val() == '') {
                 return false;
             } else if (JSON.parse($(element).val()).length == '0') {
@@ -1625,7 +1638,7 @@ app.component('serviceInvoiceForm', {
 
         var service_item_form_id = '#service-invoice-item-form';
         var service_v = jQuery(service_item_form_id).validate({
-            errorPlacement: function(error, element) {
+            errorPlacement: function (error, element) {
                 if (element.hasClass("dynamic_date")) {
                     error.insertAfter(element.parent("div"));
                 } else {
@@ -1645,17 +1658,17 @@ app.component('serviceInvoiceForm', {
                     required: true,
                 },
             },
-            submitHandler: function(form) {
+            submitHandler: function (form) {
                 let formData = new FormData($(service_item_form_id)[0]);
                 $('#addServiceItem').button('loading');
                 $.ajax({
-                        url: laravel_routes['getServiceItem'],
-                        method: "POST",
-                        data: formData,
-                        processData: false,
-                        contentType: false,
-                    })
-                    .done(function(res) {
+                    url: laravel_routes['getServiceItem'],
+                    method: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                })
+                    .done(function (res) {
                         console.log(res);
                         if (!res.success) {
                             $('#addServiceItem').button('reset');
@@ -1670,7 +1683,7 @@ app.component('serviceInvoiceForm', {
                             if (!self.service_invoice.service_invoice_items) {
                                 self.service_invoice.service_invoice_items = [];
                             }
-                            if (res.add) {                            
+                            if (res.add) {
                                 self.service_invoice.service_invoice_items.push(res.service_item);
                             } else {
                                 var edited_service_invoice_item_primary_id = self.service_invoice.service_invoice_items[self.update_item_key].id;
@@ -1687,7 +1700,7 @@ app.component('serviceInvoiceForm', {
                             custom_noty('success', res.message);
                         }
                     })
-                    .fail(function(xhr) {
+                    .fail(function (xhr) {
                         $('#addServiceItem').button('reset');
                         custom_noty('error', 'Something went wrong at server');
                     });
@@ -1696,10 +1709,10 @@ app.component('serviceInvoiceForm', {
 
         var form_id = '#form';
         var v = jQuery(form_id).validate({
-            invalidHandler: function(event, validator) {
+            invalidHandler: function (event, validator) {
                 custom_noty('error', 'Kindly check in each tab to fix errors');
             },
-            errorPlacement: function(error, element) {
+            errorPlacement: function (error, element) {
                 if (element.hasClass("doc_date")) {
                     error.appendTo('.doc_date_error');
                 }
@@ -1740,20 +1753,20 @@ app.component('serviceInvoiceForm', {
                     // required: true,
                 },
             },
-            submitHandler: function(form) {
-                if(self.service_invoice.final_amount == parseInt(0).toFixed(2)) {
+            submitHandler: function (form) {
+                if (self.service_invoice.final_amount == parseInt(0).toFixed(2)) {
                     custom_noty('success', 'Service Invoice total must not be 0');
                 } else {
                     let formData = new FormData($(form_id)[0]);
                     $('#submit').button('loading');
                     $.ajax({
-                            url: laravel_routes['saveServiceInvoice'],
-                            method: "POST",
-                            data: formData,
-                            processData: false,
-                            contentType: false,
-                        })
-                        .done(function(res) {
+                        url: laravel_routes['saveServiceInvoice'],
+                        method: "POST",
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                    })
+                        .done(function (res) {
                             // console.log(res.success);
                             if (!res.success) {
                                 $('#submit').button('reset');
@@ -1769,7 +1782,7 @@ app.component('serviceInvoiceForm', {
                                 $scope.$apply()
                             }
                         })
-                        .fail(function(xhr) {
+                        .fail(function (xhr) {
                             $('#submit').button('reset');
                             custom_noty('error', 'Something went wrong at server');
                         });
@@ -1783,12 +1796,12 @@ app.component('serviceInvoiceForm', {
 //------------------------------------------------------------------------------------------------------------------------
 app.component('serviceInvoiceView', {
     templateUrl: service_invoice_view_template_url,
-    controller: function($http, $location, HelperService, $routeParams, $rootScope, $scope, $timeout, $mdSelect, $window) {
-        if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061 || $routeParams.type_id == 1062) {} else {
+    controller: function ($http, $location, HelperService, $routeParams, $rootScope, $scope, $timeout, $mdSelect, $window) {
+        if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061 || $routeParams.type_id == 1062) { } else {
             $location.path('/page-not-found')
             return;
         }
-        $form_data_url = typeof($routeParams.id) == 'undefined' ? service_invoice_get_view_data_url + '/' + $routeParams.type_id : service_invoice_get_view_data_url + '/' + $routeParams.type_id + '/' + $routeParams.id;
+        $form_data_url = typeof ($routeParams.id) == 'undefined' ? service_invoice_get_view_data_url + '/' + $routeParams.type_id : service_invoice_get_view_data_url + '/' + $routeParams.type_id + '/' + $routeParams.id;
         var self = this;
         self.hasPermission = HelperService.hasPermission;
         self.angular_routes = angular_routes;
@@ -1805,7 +1818,7 @@ app.component('serviceInvoiceView', {
         console.log($scope.attachment_url);
         $http.get(
             $form_data_url
-        ).then(function(response) {
+        ).then(function (response) {
             if (!response.data.success) {
                 new Noty({
                     type: 'error',
@@ -1825,11 +1838,11 @@ app.component('serviceInvoiceView', {
             self.action = response.data.action;
             console.log(self.service_invoice);
             if (self.action == 'View') {
-                $timeout(function() {
+                $timeout(function () {
                     $scope.serviceInvoiceItemCalc();
                 }, 1500);
                 if (self.service_invoice.to_account_type_id == 1440 || self.service_invoice.to_account_type_id == 1441) { //CUSTOMER || VENDOE
-                    $timeout(function() {
+                    $timeout(function () {
                         self.customer = self.service_invoice.customer;
                         if (self.service_invoice.to_account_type_id == 1440) {
                             console.log(self.customer);
@@ -1849,7 +1862,7 @@ app.component('serviceInvoiceView', {
 
                 // ATTACHMENTS
                 if (self.service_invoice.attachments.length) {
-                    $(self.service_invoice.attachments).each(function(key, attachment) {
+                    $(self.service_invoice.attachments).each(function (key, attachment) {
                         console.log(attachment);
                         var design = '<div class="imageuploadify-container" data-attachment_id="' + attachment.id + '" style="margin-left: 0px; margin-right: 0px;">' +
                             '<div class="imageuploadify-details"><div class="imageuploadify-file-icon"></div><span class="imageuploadify-file-name">' + attachment.name + '' +
@@ -1863,14 +1876,14 @@ app.component('serviceInvoiceView', {
             $rootScope.loading = false;
         });
 
-        $scope.vendorSelected = function() {
+        $scope.vendorSelected = function () {
             // console.log('vendor');
             $('#pace').css("display", "block");
             $('#pace').addClass('pace-active');
             console.log(self.service_invoice.customer);
             if (self.service_invoice.customer || self.service_invoice.customer != null) {
                 // var res = $rootScope.getCustomer(self.service_invoice.customer).then(function(res) {
-                var res = $rootScope.getVendorAddress(self.service_invoice.customer).then(function(res) {
+                var res = $rootScope.getVendorAddress(self.service_invoice.customer).then(function (res) {
                     console.log(res);
                     if (!res.data.success) {
                         $('#pace').css("display", "none");
@@ -1897,7 +1910,7 @@ app.component('serviceInvoiceView', {
                         self.customer_address = res.data.vendor_address[0];
                         console.log(self.customer + 'single');
                         if (res.data.vendor_address[0].gst_number) {
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 $scope.checkCustomerGSTIN(res.data.vendor_address[0].gst_number, self.vendor.name);
                             }, 1000);
                         }
@@ -1928,16 +1941,16 @@ app.component('serviceInvoiceView', {
             // }
         }
 
-        $scope.cancelIRN = function() {
+        $scope.cancelIRN = function () {
             $('#cancel_irn').button('loading');
             $id = $("#service_invoice_id").val();
             $http.get(
                 laravel_routes['cancelIrn'], {
-                    params: {
-                        id: $id,
-                    }
+                params: {
+                    id: $id,
                 }
-            ).then(function(res) {
+            }
+            ).then(function (res) {
                 console.log(res);
                 if (!res.data.success) {
                     $('#cancel_irn').button('reset');
@@ -1957,11 +1970,11 @@ app.component('serviceInvoiceView', {
         self.qr_image_url = base_url + '/storage/app/public/service-invoice/IRN_images';
 
         /* Tab Funtion */
-        $('.btn-nxt').on("click", function() {
+        $('.btn-nxt').on("click", function () {
             $('.cndn-tabs li.active').next().children('a').trigger("click");
             tabPaneFooter();
         });
-        $('.btn-prev').on("click", function() {
+        $('.btn-prev').on("click", function () {
             $('.cndn-tabs li.active').prev().children('a').trigger("click");
             tabPaneFooter();
         });
@@ -1969,18 +1982,18 @@ app.component('serviceInvoiceView', {
         // $('.image_uploadify').imageuploadify();
 
         //PERCENTAGE CALC
-        $scope.percentage = function(num, per) {
+        $scope.percentage = function (num, per) {
             return (num / 100) * per;
         }
 
         //PARSEINT
-        self.parseInt = function(num) {
+        self.parseInt = function (num) {
             // return num.toFixed(2);
             return parseInt(num);
         }
 
         //EDIT SERVICE INVOICE ITEM
-        $scope.editServiceItem = function(service_invoice_item_id, description, qty, rate, index, e_invoice_uom_id) {
+        $scope.editServiceItem = function (service_invoice_item_id, description, qty, rate, index, e_invoice_uom_id) {
             console.log(service_invoice_item_id, description, qty, rate, index, e_invoice_uom_id);
             if (service_invoice_item_id) {
                 self.enable_service_item_md_change = false;
@@ -1989,15 +2002,15 @@ app.component('serviceInvoiceView', {
                 self.update_item_key = index;
                 $http.post(
                     get_service_item_info_url, {
-                        service_item_id: service_invoice_item_id,
-                        field_groups: self.service_invoice.service_invoice_items[index].field_groups,
-                        btn_action: 'view',
-                        branch_id: self.service_invoice.branch.id,
-                        customer_id: self.service_invoice.customer.id,
-                        state_id: self.service_invoice.address.state_id,
-                        gst_number: self.service_invoice.address.gst_number,
-                    }
-                ).then(function(response) {
+                    service_item_id: service_invoice_item_id,
+                    field_groups: self.service_invoice.service_invoice_items[index].field_groups,
+                    btn_action: 'view',
+                    branch_id: self.service_invoice.branch.id,
+                    customer_id: self.service_invoice.customer.id,
+                    state_id: self.service_invoice.address.state_id,
+                    gst_number: self.service_invoice.address.gst_number,
+                }
+                ).then(function (response) {
                     if (response.data.success) {
                         self.service_item_detail = response.data.service_item;
                         self.service_item = response.data.service_item;
@@ -2019,7 +2032,7 @@ app.component('serviceInvoiceView', {
         }
 
         //ITEM TO INVOICE TOTAL AMOUNT CALC
-        $scope.totalAmountCalc = function() {
+        $scope.totalAmountCalc = function () {
             self.sub_total = 0;
             self.total = 0;
             self.KFC_total = 0;
@@ -2031,14 +2044,14 @@ app.component('serviceInvoiceView', {
                 // self.sub_total = self.rate;
                 if (self.service_item_detail.tax_code != null) {
                     if (self.service_item_detail.tax_code.taxes.length > 0) {
-                        $(self.service_item_detail.tax_code.taxes).each(function(key, tax) {
+                        $(self.service_item_detail.tax_code.taxes).each(function (key, tax) {
                             tax.pivot.amount = $scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2);
                             self.gst_total += parseFloat($scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2));
                         });
                     }
                 }
                 //FOR TCS TAX
-                if (self.service_item_detail.tcs_percentage && self.service_item_detail.is_tcs == 1) {
+                if (self.service_item_detail.tcs_percentage) {
 
                     $(".doc_date").val();
                     var d = $(".doc_date").val();
@@ -2046,13 +2059,13 @@ app.component('serviceInvoiceView', {
                     var d2 = new Date('2021-03-31'); //yyyy-mm-dd  
 
                     var tcs_percentage = 0;
-                    if ( self.sub_total >= self.tcs_limit ) {
+                    if (self.sub_total >= self.tcs_limit) {
                         tcs_percentage = self.service_item_detail.tcs_percentage;
                         if (d1 > d2) {
                             tcs_percentage = 1;
-                        } 
+                        }
                     }
-                     
+
                     // self.tcs_total = $scope.percentage(self.sub_total + self.gst_total + self.KFC_total, self.service_item_detail.tcs_percentage).toFixed(2);
                     self.tcs_total = $scope.percentage(self.sub_total + self.gst_total + self.KFC_total, tcs_percentage).toFixed(2);
                 }
@@ -2089,7 +2102,7 @@ app.component('serviceInvoiceView', {
         };
 
         //SERVICE INVOICE ITEMS CALCULATION
-        $scope.serviceInvoiceItemCalc = function() {
+        $scope.serviceInvoiceItemCalc = function () {
             self.table_qty = 0;
             self.table_rate = 0;
             self.table_sub_total = 0;
@@ -2097,12 +2110,12 @@ app.component('serviceInvoiceView', {
             self.table_gst_total = 0;
             self.tax_wise_total = {};
             for (i = 0; i < self.extras.tax_list.length; i++) {
-                if (typeof(self.extras.tax_list[i].name) != 'undefined') {
+                if (typeof (self.extras.tax_list[i].name) != 'undefined') {
                     self.tax_wise_total[self.extras.tax_list[i].name + '_amount'] = 0;
                 }
             };
 
-            $(self.service_invoice.service_invoice_items).each(function(key, service_invoice_item) {
+            $(self.service_invoice.service_invoice_items).each(function (key, service_invoice_item) {
                 self.table_qty += parseInt(service_invoice_item.qty);
                 self.table_rate = (parseFloat(self.table_rate) + parseFloat(service_invoice_item.rate)).toFixed(2);
                 st = parseFloat(service_invoice_item.sub_total).toFixed(2);
@@ -2117,7 +2130,7 @@ app.component('serviceInvoiceView', {
                     if (service_invoice_item[tax_obj.name]) {
                         tax = parseFloat(service_invoice_item[tax_obj.name].amount).toFixed(2);
                         self.table_gst_total = parseFloat(self.table_gst_total) + parseFloat(tax);
-                        if (typeof(self.tax_wise_total[tax_obj.name + '_amount']) == 'undefined') {
+                        if (typeof (self.tax_wise_total[tax_obj.name + '_amount']) == 'undefined') {
                             self.tax_wise_total[tax_obj.name + '_amount'] = 0;
                         }
                         self.tax_wise_total[tax_obj.name + '_amount'] += parseFloat(tax);
@@ -2128,7 +2141,7 @@ app.component('serviceInvoiceView', {
                 // console.log(parseFloat(self.table_sub_total));
                 self.table_total = parseFloat(self.table_total) + parseFloat(service_invoice_item.total); // parseFloat(self.table_sub_total) + parseFloat(self.table_gst_total);
                 // self.service_invoice.final_amount = Math.round(self.table_total).toFixed(2);
-                if(self.table_total > 1){
+                if (self.table_total > 1) {
                     self.service_invoice.final_amount = Math.round(self.table_total).toFixed(2);
                 } else {
                     self.service_invoice.final_amount = self.table_total.toFixed(2);
@@ -2138,14 +2151,14 @@ app.component('serviceInvoiceView', {
             $scope.$apply()
         }
 
-        $scope.cholaPdfDownload = function(service_invoice_id) {
+        $scope.cholaPdfDownload = function (service_invoice_id) {
             $http.get(
                 laravel_routes['cholaPdfCreate'], {
-                    params: {
-                        id: service_invoice_id,
-                    }
+                params: {
+                    id: service_invoice_id,
                 }
-            ).then(function(res) {
+            }
+            ).then(function (res) {
                 console.log(res);
                 base_url + '/' + window.open(res.data.file_name_path, '_blank').focus();
             });
@@ -2156,21 +2169,21 @@ app.component('serviceInvoiceView', {
         var form_id = '#form';
         var v = jQuery(form_id).validate({
             ignore: '',
-            submitHandler: function(form) {
+            submitHandler: function (form) {
                 // var submitButtonValue =  $(this.submitButton).attr("data-id");
                 $('#submit').button('loading');
                 $.ajax({
-                        url: laravel_routes['saveApprovalStatus'],
-                        method: "POST",
-                        data: {
-                            id: $('#service_invoice_id').val(),
-                            send_to_approval: $('#send_to_approval').val(),
-                        },
-                        headers: {
-                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                        },
-                    })
-                    .done(function(res) {
+                    url: laravel_routes['saveApprovalStatus'],
+                    method: "POST",
+                    data: {
+                        id: $('#service_invoice_id').val(),
+                        send_to_approval: $('#send_to_approval').val(),
+                    },
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                })
+                    .done(function (res) {
                         // console.log(res.success);
                         if (!res.success) {
                             $('#submit').button('reset');
@@ -2186,7 +2199,7 @@ app.component('serviceInvoiceView', {
                                     speed: 500 // unavailable - no need
                                 },
                             }).show();
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 $noty.close();
                             }, 3000);
                         } else {
@@ -2200,14 +2213,14 @@ app.component('serviceInvoiceView', {
                                     speed: 500 // unavailable - no need
                                 },
                             }).show();
-                            setTimeout(function() {
+                            setTimeout(function () {
                                 $noty.close();
                             }, 3000);
                             $location.path('/service-invoice-pkg/service-invoice/list');
                             $scope.$apply()
                         }
                     })
-                    .fail(function(xhr) {
+                    .fail(function (xhr) {
                         $('#submit').button('reset');
                         $noty = new Noty({
                             type: 'error',
@@ -2217,7 +2230,7 @@ app.component('serviceInvoiceView', {
                                 speed: 500 // unavailable - no need
                             },
                         }).show();
-                        setTimeout(function() {
+                        setTimeout(function () {
                             $noty.close();
                         }, 3000);
                     });

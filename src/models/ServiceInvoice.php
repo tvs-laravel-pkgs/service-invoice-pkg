@@ -471,7 +471,8 @@ class ServiceInvoice extends Model {
 				// dump($tcs_calc_gst['credit'], $tcs_calc_gst['debit'], $tcs_calc_gst['invoice'], $invoice_item->sub_total);
 				// dump($kfc['credit'], $kfc['debit'], $kfc['invoice'], $invoice_item->sub_total);
 				// dump($kfc['invoice'], $tcs_calc_gst['invoice'], $invoice_item->sub_total);
-				if ($invoice_item->serviceItem->tcs_percentage && $invoice_item->serviceItem->is_tcs == 1) {
+				// if ($invoice_item->serviceItem->tcs_percentage && $invoice_item->serviceItem->is_tcs == 1) {
+				if ($invoice_item->serviceItem->tcs_percentage) {
 					// $document_date = (string) $service_invoice->document_date;
 					// $date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
 					// $date2 = Carbon::createFromFormat('d-m-Y', $document_date);
@@ -1165,7 +1166,8 @@ class ServiceInvoice extends Model {
 				// dump($tcs_calc_gst['credit'], $tcs_calc_gst['debit'], $tcs_calc_gst['invoice'], $invoice_item->sub_total);
 				// dump($kfc['credit'], $kfc['debit'], $kfc['invoice'], $invoice_item->sub_total);
 				// dump($kfc['invoice'], $tcs_calc_gst['invoice'], $invoice_item->sub_total);
-				if ($invoice_item->serviceItem->tcs_percentage && $invoice_item->serviceItem->is_tcs == 1) {
+				// if ($invoice_item->serviceItem->tcs_percentage && $invoice_item->serviceItem->is_tcs == 1) {
+				if ($invoice_item->serviceItem->tcs_percentage) {
 					$tcs_total['credit'] += $this->type_id == 1060 ? round(($kfc_amt['credit'] + $igst_amt['credit'] + $sgst_amt['credit'] + $cgst_amt['credit'] + $invoice_item->sub_total) * $tcs_percentage / 100, 2) : 0;
 					$tcs_total['debit'] += $this->type_id == 1061 ? round(($kfc_amt['debit'] + $igst_amt['debit'] + $sgst_amt['debit'] + $cgst_amt['debit'] + $invoice_item->sub_total) * $tcs_percentage / 100, 2) : 0;
 
@@ -2311,7 +2313,8 @@ class ServiceInvoice extends Model {
 										}
 
 										//TCS PERCANTAGE
-										if ($service_item->tcs_percentage && $service_item->is_tcs ==1) {
+										// if ($service_item->tcs_percentage && $service_item->is_tcs ==1) {
+										if ($service_item->tcs_percentage) {
 
 											$document_date = (string) $service_invoice->document_date;
 											$date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
