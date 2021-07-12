@@ -1430,12 +1430,12 @@ app.component('serviceInvoiceForm', {
                     var d2 = new Date('2021-03-31'); //yyyy-mm-dd  
 
                     var tcs_percentage = 0;
-                    if (self.sub_total >= self.tcs_limit) {
-                        tcs_percentage = self.service_item_detail.tcs_percentage;
-                        if (d1 > d2) {
-                            tcs_percentage = 1;
-                        }
+                    // if (self.sub_total >= self.tcs_limit) {
+                    tcs_percentage = self.service_item_detail.tcs_percentage;
+                    if (d1 > d2) {
+                        tcs_percentage = 1;
                     }
+                    // }
 
                     // self.tcs_total = $scope.percentage(self.sub_total + self.gst_total + self.KFC_total, self.service_item_detail.tcs_percentage).toFixed(2);
                     self.tcs_total = $scope.percentage(self.sub_total + self.gst_total + self.KFC_total, tcs_percentage).toFixed(2);
