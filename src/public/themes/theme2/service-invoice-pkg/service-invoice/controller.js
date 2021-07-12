@@ -1535,7 +1535,7 @@ app.component('serviceInvoiceForm', {
                     } else {
                         var tcs_tax_values = {};
                         tcs_tax_values['amount'] = 0;
-                        tcs_tax_values['percentage'] = tcs_percentage;
+                        tcs_tax_values['percentage'] = 0;
 
                         service_invoice_item.TCS = tcs_tax_values;
                         service_invoice_item.total = parseInt(inv_total);
@@ -1559,7 +1559,7 @@ app.component('serviceInvoiceForm', {
                 } else {
                     var tcs_tax_values = {};
                     tcs_tax_values['amount'] = 0;
-                    tcs_tax_values['percentage'] = tcs_percentage;
+                    tcs_tax_values['percentage'] = 0;
 
                     service_invoice_item.TCS = tcs_tax_values;
                     service_invoice_item.total = parseInt(inv_total);
