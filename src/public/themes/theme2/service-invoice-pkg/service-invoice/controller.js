@@ -1530,7 +1530,7 @@ app.component('serviceInvoiceForm', {
                             tcs_tax_values['percentage'] = tcs_percentage;
 
                             service_invoice_item.TCS = tcs_tax_values;
-                            service_invoice_item.total = parseFloat(tcs_total).toFixed(2) + parseFloat(inv_total).toFixed(2);
+                            service_invoice_item.total = parseFloat(tcs_total) + parseFloat(inv_total);
                         }
                     } else {
                         var tcs_tax_values = {};
@@ -1554,7 +1554,7 @@ app.component('serviceInvoiceForm', {
                         tcs_tax_values['percentage'] = tcs_percentage;
 
                         service_invoice_item.TCS = tcs_tax_values;
-                        service_invoice_item.total = parseFloat(tcs_total).toFixed(2) + parseFloat(inv_total).toFixed(2);
+                        service_invoice_item.total = parseFloat(tcs_total) + parseFloat(inv_total);
                     }
                 } else {
                     var tcs_tax_values = {};
