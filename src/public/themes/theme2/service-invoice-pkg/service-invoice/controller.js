@@ -1475,11 +1475,11 @@ app.component('serviceInvoiceForm', {
                 }
 
                 if (service_invoice_item.TCS) {
-                    var item_tcs_amount = parseInt(service_invoice_item.TCS['amount']);
+                    var item_tcs_amount = parseFloat(service_invoice_item.TCS['amount']).toFixed(2);
                     console.log(item_tcs_amount);
-                    var inv_total = parseInt(service_invoice_item.total) - item_tcs_amount;
+                    var inv_total = parseFloat(service_invoice_item.total).toFixed(2) - item_tcs_amount;
                 } else {
-                    var inv_total = service_invoice_item.total;
+                    var inv_total = parseFloat(service_invoice_item.total).toFixed(2);
                 }
 
                 console.log(is_tcs, service_invoice_item.total, inv_total);
@@ -1500,13 +1500,13 @@ app.component('serviceInvoiceForm', {
                         console.log(service_invoice_item_cpy.code, service_invoice_item.code);
                         if (service_invoice_item_cpy.code == service_invoice_item.code) {
                             if (item_count >= 1) {
-                                var sub_total = parseInt(service_invoice_item_cpy.sub_total) + parseInt(self.sub_total);
+                                var sub_total = parseFloat(service_invoice_item_cpy.sub_total) + parseFloat(self.sub_total);
                                 item_count++;
                                 self.sub_total = sub_total;
                                 console.log('if');
                                 console.log(self.sub_total);
                             } else {
-                                var sub_total = parseInt(service_invoice_item_cpy.sub_total);
+                                var sub_total = parseFloat(service_invoice_item_cpy.sub_total);
                                 item_count++;
                                 self.sub_total = sub_total;
                                 console.log('else');
@@ -1522,7 +1522,7 @@ app.component('serviceInvoiceForm', {
 
                         var tcs_total = $scope.percentage(inv_total, tcs_percentage).toFixed(2);
                         console.log('Tcs : ' + tcs_total);
-                        overall_tcs_total += parseInt(tcs_total);
+                        overall_tcs_total += parseFloat(tcs_total).toFixed(2);
 
                         if (tcs_total > 0) {
                             var tcs_tax_values = {};
@@ -1530,7 +1530,7 @@ app.component('serviceInvoiceForm', {
                             tcs_tax_values['percentage'] = tcs_percentage;
 
                             service_invoice_item.TCS = tcs_tax_values;
-                            service_invoice_item.total = parseInt(tcs_total) + parseInt(inv_total);
+                            service_invoice_item.total = parseFloat(tcs_total).toFixed(2) + parseFloat(inv_total).toFixed(2);
                         }
                     } else {
                         var tcs_tax_values = {};
@@ -1538,7 +1538,7 @@ app.component('serviceInvoiceForm', {
                         tcs_tax_values['percentage'] = 0;
 
                         service_invoice_item.TCS = tcs_tax_values;
-                        service_invoice_item.total = parseInt(inv_total);
+                        service_invoice_item.total = parseFloat(inv_total).toFixed(2);
                     }
                 } else if (tcs_percentage) {
                     console.log(inv_total);
@@ -1554,7 +1554,7 @@ app.component('serviceInvoiceForm', {
                         tcs_tax_values['percentage'] = tcs_percentage;
 
                         service_invoice_item.TCS = tcs_tax_values;
-                        service_invoice_item.total = parseInt(tcs_total) + parseInt(inv_total);
+                        service_invoice_item.total = parseFloat(tcs_total).toFixed(2) + parseFloat(inv_total).toFixed(2);
                     }
                 } else {
                     var tcs_tax_values = {};
@@ -1562,7 +1562,7 @@ app.component('serviceInvoiceForm', {
                     tcs_tax_values['percentage'] = 0;
 
                     service_invoice_item.TCS = tcs_tax_values;
-                    service_invoice_item.total = parseInt(inv_total);
+                    service_invoice_item.total = parseFloat(inv_total).toFixed(2);
                 }
                 console.log(service_invoice_item);
             });
