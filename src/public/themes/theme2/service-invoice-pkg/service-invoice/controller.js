@@ -1405,7 +1405,16 @@ app.component('serviceInvoiceForm', {
                         if (self.service_invoice.branch.primary_address.state_id == 3 && self.customer.state_id == 3) {
                             if (self.customer.gst_number == null) {
                                 if (self.service_item_detail.tax_code != null) {
-                                    self.KFC_total = self.sub_total / 100;
+
+                                    $("#doc_date").val();
+                                    var d = $("#doc_date").val();
+                                    var d1 = new Date(d.split("-").reverse().join("-")); //yyyy-mm-dd  
+                                    var d2 = new Date('2021-07-31'); //yyyy-mm-dd  
+
+                                    if (d1 > d2) {
+                                    } else {
+                                        self.KFC_total = self.sub_total / 100;
+                                    }
                                     // console.log(self.sub_total);
                                     // console.log(self.KFC_total);
                                 }
@@ -2082,7 +2091,16 @@ app.component('serviceInvoiceView', {
                         if (self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.address.state_id == 3) {
                             if (self.service_invoice.address.gst_number == null) {
                                 if (self.service_item_detail.tax_code != null) {
-                                    self.KFC_total = self.sub_total / 100;
+
+                                    $("#doc_date").val();
+                                    var d = $("#doc_date").val();
+                                    var d1 = new Date(d.split("-").reverse().join("-")); //yyyy-mm-dd  
+                                    var d2 = new Date('2021-07-31'); //yyyy-mm-dd  
+
+                                    if (d1 > d2) {
+                                    } else {
+                                        self.KFC_total = self.sub_total / 100;
+                                    }
                                     // console.log(self.sub_total);
                                     // console.log(self.KFC_total);
                                 }
