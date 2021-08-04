@@ -2957,7 +2957,7 @@ class ServiceInvoiceController extends Controller
                                         //FOR TCS
                                         if ($tax->tax_id == 5) {
                                             $tcs_total = $tax->amount;
-                                            $tcs_percentage = $value->pivot->percentage;
+                                            $tcs_percentage = $tax->percentage;
                                         }
                                     }
                                 }
