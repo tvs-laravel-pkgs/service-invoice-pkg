@@ -286,6 +286,7 @@ class ServiceItemController extends Controller {
 			'coaCode',
 			'taxCode',
 		])
+			->leftJoin('service_item_sub_categories','service_item_sub_categories.id','service_items.sub_category_id')
 			->where(function ($query) use ($item_code_filter) {
 				if ($item_code_filter != null) {
 					$query->where('service_items.code', 'like', "%" . $item_code_filter . "%");
