@@ -697,7 +697,7 @@ class ServiceInvoiceApprovalController extends Controller {
 					// $service_invoice['additional_image_path'] = $additional_image_path; //DOUBT
 
 					//dd($serviceInvoiceItem->field_groups);
-					$this->data['service_invoice_pdf'] = $service_invoice;
+					$this->data['service_invoice_pdf'] = $service_invoice_save;
 					// dd($this->data['service_invoice_pdf']);
 
 					$tax_list = Tax::where('company_id', 1)->get();
