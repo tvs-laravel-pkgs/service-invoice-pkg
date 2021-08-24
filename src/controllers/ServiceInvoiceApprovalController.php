@@ -588,8 +588,8 @@ class ServiceInvoiceApprovalController extends Controller {
 				//Get City ID
 				$client = new Client();
 		   
-				// $url = 'https://einvoiceapi.bdo.in/bdoapi/public/irnbydocdetails?doctype='.$service_invoice->type.'&docnum='.$service_invoice->number.'&docdate='.date('d/m/Y', strtotime($service_invoice->document_date));
-				$url = 'https://sandboxeinvoiceapi.bdo.in/bdoapi/public/irnbydocdetails?doctype='.$service_invoice->type.'&docnum='.$service_invoice->number.'&docdate='.date('d/m/Y', strtotime($service_invoice->document_date));
+				$url = 'https://einvoiceapi.bdo.in/bdoapi/public/irnbydocdetails?doctype='.$service_invoice->type.'&docnum='.$service_invoice->number.'&docdate='.date('d/m/Y', strtotime($service_invoice->document_date));
+				// $url = 'https://sandboxeinvoiceapi.bdo.in/bdoapi/public/irnbydocdetails?doctype='.$service_invoice->type.'&docnum='.$service_invoice->number.'&docdate='.date('d/m/Y', strtotime($service_invoice->document_date));
 
 				$clientid = config('custom.CLIENT_ID');
 
