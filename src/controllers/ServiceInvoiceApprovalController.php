@@ -15,11 +15,15 @@ use App\Employee;
 use App\Entity;
 use App\Http\Controllers\Controller;
 use App\User;
+use File;
+use QRCode;
 use Auth;
 use DB;
 use Entrust;
 use Illuminate\Http\Request;
 use Yajra\Datatables\Datatables;
+use phpseclib\Crypt\RSA as Crypt_RSA;
+use GuzzleHttp\Client;
 
 class ServiceInvoiceApprovalController extends Controller {
 
@@ -438,6 +442,304 @@ class ServiceInvoiceApprovalController extends Controller {
 		}
 	}
 
+	public function updateIRNStatus($id) {
+		// dd($request->all());
+		DB::beginTransaction();
+		try {
+			// $approval_status = ServiceInvoice::find($request->id);
+			$service_invoice = ServiceInvoice::find($id);
+			if($service_invoice && $service_invoice->status == 2){
+				// RSA ENCRYPTION
+		        $rsa = new Crypt_RSA;
+		        $public_key = 'MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAxqHazGS4OkY/bDp0oklL+Ser7EpTpxyeMop8kfBlhzc8dzWryuAECwu8i/avzL4f5XG/DdSgMz7EdZCMrcxtmGJlMo2tUqjVlIsUslMG6Cmn46w0u+pSiM9McqIvJgnntKDHg90EIWg1BNnZkJy1NcDrB4O4ea66Y6WGNdb0DxciaYRlToohv8q72YLEII/z7W/7EyDYEaoSlgYs4BUP69LF7SANDZ8ZuTpQQKGF4TJKNhJ+ocmJ8ahb2HTwH3Ol0THF+0gJmaigs8wcpWFOE2K+KxWfyX6bPBpjTzC+wQChCnGQREhaKdzawE/aRVEVnvWc43dhm0janHp29mAAVv+ngYP9tKeFMjVqbr8YuoT2InHWFKhpPN8wsk30YxyDvWkN3mUgj3Q/IUhiDh6fU8GBZ+iIoxiUfrKvC/XzXVsCE2JlGVceuZR8OzwGrxk+dvMnVHyauN1YWnJuUTYTrCw3rgpNOyTWWmlw2z5dDMpoHlY0WmTVh0CrMeQdP33D3LGsa+7JYRyoRBhUTHepxLwk8UiLbu6bGO1sQwstLTTmk+Z9ZSk9EUK03Bkgv0hOmSPKC4MLD5rOM/oaP0LLzZ49jm9yXIrgbEcn7rv82hk8ghqTfChmQV/q+94qijf+rM2XJ7QX6XBES0UvnWnV6bVjSoLuBi9TF1ttLpiT3fkCAwEAAQ=='; //PROVIDE FROM BDO COMPANY
+
+		        // $clientid = "prakashr@featsolutions.in"; //PROVIDE FROM BDO COMPANY
+		        // $clientid = "amutha@sundarammotors.com"; //PROVIDE FROM BDO COMPANY
+		        // $clientid = "61b27a26bd86cbb93c5c11be0c2856"; //LIVE
+		        $clientid = config('custom.CLIENT_ID');
+		        // dump($clientid);
+		        // dump('clientid ' . $clientid);
+
+		        $rsa->loadKey($public_key);
+		        $rsa->setEncryptionMode(2);
+		        // $client_secret_key = 'BBAkBDB0YzZiYThkYTg4ZDZBBDJjZBUyBGFkBBB0BWB='; // CLIENT SECRET KEY
+		        // $client_secret_key = 'TQAkSDQ0YzZiYTTkYTg4ZDZSSDJjZSUySGFkSSQ0SWQ='; // CLIENT SECRET KEY
+		        // $client_secret_key = '7dd55886594bccadb03c48eb3f448e'; // LIVE
+		        $client_secret_key = config('custom.CLIENT_SECRET_KEY');
+		        // dump($client_secret_key);
+
+		        $ClientSecret = $rsa->encrypt($client_secret_key);
+		        $clientsecretencrypted = base64_encode($ClientSecret);
+		        // dump('ClientSecret ' . $clientsecretencrypted);
+
+		        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		        $app_secret_key = substr(str_shuffle($characters), 0, 32); // RANDOM KEY GENERATE
+		        // $app_secret_key = 'Rdp5EB5w756dVph0C3jCXY1K6RPC6RCD'; // RANDOM KEY GENERATE
+		        $AppSecret = $rsa->encrypt($app_secret_key);
+		        $appsecretkey = base64_encode($AppSecret);
+		        // dump('appsecretkey ' . $appsecretkey);
+
+		        // $bdo_login_url = 'https://sandboxeinvoiceapi.bdo.in/bdoauth/bdoauthenticate';
+		        // $bdo_login_url = 'https://einvoiceapi.bdo.in/bdoauth/bdoauthenticate'; // LIVE
+		        $bdo_login_url = config('custom.BDO_LOGIN_URL');
+		        // $bdo_generate_irn_url = config('custom.BDO_IRN_REGISTRATION_URL');
+		        // $bdo_cancel_irn_url = config('custom.BDO_IRN_CANCEL_URL');
+
+		        // dump($bdo_login_url);
+		        // dump($bdo_generate_irn_url);
+		        // dd($clientid, $client_secret_key, $bdo_login_url, $bdo_generate_irn_url, $bdo_cancel_irn_url);
+
+		        $ch = curl_init($bdo_login_url);
+		        // Setup request to send json via POST`
+		        $params = json_encode(array(
+		            'clientid' => $clientid,
+		            'clientsecretencrypted' => $clientsecretencrypted,
+		            'appsecretkey' => $appsecretkey,
+		        ));
+
+		        // Attach encoded JSON string to the POST fields
+		        curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+
+		        // Set the content type to application/json
+		        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+
+		        // Return response instead of outputting
+		        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+
+		        // Execute the POST request
+		        $server_output = curl_exec($ch);
+		        // dd($server_output);
+
+		        // Get the POST request header status
+		        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+	// dd($status);
+		        // If header status is not Created or not OK, return error message
+		        if ($status != 200) {
+		            return [
+		                'success' => false,
+		                'errors' => ["Conection Error in BDO Login!"],
+		            ];
+		            $errors[] = 'Conection Error in BDO Login!';
+		            // DB::commit();
+		            // return response()->json([
+		            //  'success' => false,
+		            //  'error' => 'call to URL $bdo_login_url failed with status $status',
+		            //  'errors' => ["response " . $server_output . ", curl_error " . curl_error($ch) . ", curl_errno " . curl_errno($ch)],
+		            // ]);
+		        }
+
+		        curl_close($ch);
+
+		        $bdo_login_check = json_decode($server_output);
+
+				if ($bdo_login_check->status == 0) {
+		            $api_params['message'] = 'Login Failed!';
+		            $api_logs[0] = $api_params;
+		            return [
+		                'success' => false,
+		                'errors' => [$bdo_login_check->ErrorMsg],
+		                'api_logs' => $api_logs,
+		            ];
+		        }
+
+		        $expiry = $bdo_login_check->expiry;
+		        $bdo_authtoken = $bdo_login_check->bdo_authtoken;
+		        $status = $bdo_login_check->status;
+		        $bdo_sek = $bdo_login_check->bdo_sek;
+
+		        //DECRYPT WITH APP KEY AND BDO SEK KEY
+		        $decrypt_data_with_bdo_sek = self::decryptAesData($app_secret_key, $bdo_sek);
+		        if (!$decrypt_data_with_bdo_sek) {
+		            $errors[] = 'Decryption Error!';
+		            return response()->json(['success' => false, 'error' => 'Decryption Error!']);
+		        }
+
+				// dd($decrypt_data_with_bdo_sek);
+
+				$bdo_authtoken = $bdo_login_check->bdo_authtoken;
+
+				// dd($bdo_authtoken);
+				$service_invoice->type = 'INV';
+
+				//Get City ID
+				$client = new Client();
+		   
+				$url = 'https://sandboxeinvoiceapi.bdo.in/bdoapi/public/irnbydocdetails?doctype='.$service_invoice->type.'&docnum='.$service_invoice->number.'&docdate='.date('d/m/Y', strtotime($service_invoice->document_date));
+
+				$clientid = config('custom.CLIENT_ID');
+
+				// dd($url);
+				$response = $client->request('GET', $url, [
+					'headers' => [
+						'client_id' => $clientid,
+						'bdo_authtoken' => $bdo_authtoken,
+						'gstin' => '33AABCT0159K1ZG',
+					],
+				]);
+
+				$body = $response->getBody();
+				// dd($body);
+				$stringBody = (string) $body;
+				// dd($stringBody);
+				$result = json_decode($stringBody);
+				
+				// dd($result);
+
+				if($result->Status == '0'){
+					// return;
+
+						return response()->json(['success' => false, 'error' => 'IRN Decryption Error!']); //DOUBT
+
+				}	
+
+				// dd($result->Data);
+				// $final_json_decode = json_decode($result);
+				
+				$irn_decrypt_data = self::decryptAesData($decrypt_data_with_bdo_sek, $result->Data);
+
+				// dd($irn_decrypt_data);
+				if (!$irn_decrypt_data) {
+		            $errors[] = 'IRN Decryption Error!';
+		            return response()->json(['success' => false, 'error' => 'IRN Decryption Error!']);
+		        }
+		        // dump($irn_decrypt_data);
+		        $final_json_decode = json_decode($irn_decrypt_data);
+		        // dd($final_json_decode);
+				// dd($result,$final_json_decode);
+
+
+		        // if ($final_json_decode->Status == 0) {
+		        //     $api_params['message'] = $final_json_decode->irnStatus;
+		        //     $api_params['errors'] = $final_json_decode->irnStatus;
+		        //     $api_logs[6] = $api_params;
+		        //     return [
+		        //         'success' => false,
+		        //         'errors' => $final_json_decode->ErrorMsg,
+		        //         'api_logs' => $api_logs,
+		        //     ];
+		        // }
+
+		        $IRN_images_des = storage_path('app/public/service-invoice/IRN_images');
+		        File::makeDirectory($IRN_images_des, $mode = 0777, true, true);
+
+		        // $url = QRCode::text($final_json_decode->QRCode)->setSize(4)->setOutfile('storage/app/public/service-invoice/IRN_images/' . $service_invoice->number . '.png')->png();
+		        $url = QRCode::text($final_json_decode->SignedQRCode)->setSize(4)->setOutfile('storage/app/public/service-invoice/IRN_images/' . $service_invoice->number . '.png')->png();
+
+		        // $file_name = $service_invoice->number . '.png';
+
+		        $qr_attachment_path = base_path("storage/app/public/service-invoice/IRN_images/" . $service_invoice->number . '.png');
+		        // dump($qr_attachment_path);
+		        if (file_exists($qr_attachment_path)) {
+		            $ext = pathinfo(base_path("storage/app/public/service-invoice/IRN_images/" . $service_invoice->number . '.png'), PATHINFO_EXTENSION);
+		            // dump($ext);
+		            if ($ext == 'png') {
+		                $image = imagecreatefrompng($qr_attachment_path);
+		                // dump($image);
+		                $bg = imagecreatetruecolor(imagesx($image), imagesy($image));
+		                // dump($bg);
+		                imagefill($bg, 0, 0, imagecolorallocate($bg, 255, 255, 255));
+		                imagealphablending($bg, true);
+		                imagecopy($bg, $image, 0, 0, 0, 0, imagesx($image), imagesy($image));
+		                // imagedestroy($image);
+		                $quality = 70; // 0 = worst / smaller file, 100 = better / bigger file
+		                imagejpeg($bg, $qr_attachment_path . ".jpg", $quality);
+		                // imagedestroy($bg);
+
+		                $service_invoice->qr_image = base_path("storage/app/public/service-invoice/IRN_images/" . $service_invoice->number . '.png') . '.jpg';
+		            }
+		        } else {
+		            $service_invoice->qr_image = '';
+		        }
+		        // $get_version = json_decode($final_json_decode->Invoice); //DOUBT
+		        // $get_version = json_decode($get_version->data); //DOUBT
+
+		        // $image = '<img src="storage/app/public/service-invoice/IRN_images/' . $final_json_decode->AckNo . '.png" title="IRN QR Image">';
+		        $service_invoice_save = ServiceInvoice::find($service_invoice->id);
+		        $service_invoice_save->irn_number = $final_json_decode->Irn;
+		        $service_invoice_save->qr_image = $service_invoice->number . '.png' . '.jpg';
+		        $service_invoice_save->ack_no = $final_json_decode->AckNo;
+		        $service_invoice_save->ack_date = $final_json_decode->AckDt;
+		        // $service_invoice_save->version = $get_version->Version; //DOUBT
+		        // $service_invoice_save->irn_request = $json_encoded_data; //DOUBT
+		        $service_invoice_save->irn_response = $irn_decrypt_data;
+
+		        // if (!$r['success']) {
+		        //     $service_invoice_save->status_id = 2; //APPROVAL 1 PENDING
+		        //     return [
+		        //         'success' => false,
+		        //         'errors' => ['Somthing Went Wrong!'],
+		        //     ];
+		        // }
+
+		        // if (count($errors) > 0) {
+		        //     $service_invoice->errors = empty($errors) ? NULL : json_encode($errors);
+		        //     $service_invoice->status_id = 6; //E-Invoice Fail
+		        //     $service_invoice->save();
+		        //     // return;
+		        // }
+		        $service_invoice->errors = empty($errors) ? null : json_encode($errors);
+		        $service_invoice_save->save();
+
+		        //SEND TO PDF
+		        // $service_invoice->version = $get_version->Version; // DOUBT
+		        $service_invoice->round_off_amount = $service_invoice->round_off_amount;
+		        $service_invoice->irn_number = $final_json_decode->Irn;
+		        $service_invoice->ack_no = $final_json_decode->AckNo;
+		        $service_invoice->ack_date = $final_json_decode->AckDt;
+
+		                // dd('no error');
+
+		                //----------// ENCRYPTION END //----------//
+		        // $service_invoice['additional_image_name'] = $additional_image_name; //DOUBT
+		        // $service_invoice['additional_image_path'] = $additional_image_path; //DOUBT
+
+		        //dd($serviceInvoiceItem->field_groups);
+		        $this->data['service_invoice_pdf'] = $service_invoice;
+		        // dd($this->data['service_invoice_pdf']);
+
+		        $tax_list = Tax::where('company_id', Auth::user()->company_id)->get();
+		        $this->data['tax_list'] = $tax_list;
+		        // dd($this->data['tax_list']);
+		        $path = storage_path('app/public/service-invoice-pdf/');
+		        $pathToFile = $path . '/' . $service_invoice->number . '.pdf';
+		        $name = $service_invoice->number . '.pdf';
+		        File::isDirectory($path) or File::makeDirectory($path, 0777, true, true);
+
+		        $pdf = app('dompdf.wrapper');
+		        $pdf->getDomPDF()->set_option("enable_php", true);
+		        $pdf = $pdf->loadView('service-invoices/pdf/index', $this->data);
+
+		        // return $pdf->stream('service_invoice.pdf');
+		        // dd($pdf);
+		        // $po_file_name = 'Invoice-' . $service_invoice->number . '.pdf';
+
+		        File::put($pathToFile, $pdf->output());
+
+		        // return [
+		        //     'success' => true,
+		        // ];
+		        $r['api_logs'] = [];
+
+		        //ENTRY IN AX_EXPORTS
+		        $r = $service_invoice->exportToAxapta();
+		        if (!$r['success']) {
+		            return $r;
+		        }
+			}
+			
+
+	        // return $r;
+			
+
+			
+			DB::commit();
+			return response()->json(['success' => true, 'message' => $message]);
+		} catch (Exception $e) {
+			DB::rollBack();
+			return response()->json(['success' => false, 'errors' => ['Exception Error' => $e->getMessage()]]);
+		}
+	}
+
 	public function updateMultipleApproval(Request $request) {
 		$send_for_approvals = ServiceInvoice::whereIn('id', $request->send_for_approval)->where('status_id', 2)->pluck('id')->toArray();
 		// $next_status = 3; //ADDED FOR QUEUE
@@ -479,4 +781,14 @@ class ServiceInvoiceApprovalController extends Controller {
 			}
 		}
 	}
+
+	public static function decryptAesData($encryption_key, $data)
+    {
+        $method = 'aes-256-ecb';
+
+        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length($method));
+
+        $decrypted = openssl_decrypt(base64_decode($data), $method, $encryption_key, OPENSSL_RAW_DATA, $iv);
+        return $decrypted;
+    }
 }
