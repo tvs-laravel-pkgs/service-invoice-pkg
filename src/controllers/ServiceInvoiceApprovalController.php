@@ -700,7 +700,7 @@ class ServiceInvoiceApprovalController extends Controller {
 					$this->data['service_invoice_pdf'] = $service_invoice;
 					// dd($this->data['service_invoice_pdf']);
 
-					$tax_list = Tax::where('company_id', Auth::user()->company_id)->get();
+					$tax_list = Tax::where('company_id', 1)->get();
 					$this->data['tax_list'] = $tax_list;
 					// dd($this->data['tax_list']);
 					$path = storage_path('app/public/service-invoice-pdf/');
