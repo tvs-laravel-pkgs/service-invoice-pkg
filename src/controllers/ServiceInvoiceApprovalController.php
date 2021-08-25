@@ -742,6 +742,27 @@ class ServiceInvoiceApprovalController extends Controller {
 		}
 	}
 
+	public function updateServiceInvoicePDF($id) {
+		// dd($request->all());
+		DB::beginTransaction();
+		try {
+
+			$service_invoice = ServiceInvoice::find($id);
+			if($service_invoice){
+				$r = $service_invoice->createServiceInvoicePdf();
+			}
+			
+			DB::commit();
+
+			dump('Success');
+			dump($service_invoice);
+			// return response()->json(['success' => true, 'message' => $message]);
+		} catch (Exception $e) {
+			DB::rollBack();
+			return response()->json(['success' => false, 'errors' => ['Exception Error' => $e->getMessage()]]);
+		}
+	}
+
 	public static function decryptAesData($encryption_key, $data)
     {
         $method = 'aes-256-ecb';
