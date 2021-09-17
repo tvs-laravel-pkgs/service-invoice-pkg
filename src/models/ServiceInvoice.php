@@ -2343,11 +2343,15 @@ class ServiceInvoice extends Model
                                             //check customer state and outlet states are equal KL.  //add KFC tax
                                             //customer dont't have GST
                                             //customer have HSN and SAC Code
-                                            $gst_total += round((1 / 100) * ($item_record['Quantity'] * $item_record['Amount']), 2);
-                                            $KFC_tax_amount = round($item_record['Quantity'] * $item_record['Amount'] * 1 / 100, 2); //ONE PERCENTAGE
+                                            // $gst_total += round((1 / 100) * ($item_record['Quantity'] * $item_record['Amount']), 2);
+                                            // $KFC_tax_amount = round($item_record['Quantity'] * $item_record['Amount'] * 1 / 100, 2); //ONE PERCENTAGE
+                                            // $item_taxes[4] = [ //4 for KFC
+                                            //     'percentage' => 1,
+                                            //     'amount' => $KFC_tax_amount,
+                                            // ];
                                             $item_taxes[4] = [ //4 for KFC
-                                                'percentage' => 1,
-                                                'amount' => $KFC_tax_amount,
+                                                'percentage' => 0,
+                                                'amount' => 0,
                                             ];
                                         } else {
                                             $item_taxes[4] = [ //4 for KFC
