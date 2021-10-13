@@ -29,6 +29,8 @@ use App\Http\Controllers\Controller;
 use App\Outlet;
 use App\Sbu;
 use App\State;
+use App\TvsoneCashbackDetail;
+use App\TvsoneCashbackLog;
 use App\User;
 use App\Vendor;
 use Artisaninweb\SoapWrapper\SoapWrapper;
@@ -3368,6 +3370,23 @@ class ServiceInvoiceController extends Controller
             if (!$r['success']) {
                 return $r;
             }
+            if ($service_invoice->type_id == 1060 && $service_invoice->category_id == 7) {
+                $cash_back_amount=$service_invoice->amount_total;
+                $cash_back_detail = TvsoneCashbackDetail::where('customer_id',$service_invoice->customer_id)->first();
+                $cash_back_detail->total_amount=($cash_back_detail->total_amount-$cash_back_amount);
+                $cash_back_detail->balance_amount=($cash_back_detail->balance_amount-$cash_back_amount);
+                $cash_back_detail->save();
+
+                $cash_back=[
+                    'tvsone_cb_detail_id'=>$cash_back_detail->id,
+                    'transaction_type'=>'Debit',
+                    'trans_amount'=>$cash_back_amount,
+                    'trans_ref_no'=>null,
+                    'remarks'=>'CNDN Cancel IRN',
+                    'trans_status'=>10033,
+                ];
+                $save_cah_back_logs=TvsoneCashbackLog::saveCashbackLog($cash_back);
+            }
 
             return response()->json([
                 'success' => true,
@@ -3584,6 +3603,23 @@ class ServiceInvoiceController extends Controller
         $r = $service_invoice->exportToAxaptaCancel();
         if (!$r['success']) {
             return $r;
+        }
+        if ($service_invoice->type_id == 1060 && $service_invoice->category_id == 7) {
+            $cash_back_amount=$service_invoice->amount_total;
+            $cash_back_detail = TvsoneCashbackDetail::where('customer_id',$service_invoice->customer_id)->first();
+            $cash_back_detail->total_amount=($cash_back_detail->total_amount-$cash_back_amount);
+            $cash_back_detail->balance_amount=($cash_back_detail->balance_amount-$cash_back_amount);
+            $cash_back_detail->save();
+
+            $cash_back=[
+                'tvsone_cb_detail_id'=>$cash_back_detail->id,
+                'transaction_type'=>'Debit',
+                'trans_amount'=>$cash_back_amount,
+                'trans_ref_no'=>null,
+                'remarks'=>'CNDN Cancel IRN',
+                'trans_status'=>10033,
+            ];
+            $save_cah_back_logs=TvsoneCashbackLog::saveCashbackLog($cash_back);
         }
 
         return response()->json([

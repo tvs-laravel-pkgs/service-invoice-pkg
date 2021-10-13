@@ -974,6 +974,37 @@ class ServiceInvoice extends Model
                 $this->exportRowToAxapta($params);
             }
         }
+        if ($service_invoice->category_id == 7 && $this->type_id == 1060 && $total_amount_with_gst['credit'] == 0 && $total_amount_with_gst['invoice'] == 0) {
+            $params = [
+                'Voucher' => 'V',
+                'AccountType' => $this->to_account_type_id == 1440 ? 'Customer' : 'Vendor',
+                'LedgerDimension' => $this->customer->code,
+                'Txt' => $Txt . '-' . $this->number,
+                'TaxGroup' => '',
+                'AmountCurCredit' =>0,
+                'AmountCurDebit' => $this->final_amount,
+                'LineNum' => $line_number+1,
+                'TVSHSNCode' => '',
+                'TVSSACCode' => '',
+            ];
+            $this->exportRowToAxapta($params);
+        }
+        if ($service_invoice->category_id == 7 && $this->type_id == 1060 && $total_amount_with_gst['credit'] == 0 && $total_amount_with_gst['invoice'] == 0) {
+            $params = [
+                'Voucher' => 'V',
+                'AccountType' => $this->to_account_type_id == 1440 ? 'Customer' : 'Vendor',
+                'LedgerDimension' => 'WE Control Account',
+                'Txt' => $Txt . '-' . $this->number,
+                'TaxGroup' => '',
+                'AmountCurDebit' =>0,
+                'AmountCurCredit' => $this->final_amount,
+                'LineNum' => $line_number+1,
+                'TVSHSNCode' => '',
+                'TVSSACCode' => '',
+            ];
+            $this->exportRowToAxapta($params);
+        }
+
 
         return [
             'success' => true,
