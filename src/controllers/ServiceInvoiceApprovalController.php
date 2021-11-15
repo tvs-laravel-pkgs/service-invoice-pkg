@@ -15,6 +15,7 @@ use App\Employee;
 use App\Entity;
 use App\Http\Controllers\Controller;
 use App\User;
+use App\TVSOneOrder;
 use File;
 use QRCode;
 use Auth;
@@ -402,6 +403,13 @@ class ServiceInvoiceApprovalController extends Controller {
 				// $approval_status->status_id = 3;
 				$approval_status->comments = NULL;
 				$message = 'Approved';
+
+				//Update TVS ONE Orders
+				$tvs_one_order = TVSOneOrder::where('invoice_number',$approval_status->number)->first();
+				if($tvs_one_order){
+					$tvs_one_order->status_id = 12894;
+					$tvs_one_order->save();
+				}
 			} elseif ($request->status_name == 'reject') {
 				$approval_status->status_id = 5; //$approval_levels->reject_status_id;
 				$approval_status->comments = $request->comments;
@@ -459,6 +467,13 @@ class ServiceInvoiceApprovalController extends Controller {
 					$send_approval->updated_by_id = Auth()->user()->id;
 					$send_approval->updated_at = date("Y-m-d H:i:s");
 					$send_approval->save();
+
+					//Update TVS ONE Orders
+					$tvs_one_order = TVSOneOrder::where('invoice_number',$send_approval->number)->first();
+					if($tvs_one_order){
+						$tvs_one_order->status_id = 12894;
+						$tvs_one_order->save();
+					}
 
 					$approved_status = new ServiceInvoiceController();
 					$approval_levels = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 19)->first(); //ENTITIES ALSO CHANGES FOR 3; FOR QUEUE PROCESS
