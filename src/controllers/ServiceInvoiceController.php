@@ -1098,7 +1098,7 @@ class ServiceInvoiceController extends Controller
                 // $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, $branch->id, $sbu);
 
                 //ONLY FOR SCRAP INVOICE
-                if ($request->category_id == 4) {
+                if ($request->category_id == 4 || $request->category_id == 11) {
                     if ($request->type_id == 1061) {
                         //DN
                         $serial_number_category = 128;
