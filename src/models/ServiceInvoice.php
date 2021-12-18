@@ -1990,7 +1990,7 @@ class ServiceInvoice extends Model
                         }
 
                         $financial_year = FinancialYear::where('from', $document_date_year)
-                            ->where('company_id', $job->company_id)
+                            // ->where('company_id', $job->company_id)
                             ->first();
                         if (!$financial_year) {
                             $status['errors'][] = 'Fiancial Year Not Found';

@@ -1067,7 +1067,7 @@ class ServiceInvoiceController extends Controller
                     $document_date_year = date('Y', strtotime($request->document_date));
                 }
                 $financial_year = FinancialYear::where('from', $document_date_year)
-                    ->where('company_id', Auth::user()->company_id)
+                    // ->where('company_id', Auth::user()->company_id)
                     ->first();
                 if (!$financial_year) {
                     return response()->json(['success' => false, 'errors' => ['Fiancial Year Not Found']]);
