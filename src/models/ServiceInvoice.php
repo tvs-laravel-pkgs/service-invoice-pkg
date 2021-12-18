@@ -269,6 +269,7 @@ class ServiceInvoice extends Model
         // DB::beginTransaction();
         $axaptaExports = AxaptaExport::where([
             'DocumentNum' => $this->number,
+            'company_id' => $this->company_id,
         ])->get();
         if (count($axaptaExports) > 0) {
             $errors[] = 'Already approved and exported to AX staging table';
