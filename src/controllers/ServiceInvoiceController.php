@@ -3716,6 +3716,9 @@ class ServiceInvoiceController extends Controller
                     $search_list[] = $data;
                 }
 
+                $company = Company::find($job->company_id);
+                $ax_company_code = $company ? $company->ax_company_code : 'tvs';
+
                 if ($search_list) {
                     $this->soapWrapper->add('address', function ($service) {
                         $service
@@ -3765,60 +3768,70 @@ class ServiceInvoiceController extends Controller
                             $array_count = array_filter($api_customer_data, 'is_array');
                             if (count($array_count) > 0) {
                                 // dd('mu;l');
+                                $address_count = 0;
                                 foreach ($api_customer_data as $key => $customer_data) {
+                                    if(isset($customer_data['DATAAREAID']) && ($customer_data['DATAAREAID'] == $ax_company_code)){
+                                        $address_count = 1;
+                                        $address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $customer_data['RECID']]); //CUSTOMER
+                                        // dd($address);
+                                        $address->company_id = $job->company_id;
+                                        $address->entity_id = $customer->id;
+                                        $address->ax_id = $customer_data['RECID'];
+                                        $address->gst_number = isset($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available' ? $customer_data['GST_NUMBER'] : null;
 
-                                    $address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $customer_data['RECID']]); //CUSTOMER
+                                        $address->ax_customer_location_id = isset($customer_data['CUSTOMER_LOCATION_ID']) ? $customer_data['CUSTOMER_LOCATION_ID'] : null;
+
+                                        $address->address_of_id = 24;
+                                        $address->address_type_id = 40;
+                                        $address->name = 'Primary Address_' . $customer_data['RECID'];
+                                        $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
+                                        $city = City::where('name', $customer_data['CITY'])->first();
+                                        $state = State::where('code', $customer_data['STATE'])->first();
+                                        $address->country_id = $state ? $state->country_id : null;
+                                        $address->state_id = $state ? $state->id : null;
+                                        $address->city_id = $city ? $city->id : null;
+                                        $address->pincode = $customer_data['ZIPCODE'] == 'Not available' ? null : $customer_data['ZIPCODE'];
+                                        $address->is_primary = isset($customer_data['ISPRIMARY']) ? $customer_data['ISPRIMARY'] : 0;
+
+                                        $address->save();
+                                        $customer_address[] = $address;
+                                    }
+                                }
+                                if($address_count == 0){
+                                    $customer_address = [];
+                                }
+                            } else {
+                                if(isset($api_customer_data['DATAAREAID']) && ($api_customer_data['DATAAREAID'] == $ax_company_code)){
+                                    // dd('sing');
+                                    $address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $api_customer_data['RECID']]); //CUSTOMER
                                     // dd($address);
                                     $address->company_id = $job->company_id;
                                     $address->entity_id = $customer->id;
-                                    $address->ax_id = $customer_data['RECID'];
-                                    $address->gst_number = isset($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available' ? $customer_data['GST_NUMBER'] : null;
+                                    $address->ax_id = $api_customer_data['RECID'];
 
-                                    $address->ax_customer_location_id = isset($customer_data['CUSTOMER_LOCATION_ID']) ? $customer_data['CUSTOMER_LOCATION_ID'] : null;
+                                    $address->gst_number = isset($api_customer_data['GST_NUMBER']) && $api_customer_data['GST_NUMBER'] != 'Not available' ? $api_customer_data['GST_NUMBER'] : null;
+
+                                    $address->ax_customer_location_id = isset($api_customer_data['CUSTOMER_LOCATION_ID']) ? $api_customer_data['CUSTOMER_LOCATION_ID'] : null;
 
                                     $address->address_of_id = 24;
                                     $address->address_type_id = 40;
-                                    $address->name = 'Primary Address_' . $customer_data['RECID'];
-                                    $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
-                                    $city = City::where('name', $customer_data['CITY'])->first();
-                                    $state = State::where('code', $customer_data['STATE'])->first();
+                                    $address->name = 'Primary Address_' . $api_customer_data['RECID'];
+                                    $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
+                                    $city = City::where('name', $api_customer_data['CITY'])->first();
+                                    // if ($city) {
+                                    $state = State::where('code', $api_customer_data['STATE'])->first();
                                     $address->country_id = $state ? $state->country_id : null;
                                     $address->state_id = $state ? $state->id : null;
+                                    // }
                                     $address->city_id = $city ? $city->id : null;
-                                    $address->pincode = $customer_data['ZIPCODE'] == 'Not available' ? null : $customer_data['ZIPCODE'];
-                                    $address->is_primary = isset($customer_data['ISPRIMARY']) ? $customer_data['ISPRIMARY'] : 0;
-
+                                    $address->pincode = $api_customer_data['ZIPCODE'] == 'Not available' ? null : $api_customer_data['ZIPCODE'];
+                                    $address->is_primary = isset($api_customer_data['ISPRIMARY']) ? $api_customer_data['ISPRIMARY'] : null;
                                     $address->save();
+                                    // dd($address);
                                     $customer_address[] = $address;
+                                }else{
+                                    $customer_address = [];
                                 }
-                            } else {
-                                // dd('sing');
-                                $address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $api_customer_data['RECID']]); //CUSTOMER
-                                // dd($address);
-                                $address->company_id = $job->company_id;
-                                $address->entity_id = $customer->id;
-                                $address->ax_id = $api_customer_data['RECID'];
-
-                                $address->gst_number = isset($api_customer_data['GST_NUMBER']) && $api_customer_data['GST_NUMBER'] != 'Not available' ? $api_customer_data['GST_NUMBER'] : null;
-
-                                $address->ax_customer_location_id = isset($api_customer_data['CUSTOMER_LOCATION_ID']) ? $api_customer_data['CUSTOMER_LOCATION_ID'] : null;
-
-                                $address->address_of_id = 24;
-                                $address->address_type_id = 40;
-                                $address->name = 'Primary Address_' . $api_customer_data['RECID'];
-                                $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
-                                $city = City::where('name', $api_customer_data['CITY'])->first();
-                                // if ($city) {
-                                $state = State::where('code', $api_customer_data['STATE'])->first();
-                                $address->country_id = $state ? $state->country_id : null;
-                                $address->state_id = $state ? $state->id : null;
-                                // }
-                                $address->city_id = $city ? $city->id : null;
-                                $address->pincode = $api_customer_data['ZIPCODE'] == 'Not available' ? null : $api_customer_data['ZIPCODE'];
-                                $address->is_primary = isset($api_customer_data['ISPRIMARY']) ? $api_customer_data['ISPRIMARY'] : null;
-                                $address->save();
-                                // dd($address);
-                                $customer_address[] = $address;
                             }
                         } else {
                             $customer_address = [];
@@ -3889,61 +3902,71 @@ class ServiceInvoiceController extends Controller
                     $array_count = array_filter($api_customer_data, 'is_array');
                     if (count($array_count) > 0) {
                         // dd('mu;l');
+                        $address_count = 0;
                         foreach ($api_customer_data as $key => $customer_data) {
+                            if(isset($customer_data['DATAAREAID']) && ($customer_data['DATAAREAID'] == Auth::user()->company->ax_company_code)){
+                                $address_count = 1;
+                                $address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $customer_data['RECID']]); //CUSTOMER
+                                // dd($address);
+                                $address->company_id = Auth::user()->company_id;
+                                $address->entity_id = $customer->id;
+                                $address->ax_id = $customer_data['RECID'];
+                                // $address->gst_number = isset($customer_data['GST_NUMBER']) ? $customer_data['GST_NUMBER'] : NULL;
+                                $address->gst_number = isset($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available' ? $customer_data['GST_NUMBER'] : null;
 
-                            $address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $customer_data['RECID']]); //CUSTOMER
+                                $address->ax_customer_location_id = isset($customer_data['CUSTOMER_LOCATION_ID']) ? $customer_data['CUSTOMER_LOCATION_ID'] : null;
+
+                                $address->address_of_id = 24;
+                                $address->address_type_id = 40;
+                                $address->name = 'Primary Address_' . $customer_data['RECID'];
+                                $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
+                                $city = City::where('name', $customer_data['CITY'])->first();
+                                $state = State::where('code', $customer_data['STATE'])->first();
+                                $address->country_id = $state ? $state->country_id : null;
+                                $address->state_id = $state ? $state->id : null;
+                                $address->city_id = $city ? $city->id : null;
+                                $address->pincode = $customer_data['ZIPCODE'] == 'Not available' ? null : $customer_data['ZIPCODE'];
+                                $address->is_primary = isset($customer_data['ISPRIMARY']) ? $customer_data['ISPRIMARY'] : 0;
+
+                                $address->save();
+                                $customer_address[] = $address;   
+                            }
+                        }
+                        if($address_count == 0){
+                            $customer_address = [];
+                        }
+                    } else {
+                        if(isset($api_customer_data['DATAAREAID']) && ($api_customer_data['DATAAREAID'] == Auth::user()->company->ax_company_code)){
+                            // dd('sing');
+                            $address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $api_customer_data['RECID']]); //CUSTOMER
                             // dd($address);
                             $address->company_id = Auth::user()->company_id;
                             $address->entity_id = $customer->id;
-                            $address->ax_id = $customer_data['RECID'];
-                            // $address->gst_number = isset($customer_data['GST_NUMBER']) ? $customer_data['GST_NUMBER'] : NULL;
-                            $address->gst_number = isset($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available' ? $customer_data['GST_NUMBER'] : null;
+                            $address->ax_id = $api_customer_data['RECID'];
+                            // $address->gst_number = isset($api_customer_data['GST_NUMBER']) ? $api_customer_data['GST_NUMBER'] : NULL;
+                            $address->gst_number = isset($api_customer_data['GST_NUMBER']) && $api_customer_data['GST_NUMBER'] != 'Not available' ? $api_customer_data['GST_NUMBER'] : null;
 
-                            $address->ax_customer_location_id = isset($customer_data['CUSTOMER_LOCATION_ID']) ? $customer_data['CUSTOMER_LOCATION_ID'] : null;
+                            $address->ax_customer_location_id = isset($api_customer_data['CUSTOMER_LOCATION_ID']) ? $api_customer_data['CUSTOMER_LOCATION_ID'] : null;
 
                             $address->address_of_id = 24;
                             $address->address_type_id = 40;
-                            $address->name = 'Primary Address_' . $customer_data['RECID'];
-                            $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
-                            $city = City::where('name', $customer_data['CITY'])->first();
-                            $state = State::where('code', $customer_data['STATE'])->first();
+                            $address->name = 'Primary Address_' . $api_customer_data['RECID'];
+                            $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
+                            $city = City::where('name', $api_customer_data['CITY'])->first();
+                            // if ($city) {
+                            $state = State::where('code', $api_customer_data['STATE'])->first();
                             $address->country_id = $state ? $state->country_id : null;
                             $address->state_id = $state ? $state->id : null;
+                            // }
                             $address->city_id = $city ? $city->id : null;
-                            $address->pincode = $customer_data['ZIPCODE'] == 'Not available' ? null : $customer_data['ZIPCODE'];
-                            $address->is_primary = isset($customer_data['ISPRIMARY']) ? $customer_data['ISPRIMARY'] : 0;
-
+                            $address->pincode = $api_customer_data['ZIPCODE'] == 'Not available' ? null : $api_customer_data['ZIPCODE'];
+                            $address->is_primary = isset($api_customer_data['ISPRIMARY']) ? $api_customer_data['ISPRIMARY'] : null;
                             $address->save();
+                            // dd($address);
                             $customer_address[] = $address;
+                        }else{
+                            $customer_address = [];
                         }
-                    } else {
-                        // dd('sing');
-                        $address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $api_customer_data['RECID']]); //CUSTOMER
-                        // dd($address);
-                        $address->company_id = Auth::user()->company_id;
-                        $address->entity_id = $customer->id;
-                        $address->ax_id = $api_customer_data['RECID'];
-                        // $address->gst_number = isset($api_customer_data['GST_NUMBER']) ? $api_customer_data['GST_NUMBER'] : NULL;
-                        $address->gst_number = isset($api_customer_data['GST_NUMBER']) && $api_customer_data['GST_NUMBER'] != 'Not available' ? $api_customer_data['GST_NUMBER'] : null;
-
-                        $address->ax_customer_location_id = isset($api_customer_data['CUSTOMER_LOCATION_ID']) ? $api_customer_data['CUSTOMER_LOCATION_ID'] : null;
-
-                        $address->address_of_id = 24;
-                        $address->address_type_id = 40;
-                        $address->name = 'Primary Address_' . $api_customer_data['RECID'];
-                        $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
-                        $city = City::where('name', $api_customer_data['CITY'])->first();
-                        // if ($city) {
-                        $state = State::where('code', $api_customer_data['STATE'])->first();
-                        $address->country_id = $state ? $state->country_id : null;
-                        $address->state_id = $state ? $state->id : null;
-                        // }
-                        $address->city_id = $city ? $city->id : null;
-                        $address->pincode = $api_customer_data['ZIPCODE'] == 'Not available' ? null : $api_customer_data['ZIPCODE'];
-                        $address->is_primary = isset($api_customer_data['ISPRIMARY']) ? $api_customer_data['ISPRIMARY'] : null;
-                        $address->save();
-                        // dd($address);
-                        $customer_address[] = $address;
                     }
                 } else {
                     $customer_address = [];
@@ -4079,57 +4102,67 @@ class ServiceInvoiceController extends Controller
                     $array_count = array_filter($api_vendor_data, 'is_array');
                     if (count($array_count) > 0) {
                         // dd('mu;l');
+                        $address_count = 0;
                         foreach ($api_vendor_data as $key => $vendor_data) {
-
-                            $address = Address::firstOrNew(['entity_id' => $vendor->id, 'ax_id' => $vendor_data['RECID']]); //vendor
+                            if(isset($vendor_data['DATAAREAID']) && ($vendor_data['DATAAREAID'] == Auth::user()->company->ax_company_code)){
+                                $address_count = 1;
+                                $address = Address::firstOrNew(['entity_id' => $vendor->id, 'ax_id' => $vendor_data['RECID']]); //vendor
+                                // dd($address);
+                                $address->company_id = Auth::user()->company_id;
+                                $address->entity_id = $vendor->id;
+                                $address->ax_id = $vendor_data['RECID'];
+                                $address->gst_number = isset($vendor_data['GST_NUMBER']) ? $vendor_data['GST_NUMBER'] : null;
+                                $address->address_of_id = 21;
+                                $address->address_type_id = 40;
+                                $address->name = 'Primary Address_' . $vendor_data['RECID'];
+                                $address->address_line1 = str_replace('""', '', $vendor_data['ADDRESS']);
+                                $state = State::firstOrNew(['code' => $vendor_data['STATE']]);
+                                if ($state) {
+                                    $city = City::firstOrNew(['name' => $vendor_data['CITY'], 'state_id' => $state->id]);
+                                    $city->save();
+                                }
+                                $address->country_id = $state ? $state->country_id : null;
+                                $address->state_id = $state ? $state->id : null;
+                                $address->city_id = $city ? $city->id : null;
+                                $address->pincode = $vendor_data['ZIPCODE'] == 'Not available' ? null : $vendor_data['ZIPCODE'];
+                                $address->save();
+                                $vendor_address[] = $address;
+                            }
+                        }
+                        if($address_count == 0){
+                            $vendor_address = [];
+                        }
+                    } else {
+                        if(isset($api_vendor_data['DATAAREAID']) && ($api_vendor_data['DATAAREAID'] == Auth::user()->company->ax_company_code)){
+                            // dd('sing');
+                            $address = Address::firstOrNew(['entity_id' => $vendor->id, 'ax_id' => $api_vendor_data['RECID']]); //vendor
                             // dd($address);
                             $address->company_id = Auth::user()->company_id;
                             $address->entity_id = $vendor->id;
-                            $address->ax_id = $vendor_data['RECID'];
-                            $address->gst_number = isset($vendor_data['GST_NUMBER']) ? $vendor_data['GST_NUMBER'] : null;
+                            $address->ax_id = $api_vendor_data['RECID'];
+                            // $address->gst_number = isset($api_vendor_data['GST_NUMBER']) ? $api_vendor_data['GST_NUMBER'] : NULL;
+                            $address->gst_number = isset($api_vendor_data['GST_NUMBER']) && $api_vendor_data['GST_NUMBER'] != 'Not available' ? $api_vendor_data['GST_NUMBER'] : null;
+
                             $address->address_of_id = 21;
                             $address->address_type_id = 40;
-                            $address->name = 'Primary Address_' . $vendor_data['RECID'];
-                            $address->address_line1 = str_replace('""', '', $vendor_data['ADDRESS']);
-                            $state = State::firstOrNew(['code' => $vendor_data['STATE']]);
+                            $address->name = 'Primary Address_' . $api_vendor_data['RECID'];
+                            $address->address_line1 = str_replace('""', '', $api_vendor_data['ADDRESS']);
+                            $state = State::firstOrNew(['code' => $api_vendor_data['STATE']]);
                             if ($state) {
-                                $city = City::firstOrNew(['name' => $vendor_data['CITY'], 'state_id' => $state->id]);
+                                $city = City::firstOrNew(['name' => $api_vendor_data['CITY'], 'state_id' => $state->id]);
                                 $city->save();
                             }
                             $address->country_id = $state ? $state->country_id : null;
                             $address->state_id = $state ? $state->id : null;
+                            // }
                             $address->city_id = $city ? $city->id : null;
-                            $address->pincode = $vendor_data['ZIPCODE'] == 'Not available' ? null : $vendor_data['ZIPCODE'];
+                            $address->pincode = $api_vendor_data['ZIPCODE'] == 'Not available' ? null : $api_vendor_data['ZIPCODE'];
                             $address->save();
+                            // dd($address);
                             $vendor_address[] = $address;
+                        }else{
+                            $vendor_address = [];
                         }
-                    } else {
-                        // dd('sing');
-                        $address = Address::firstOrNew(['entity_id' => $vendor->id, 'ax_id' => $api_vendor_data['RECID']]); //vendor
-                        // dd($address);
-                        $address->company_id = Auth::user()->company_id;
-                        $address->entity_id = $vendor->id;
-                        $address->ax_id = $api_vendor_data['RECID'];
-                        // $address->gst_number = isset($api_vendor_data['GST_NUMBER']) ? $api_vendor_data['GST_NUMBER'] : NULL;
-                        $address->gst_number = isset($api_vendor_data['GST_NUMBER']) && $api_vendor_data['GST_NUMBER'] != 'Not available' ? $api_vendor_data['GST_NUMBER'] : null;
-
-                        $address->address_of_id = 21;
-                        $address->address_type_id = 40;
-                        $address->name = 'Primary Address_' . $api_vendor_data['RECID'];
-                        $address->address_line1 = str_replace('""', '', $api_vendor_data['ADDRESS']);
-                        $state = State::firstOrNew(['code' => $api_vendor_data['STATE']]);
-                        if ($state) {
-                            $city = City::firstOrNew(['name' => $api_vendor_data['CITY'], 'state_id' => $state->id]);
-                            $city->save();
-                        }
-                        $address->country_id = $state ? $state->country_id : null;
-                        $address->state_id = $state ? $state->id : null;
-                        // }
-                        $address->city_id = $city ? $city->id : null;
-                        $address->pincode = $api_vendor_data['ZIPCODE'] == 'Not available' ? null : $api_vendor_data['ZIPCODE'];
-                        $address->save();
-                        // dd($address);
-                        $vendor_address[] = $address;
                     }
                 } else {
                     $vendor_address = [];
@@ -4282,9 +4315,9 @@ class ServiceInvoiceController extends Controller
                 ->trace(true);
         });
         $params = ['ACCOUNTNUM' => $code];
-        dump($code);
+        // dump($code);
         $getResult = $this->soapWrapper->call('customer.GetNewCustMasterDetails_Search', [$params]);
-        dd($getresult);
+        // dd($getresult);
         $customer_data = $getResult->GetNewCustMasterDetails_SearchResult;
         if (empty($customer_data)) {
             return response()->json(['success' => false, 'error' => 'Customer Not Available!.']);
@@ -4331,6 +4364,9 @@ class ServiceInvoiceController extends Controller
         }
         // dump($search_list[0]);
         // dd(1);
+        $company = Company::find($job->company_id);
+        $ax_company_code = $company ? $company->ax_company_code : 'tvs';
+
         if ($search_list) {
             $this->soapWrapper->add('address', function ($service) {
                 $service
@@ -4380,60 +4416,70 @@ class ServiceInvoiceController extends Controller
                     $array_count = array_filter($api_customer_data, 'is_array');
                     if (count($array_count) > 0) {
                         // dd('mu;l');
+                        $address_count = 0;
                         foreach ($api_customer_data as $key => $customer_data) {
+                            if(isset($customer_data['DATAAREAID']) && ($customer_data['DATAAREAID'] == $ax_company_code)){
+                                $address_count = 1;
+                                $address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $customer_data['RECID']]); //CUSTOMER
+                                // dd($address);
+                                $address->company_id = $job->company_id;
+                                $address->entity_id = $customer->id;
+                                $address->ax_id = $customer_data['RECID'];
+                                $address->gst_number = isset($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available' ? $customer_data['GST_NUMBER'] : null;
 
-                            $address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $customer_data['RECID']]); //CUSTOMER
+                                $address->ax_customer_location_id = isset($customer_data['CUSTOMER_LOCATION_ID']) ? $customer_data['CUSTOMER_LOCATION_ID'] : null;
+
+                                $address->address_of_id = 24;
+                                $address->address_type_id = 40;
+                                $address->name = 'Primary Address_' . $customer_data['RECID'];
+                                $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
+                                $city = City::where('name', $customer_data['CITY'])->first();
+                                $state = State::where('code', $customer_data['STATE'])->first();
+                                $address->country_id = $state ? $state->country_id : null;
+                                $address->state_id = $state ? $state->id : null;
+                                $address->city_id = $city ? $city->id : null;
+                                $address->pincode = $customer_data['ZIPCODE'] == 'Not available' ? null : $customer_data['ZIPCODE'];
+                                $address->is_primary = isset($customer_data['ISPRIMARY']) ? $customer_data['ISPRIMARY'] : 0;
+
+                                $address->save();
+                                $customer_address[] = $address;
+                            }
+                        }
+                        if($address_count == 0){
+                            $vendor_address = [];
+                        }
+                    } else {
+                        if(isset($api_customer_data['DATAAREAID']) && ($api_customer_data['DATAAREAID'] == $ax_company_code)){
+                            // dd('sing');
+                            $address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $api_customer_data['RECID']]); //CUSTOMER
                             // dd($address);
                             $address->company_id = $job->company_id;
                             $address->entity_id = $customer->id;
-                            $address->ax_id = $customer_data['RECID'];
-                            $address->gst_number = isset($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available' ? $customer_data['GST_NUMBER'] : null;
+                            $address->ax_id = $api_customer_data['RECID'];
 
-                            $address->ax_customer_location_id = isset($customer_data['CUSTOMER_LOCATION_ID']) ? $customer_data['CUSTOMER_LOCATION_ID'] : null;
+                            $address->gst_number = isset($api_customer_data['GST_NUMBER']) && $api_customer_data['GST_NUMBER'] != 'Not available' ? $api_customer_data['GST_NUMBER'] : null;
+
+                            $address->ax_customer_location_id = isset($api_customer_data['CUSTOMER_LOCATION_ID']) ? $api_customer_data['CUSTOMER_LOCATION_ID'] : null;
 
                             $address->address_of_id = 24;
                             $address->address_type_id = 40;
-                            $address->name = 'Primary Address_' . $customer_data['RECID'];
-                            $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
-                            $city = City::where('name', $customer_data['CITY'])->first();
-                            $state = State::where('code', $customer_data['STATE'])->first();
+                            $address->name = 'Primary Address_' . $api_customer_data['RECID'];
+                            $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
+                            $city = City::where('name', $api_customer_data['CITY'])->first();
+                            // if ($city) {
+                            $state = State::where('code', $api_customer_data['STATE'])->first();
                             $address->country_id = $state ? $state->country_id : null;
                             $address->state_id = $state ? $state->id : null;
+                            // }
                             $address->city_id = $city ? $city->id : null;
-                            $address->pincode = $customer_data['ZIPCODE'] == 'Not available' ? null : $customer_data['ZIPCODE'];
-                            $address->is_primary = isset($customer_data['ISPRIMARY']) ? $customer_data['ISPRIMARY'] : 0;
-
+                            $address->pincode = $api_customer_data['ZIPCODE'] == 'Not available' ? null : $api_customer_data['ZIPCODE'];
+                            $address->is_primary = isset($api_customer_data['ISPRIMARY']) ? $api_customer_data['ISPRIMARY'] : null;
                             $address->save();
+                            // dd($address);
                             $customer_address[] = $address;
+                        }else{
+                            $customer_address = [];
                         }
-                    } else {
-                        // dd('sing');
-                        $address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $api_customer_data['RECID']]); //CUSTOMER
-                        // dd($address);
-                        $address->company_id = $job->company_id;
-                        $address->entity_id = $customer->id;
-                        $address->ax_id = $api_customer_data['RECID'];
-
-                        $address->gst_number = isset($api_customer_data['GST_NUMBER']) && $api_customer_data['GST_NUMBER'] != 'Not available' ? $api_customer_data['GST_NUMBER'] : null;
-
-                        $address->ax_customer_location_id = isset($api_customer_data['CUSTOMER_LOCATION_ID']) ? $api_customer_data['CUSTOMER_LOCATION_ID'] : null;
-
-                        $address->address_of_id = 24;
-                        $address->address_type_id = 40;
-                        $address->name = 'Primary Address_' . $api_customer_data['RECID'];
-                        $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
-                        $city = City::where('name', $api_customer_data['CITY'])->first();
-                        // if ($city) {
-                        $state = State::where('code', $api_customer_data['STATE'])->first();
-                        $address->country_id = $state ? $state->country_id : null;
-                        $address->state_id = $state ? $state->id : null;
-                        // }
-                        $address->city_id = $city ? $city->id : null;
-                        $address->pincode = $api_customer_data['ZIPCODE'] == 'Not available' ? null : $api_customer_data['ZIPCODE'];
-                        $address->is_primary = isset($api_customer_data['ISPRIMARY']) ? $api_customer_data['ISPRIMARY'] : null;
-                        $address->save();
-                        // dd($address);
-                        $customer_address[] = $address;
                     }
                 } else {
                     $customer_address = [];
