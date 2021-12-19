@@ -2219,15 +2219,16 @@ class ServiceInvoiceController extends Controller
                 $IRN_images_des = storage_path('app/public/service-invoice/IRN_images');
                 File::makeDirectory($IRN_images_des, $mode = 0777, true, true);
 
+                $qr_code_name = $service_invoice->company_id . $service_invoice->number;
                 // $url = QRCode::text($final_json_decode->QRCode)->setSize(4)->setOutfile('storage/app/public/service-invoice/IRN_images/' . $service_invoice->number . '.png')->png();
-                $url = QRCode::text($final_json_decode->SignedQRCode)->setSize(4)->setOutfile('storage/app/public/service-invoice/IRN_images/' . $service_invoice->number . '.png')->png();
+                $url = QRCode::text($final_json_decode->SignedQRCode)->setSize(4)->setOutfile('storage/app/public/service-invoice/IRN_images/' . $qr_code_name . '.png')->png();
 
                 // $file_name = $service_invoice->number . '.png';
 
-                $qr_attachment_path = base_path("storage/app/public/service-invoice/IRN_images/" . $service_invoice->number . '.png');
+                $qr_attachment_path = base_path("storage/app/public/service-invoice/IRN_images/" . $qr_code_name . '.png');
                 // dump($qr_attachment_path);
                 if (file_exists($qr_attachment_path)) {
-                    $ext = pathinfo(base_path("storage/app/public/service-invoice/IRN_images/" . $service_invoice->number . '.png'), PATHINFO_EXTENSION);
+                    $ext = pathinfo(base_path("storage/app/public/service-invoice/IRN_images/" . $qr_code_name . '.png'), PATHINFO_EXTENSION);
                     // dump($ext);
                     if ($ext == 'png') {
                         $image = imagecreatefrompng($qr_attachment_path);
@@ -2242,7 +2243,7 @@ class ServiceInvoiceController extends Controller
                         imagejpeg($bg, $qr_attachment_path . ".jpg", $quality);
                         // imagedestroy($bg);
 
-                        $service_invoice->qr_image = base_path("storage/app/public/service-invoice/IRN_images/" . $service_invoice->number . '.png') . '.jpg';
+                        $service_invoice->qr_image = base_path("storage/app/public/service-invoice/IRN_images/" . $qr_code_name . '.png') . '.jpg';
                     }
                 } else {
                     $service_invoice->qr_image = '';
@@ -2253,7 +2254,7 @@ class ServiceInvoiceController extends Controller
                 // $image = '<img src="storage/app/public/service-invoice/IRN_images/' . $final_json_decode->AckNo . '.png" title="IRN QR Image">';
                 $service_invoice_save = ServiceInvoice::find($service_invoice_id);
                 $service_invoice_save->irn_number = $final_json_decode->Irn;
-                $service_invoice_save->qr_image = $service_invoice->number . '.png' . '.jpg';
+                $service_invoice_save->qr_image = $qr_code_name . '.png' . '.jpg';
                 $service_invoice_save->ack_no = $final_json_decode->AckNo;
                 $service_invoice_save->ack_date = $final_json_decode->AckDt;
                 $service_invoice_save->version = $get_version->Version;
@@ -4606,14 +4607,15 @@ class ServiceInvoiceController extends Controller
         $B2C_images_des = storage_path('app/public/service-invoice/B2C_images');
         File::makeDirectory($B2C_images_des, $mode = 0777, true, true);
 
-        $url = QRCode::URL($base_url_with_invoice_details)->setSize(4)->setOutfile('storage/app/public/service-invoice/B2C_images/' . $service_invoice->number . '.png')->png();
+        $qr_code_name = $service_invoice->company_id . $service_invoice->number;
+        $url = QRCode::URL($base_url_with_invoice_details)->setSize(4)->setOutfile('storage/app/public/service-invoice/B2C_images/' . $qr_code_name . '.png')->png();
 
         // $file_name = $service_invoice->number . '.png';
 
-        $qr_attachment_path = base_path("storage/app/public/service-invoice/B2C_images/" . $service_invoice->number . '.png');
+        $qr_attachment_path = base_path("storage/app/public/service-invoice/B2C_images/" . $qr_code_name . '.png');
         // dump($qr_attachment_path);
         if (file_exists($qr_attachment_path)) {
-            $ext = pathinfo(base_path("storage/app/public/service-invoice/B2C_images/" . $service_invoice->number . '.png'), PATHINFO_EXTENSION);
+            $ext = pathinfo(base_path("storage/app/public/service-invoice/B2C_images/" . $qr_code_name . '.png'), PATHINFO_EXTENSION);
             // dump($ext);
             if ($ext == 'png') {
                 $image = imagecreatefrompng($qr_attachment_path);
@@ -4628,14 +4630,14 @@ class ServiceInvoiceController extends Controller
                 imagejpeg($bg, $qr_attachment_path . ".jpg", $quality);
                 // imagedestroy($bg);
 
-                $service_invoice->qr_image = base_path("storage/app/public/service-invoice/B2C_images/" . $service_invoice->number . '.png') . '.jpg';
+                $service_invoice->qr_image = base_path("storage/app/public/service-invoice/B2C_images/" . $qr_code_name . '.png') . '.jpg';
             }
         } else {
             $service_invoice->qr_image = '';
         }
 
         $service_invoice_save = ServiceInvoice::find($service_invoice->id);
-        $service_invoice_save->qr_image = $service_invoice->number . '.png' . '.jpg';
+        $service_invoice_save->qr_image = $qr_code_name . '.png' . '.jpg';
         $service_invoice_save->save();
 
         return $service_invoice;
