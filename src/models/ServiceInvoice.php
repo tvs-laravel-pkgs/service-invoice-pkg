@@ -2727,7 +2727,7 @@ class ServiceInvoice extends Model
         $data = [];
         $data['service_invoice_pdf'] = $this;
 
-        $tax_list = Tax::where('company_id', $this->company_id)->get();
+        $tax_list = Tax::get();
         $data['tax_list'] = $tax_list;
         // dd($this->data['service_invoice_pdf']);
         $path = storage_path('app/public/service-invoice-pdf/');
@@ -2955,7 +2955,7 @@ class ServiceInvoice extends Model
         $data = [];
         $data['service_invoice_pdf'] = $this;
 
-        $tax_list = Tax::where('company_id', $this->company_id)->get();
+        $tax_list = Tax::get();
         $data['tax_list'] = $tax_list;
         // dd($this->data['service_invoice_pdf']);
         $path = storage_path('app/public/service-invoice-pdf/');
