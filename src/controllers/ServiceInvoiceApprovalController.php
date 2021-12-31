@@ -715,7 +715,7 @@ class ServiceInvoiceApprovalController extends Controller {
 					$this->data['service_invoice_pdf'] = $service_invoice_save;
 					// dd($this->data['service_invoice_pdf']);
 
-					$tax_list = Tax::get();
+					$tax_list = Tax::orderBy('id', 'ASC')->get();
 					$this->data['tax_list'] = $tax_list;
 					// dd($this->data['tax_list']);
 					$path = storage_path('app/public/service-invoice-pdf/');
