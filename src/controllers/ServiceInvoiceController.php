@@ -505,7 +505,7 @@ class ServiceInvoiceController extends Controller
             // 'branch_list' => collect(Outlet::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Branch']),
             // 'sbu_list' => collect(Sbu::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Sbu']),
             'sbu_list' => [],
-            'tax_list' => Tax::select('name', 'id')->orderBy('id', 'ASC')->get(),
+            'tax_list' => Tax::select('name', 'id')->get(),
             'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
             'sub_category_list' => [],
             'uom_list' => EInvoiceUom::getList(),
@@ -2321,7 +2321,7 @@ class ServiceInvoiceController extends Controller
         $this->data['service_invoice_pdf'] = $service_invoice;
         // dd($this->data['service_invoice_pdf']);
 
-        $tax_list = Tax::orderBy('id', 'ASC')->get();
+        $tax_list = Tax::get();
         $this->data['tax_list'] = $tax_list;
         // dd($this->data['tax_list']);
         $path = storage_path('app/public/service-invoice-pdf/');
@@ -4280,7 +4280,7 @@ class ServiceInvoiceController extends Controller
         $this->data['service_invoice'] = $service_invoice;
         // dd($this->data['service_invoice']);
 
-        $tax_list = Tax::orderBy('id', 'ASC')->get();
+        $tax_list = Tax::get();
         $this->data['tax_list'] = $tax_list;
 
         $path = storage_path('app/public/service-invoice-pdf/chola-pdf');
