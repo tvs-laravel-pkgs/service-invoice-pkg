@@ -1577,8 +1577,8 @@ class ServiceInvoiceController extends Controller
             "config_id"=>$eInvoiceConfigId,"status"=>0,"company_id"=>Auth::user()->company_id
         ])->count();
 
-        print_r("eInvoiceConfigId");
-        print_r($eInvoiceConfigId);
+        // print_r("eInvoiceConfigId");
+        // print_r($eInvoiceConfigId);
 
         if (empty($eInvoiceConfig) && $service_invoice->e_invoice_registration == 1) {
             // dd(1);
