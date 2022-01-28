@@ -17,6 +17,7 @@ use Abs\TaxPkg\Tax;
 use App\Address;
 use App\ApiLog;
 use App\Attachment;
+use App\EInvoiceConfig;
 use App\City;
 use App\Company;
 use App\Config;
@@ -1533,12 +1534,16 @@ class ServiceInvoiceController extends Controller
             $service_invoice->document_type = 'INV';
         }
 
+        $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdCN");
         if ($service_invoice->type_id == 1060) {
             $service_invoice->type = 'CRN';
+            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdCN");
         } elseif ($service_invoice->type_id == 1061) {
             $service_invoice->type = 'DBN';
+            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdDN");
         } elseif ($service_invoice->type_id == 1062) {
             $service_invoice->type = 'INV';
+            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdINV");
         }
 
         if ($service_invoice->total > $service_invoice->final_amount) {
@@ -1568,7 +1573,11 @@ class ServiceInvoiceController extends Controller
             ];
         }
 
-        if ($service_invoice->e_invoice_registration == 1) {
+        $eInvoiceConfig = EInvoiceConfig::where([
+            "config_id"=>$eInvoiceConfigId,"status"=>0,"company_id"=>Auth::user()->company_id
+        ])->count();
+
+        if (empty($eInvoiceConfig) && $service_invoice->e_invoice_registration == 1) {
             // dd(1);
             //FOR IRN REGISTRATION
             if ($service_invoice->address->gst_number && ($item_count == $item_count_with_tax_code)) {
