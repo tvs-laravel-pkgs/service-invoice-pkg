@@ -378,7 +378,7 @@ class ServiceInvoiceApprovalController extends Controller {
 		}
 		$this->data['extras'] = [
 			'sbu_list' => [],
-			'tax_list' => Tax::select('name', 'id')->get(),
+			'tax_list' => Tax::select('name', 'id')->where('company_id', Auth::user()->company_id)->get(),
 			'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
 			'sub_category_list' => [],
 			'uom_list' => EInvoiceUom::getList(),
@@ -716,7 +716,7 @@ class ServiceInvoiceApprovalController extends Controller {
 					// dd($this->data['service_invoice_pdf']);
 
 					// $tax_list = Tax::orderBy('id', 'ASC')->get();
-					$tax_list = Tax::get();
+					$tax_list = Tax::where('company_id', Auth::user()->company_id)->get();
 					$this->data['tax_list'] = $tax_list;
 					// dd($this->data['tax_list']);
 					$path = storage_path('app/public/service-invoice-pdf/');
