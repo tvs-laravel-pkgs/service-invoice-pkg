@@ -17,6 +17,7 @@ use Abs\TaxPkg\Tax;
 use App\Address;
 use App\ApiLog;
 use App\Attachment;
+use App\BdoAuthToken;
 use App\EInvoiceConfig;
 use App\City;
 use App\Company;
@@ -1613,129 +1614,38 @@ class ServiceInvoiceController extends Controller
                 }
 
                 // $service_invoice->irnCreate($service_invoice_id);
-                // RSA ENCRYPTION
-                $rsa = new Crypt_RSA;
-
-                $public_key = 'MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAxqHazGS4OkY/bDp0oklL+Ser7EpTpxyeMop8kfBlhzc8dzWryuAECwu8i/avzL4f5XG/DdSgMz7EdZCMrcxtmGJlMo2tUqjVlIsUslMG6Cmn46w0u+pSiM9McqIvJgnntKDHg90EIWg1BNnZkJy1NcDrB4O4ea66Y6WGNdb0DxciaYRlToohv8q72YLEII/z7W/7EyDYEaoSlgYs4BUP69LF7SANDZ8ZuTpQQKGF4TJKNhJ+ocmJ8ahb2HTwH3Ol0THF+0gJmaigs8wcpWFOE2K+KxWfyX6bPBpjTzC+wQChCnGQREhaKdzawE/aRVEVnvWc43dhm0janHp29mAAVv+ngYP9tKeFMjVqbr8YuoT2InHWFKhpPN8wsk30YxyDvWkN3mUgj3Q/IUhiDh6fU8GBZ+iIoxiUfrKvC/XzXVsCE2JlGVceuZR8OzwGrxk+dvMnVHyauN1YWnJuUTYTrCw3rgpNOyTWWmlw2z5dDMpoHlY0WmTVh0CrMeQdP33D3LGsa+7JYRyoRBhUTHepxLwk8UiLbu6bGO1sQwstLTTmk+Z9ZSk9EUK03Bkgv0hOmSPKC4MLD5rOM/oaP0LLzZ49jm9yXIrgbEcn7rv82hk8ghqTfChmQV/q+94qijf+rM2XJ7QX6XBES0UvnWnV6bVjSoLuBi9TF1ttLpiT3fkCAwEAAQ=='; //PROVIDE FROM BDO COMPANY
-
-                // $clientid = "prakashr@featsolutions.in"; //PROVIDE FROM BDO COMPANY
-                // $clientid = "amutha@sundarammotors.com"; //PROVIDE FROM BDO COMPANY
-                // $clientid = "61b27a26bd86cbb93c5c11be0c2856"; //LIVE
-                $clientid = config('custom.CLIENT_ID');
-                // dump($clientid);
-                // dump('clientid ' . $clientid);
-
-                $rsa->loadKey($public_key);
-                $rsa->setEncryptionMode(2);
-                // $client_secret_key = 'BBAkBDB0YzZiYThkYTg4ZDZBBDJjZBUyBGFkBBB0BWB='; // CLIENT SECRET KEY
-                // $client_secret_key = 'TQAkSDQ0YzZiYTTkYTg4ZDZSSDJjZSUySGFkSSQ0SWQ='; // CLIENT SECRET KEY
-                // $client_secret_key = '7dd55886594bccadb03c48eb3f448e'; // LIVE
-                $client_secret_key = config('custom.CLIENT_SECRET_KEY');
-                // dump($client_secret_key);
-
-                $ClientSecret = $rsa->encrypt($client_secret_key);
-                $clientsecretencrypted = base64_encode($ClientSecret);
-                // dump('ClientSecret ' . $clientsecretencrypted);
-
-                $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-                $app_secret_key = substr(str_shuffle($characters), 0, 32); // RANDOM KEY GENERATE
-                // $app_secret_key = 'Rdp5EB5w756dVph0C3jCXY1K6RPC6RCD'; // RANDOM KEY GENERATE
-                $AppSecret = $rsa->encrypt($app_secret_key);
-                $appsecretkey = base64_encode($AppSecret);
-                // dump('appsecretkey ' . $appsecretkey);
-
-                // $bdo_login_url = 'https://sandboxeinvoiceapi.bdo.in/bdoauth/bdoauthenticate';
-                // $bdo_login_url = 'https://einvoiceapi.bdo.in/bdoauth/bdoauthenticate'; // LIVE
-                $bdo_login_url = config('custom.BDO_LOGIN_URL');
-                // $bdo_generate_irn_url = config('custom.BDO_IRN_REGISTRATION_URL');
-                // $bdo_cancel_irn_url = config('custom.BDO_IRN_CANCEL_URL');
-
-                // dump($bdo_login_url);
-                // dump($bdo_generate_irn_url);
-                // dd($clientid, $client_secret_key, $bdo_login_url, $bdo_generate_irn_url, $bdo_cancel_irn_url);
-
-                $ch = curl_init($bdo_login_url);
-                // Setup request to send json via POST`
-                $params = json_encode(array(
-                    'clientid' => $clientid,
-                    'clientsecretencrypted' => $clientsecretencrypted,
-                    'appsecretkey' => $appsecretkey,
-                ));
-
-                // Attach encoded JSON string to the POST fields
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
-
-                // Set the content type to application/json
-                curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-
-                // Return response instead of outputting
-                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-                // Execute the POST request
-                $server_output = curl_exec($ch);
-                // dd($server_output);
-
-                // Get the POST request header status
-                $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-                // If header status is not Created or not OK, return error message
-                if ($status != 200) {
-                    return [
-                        'success' => false,
-                        'errors' => ["Conection Error in BDO Login!"],
-                    ];
-                    $errors[] = 'Conection Error in BDO Login!';
-                    // DB::commit();
-                    // return response()->json([
-                    //  'success' => false,
-                    //  'error' => 'call to URL $bdo_login_url failed with status $status',
-                    //  'errors' => ["response " . $server_output . ", curl_error " . curl_error($ch) . ", curl_errno " . curl_errno($ch)],
-                    // ]);
-                }
-
-                curl_close($ch);
-
-                $bdo_login_check = json_decode($server_output);
-
+                // BDO Login
                 $api_params = [
                     'type_id' => $service_invoice->type_id,
                     'entity_number' => $service_invoice->number,
                     'entity_id' => $service_invoice->id,
-                    'url' => $bdo_login_url,
-                    'src_data' => $params,
-                    'response_data' => $server_output,
                     'user_id' => Auth::user()->id,
-                    'status_id' => $bdo_login_check->status == 0 ? 11272 : 11271,
-                    'errors' => !empty($errors) ? null : json_encode($errors),
                     'created_by_id' => Auth::user()->id,
                 ];
 
-                if ($bdo_login_check->status == 0) {
+                $authToken = getBdoAuthToken();
+                $errors = $authToken['errors'];
+                $api_params['errors'] = empty($errors) ? null : json_encode($errors);
+                $bdo_login_url = $authToken["url"];
+                $api_params['url'] = $bdo_login_url;
+                $api_params['src_data'] = isset($authToken["params"])?$authToken["params"]:json_encode([]);
+                $api_params['response_data'] = isset($authToken["server_output"])?$authToken["server_output"]:json_encode([]);
+                if(!$authToken["success"]){
                     $api_params['message'] = 'Login Failed!';
-                    $api_logs[0] = $api_params;
-                    return [
-                        'success' => false,
-                        'errors' => [$bdo_login_check->ErrorMsg],
-                        'api_logs' => $api_logs,
-                    ];
+                    $api_params["status_id"] = 11272;
+                    $authToken['api_params'] = $api_params;
+                    return $authToken;
                 }
+                $api_params["status_id"] = 11271;
                 $api_params['message'] = 'Login Success!';
-
+                $clientid = config('custom.CLIENT_ID');
+                $app_secret_key = $authToken["result"]["app_secret"];
+                $expiry = $authToken["result"]["expiry_date"];
+                $bdo_authtoken = $authToken["result"]["bdo_authtoken"];
+                $status = $authToken["result"]["status"];
+                //DECRYPTED BDO SEK KEY
+                $decrypt_data_with_bdo_sek = $authToken["result"]["bdo_secret"];
                 $api_logs[1] = $api_params;
-                // ServiceInvoice::apiLogs($api_params);
-
-                $expiry = $bdo_login_check->expiry;
-                $bdo_authtoken = $bdo_login_check->bdo_authtoken;
-                $status = $bdo_login_check->status;
-                $bdo_sek = $bdo_login_check->bdo_sek;
-
-                //DECRYPT WITH APP KEY AND BDO SEK KEY
-                $decrypt_data_with_bdo_sek = self::decryptAesData($app_secret_key, $bdo_sek);
-                if (!$decrypt_data_with_bdo_sek) {
-                    $errors[] = 'Decryption Error!';
-                    return response()->json(['success' => false, 'error' => 'Decryption Error!']);
-                }
-                // dd($decrypt_data_with_bdo_sek);
 
                 //ITEm
                 $items = [];
@@ -2129,10 +2039,22 @@ class ServiceInvoiceController extends Controller
                     'src_data' => $params,
                     'response_data' => $generate_irn_output_data,
                     'user_id' => Auth::user()->id,
-                    'status_id' => $bdo_login_check->status == 0 ? 11272 : 11271,
+                    'status_id' => $status == 0 ? 11272 : 11271,
                     // 'errors' => !empty($errors) ? NULL : json_encode($errors),
                     'created_by_id' => Auth::user()->id,
                 ];
+
+                if($generate_irn_output_data == "GSP AUTHTOKEN IS NOT VALID"){
+                    BdoAuthToken::where([
+                        "bdo_secret"=>$decrypt_data_with_bdo_sek,
+                        "app_secret"=>$app_secret_key
+                    ])->update(["status" => 0]);
+                    return [
+                        'success' => false,
+                        'errors' => "GSP AUTHTOKEN IS NOT VALID, TRY AGAIN",
+                        'api_logs' => $api_logs,
+                    ];
+                }
 
                 if (is_array($generate_irn_output['Error'])) {
                     $bdo_errors = [];
@@ -2148,7 +2070,6 @@ class ServiceInvoiceController extends Controller
                     $api_params['message'] = 'Error GENERATE IRN array!';
 
                     $api_logs[2] = $api_params;
-
                     return [
                         'success' => false,
                         'errors' => $bdo_errors,
@@ -2211,7 +2132,7 @@ class ServiceInvoiceController extends Controller
                 // dd($irn_decrypt_data);
                 if (!$irn_decrypt_data) {
                     $errors[] = 'IRN Decryption Error!';
-                    return response()->json(['success' => false, 'error' => 'IRN Decryption Error!']);
+                    return ['success' => false, 'error' => 'IRN Decryption Error!'];
                 }
                 // dump($irn_decrypt_data);
                 $final_json_decode = json_decode($irn_decrypt_data);
