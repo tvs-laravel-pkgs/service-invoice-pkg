@@ -95,6 +95,7 @@ class ServiceInvoiceController extends Controller
             'sbus.name as sbu',
             'service_item_categories.name as category',
             'service_item_sub_categories.name as sub_category',
+            'addresses.gst_number'
             // DB::raw('IF(service_invoices.to_account_type_id=1440,customers.code,vendors.code) as customer_code'),
             // DB::raw('IF(service_invoices.to_account_type_id=1440,customers.name,vendors.name) as customer_name'),
             'customers.pdf_format_id',
@@ -123,6 +124,9 @@ class ServiceInvoiceController extends Controller
             })
             ->leftJoin('vendors', function ($join) {
                 $join->on('vendors.id', 'service_invoices.customer_id');
+            })
+            ->leftJoin('addresses', function ($join) {
+                $join->on('addresses.id', 'service_invoices.address_id');
             })
             ->join('configs', 'configs.id', 'service_invoices.type_id')
             ->leftJoin('configs as to_account_type', 'to_account_type.id', 'service_invoices.to_account_type_id')
@@ -263,10 +267,11 @@ class ServiceInvoiceController extends Controller
                         }
                     }
                     if (Entrust::can('service-invoice-cancel')) {
+                        $btype = ($service_invoice_list->gst_number && !empty($service_invoice_list->gst_number))?"B2B":"B2C";
                         if (empty($service_invoice_list->ack_date)) {
                             $output .= '<a href="javascript:;" data-toggle="modal" data-target="#delete_irn"
-									onclick="angular.element(this).scope().deleteB2C(' . $service_invoice_list->id . ')" dusk = "delete-btn" title="Cancel B2C">
-									<img src="' . $img_delete . '" alt="Cancel B2C" class="img-responsive">
+									onclick="angular.element(this).scope().deleteB2C(' . $service_invoice_list->id . ')" dusk = "delete-btn" title="Cancel '.$btype.'">
+									<img src="' . $img_delete . '" alt="Cancel '.$btype.'" class="img-responsive">
 									</a>';
                         }
                     }
@@ -3386,7 +3391,7 @@ class ServiceInvoiceController extends Controller
             return response()->json([
                 'success' => true,
                 'service_invoice' => $service_invoice_save,
-                'message' => $service_invoice->type . ' Cancened Successfully!',
+                'message' => $service_invoice->type . ' Cancelled Successfully!',
             ]);
         }
 
@@ -3603,7 +3608,7 @@ class ServiceInvoiceController extends Controller
         return response()->json([
             'success' => true,
             'service_invoice' => $service_invoice_save,
-            'message' => $service_invoice->type . ' Cancened Successfully!',
+            'message' => $service_invoice->type . ' Cancelled Successfully!',
         ]);
     }
 
