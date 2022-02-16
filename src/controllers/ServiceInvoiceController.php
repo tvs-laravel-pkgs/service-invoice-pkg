@@ -3279,7 +3279,8 @@ class ServiceInvoiceController extends Controller
 
                                 $service_invoice_details[] = [
                                     $service_invoice->type->name,
-                                    $service_invoice->e_invoice_registration == 1 && $service_invoice->irn_number != null ? 'B2B' : 'B2C',
+                                    // $service_invoice->e_invoice_registration == 1 && $service_invoice->irn_number != null ? 'B2B' : 'B2C',
+                                    ($service_invoice->address->gst_number && $service_invoice->address->gst_number != '')? 'B2B' : 'B2C',
                                     $service_invoice->toAccountType->name,
                                     $service_invoice->customer->code,
                                     $service_invoice->number,
