@@ -95,7 +95,7 @@ class ServiceInvoiceController extends Controller
             'sbus.name as sbu',
             'service_item_categories.name as category',
             'service_item_sub_categories.name as sub_category',
-            'addresses.gst_number'
+            'addresses.gst_number',
             // DB::raw('IF(service_invoices.to_account_type_id=1440,customers.code,vendors.code) as customer_code'),
             // DB::raw('IF(service_invoices.to_account_type_id=1440,customers.name,vendors.name) as customer_name'),
             'customers.pdf_format_id',
