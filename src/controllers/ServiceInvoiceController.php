@@ -3792,7 +3792,7 @@ class ServiceInvoiceController extends Controller
                         return response()->json(['success' => false, 'error' => 'Address Not Available!.']);
                     }
 
-                    $customer = Customer::firstOrNew(['code' => $code]);
+                    $customer = Customer::firstOrNew(['code' => $code,'company_id'=>Auth::user()->company_id]);
                     $customer->company_id = $job->company_id;
                     $customer->name = $search_list[0]['name'];
                     $customer->cust_group = empty($search_list[0]['cust_group']) ? null : $search_list[0]['cust_group'];
@@ -3935,7 +3935,7 @@ class ServiceInvoiceController extends Controller
                 return response()->json(['success' => false, 'error' => 'Address Not Available!.']);
             }
 
-            $customer = Customer::firstOrNew(['code' => $request->data['code']]);
+            $customer = Customer::firstOrNew(['code' => $request->data['code'],'company_id'=>Auth::user()->company_id]);
             $customer->company_id = Auth::user()->company_id;
             $customer->name = $request->data['name'];
             $customer->cust_group = empty($request->data['cust_group']) ? null : $request->data['cust_group'];
@@ -4484,7 +4484,7 @@ class ServiceInvoiceController extends Controller
                 return response()->json(['success' => false, 'error' => 'Address Not Available!.']);
             }
 
-            $customer = Customer::firstOrNew(['code' => $code]);
+            $customer = Customer::firstOrNew(['code' => $code,'company_id'=>Auth::user()->company_id]);
             $customer->company_id = $job->company_id;
             $customer->name = $search_list[0]['name'];
             $customer->cust_group = empty($search_list[0]['cust_group']) ? null : $search_list[0]['cust_group'];
