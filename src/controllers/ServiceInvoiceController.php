@@ -96,6 +96,7 @@ class ServiceInvoiceController extends Controller
             'sbus.name as sbu',
             'service_item_categories.name as category',
             'service_item_sub_categories.name as sub_category',
+            'addresses.gst_number',
             // DB::raw('IF(service_invoices.to_account_type_id=1440,customers.code,vendors.code) as customer_code'),
             // DB::raw('IF(service_invoices.to_account_type_id=1440,customers.name,vendors.name) as customer_name'),
             'customers.pdf_format_id',
@@ -124,6 +125,9 @@ class ServiceInvoiceController extends Controller
             })
             ->leftJoin('vendors', function ($join) {
                 $join->on('vendors.id', 'service_invoices.customer_id');
+            })
+            ->leftJoin('addresses', function ($join) {
+                $join->on('addresses.id', 'service_invoices.address_id');
             })
             ->join('configs', 'configs.id', 'service_invoices.type_id')
             ->leftJoin('configs as to_account_type', 'to_account_type.id', 'service_invoices.to_account_type_id')
@@ -264,10 +268,11 @@ class ServiceInvoiceController extends Controller
                         }
                     }
                     if (Entrust::can('service-invoice-cancel')) {
+                        $btype = ($service_invoice_list->gst_number && !empty($service_invoice_list->gst_number))?"B2B":"B2C";
                         if (empty($service_invoice_list->ack_date)) {
                             $output .= '<a href="javascript:;" data-toggle="modal" data-target="#delete_irn"
-									onclick="angular.element(this).scope().deleteB2C(' . $service_invoice_list->id . ')" dusk = "delete-btn" title="Cancel B2C">
-									<img src="' . $img_delete . '" alt="Cancel B2C" class="img-responsive">
+									onclick="angular.element(this).scope().deleteB2C(' . $service_invoice_list->id . ')" dusk = "delete-btn" title="Cancel '.$btype.'">
+									<img src="' . $img_delete . '" alt="Cancel '.$btype.'" class="img-responsive">
 									</a>';
                         }
                     }
@@ -507,7 +512,7 @@ class ServiceInvoiceController extends Controller
             // 'branch_list' => collect(Outlet::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Branch']),
             // 'sbu_list' => collect(Sbu::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Sbu']),
             'sbu_list' => [],
-            'tax_list' => Tax::select('name', 'id')->where('company_id', Auth::user()->company_id)->orderBy('id', 'ASC')->get(),
+            'tax_list' => Tax::select('name', 'id')->where('company_id', 1)->orderBy('id', 'ASC')->get(),
             'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
             'sub_category_list' => [],
             'uom_list' => EInvoiceUom::getList(),
@@ -2254,7 +2259,7 @@ class ServiceInvoiceController extends Controller
         $this->data['service_invoice_pdf'] = $service_invoice;
         // dd($this->data['service_invoice_pdf']);
 
-        $tax_list = Tax::where('company_id', Auth::user()->company_id)->orderBy('id', 'ASC')->get();
+        $tax_list = Tax::where('company_id', 1)->orderBy('id', 'ASC')->get();
         $this->data['tax_list'] = $tax_list;
         // dd($this->data['tax_list']);
         $path = storage_path('app/public/service-invoice-pdf/');
@@ -2460,7 +2465,7 @@ class ServiceInvoiceController extends Controller
 
         $this->data['extras'] = [
             'sbu_list' => [],
-            'tax_list' => Tax::select('name', 'id')->where('company_id', Auth::user()->company_id)->orderBy('id', 'ASC')->get(),
+            'tax_list' => Tax::select('name', 'id')->where('company_id', 1)->orderBy('id', 'ASC')->get(),
             'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
             'sub_category_list' => [],
             'uom_list' => EInvoiceUom::getList(),
@@ -3200,7 +3205,8 @@ class ServiceInvoiceController extends Controller
 
                                 $service_invoice_details[] = [
                                     $service_invoice->type->name,
-                                    $service_invoice->e_invoice_registration == 1 && $service_invoice->irn_number != null ? 'B2B' : 'B2C',
+                                    // $service_invoice->e_invoice_registration == 1 && $service_invoice->irn_number != null ? 'B2B' : 'B2C',
+                                    ($service_invoice->address->gst_number && $service_invoice->address->gst_number != '')? 'B2B' : 'B2C',
                                     $service_invoice->toAccountType->name,
                                     $service_invoice->customer->code,
                                     $service_invoice->number,
@@ -3306,7 +3312,7 @@ class ServiceInvoiceController extends Controller
             return response()->json([
                 'success' => true,
                 'service_invoice' => $service_invoice_save,
-                'message' => $service_invoice->type . ' Cancened Successfully!',
+                'message' => $service_invoice->type . ' Cancelled Successfully!',
             ]);
         }
 
@@ -3523,7 +3529,7 @@ class ServiceInvoiceController extends Controller
         return response()->json([
             'success' => true,
             'service_invoice' => $service_invoice_save,
-            'message' => $service_invoice->type . ' Cancened Successfully!',
+            'message' => $service_invoice->type . ' Cancelled Successfully!',
         ]);
     }
 
@@ -3533,15 +3539,23 @@ class ServiceInvoiceController extends Controller
         // dd(strlen($r->key));
         try {
             $key = $r->key;
-
+            $axUrl = "GetNewCustMasterDetails_Search";
+            if(Auth::user()->company_id == 1){
+                $axUrl = "GetNewCustMasterDetails_Search_TVS";
+            }
             $this->soapWrapper->add('customer', function ($service) {
                 $service
                     ->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
                     ->trace(true);
             });
             $params = ['ACCOUNTNUM' => $r->key];
-            $getResult = $this->soapWrapper->call('customer.GetNewCustMasterDetails_Search', [$params]);
-            $customer_data = $getResult->GetNewCustMasterDetails_SearchResult;
+            $getResult = $this->soapWrapper->call('customer.'.$axUrl, [$params]);
+            if(Auth::user()->company_id == 1){
+                $customer_data = $getResult->GetNewCustMasterDetails_Search_TVSResult;
+            }
+            else{
+                $customer_data = $getResult->GetNewCustMasterDetails_SearchResult;
+            }
             if (empty($customer_data)) {
                 return response()->json(['success' => false, 'error' => 'Customer Not Available!.']);
             }
@@ -3598,15 +3612,23 @@ class ServiceInvoiceController extends Controller
     {
         try {
             $key = $code;
-
+            $axUrl = "GetNewCustMasterDetails_Search";
+            if(Auth::user()->company_id == 1){
+                $axUrl = "GetNewCustMasterDetails_Search_TVS";
+            }
             $this->soapWrapper->add('customer', function ($service) {
                 $service
                     ->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
                     ->trace(true);
             });
             $params = ['ACCOUNTNUM' => $code];
-            $getResult = $this->soapWrapper->call('customer.GetNewCustMasterDetails_Search', [$params]);
-            $customer_data = $getResult->GetNewCustMasterDetails_SearchResult;
+            $getResult = $this->soapWrapper->call('customer.'.$axUrl, [$params]);
+            if(Auth::user()->company_id == 1){
+                $customer_data = $getResult->GetNewCustMasterDetails_Search_TVSResult;
+            }
+            else{
+                $customer_data = $getResult->GetNewCustMasterDetails_SearchResult;
+            }
             if (empty($customer_data)) {
                 return response()->json(['success' => false, 'error' => 'Customer Not Available!.']);
             }
@@ -3654,14 +3676,23 @@ class ServiceInvoiceController extends Controller
                 $ax_company_code = $company ? $company->ax_company_code : 'tvs';
 
                 if ($search_list) {
+                    $axUrl = "GetNewCustomerAddress_Search";
+                    if(Auth::user()->company_id == 1){
+                        $axUrl = "GetNewCustomerAddress_Search_TVS";
+                    }
                     $this->soapWrapper->add('address', function ($service) {
                         $service
                             ->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
                             ->trace(true);
                     });
                     $params = ['ACCOUNTNUM' => $code];
-                    $getResult = $this->soapWrapper->call('address.GetNewCustomerAddress_Search', [$params]);
-                    $customer_data = $getResult->GetNewCustomerAddress_SearchResult;
+                    $getResult = $this->soapWrapper->call('address.'.$axUrl, [$params]);
+                    if(Auth::user()->company_id == 1){
+                        $customer_data = $getResult->GetNewCustomerAddress_Search_TVSResult;
+                    }
+                    else{
+                        $customer_data = $getResult->GetNewCustomerAddress_SearchResult;
+                    }
                     if (empty($customer_data)) {
                         return response()->json(['success' => false, 'error' => 'Address Not Available!.']);
                     }
@@ -3682,7 +3713,7 @@ class ServiceInvoiceController extends Controller
                         return response()->json(['success' => false, 'error' => 'Address Not Available!.']);
                     }
 
-                    $customer = Customer::firstOrNew(['code' => $code]);
+                    $customer = Customer::firstOrNew(['code' => $code,'company_id'=>Auth::user()->company_id]);
                     $customer->company_id = $job->company_id;
                     $customer->name = $search_list[0]['name'];
                     $customer->cust_group = empty($search_list[0]['cust_group']) ? null : $search_list[0]['cust_group'];
@@ -3788,14 +3819,23 @@ class ServiceInvoiceController extends Controller
     {
         // dd($request->all());
         try {
+            $axUrl = "GetNewCustomerAddress_Search";
+            if(Auth::user()->company_id == 1){
+                $axUrl = "GetNewCustomerAddress_Search_TVS";
+            }
             $this->soapWrapper->add('address', function ($service) {
                 $service
                     ->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
                     ->trace(true);
             });
             $params = ['ACCOUNTNUM' => $request->data['code']];
-            $getResult = $this->soapWrapper->call('address.GetNewCustomerAddress_Search', [$params]);
-            $customer_data = $getResult->GetNewCustomerAddress_SearchResult;
+            $getResult = $this->soapWrapper->call('address.'.$axUrl, [$params]);
+            if(Auth::user()->company_id == 1){
+                $customer_data = $getResult->GetNewCustomerAddress_Search_TVSResult;
+            }
+            else{
+                $customer_data = $getResult->GetNewCustomerAddress_SearchResult;
+            }
             if (empty($customer_data)) {
                 return response()->json(['success' => false, 'error' => 'Address Not Available!.']);
             }
@@ -3816,7 +3856,7 @@ class ServiceInvoiceController extends Controller
                 return response()->json(['success' => false, 'error' => 'Address Not Available!.']);
             }
 
-            $customer = Customer::firstOrNew(['code' => $request->data['code']]);
+            $customer = Customer::firstOrNew(['code' => $request->data['code'],'company_id'=>Auth::user()->company_id]);
             $customer->company_id = Auth::user()->company_id;
             $customer->name = $request->data['name'];
             $customer->cust_group = empty($request->data['cust_group']) ? null : $request->data['cust_group'];
@@ -3924,15 +3964,23 @@ class ServiceInvoiceController extends Controller
         // dd(strlen($r->key));
         try {
             $key = $r->key;
-
+            $axUrl = "GetNewVendMasterDetails_Search";
+            if(Auth::user()->company_id == 1){
+                $axUrl = "GetNewVendMasterDetails_Search_TVS";
+            }
             $this->soapWrapper->add('vendor', function ($service) {
                 $service
                     ->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
                     ->trace(true);
             });
             $params = ['ACCOUNTNUM' => $r->key];
-            $getResult = $this->soapWrapper->call('vendor.GetNewVendMasterDetails_Search', [$params]);
-            $vendor_data = $getResult->GetNewVendMasterDetails_SearchResult;
+            $getResult = $this->soapWrapper->call('vendor.'.$axUrl, [$params]);
+            if(Auth::user()->company_id == 1){
+                $vendor_data = $getResult->GetNewVendMasterDetails_Search_TVSResult;
+            }
+            else{
+                $vendor_data = $getResult->GetNewVendMasterDetails_SearchResult;
+            }
             if (empty($vendor_data)) {
                 return response()->json(['success' => false, 'error' => 'Vendor Not Available!.']);
             }
@@ -3989,14 +4037,23 @@ class ServiceInvoiceController extends Controller
     {
         // dd($request->all());
         try {
+            $axUrl = "GetNewVendorAddress_Search";
+            if(Auth::user()->company_id == 1){
+                $axUrl = "GetNewVendorAddress_Search_TVS";
+            }
             $this->soapWrapper->add('vendor_address', function ($service) {
                 $service
                     ->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
                     ->trace(true);
             });
             $params = ['ACCOUNTNUM' => $request->data['code']];
-            $getResult = $this->soapWrapper->call('vendor_address.GetNewVendorAddress_Search', [$params]);
-            $vendor_data = $getResult->GetNewVendorAddress_SearchResult;
+            $getResult = $this->soapWrapper->call('vendor_address.'.$axUrl, [$params]);
+            if(Auth::user()->company_id == 1){
+                $vendor_data = $getResult->GetNewVendorAddress_Search_TVSResult;
+            }
+            else{
+                $vendor_data = $getResult->GetNewVendorAddress_SearchResult;
+            }
             if (empty($vendor_data)) {
                 return response()->json(['success' => false, 'error' => 'Address Not Available!.']);
             }
@@ -4213,7 +4270,7 @@ class ServiceInvoiceController extends Controller
         $this->data['service_invoice'] = $service_invoice;
         // dd($this->data['service_invoice']);
 
-        $tax_list = Tax::where('company_id', Auth::user()->company_id)->orderBy('id', 'ASC')->get();
+        $tax_list = Tax::where('company_id', 1)->orderBy('id', 'ASC')->get();
         $this->data['tax_list'] = $tax_list;
 
         $path = storage_path('app/public/service-invoice-pdf/chola-pdf');
@@ -4243,6 +4300,10 @@ class ServiceInvoiceController extends Controller
     public function customerImport($code, $job)
     {
         // dd($code);
+        $axUrl = "GetNewCustMasterDetails_Search";
+        if(Auth::user()->company_id == 1){
+            $axUrl = "GetNewCustMasterDetails_Search_TVS";
+        }
         $this->soapWrapper->add('customer', function ($service) {
             $service
                 ->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
@@ -4250,9 +4311,14 @@ class ServiceInvoiceController extends Controller
         });
         $params = ['ACCOUNTNUM' => $code];
         // dump($code);
-        $getResult = $this->soapWrapper->call('customer.GetNewCustMasterDetails_Search', [$params]);
+        $getResult = $this->soapWrapper->call('customer.'.$axUrl, [$params]);
         // dd($getresult);
-        $customer_data = $getResult->GetNewCustMasterDetails_SearchResult;
+        if(Auth::user()->company_id == 1){
+            $customer_data = $getResult->GetNewCustMasterDetails_Search_TVSResult;
+        }
+        else{
+            $customer_data = $getResult->GetNewCustMasterDetails_SearchResult;
+        }
         if (empty($customer_data)) {
             return response()->json(['success' => false, 'error' => 'Customer Not Available!.']);
         }
@@ -4302,14 +4368,23 @@ class ServiceInvoiceController extends Controller
         $ax_company_code = $company ? $company->ax_company_code : 'tvs';
 
         if ($search_list) {
+            $axUrl = "GetNewCustomerAddress_Search";
+            if(Auth::user()->company_id == 1){
+                $axUrl = "GetNewCustomerAddress_Search_TVS";
+            }
             $this->soapWrapper->add('address', function ($service) {
                 $service
                     ->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
                     ->trace(true);
             });
             $params = ['ACCOUNTNUM' => $code];
-            $getResult = $this->soapWrapper->call('address.GetNewCustomerAddress_Search', [$params]);
-            $customer_data = $getResult->GetNewCustomerAddress_SearchResult;
+            $getResult = $this->soapWrapper->call('address.'.$axUrl, [$params]);
+            if(Auth::user()->company_id == 1){
+                $customer_data = $getResult->GetNewCustomerAddress_Search_TVSResult;
+            }
+            else{
+                $customer_data = $getResult->GetNewCustomerAddress_SearchResult;
+            }
             if (empty($customer_data)) {
                 return response()->json(['success' => false, 'error' => 'Address Not Available!.']);
             }
@@ -4330,7 +4405,7 @@ class ServiceInvoiceController extends Controller
                 return response()->json(['success' => false, 'error' => 'Address Not Available!.']);
             }
 
-            $customer = Customer::firstOrNew(['code' => $code]);
+            $customer = Customer::firstOrNew(['code' => $code,'company_id'=>Auth::user()->company_id]);
             $customer->company_id = $job->company_id;
             $customer->name = $search_list[0]['name'];
             $customer->cust_group = empty($search_list[0]['cust_group']) ? null : $search_list[0]['cust_group'];
