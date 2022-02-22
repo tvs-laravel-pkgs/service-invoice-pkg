@@ -2052,9 +2052,9 @@ class ServiceInvoiceController extends Controller
 
                 if($generate_irn_output_data == "GSP AUTHTOKEN IS NOT VALID"){
                     DB::enableQueryLog(); 
-                    BdoAuthToken::where([
-                        "company_id"=>Auth::user()->company_id,
-                    ])->update(["status" => '0']);
+                    DB::table('bdo_auth_tokens')->where(
+                        "company_id",Auth::user()->company_id
+                    )->update(["status" => 0]);
                     return [
                         'success' => false,
                         'errors' => "GSP AUTHTOKEN IS NOT VALID, TRY AGAIN",
