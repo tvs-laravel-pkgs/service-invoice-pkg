@@ -1711,7 +1711,7 @@ class ServiceInvoice extends Model
         $export->TDSGroup_IN = $params['TaxGroup'];
         $export->DocumentNum = $this->number;
         $export->DocumentDate = date("Y-m-d", strtotime($this->document_date));
-        $export->LogisticsLocation_LocationId = '000127079';
+        $export->LogisticsLocation_LocationId = ($this->company_id == 1)?'000127079':'001342712';
         $export->Due = '';
         $export->PaymReference = '';
         $export->TVSHSNCode = $params['TVSHSNCode'];
