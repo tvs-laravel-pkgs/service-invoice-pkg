@@ -1628,7 +1628,8 @@ class ServiceInvoiceController extends Controller
                     'created_by_id' => Auth::user()->id,
                 ];
 
-                $authToken = getBdoAuthToken();
+                $authToken = getBdoAuthToken(Auth::user()->company_id);
+                dd($authToken);
                 $errors = $authToken['errors'];
                 $api_params['errors'] = empty($errors) ? null : json_encode($errors);
                 $bdo_login_url = $authToken["url"];
