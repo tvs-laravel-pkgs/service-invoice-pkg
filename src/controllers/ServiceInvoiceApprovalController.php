@@ -427,6 +427,11 @@ class ServiceInvoiceApprovalController extends Controller {
 					$r = $approved_status->createPdf($approval_status->id);
 					if (!$r['success']) {
 						DB::rollBack();
+						if(isset($r['errors']) && $r['errors'] == "GSP AUTHTOKEN IS NOT VALID, TRY AGAIN"){
+							DB::table('bdo_auth_tokens')->where(
+		                        "company_id",Auth::user()->company_id
+		                    )->update(["status" => 0]);
+						}
 						// return response()->json($r);
 					}
 					if (isset($r['api_logs'])) {
