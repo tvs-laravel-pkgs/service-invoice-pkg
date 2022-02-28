@@ -2229,7 +2229,8 @@ class ServiceInvoiceController extends Controller
                 // return ServiceInvoice::b2cQrCodeGenerate();
             }
         } else {
-            $this->qrCodeGeneration($service_invoice);
+            if(empty($eInvoiceConfig))
+                $this->qrCodeGeneration($service_invoice);
         }
         //  else {
         //     $service_invoice_save = ServiceInvoice::find($service_invoice_id);
