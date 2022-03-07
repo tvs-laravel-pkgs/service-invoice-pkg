@@ -512,95 +512,123 @@ class ServiceInvoiceApprovalController extends Controller {
 			$service_invoice = ServiceInvoice::find($id);
 
 			if($service_invoice && $service_invoice->status_id == 2){
-				// RSA ENCRYPTION
-		        $rsa = new Crypt_RSA;
-		        $public_key = 'MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAxqHazGS4OkY/bDp0oklL+Ser7EpTpxyeMop8kfBlhzc8dzWryuAECwu8i/avzL4f5XG/DdSgMz7EdZCMrcxtmGJlMo2tUqjVlIsUslMG6Cmn46w0u+pSiM9McqIvJgnntKDHg90EIWg1BNnZkJy1NcDrB4O4ea66Y6WGNdb0DxciaYRlToohv8q72YLEII/z7W/7EyDYEaoSlgYs4BUP69LF7SANDZ8ZuTpQQKGF4TJKNhJ+ocmJ8ahb2HTwH3Ol0THF+0gJmaigs8wcpWFOE2K+KxWfyX6bPBpjTzC+wQChCnGQREhaKdzawE/aRVEVnvWc43dhm0janHp29mAAVv+ngYP9tKeFMjVqbr8YuoT2InHWFKhpPN8wsk30YxyDvWkN3mUgj3Q/IUhiDh6fU8GBZ+iIoxiUfrKvC/XzXVsCE2JlGVceuZR8OzwGrxk+dvMnVHyauN1YWnJuUTYTrCw3rgpNOyTWWmlw2z5dDMpoHlY0WmTVh0CrMeQdP33D3LGsa+7JYRyoRBhUTHepxLwk8UiLbu6bGO1sQwstLTTmk+Z9ZSk9EUK03Bkgv0hOmSPKC4MLD5rOM/oaP0LLzZ49jm9yXIrgbEcn7rv82hk8ghqTfChmQV/q+94qijf+rM2XJ7QX6XBES0UvnWnV6bVjSoLuBi9TF1ttLpiT3fkCAwEAAQ=='; //PROVIDE FROM BDO COMPANY
+				// // RSA ENCRYPTION
+		  //       $rsa = new Crypt_RSA;
+		  //       $public_key = 'MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAxqHazGS4OkY/bDp0oklL+Ser7EpTpxyeMop8kfBlhzc8dzWryuAECwu8i/avzL4f5XG/DdSgMz7EdZCMrcxtmGJlMo2tUqjVlIsUslMG6Cmn46w0u+pSiM9McqIvJgnntKDHg90EIWg1BNnZkJy1NcDrB4O4ea66Y6WGNdb0DxciaYRlToohv8q72YLEII/z7W/7EyDYEaoSlgYs4BUP69LF7SANDZ8ZuTpQQKGF4TJKNhJ+ocmJ8ahb2HTwH3Ol0THF+0gJmaigs8wcpWFOE2K+KxWfyX6bPBpjTzC+wQChCnGQREhaKdzawE/aRVEVnvWc43dhm0janHp29mAAVv+ngYP9tKeFMjVqbr8YuoT2InHWFKhpPN8wsk30YxyDvWkN3mUgj3Q/IUhiDh6fU8GBZ+iIoxiUfrKvC/XzXVsCE2JlGVceuZR8OzwGrxk+dvMnVHyauN1YWnJuUTYTrCw3rgpNOyTWWmlw2z5dDMpoHlY0WmTVh0CrMeQdP33D3LGsa+7JYRyoRBhUTHepxLwk8UiLbu6bGO1sQwstLTTmk+Z9ZSk9EUK03Bkgv0hOmSPKC4MLD5rOM/oaP0LLzZ49jm9yXIrgbEcn7rv82hk8ghqTfChmQV/q+94qijf+rM2XJ7QX6XBES0UvnWnV6bVjSoLuBi9TF1ttLpiT3fkCAwEAAQ=='; //PROVIDE FROM BDO COMPANY
 
-		        $clientid = config('custom.CLIENT_ID');
-		        $rsa->loadKey($public_key);
-		        $rsa->setEncryptionMode(2);
-		        $client_secret_key = config('custom.CLIENT_SECRET_KEY');
-		        $ClientSecret = $rsa->encrypt($client_secret_key);
-		        $clientsecretencrypted = base64_encode($ClientSecret);
+		        
+		  //       $rsa->loadKey($public_key);
+		  //       $rsa->setEncryptionMode(2);
+		  //       $client_secret_key = config('custom.CLIENT_SECRET_KEY');
+		  //       $ClientSecret = $rsa->encrypt($client_secret_key);
+		  //       $clientsecretencrypted = base64_encode($ClientSecret);
 
-		        $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-		        $app_secret_key = substr(str_shuffle($characters), 0, 32); // RANDOM KEY GENERATE
-		        // $app_secret_key = 'Rdp5EB5w756dVph0C3jCXY1K6RPC6RCD'; // RANDOM KEY GENERATE
-		        $AppSecret = $rsa->encrypt($app_secret_key);
-		        $appsecretkey = base64_encode($AppSecret);
-		        // dump('appsecretkey ' . $appsecretkey);
+		  //       $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+		  //       $app_secret_key = substr(str_shuffle($characters), 0, 32); // RANDOM KEY GENERATE
+		  //       // $app_secret_key = 'Rdp5EB5w756dVph0C3jCXY1K6RPC6RCD'; // RANDOM KEY GENERATE
+		  //       $AppSecret = $rsa->encrypt($app_secret_key);
+		  //       $appsecretkey = base64_encode($AppSecret);
+		  //       // dump('appsecretkey ' . $appsecretkey);
 
-		        $bdo_login_url = config('custom.BDO_LOGIN_URL');
+		  //       $bdo_login_url = config('custom.BDO_LOGIN_URL');
 
-		        $ch = curl_init($bdo_login_url);
+		  //       $ch = curl_init($bdo_login_url);
 				
-		        // Setup request to send json via POST`
-		        $params = json_encode(array(
-		            'clientid' => $clientid,
-		            'clientsecretencrypted' => $clientsecretencrypted,
-		            'appsecretkey' => $appsecretkey,
-		        ));
+		  //       // Setup request to send json via POST`
+		  //       $params = json_encode(array(
+		  //           'clientid' => $clientid,
+		  //           'clientsecretencrypted' => $clientsecretencrypted,
+		  //           'appsecretkey' => $appsecretkey,
+		  //       ));
 
-		        // Attach encoded JSON string to the POST fields
-		        curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
+		  //       // Attach encoded JSON string to the POST fields
+		  //       curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
 
-		        // Set the content type to application/json
-		        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+		  //       // Set the content type to application/json
+		  //       curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
 
-		        // Return response instead of outputting
-		        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		  //       // Return response instead of outputting
+		  //       curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 
-		        // Execute the POST request
-		        $server_output = curl_exec($ch);
-		        // dd($server_output);
+		  //       // Execute the POST request
+		  //       $server_output = curl_exec($ch);
+		  //       // dd($server_output);
 
-		        // Get the POST request header status
-		        $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-				// dd($status);
-		        // If header status is not Created or not OK, return error message
-		        if ($status != 200) {
-		            return [
-		                'success' => false,
-		                'errors' => ["Conection Error in BDO Login!"],
-		            ];
-		            $errors[] = 'Conection Error in BDO Login!';
-		            // DB::commit();
-		            // return response()->json([
-		            //  'success' => false,
-		            //  'error' => 'call to URL $bdo_login_url failed with status $status',
-		            //  'errors' => ["response " . $server_output . ", curl_error " . curl_error($ch) . ", curl_errno " . curl_errno($ch)],
-		            // ]);
-		        }
+		  //       // Get the POST request header status
+		  //       $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+				// // dd($status);
+		  //       // If header status is not Created or not OK, return error message
+		  //       if ($status != 200) {
+		  //           return [
+		  //               'success' => false,
+		  //               'errors' => ["Conection Error in BDO Login!"],
+		  //           ];
+		  //           $errors[] = 'Conection Error in BDO Login!';
+		  //           // DB::commit();
+		  //           // return response()->json([
+		  //           //  'success' => false,
+		  //           //  'error' => 'call to URL $bdo_login_url failed with status $status',
+		  //           //  'errors' => ["response " . $server_output . ", curl_error " . curl_error($ch) . ", curl_errno " . curl_errno($ch)],
+		  //           // ]);
+		  //       }
 
-		        curl_close($ch);
+		  //       curl_close($ch);
 
-		        $bdo_login_check = json_decode($server_output);
+		  //       $bdo_login_check = json_decode($server_output);
 
-				if ($bdo_login_check->status == 0) {
-		            $api_params['message'] = 'Login Failed!';
-		            $api_logs[0] = $api_params;
-		            return [
-		                'success' => false,
-		                'errors' => [$bdo_login_check->ErrorMsg],
-		                'api_logs' => $api_logs,
-		            ];
-		        }
+				// if ($bdo_login_check->status == 0) {
+		  //           $api_params['message'] = 'Login Failed!';
+		  //           $api_logs[0] = $api_params;
+		  //           return [
+		  //               'success' => false,
+		  //               'errors' => [$bdo_login_check->ErrorMsg],
+		  //               'api_logs' => $api_logs,
+		  //           ];
+		  //       }
 
-		        $expiry = $bdo_login_check->expiry;
-		        $bdo_authtoken = $bdo_login_check->bdo_authtoken;
-		        $status = $bdo_login_check->status;
-		        $bdo_sek = $bdo_login_check->bdo_sek;
+		  //       $expiry = $bdo_login_check->expiry;
+		  //       $bdo_authtoken = $bdo_login_check->bdo_authtoken;
+		  //       $status = $bdo_login_check->status;
+		  //       $bdo_sek = $bdo_login_check->bdo_sek;
 
-		        //DECRYPT WITH APP KEY AND BDO SEK KEY
-		        $decrypt_data_with_bdo_sek = self::decryptAesData($app_secret_key, $bdo_sek);
-		        if (!$decrypt_data_with_bdo_sek) {
-		            $errors[] = 'Decryption Error!';
-		            return response()->json(['success' => false, 'error' => 'Decryption Error!']);
-		        }
+		  //       //DECRYPT WITH APP KEY AND BDO SEK KEY
+		  //       $decrypt_data_with_bdo_sek = self::decryptAesData($app_secret_key, $bdo_sek);
+		  //       if (!$decrypt_data_with_bdo_sek) {
+		  //           $errors[] = 'Decryption Error!';
+		  //           return response()->json(['success' => false, 'error' => 'Decryption Error!']);
+		  //       }
 
 				// dd($decrypt_data_with_bdo_sek);
+				$authToken = getBdoAuthToken(Auth::user()->company_id);
+				$api_params = [];
+				$errors = $authToken['errors'];
+                $api_params['errors'] = empty($errors) ? null : json_encode($errors);
+                $bdo_login_url = $authToken["url"];
+                $api_params['url'] = $bdo_login_url;
+                $api_params['src_data'] = isset($authToken["params"])?$authToken["params"]:json_encode([]);
+                $api_params['response_data'] = isset($authToken["server_output"])?$authToken["server_output"]:json_encode([]);
+                if(!$authToken["success"]){
+                    $api_params['message'] = 'Login Failed!';
+                    $api_params["status_id"] = 11272;
+                    $authToken['api_logs'] = [$api_params];
+                    return $authToken;
+                }
+				$clientid = config('custom.CLIENT_ID');
+				// $expiry = $bdo_login_check->expiry;
+		  //       $bdo_authtoken = $bdo_login_check->bdo_authtoken;
+		  //       $status = $bdo_login_check->status;
+		  //       $bdo_sek = $bdo_login_check->bdo_sek;
 
-				$bdo_authtoken = $bdo_login_check->bdo_authtoken;
+				// $bdo_authtoken = $bdo_login_check->bdo_authtoken;
+
+				$app_secret_key = $authToken["result"]["app_secret"];
+                $expiry = $authToken["result"]["expiry_date"];
+                $bdo_authtoken = $authToken["result"]["bdo_authtoken"];
+                $status = $authToken["result"]["status"];
+                //DECRYPTED BDO SEK KEY
+                $bdo_sek = $authToken["result"]["bdo_secret"];
+                $decrypt_data_with_bdo_sek = $authToken["result"]["bdo_secret"];
+
 
 				// dd($bdo_authtoken);
 				$service_invoice->type = 'INV';
@@ -624,6 +652,19 @@ class ServiceInvoiceApprovalController extends Controller {
 
 				$body = $response->getBody();
 				$stringBody = (string) $body;
+				if($stringBody == "GSP AUTHTOKEN IS NOT VALID"){
+					DB::table('bdo_auth_tokens')->where([
+                        "bdo_secret"=>$decrypt_data_with_bdo_sek,
+                        "app_secret"=>$app_secret_key
+                    ])->update(["status" => 0]);
+                    $api_params['message'] = 'GSP AUTHTOKEN IS NOT VALID, TRY AGAIN';
+                    $api_params["status_id"] = 11272;
+                    return [
+                        'success' => false,
+                        'errors' => "GSP AUTHTOKEN IS NOT VALID, TRY AGAIN",
+                        'api_logs' => [$api_params]
+                    ];
+                }
 				$result = json_decode($stringBody);
 				
 				if($result->Status == '1'){
