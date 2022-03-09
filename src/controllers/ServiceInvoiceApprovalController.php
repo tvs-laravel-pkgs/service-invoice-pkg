@@ -652,7 +652,7 @@ class ServiceInvoiceApprovalController extends Controller {
 
 				$body = $response->getBody();
 				$stringBody = (string) $body;
-				if($stringBody == "GSP AUTHTOKEN IS NOT VALID"){
+				if(trim($stringBody) == "GSP AUTHTOKEN IS NOT VALID"){
 					DB::table('bdo_auth_tokens')->where([
                         "bdo_secret"=>$decrypt_data_with_bdo_sek,
                         "app_secret"=>$app_secret_key
