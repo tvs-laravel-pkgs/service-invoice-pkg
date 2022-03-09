@@ -661,7 +661,8 @@ class ServiceInvoiceApprovalController extends Controller {
                     $api_params["status_id"] = 11272;
                     return [
                         'success' => false,
-                        'errors' => "GSP AUTHTOKEN IS NOT VALID, TRY AGAIN",
+                		'error' => "GSP AUTHTOKEN IS NOT VALID, TRY AGAIN",
+                        'errors' => ["GSP AUTHTOKEN IS NOT VALID, TRY AGAIN"],
                         'api_logs' => [$api_params]
                     ];
                 }

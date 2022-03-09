@@ -3488,7 +3488,7 @@ class ServiceInvoiceController extends Controller
             return [
                 'success' => false,
                 'error' => "GSP AUTHTOKEN IS NOT VALID, TRY AGAIN",
-                'errors' => []
+                'errors' => ["GSP AUTHTOKEN IS NOT VALID, TRY AGAIN"]
             ];
         }
 
