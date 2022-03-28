@@ -607,11 +607,11 @@ class ServiceInvoiceApprovalController extends Controller {
 		        // $bdo_sek = $bdo_login_check->bdo_sek;
 
 		        //DECRYPT WITH APP KEY AND BDO SEK KEY
-		        $decrypt_data_with_bdo_sek = self::decryptAesData($app_secret_key, $bdo_sek);
-		        if (!$decrypt_data_with_bdo_sek) {
-		            $errors[] = 'Decryption Error!';
-		            return response()->json(['success' => false, 'errors' => 'Decryption Error!']);
-		        }
+		        // $decrypt_data_with_bdo_sek = self::decryptAesData($app_secret_key, $bdo_sek);
+		        // if (!$decrypt_data_with_bdo_sek) {
+		        //     $errors[] = 'Decryption Error!';
+		        //     return response()->json(['success' => false, 'errors' => 'Decryption Error!']);
+		        // }
 
 				// dd($decrypt_data_with_bdo_sek);
 
@@ -644,7 +644,7 @@ class ServiceInvoiceApprovalController extends Controller {
 				$result = json_decode($stringBody);
 				
 				if($result->Status == '1'){
-					$irn_decrypt_data = self::decryptAesData($decrypt_data_with_bdo_sek, $result->Data);
+					$irn_decrypt_data = self::decryptAesData($bdo_sek, $result->Data);
 
 					// dd($irn_decrypt_data);
 					if (!$irn_decrypt_data) {
@@ -765,7 +765,7 @@ class ServiceInvoiceApprovalController extends Controller {
 					if (!$r['success']) {
 						return $r;
 					}
-				}	
+				}
 			}
 			
 			DB::commit();

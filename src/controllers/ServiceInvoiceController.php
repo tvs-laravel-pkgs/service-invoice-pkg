@@ -3430,11 +3430,11 @@ class ServiceInvoiceController extends Controller
         // $bdo_sek = $server_output->bdo_sek;
 
         //DECRYPT WITH APP KEY AND BDO SEK KEY
-        $decrypt_data_with_bdo_sek = self::decryptAesData($app_secret_key, $bdo_sek);
-        if (!$decrypt_data_with_bdo_sek) {
-            $errors[] = 'Decryption Error!';
-            return response()->json(['success' => false, 'errors' => ['Decryption Error!']]);
-        }
+        // $decrypt_data_with_bdo_sek = self::decryptAesData($app_secret_key, $bdo_sek);
+        // if (!$decrypt_data_with_bdo_sek) {
+        //     $errors[] = 'Decryption Error!';
+        //     return response()->json(['success' => false, 'errors' => ['Decryption Error!']]);
+        // }
 
         $json_encoded_data =
             json_encode(
@@ -3453,7 +3453,7 @@ class ServiceInvoiceController extends Controller
         // dump($json_encoded_data);
 
         //ENCRYPT WITH Decrypted BDO SEK KEY TO PLAIN TEXT AND JSON DATA
-        $encrypt_data = self::encryptAesData($decrypt_data_with_bdo_sek, $json_encoded_data);
+        $encrypt_data = self::encryptAesData($bdo_sek, $json_encoded_data);
         if (!$encrypt_data) {
             $errors[] = 'IRN Encryption Error!';
             return response()->json(['success' => false, 'error' => 'IRN Encryption Error!']);
