@@ -3424,8 +3424,9 @@ class ServiceInvoiceController extends Controller
         $json_encoded_data =
             json_encode(
             array(
-                "supplier_gstin" => $service_invoice->outlets ? ($service_invoice->outlets->gst_number ? $service_invoice->outlets->gst_number : 'N/A') : 'N/A', //FOR TESTING
+                // "supplier_gstin" => $service_invoice->outlets ? ($service_invoice->outlets->gst_number ? $service_invoice->outlets->gst_number : 'N/A') : 'N/A', //FOR TESTING
                 // "supplier_gstin" => "09ADDPT0274H009", //FOR TESTING
+                "supplier_gstin" => "33AAGCT6376B1ZF", // FOR TMD SUPPLIER GST TESTING
                 "doc_no" => $service_invoice->number,
                 // "doc_no" => "23AUG2020SN146",
                 "irn_no" => $service_invoice->irn_number,
