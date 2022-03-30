@@ -1584,7 +1584,9 @@ class ServiceInvoiceController extends Controller
         ])->count();
         $fy_start_date = Config::getConfigName(129380);
         $fy_start_date = date('Y-m-d', strtotime($fy_start_date));
-        $inv_date = date('Y-m-d', strtotime($service_invoice->invoice_date));
+        $inv_date = date('Y-m-d', strtotime($service_invoice->document_date));
+        if (!$inv_date)
+            $inv_date = date('Y-m-d', strtotime($service_invoice->invoice_date));
         if ($fy_start_date > $inv_date && $service_invoice->e_invoice_registration == 1 && $service_invoice->address->gst_number && $item_count == $item_count_with_tax_code) {
             $eInvoiceConfig = 1;
         }
