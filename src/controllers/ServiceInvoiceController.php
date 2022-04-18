@@ -2265,6 +2265,7 @@ class ServiceInvoiceController extends Controller
 
         //dd($serviceInvoiceItem->field_groups);
         $this->data['service_invoice_pdf'] = $service_invoice;
+        $this->data['circular_detail'] = $circular_detail;
         // dd($this->data['service_invoice_pdf']);
 
         $tax_list = Tax::where('company_id', 1)->orderBy('id', 'ASC')->get();
@@ -4255,12 +4256,14 @@ class ServiceInvoiceController extends Controller
             //dd($type->sac_code_id);
         }
 
+        $circular_detail = '';
         if (!empty($type->sac_code_id) && ($service_invoice->type_id == 1060)) {
             $service_invoice->sac_code_status = 'CREDIT NOTE(CRN)';
             $service_invoice->document_type = 'CRN';
         } elseif (empty($type->sac_code_id) && ($service_invoice->type_id == 1060)) {
             $service_invoice->sac_code_status = 'FINANCIAL CREDIT NOTE';
             $service_invoice->document_type = 'CRN';
+            $circular_detail = '[As per circular No 92/11/2019 dated 07/03/2019]';
         } elseif ($service_invoice->type_id == 1061) {
             $service_invoice->sac_code_status = 'Tax Invoice(DBN)';
             $service_invoice->document_type = 'DBN';
@@ -4292,6 +4295,7 @@ class ServiceInvoiceController extends Controller
         }
 
         $this->data['service_invoice'] = $service_invoice;
+        $this->data['circular_detail'] = $circular_detail;
         // dd($this->data['service_invoice']);
 
         $tax_list = Tax::where('company_id', 1)->orderBy('id', 'ASC')->get();
