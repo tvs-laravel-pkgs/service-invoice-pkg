@@ -1526,12 +1526,14 @@ class ServiceInvoiceController extends Controller
         // dd($item_count, $item_count_with_tax_code);
         //dd($service_invoice->type_id);
         $type = $serviceInvoiceItem->serviceItem;
+        $circular_detail = '';
         if (!empty($type->sac_code_id) && ($service_invoice->type_id == 1060)) {
             $service_invoice->sac_code_status = 'CREDIT NOTE(CRN)';
             $service_invoice->document_type = 'CRN';
         } elseif (empty($type->sac_code_id) && ($service_invoice->type_id == 1060)) {
             $service_invoice->sac_code_status = 'FINANCIAL CREDIT NOTE';
             $service_invoice->document_type = 'CRN';
+            $circular_detail = '[As per circular No 92/11/2019 dated 07/03/2019]';
         } elseif ($service_invoice->type_id == 1061) {
             $service_invoice->sac_code_status = 'Tax Invoice(DBN)';
             $service_invoice->document_type = 'DBN';
