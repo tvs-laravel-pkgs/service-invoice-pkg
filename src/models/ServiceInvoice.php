@@ -1923,7 +1923,8 @@ class ServiceInvoice extends Model
                                 // $customer = ServiceInvoiceController::searchCustomerImport(trim($record['Customer/Vendor Code']), $job);
                                 // $obj = new ServiceInvoiceApprovalController;
                                 $obj = new ServiceInvoiceController;
-                                $customer = $obj->customerImportNew(trim($record['Customer/Vendor Code']), $job);
+                                // $customer = $obj->customerImportNew(trim($record['Customer/Vendor Code']), $job);
+                                $customer = $obj->customerUniqueDetailsSearch(trim($record['Customer/Vendor Code']), $job);
                                 // dd(123);
                             } catch (\SoapFault $e) {
                                 $status['errors'][] = 'Somthing went worng in SOAP Service Call!';

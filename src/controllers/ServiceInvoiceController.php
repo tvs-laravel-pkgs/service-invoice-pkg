@@ -4678,4 +4678,217 @@ class ServiceInvoiceController extends Controller
 
         return $service_invoice;
     }
+
+    public function customerUniqueDetailsSearch($code, $job)
+    {
+        try {
+            $key = $code;
+            $axUrl = "GetNewCustMasterDetails_Search_Unique";
+            if(Auth::user()->company_id == 1){
+                $axUrl = "GetNewCustMasterDetails_Search_TVS";
+            }
+            $this->soapWrapper->add('customer', function ($service) {
+                $service
+                    ->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
+                    ->trace(true);
+            });
+            $params = ['ACCOUNTNUM' => $code];
+            $getResult = $this->soapWrapper->call('customer.'.$axUrl, [$params]);
+            if(Auth::user()->company_id == 1){
+                $customer_data = $getResult->GetNewCustMasterDetails_Search_TVSResult;
+            }
+            else{
+                $customer_data = $getResult->GetNewCustMasterDetails_Search_uniqueResult;
+            }
+            if (empty($customer_data)) {
+                return response()->json(['success' => false, 'error' => 'Customer Not Available!.']);
+            }
+
+            // Convert xml string into an object
+            $xml_customer_data = simplexml_load_string($customer_data->any);
+            // dd($xml_customer_data);
+            // Convert into json
+            $customer_encode = json_encode($xml_customer_data);
+
+            // Convert into associative array
+            $customer_data = json_decode($customer_encode, true);
+
+            $api_customer_data = $customer_data['Table'];
+            if (count($api_customer_data) == 0) {
+                return response()->json(['success' => false, 'error' => 'Customer Not Available!.']);
+            }
+            // dd($api_customer_data);
+            $search_list = [];
+            if (isset($api_customer_data)) {
+                $data = [];
+                $array_count = array_filter($api_customer_data, 'is_array');
+                if (count($array_count) > 0) {
+                    // if (count($api_customer_data) > 0) {
+                    foreach ($api_customer_data as $key => $customer_data) {
+                        $data['code'] = $customer_data['ACCOUNTNUM'];
+                        $data['name'] = $customer_data['NAME'];
+                        $data['mobile_no'] = isset($customer_data['LOCATOR']) && $customer_data['LOCATOR'] != 'Not available' ? $customer_data['LOCATOR'] : null;
+                        $data['cust_group'] = isset($customer_data['CUSTGROUP']) && $customer_data['CUSTGROUP'] != 'Not available' ? $customer_data['CUSTGROUP'] : null;
+                        $data['pan_number'] = isset($customer_data['PANNO']) && $customer_data['PANNO'] != 'Not available' ? $customer_data['PANNO'] : null;
+
+                        $search_list[] = $data;
+                    }
+                } else {
+                    $data['code'] = $api_customer_data['ACCOUNTNUM'];
+                    $data['name'] = $api_customer_data['NAME'];
+                    $data['mobile_no'] = isset($api_customer_data['LOCATOR']) && $api_customer_data['LOCATOR'] != 'Not available' ? $api_customer_data['LOCATOR'] : null;
+                    $data['cust_group'] = isset($api_customer_data['CUSTGROUP']) && $api_customer_data['CUSTGROUP'] != 'Not available' ? $api_customer_data['CUSTGROUP'] : null;
+                    $data['pan_number'] = isset($api_customer_data['PANNO']) && $api_customer_data['PANNO'] != 'Not available' ? $api_customer_data['PANNO'] : null;
+
+                    $search_list[] = $data;
+                }
+
+                $company = Company::find($job->company_id);
+                $ax_company_code = $company ? $company->ax_company_code : 'tvs';
+
+                if ($search_list) {
+                    $axUrl = "GetNewCustomerAddress_Search";
+                    if(Auth::user()->company_id == 1){
+                        $axUrl = "GetNewCustomerAddress_Search_TVS";
+                    }
+                    $this->soapWrapper->add('address', function ($service) {
+                        $service
+                            ->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
+                            ->trace(true);
+                    });
+                    $params = ['ACCOUNTNUM' => $code];
+                    $getResult = $this->soapWrapper->call('address.'.$axUrl, [$params]);
+                    if(Auth::user()->company_id == 1){
+                        $customer_data = $getResult->GetNewCustomerAddress_Search_TVSResult;
+                    }
+                    else{
+                        $customer_data = $getResult->GetNewCustomerAddress_SearchResult;
+                    }
+                    if (empty($customer_data)) {
+                        return response()->json(['success' => false, 'error' => 'Address Not Available!.']);
+                    }
+
+                    // Convert xml string into an object
+                    $xml_customer_data = simplexml_load_string($customer_data->any);
+                    // dd($xml_customer_data);
+
+                    // Convert into json
+                    $customer_encode = json_encode($xml_customer_data);
+                    // Convert into associative array
+                    $customer_data = json_decode($customer_encode, true);
+                    // dd($customer_data);
+
+                    $api_customer_data = $customer_data['Table'];
+                    // dd($api_customer_data);
+                    if (count($api_customer_data) == 0) {
+                        return response()->json(['success' => false, 'error' => 'Address Not Available!.']);
+                    }
+
+                    $customer = Customer::firstOrNew([
+                        'code' => $code,
+                        'company_id'=>Auth::user()->company_id
+                    ]);
+                    $customer->company_id = $job->company_id;
+                    $customer->name = $search_list[0]['name'];
+                    $customer->cust_group = empty($search_list[0]['cust_group']) ? null : $search_list[0]['cust_group'];
+                    $customer->gst_number = empty($search_list[0]['gst_number']) ? null : $search_list[0]['gst_number'];
+                    $customer->pan_number = empty($search_list[0]['pan_number']) ? null : $search_list[0]['pan_number'];
+                    $customer->mobile_no = empty($search_list[0]['mobile_no']) ? null : $search_list[0]['mobile_no'];
+                    $customer->address = null;
+                    $customer->city = null; //$customer_data['CITY'];
+                    $customer->zipcode = null; //$customer_data['ZIPCODE'];
+                    $customer->created_at = Carbon::now();
+                    $customer->save();
+
+                    $list = [];
+                    if ($api_customer_data) {
+                        $data = [];
+                        if (isset($api_customer_data)) {
+                            $array_count = array_filter($api_customer_data, 'is_array');
+                            if (count($array_count) > 0) {
+                                // dd('mu;l');
+                                $address_count = 0;
+                                foreach ($api_customer_data as $key => $customer_data) {
+                                    if(isset($customer_data['DATAAREAID']) && ($customer_data['DATAAREAID'] == $ax_company_code)){
+                                        $address_count = 1;
+                                        $address = Address::firstOrNew([
+                                            'entity_id' => $customer->id,
+                                            'ax_id' => $customer_data['RECID']
+                                        ]); //CUSTOMER
+                                        // dd($address);
+                                        $address->company_id = $job->company_id;
+                                        $address->entity_id = $customer->id;
+                                        $address->ax_id = $customer_data['RECID'];
+                                        $address->gst_number = isset($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available' ? $customer_data['GST_NUMBER'] : null;
+
+                                        $address->ax_customer_location_id = isset($customer_data['CUSTOMER_LOCATION_ID']) ? $customer_data['CUSTOMER_LOCATION_ID'] : null;
+
+                                        $address->address_of_id = 24;
+                                        $address->address_type_id = 40;
+                                        $address->name = 'Primary Address_' . $customer_data['RECID'];
+                                        $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
+                                        $city = City::where('name', $customer_data['CITY'])->first();
+                                        $state = State::where('code', $customer_data['STATE'])->first();
+                                        $address->country_id = $state ? $state->country_id : null;
+                                        $address->state_id = $state ? $state->id : null;
+                                        $address->city_id = $city ? $city->id : null;
+                                        $address->pincode = $customer_data['ZIPCODE'] == 'Not available' ? null : $customer_data['ZIPCODE'];
+                                        $address->is_primary = isset($customer_data['ISPRIMARY']) ? $customer_data['ISPRIMARY'] : 0;
+
+                                        $address->save();
+                                        $customer_address[] = $address;
+                                    }
+                                }
+                                if($address_count == 0){
+                                    $customer_address = [];
+                                }
+                            } else {
+                                if(isset($api_customer_data['DATAAREAID']) && ($api_customer_data['DATAAREAID'] == $ax_company_code)){
+                                    // dd('sing');
+                                    $address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $api_customer_data['RECID']]); //CUSTOMER
+                                    // dd($address);
+                                    $address->company_id = $job->company_id;
+                                    $address->entity_id = $customer->id;
+                                    $address->ax_id = $api_customer_data['RECID'];
+
+                                    $address->gst_number = isset($api_customer_data['GST_NUMBER']) && $api_customer_data['GST_NUMBER'] != 'Not available' ? $api_customer_data['GST_NUMBER'] : null;
+
+                                    $address->ax_customer_location_id = isset($api_customer_data['CUSTOMER_LOCATION_ID']) ? $api_customer_data['CUSTOMER_LOCATION_ID'] : null;
+
+                                    $address->address_of_id = 24;
+                                    $address->address_type_id = 40;
+                                    $address->name = 'Primary Address_' . $api_customer_data['RECID'];
+                                    $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
+                                    $city = City::where('name', $api_customer_data['CITY'])->first();
+                                    // if ($city) {
+                                    $state = State::where('code', $api_customer_data['STATE'])->first();
+                                    $address->country_id = $state ? $state->country_id : null;
+                                    $address->state_id = $state ? $state->id : null;
+                                    // }
+                                    $address->city_id = $city ? $city->id : null;
+                                    $address->pincode = $api_customer_data['ZIPCODE'] == 'Not available' ? null : $api_customer_data['ZIPCODE'];
+                                    $address->is_primary = isset($api_customer_data['ISPRIMARY']) ? $api_customer_data['ISPRIMARY'] : null;
+                                    $address->save();
+                                    // dd($address);
+                                    $customer_address[] = $address;
+                                }else{
+                                    $customer_address = [];
+                                }
+                            }
+                        } else {
+                            $customer_address = [];
+                        }
+                    }
+                }
+                return true;
+
+            }
+            // return response()->json($list);
+        } catch (\SoapFault $e) {
+            return response()->json(['success' => false, 'error' => 'Somthing went worng in SOAP Service!']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'error' => 'Somthing went worng!']);
+        }
+
+    }
 }
