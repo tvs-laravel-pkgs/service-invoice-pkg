@@ -5762,37 +5762,37 @@ class ServiceInvoiceController extends Controller
                 // $IRN_images_des = storage_path('app/public/service-invoice/IRN_images');
                 // File::makeDirectory($IRN_images_des, $mode = 0777, true, true);
 
-                // $qr_code_name = $service_invoice->company_id . $service_invoice->number;
+                $qr_code_name = $service_invoice->company_id . $service_invoice->number;
                 // $url = QRCode::text($final_json_decode->QRCode)->setSize(4)->setOutfile('storage/app/public/service-invoice/IRN_images/' . $service_invoice->number . '.png')->png();
                 $url = QRCode::text($final_json_decode->SignedQRCode)->setSize(4)->setOutfile('storage/app/public/service-invoice/IRN_images/' . $qr_code_name . '.png')->png();
 
                 // $file_name = $service_invoice->number . '.png';
 
-                // $qr_attachment_path = base_path("storage/app/public/service-invoice/IRN_images/" . $qr_code_name . '.png');
-                // // dump($qr_attachment_path);
-                // if (file_exists($qr_attachment_path)) {
-                //     $ext = pathinfo(base_path("storage/app/public/service-invoice/IRN_images/" . $qr_code_name . '.png'), PATHINFO_EXTENSION);
-                //     // dump($ext);
-                //     if ($ext == 'png') {
-                //         $image = imagecreatefrompng($qr_attachment_path);
-                //         // dump($image);
-                //         $bg = imagecreatetruecolor(imagesx($image), imagesy($image));
-                //         // dump($bg);
-                //         imagefill($bg, 0, 0, imagecolorallocate($bg, 255, 255, 255));
-                //         imagealphablending($bg, true);
-                //         imagecopy($bg, $image, 0, 0, 0, 0, imagesx($image), imagesy($image));
-                //         // imagedestroy($image);
-                //         $quality = 70; // 0 = worst / smaller file, 100 = better / bigger file
-                //         imagejpeg($bg, $qr_attachment_path . ".jpg", $quality);
-                //         // imagedestroy($bg);
+                $qr_attachment_path = base_path("storage/app/public/service-invoice/IRN_images/" . $qr_code_name . '.png');
+                // dump($qr_attachment_path);
+                if (file_exists($qr_attachment_path)) {
+                    $ext = pathinfo(base_path("storage/app/public/service-invoice/IRN_images/" . $qr_code_name . '.png'), PATHINFO_EXTENSION);
+                    // dump($ext);
+                    if ($ext == 'png') {
+                        $image = imagecreatefrompng($qr_attachment_path);
+                        // dump($image);
+                        $bg = imagecreatetruecolor(imagesx($image), imagesy($image));
+                        // dump($bg);
+                        imagefill($bg, 0, 0, imagecolorallocate($bg, 255, 255, 255));
+                        imagealphablending($bg, true);
+                        imagecopy($bg, $image, 0, 0, 0, 0, imagesx($image), imagesy($image));
+                        // imagedestroy($image);
+                        $quality = 70; // 0 = worst / smaller file, 100 = better / bigger file
+                        imagejpeg($bg, $qr_attachment_path . ".jpg", $quality);
+                        // imagedestroy($bg);
 
-                //         $service_invoice->qr_image = base_path("storage/app/public/service-invoice/IRN_images/" . $qr_code_name . '.png') . '.jpg';
-                //     }
-                // } else {
-                //     $service_invoice->qr_image = '';
-                // }
-                $get_version = json_decode($final_json_decode->Invoice);
-                $get_version = json_decode($get_version->data);
+                        $service_invoice->qr_image = base_path("storage/app/public/service-invoice/IRN_images/" . $qr_code_name . '.png') . '.jpg';
+                    }
+                } else {
+                    $service_invoice->qr_image = '';
+                }
+                // $get_version = json_decode($final_json_decode->Invoice);
+                // $get_version = json_decode($get_version->data);
 
                 // $image = '<img src="storage/app/public/service-invoice/IRN_images/' . $final_json_decode->AckNo . '.png" title="IRN QR Image">';
                 $service_invoice_save = ServiceInvoice::find($service_invoice_id);
@@ -5800,8 +5800,8 @@ class ServiceInvoiceController extends Controller
                 $service_invoice_save->qr_image = $qr_code_name . '.png' . '.jpg';
                 $service_invoice_save->ack_no = $final_json_decode->AckNo;
                 $service_invoice_save->ack_date = $final_json_decode->AckDt;
-                $service_invoice_save->version = $get_version->Version;
-                $service_invoice_save->irn_request = $json_encoded_data;
+                // $service_invoice_save->version = $get_version->Version;
+                // $service_invoice_save->irn_request = $json_encoded_data;
                 $service_invoice_save->irn_response = $irn_decrypt_data;
 
                 // if (!$r['success']) {
@@ -5822,7 +5822,7 @@ class ServiceInvoiceController extends Controller
                 $service_invoice_save->save();
 
                 //SEND TO PDF
-                $service_invoice->version = $get_version->Version;
+                // $service_invoice->version = $get_version->Version;
                 $service_invoice->round_off_amount = $service_invoice->round_off_amount;
                 $service_invoice->irn_number = $final_json_decode->Irn;
                 $service_invoice->ack_no = $final_json_decode->AckNo;
