@@ -5803,6 +5803,8 @@ class ServiceInvoiceController extends Controller
                 // $service_invoice_save->version = $get_version->Version;
                 // $service_invoice_save->irn_request = $json_encoded_data;
                 $service_invoice_save->irn_response = $irn_decrypt_data;
+                $service_invoice_save->status_id = 4; //$approval_levels->next_status_id;
+
 
                 // if (!$r['success']) {
                 //     $service_invoice_save->status_id = 2; //APPROVAL 1 PENDING
@@ -5890,10 +5892,14 @@ class ServiceInvoiceController extends Controller
         // $r['api_logs'] = [];
 
         //ENTRY IN AX_EXPORTS
-        // $r = $service_invoice->exportToAxapta();
-        // if (!$r['success']) {
-            // return $r;
-        // }
+        $axaptaExportsCheck = AxaptaExport::where([
+            'DocumentNum' => $service_invoice->number,
+            'company_id' => $service_invoice->company_id,
+        ])->get();
+
+        if(count($axaptaExportsCheck) == 0){ 
+            $r = $service_invoice->exportToAxapta();
+        }        
 
         return response()->json([
             'success' => true,
