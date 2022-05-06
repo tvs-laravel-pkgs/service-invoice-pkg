@@ -4915,7 +4915,15 @@ class ServiceInvoiceController extends Controller
             'serviceInvoiceItems.taxes',
         ])->find($service_invoice_id);
 
-        $bdo_generate_irn_url = config('custom.BDO_IRN_DOC_DETAILS_URL').'?doctype='.$service_invoice->type->name.'&docnum='.$service_invoice->number.'&docdate='.date('d/m/Y', strtotime($service_invoice->document_date));
+        if ($service_invoice->type_id == 1060) {
+            $service_invoice->invoice_type = 'CRN';
+        } elseif ($service_invoice->type_id == 1061) {
+            $service_invoice->invoice_type = 'DBN';
+        }elseif ($service_invoice->type_id == 1062) {
+            $service_invoice->invoice_type = 'INV';
+        } 
+
+        $bdo_generate_irn_url = config('custom.BDO_IRN_DOC_DETAILS_URL').'?doctype='.$service_invoice->invoice_type.'&docnum='.$service_invoice->number.'&docdate='.date('d/m/Y', strtotime($service_invoice->document_date));
         //LIVE
         // $bdo_generate_irn_url = 'https://einvoiceapi.bdo.in/bdoapi/public/irnbydocdetails?doctype=INV&docnum=F23ALTNIN000202&docdate=05/05/2022';
 
@@ -4937,6 +4945,7 @@ class ServiceInvoiceController extends Controller
         $bdo_authtoken = $authToken['result']['bdo_authtoken'];
         $status = $authToken['result']['status'];
         $bdo_sek = $authToken['result']['bdo_secret'];
+        $invoice_outlet_gst = $service_invoice->outlets ? ($service_invoice->outlets->gst_number ? $service_invoice->outlets->gst_number : 'N/A') : 'N/A';
 
         $ch = curl_init($bdo_generate_irn_url);
 
@@ -4949,7 +4958,7 @@ class ServiceInvoiceController extends Controller
             'client_id: ' . $clientid,
             'bdo_authtoken: ' . $bdo_authtoken,
             // 'bdo_authtoken: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0M2Y0YWMzNjE4MmM1ZDM2YzcwYjMzNTA1NjUwNzEiLCJiZG9fc2VydmljZXR5cGUiOjIsImlhdCI6MTY1MTgyMjU0NSwiZXhwIjoxNjUxOTA4OTQ1fQ.Br3METwfq58caKRhtF1zMSV3IGcj1s-qfl8tCC1WqAM',
-            'Gstin: ' . $service_invoice->outlets ? ($service_invoice->outlets->gst_number ? $service_invoice->outlets->gst_number : 'N/A') : 'N/A',
+            'Gstin: ' . $invoice_outlet_gst,
             // 'Gstin: 33AAGCT6376B1ZF',
             // 'action: GENIRN',
         ));
