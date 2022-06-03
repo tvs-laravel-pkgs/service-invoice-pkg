@@ -2673,7 +2673,7 @@ class ServiceInvoice extends Model
         }
         if( $this->is_discount_avail == 1) {
                 
-               WalletController::getWalletBalence($this->customer_id,$this->final_amount)   // with tax   
+               WalletController::getWalletBalence($this->customer_id,$this->final_amount);   // with tax   
         }
         //dd($this->type_id);
         $type = $serviceInvoiceItem->serviceItem;
