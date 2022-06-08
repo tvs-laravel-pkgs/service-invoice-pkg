@@ -190,8 +190,8 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 				'display_name' => 'CNDN Export',
 			],
 
-			3058 => [
-				'display_order' => 14,
+			3063 => [
+				'display_order' => 18,
 				'parent_id' => 3040,
 				'name' => 'service-invoice-irn-cancel',
 				'display_name' => 'Service Invoice IRN Cancelation',
