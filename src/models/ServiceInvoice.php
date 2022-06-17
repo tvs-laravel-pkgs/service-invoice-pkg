@@ -34,8 +34,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use PHPExcel_IOFactory;
 use PHPExcel_Shared_Date;
 
-use App\Http\Controllers\Controller\WalletController;
-
 class ServiceInvoice extends Model
 {
     use SoftDeletes;
@@ -2670,10 +2668,6 @@ class ServiceInvoice extends Model
                 }
 
             }
-        }
-        if( $this->is_discount_avail == 1) {
-                
-               WalletController::getWalletBalence($this->customer_id,$this->final_amount);   // with tax   
         }
         //dd($this->type_id);
         $type = $serviceInvoiceItem->serviceItem;

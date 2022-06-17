@@ -48,7 +48,7 @@ use Session;
 use URL;
 use Validator;
 use Yajra\Datatables\Datatables;
-
+use App\Http\Controllers\WalletController;
 class ServiceInvoiceController extends Controller
 {
 
@@ -2295,6 +2295,14 @@ class ServiceInvoiceController extends Controller
         $r = $service_invoice->exportToAxapta();
         if (!$r['success']) {
             return $r;
+        }
+        //Camspay Wallet updated
+        if( $service_invoice->is_discount_avail == 1) {
+        $request = new Request();
+                   $request['customer_id'] = $service_invoice->customer_id; 
+                     $request['amount'] = $service_invoice->final_amount;
+                     $request['txn_id'] = $service_invoice->id;
+            WalletController::getWalletBalence($request);   // with tax   
         }
 
         return $r;
