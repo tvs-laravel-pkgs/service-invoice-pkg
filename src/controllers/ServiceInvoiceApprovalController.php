@@ -410,20 +410,6 @@ class ServiceInvoiceApprovalController extends Controller {
 				if($tvs_one_order){
 					$tvs_one_order->status_id = 12894;
 					$tvs_one_order->save();
-
-					//SMS
-					if(!empty($tvs_one_order->customer->mobile_no)){
-						$link = url('storage/app/public/service-invoice-pdf/'.$approval_status->number.'.pdf');
-			            $short_url = ShortUrl::createShortLink($link, $maxlength = "5");
-						$sms_params = [];
-			            $sms_params['mobile_number'] = $tvs_one_order->customer->mobile_no;
-			            $sms_params['sms_url'] = config('services.tvsone_sms_url');
-			            $sms_params['sms_user'] = config('services.tvsone_sms_user');
-			            $sms_params['sms_password'] = config('services.tvsone_sms_password');
-			            $sms_params['sms_sender_id'] = config('services.tvsone_sms_sender_id');
-			            $sms_params['message'] = 'Thanks for your membership please click the link '.$short_url.' to download your membership invoice copy.';
-			            tvsoneSendSMS($sms_params);
-					}
 				}
 			} elseif ($request->status_name == 'reject') {
 				$approval_status->status_id = 5; //$approval_levels->reject_status_id;
@@ -458,6 +444,21 @@ class ServiceInvoiceApprovalController extends Controller {
 						// DB::rollBack();
 						return response()->json($r);
 					}
+
+					//SMS
+					if(!empty($tvs_one_order->customer->mobile_no)){
+						$link = url('storage/app/public/service-invoice-pdf/'.$approval_status->number.'.pdf');
+			            $short_url = ShortUrl::createShortLink($link, $maxlength = "5");
+						$sms_params = [];
+			            $sms_params['mobile_number'] = $tvs_one_order->customer->mobile_no;
+			            $sms_params['sms_url'] = config('services.tvsone_sms_url');
+			            $sms_params['sms_user'] = config('services.tvsone_sms_user');
+			            $sms_params['sms_password'] = config('services.tvsone_sms_password');
+			            $sms_params['sms_sender_id'] = config('services.tvsone_sms_sender_id');
+			            $sms_params['message'] = 'Thanks for your membership please click the link '.$short_url.' to download your membership invoice copy.';
+			            tvsoneSendSMS($sms_params);
+					}
+					
 				}
 			} else {
 				return response()->json(['success' => false, 'errors' => ['Final CN/DN Status has not mapped.!']]);
@@ -507,6 +508,20 @@ class ServiceInvoiceApprovalController extends Controller {
 						}
 					} else {
 						return response()->json(['success' => false, 'errors' => ['Final CN/DN Status has not mapped.!']]);
+					}
+
+					//SMS
+					if(!empty($tvs_one_order->customer->mobile_no)){
+						$link = url('storage/app/public/service-invoice-pdf/'.$send_approval->number.'.pdf');
+			            $short_url = ShortUrl::createShortLink($link, $maxlength = "5");
+						$sms_params = [];
+			            $sms_params['mobile_number'] = $tvs_one_order->customer->mobile_no;
+			            $sms_params['sms_url'] = config('services.tvsone_sms_url');
+			            $sms_params['sms_user'] = config('services.tvsone_sms_user');
+			            $sms_params['sms_password'] = config('services.tvsone_sms_password');
+			            $sms_params['sms_sender_id'] = config('services.tvsone_sms_sender_id');
+			            $sms_params['message'] = 'Thanks for your membership please click the link '.$short_url.' to download your membership invoice copy.';
+			            tvsoneSendSMS($sms_params);
 					}
 				}
 				DB::commit();
