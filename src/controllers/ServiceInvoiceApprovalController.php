@@ -455,7 +455,7 @@ class ServiceInvoiceApprovalController extends Controller {
 			            $sms_params['sms_user'] = config('services.tvsone_sms_user');
 			            $sms_params['sms_password'] = config('services.tvsone_sms_password');
 			            $sms_params['sms_sender_id'] = config('services.tvsone_sms_sender_id');
-			            $sms_params['message'] = 'Thanks for your membership please click the link '.$short_url.' to download your membership invoice copy.';
+			            $sms_params['message'] = 'Thanks for purchasing the TVSONE membership, click the link '.$short_url.' to download the Invoice – TVS';
 			            tvsoneSendSMS($sms_params);
 					}
 					
@@ -520,7 +520,7 @@ class ServiceInvoiceApprovalController extends Controller {
 			            $sms_params['sms_user'] = config('services.tvsone_sms_user');
 			            $sms_params['sms_password'] = config('services.tvsone_sms_password');
 			            $sms_params['sms_sender_id'] = config('services.tvsone_sms_sender_id');
-			            $sms_params['message'] = 'Thanks for your membership please click the link '.$short_url.' to download your membership invoice copy.';
+			            $sms_params['message'] = 'Thanks for purchasing the TVSONE membership, click the link '.$short_url.' to download the Invoice – TVS';
 			            tvsoneSendSMS($sms_params);
 					}
 				}
