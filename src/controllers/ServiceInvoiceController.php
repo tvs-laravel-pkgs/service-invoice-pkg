@@ -2302,7 +2302,7 @@ class ServiceInvoiceController extends Controller
                    $request['customer_id'] = $service_invoice->customer_id; 
                      $request['amount'] = $service_invoice->final_amount;
                      $request['txn_id'] = $service_invoice->id;
-            WalletController::getWalletBalence($request);   // with tax   
+            WalletController::debitWalletBalence($request);   // with tax   
         }
 
         return $r;
@@ -2537,6 +2537,17 @@ class ServiceInvoiceController extends Controller
                 $message = 'Approval status updated successfully';
                 $send_approval->save();
             }
+
+            //Camspay Wallet updated
+            if(  $send_approval->status_id == 2 && $send_approval->is_discount_avail == 1) {
+                 $request = new Request();
+                 $request['customer_id'] = $send_approval->customer_id; 
+                 $request['amount'] = $send_approval->final_amount;
+                 $request['txn_id'] = $send_approval->id;
+                WalletController::loadWalletBalence($request);   // with tax   
+            }
+
+
             $approval_levels = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 19)->first();
             // $approval_levels = ApprovalLevel::where('approval_type_id', 1)->first();
             if ($approval_levels != '') {
