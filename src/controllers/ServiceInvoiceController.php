@@ -2302,6 +2302,7 @@ class ServiceInvoiceController extends Controller
                    $request['customer_id'] = $service_invoice->customer_id; 
                      $request['amount'] = $service_invoice->final_amount;
                      $request['txn_id'] = $service_invoice->id;
+                     $request['unique_id'] = $service_invoice->invoice_number;
             WalletController::debitWalletBalence($request);   // with tax   
         }
 
@@ -2544,6 +2545,7 @@ class ServiceInvoiceController extends Controller
                  $request['customer_id'] = $send_approval->customer_id; 
                  $request['amount'] = $send_approval->final_amount;
                  $request['txn_id'] = $send_approval->id;
+                 $request['unique_id'] = $send_approval->invoice_number;
                 WalletController::loadWalletBalence($request);   // with tax   
             }
 
