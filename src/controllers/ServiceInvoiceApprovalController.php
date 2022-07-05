@@ -510,6 +510,17 @@ class ServiceInvoiceApprovalController extends Controller {
 						$tvs_one_order->save();
 					}
 
+					//PLATINUM MEMBERSHIP VEHICLE ADDITION
+					if(count($tvs_one_order->orderItems) > 0){
+						$order_item = TVSOneOrderItem::find($tvs_one_order->orderItems[0]->id);
+						if($order_item->entity_type_id == 12328 && !empty($order_item->addition_vehicle_membership_id)){
+
+							$params = [];
+							$params['order_item_id'] = $order_item->id;
+							TVSOneOrderItem::addAdditionVehicles($params);
+						}
+					}
+
 					$approved_status = new ServiceInvoiceController();
 					$approval_levels = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 19)->first(); //ENTITIES ALSO CHANGES FOR 3; FOR QUEUE PROCESS
 					if ($approval_levels != '') {
