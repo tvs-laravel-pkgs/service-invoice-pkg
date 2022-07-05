@@ -16,6 +16,7 @@ use App\Entity;
 use App\Http\Controllers\Controller;
 use App\User;
 use App\TVSOneOrder;
+use App\TVSOneOrderItem;
 use File;
 use QRCode;
 use Auth;
@@ -411,6 +412,19 @@ class ServiceInvoiceApprovalController extends Controller {
 					$tvs_one_order->status_id = 12894;
 					$tvs_one_order->save();
 				}
+
+				//PLATINUM MEMBERSHIP VEHICLE ADDITION
+				if(count($tvs_one_order->orderItems) > 0){
+					$order_item = TVSOneOrderItem::find($tvs_one_order->orderItems[0]->id);
+					if($order_item->entity_type_id == 12328 && !empty($order_item->addition_vehicle_membership_id)){
+
+						$params = [];
+						$params['order_item_id'] = $order_item->id;
+						TVSOneOrderItem::addAdditionVehicles($params);
+					}
+				}
+
+				
 			} elseif ($request->status_name == 'reject') {
 				$approval_status->status_id = 5; //$approval_levels->reject_status_id;
 				$approval_status->comments = $request->comments;
@@ -446,7 +460,7 @@ class ServiceInvoiceApprovalController extends Controller {
 					}
 
 					//SMS
-					if(!empty($tvs_one_order->customer->mobile_no)){
+					if($approval_status->status_id == 4 && !empty($tvs_one_order->customer->mobile_no)){
 						$link = url('storage/app/public/service-invoice-pdf/'.$approval_status->number.'.pdf');
 			            $short_url = ShortUrl::createShortLink($link, $maxlength = "5");
 						$sms_params = [];
@@ -511,7 +525,7 @@ class ServiceInvoiceApprovalController extends Controller {
 					}
 
 					//SMS
-					if(!empty($tvs_one_order->customer->mobile_no)){
+					if($send_approval->status_id == 4 && !empty($tvs_one_order->customer->mobile_no)){
 						$link = url('storage/app/public/service-invoice-pdf/'.$send_approval->number.'.pdf');
 			            $short_url = ShortUrl::createShortLink($link, $maxlength = "5");
 						$sms_params = [];
