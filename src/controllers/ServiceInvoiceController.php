@@ -4938,6 +4938,12 @@ class ServiceInvoiceController extends Controller
         $status = $authToken['result']['status'];
         $bdo_sek = $authToken['result']['bdo_secret'];
 
+        if($service_invoice->outlets){
+           $gst_in_param =  $service_invoice->outlets->gst_number ? $service_invoice->outlets->gst_number : 'N/A';            
+        }else{
+            $gst_in_param = 'N/A';
+        }
+
         $ch = curl_init($bdo_generate_irn_url);
 
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET"); 
@@ -4949,9 +4955,13 @@ class ServiceInvoiceController extends Controller
             'client_id: ' . $clientid,
             'bdo_authtoken: ' . $bdo_authtoken,
             // 'bdo_authtoken: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0M2Y0YWMzNjE4MmM1ZDM2YzcwYjMzNTA1NjUwNzEiLCJiZG9fc2VydmljZXR5cGUiOjIsImlhdCI6MTY1MTgyMjU0NSwiZXhwIjoxNjUxOTA4OTQ1fQ.Br3METwfq58caKRhtF1zMSV3IGcj1s-qfl8tCC1WqAM',
-            'Gstin: ' . $service_invoice->outlets ? ($service_invoice->outlets->gst_number ? $service_invoice->outlets->gst_number : 'N/A') : 'N/A',
+            // 'Gstin: ' . $service_invoice->outlets ? ($service_invoice->outlets->gst_number ? $service_invoice->outlets->gst_number : 'N/A') : 'N/A',
             // 'Gstin: 33AAGCT6376B1ZF',
             // 'action: GENIRN',
+
+            // "client_id: $clientid",
+            // "bdo_authtoken: $bdo_authtoken",
+            'Gstin: $gst_in_param',
         ));
 
         //Return response instead of outputting
