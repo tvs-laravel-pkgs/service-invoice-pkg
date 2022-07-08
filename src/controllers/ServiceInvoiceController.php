@@ -1517,7 +1517,7 @@ class ServiceInvoiceController extends Controller
                 $serviceInvoiceItem->field_groups = $field_group_val;
                 $item_count++;
 
-                if ($serviceInvoiceItem->serviceItem->subCategory->attachment) {
+                if (isset($serviceInvoiceItem->serviceItem->subCategory->attachment) && $serviceInvoiceItem->serviceItem->subCategory->attachment) {
                     $additional_image_name = $serviceInvoiceItem->serviceItem->subCategory->attachment->name;
                     $additional_image_path = base_path('storage/app/public/service-invoice/service-item-sub-category/attachments/');
                 }

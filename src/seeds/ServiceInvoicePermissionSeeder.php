@@ -183,9 +183,15 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 				'name' => 'gst-export',
 				'display_name' => 'GST Export',
 			],
-
 			3058 => [
-				'display_order' => 14,
+				'display_order' => 5,
+				'parent_id' => 3053,
+				'name' => 'cndn-export',
+				'display_name' => 'CNDN Export',
+			],
+
+			3063 => [
+				'display_order' => 18,
 				'parent_id' => 3040,
 				'name' => 'service-invoice-irn-cancel',
 				'display_name' => 'Service Invoice IRN Cancelation',
