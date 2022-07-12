@@ -4892,7 +4892,7 @@ class ServiceInvoiceController extends Controller
 
     }
 
-    public function reprintInvoicePdf($service_invoice_id) {
+    public function reprintInvoicePdf($service_invoice_id,$gst_number) {
         $errors = [];
 
         $service_invoice = $service_invoice_pdf = ServiceInvoice::with([
@@ -4951,17 +4951,9 @@ class ServiceInvoiceController extends Controller
         // Set the content type to application/json
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Content-Type: application/json',
-            // 'client_id: 43f4ac36182c5d36c70b3350565071',
             'client_id: ' . $clientid,
             'bdo_authtoken: ' . $bdo_authtoken,
-            // 'bdo_authtoken: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0M2Y0YWMzNjE4MmM1ZDM2YzcwYjMzNTA1NjUwNzEiLCJiZG9fc2VydmljZXR5cGUiOjIsImlhdCI6MTY1MTgyMjU0NSwiZXhwIjoxNjUxOTA4OTQ1fQ.Br3METwfq58caKRhtF1zMSV3IGcj1s-qfl8tCC1WqAM',
-            // 'Gstin: ' . $service_invoice->outlets ? ($service_invoice->outlets->gst_number ? $service_invoice->outlets->gst_number : 'N/A') : 'N/A',
-            // 'Gstin: 33AAGCT6376B1ZF',
-            // 'action: GENIRN',
-
-            // "client_id: $clientid",
-            // "bdo_authtoken: $bdo_authtoken",
-            'Gstin: $gst_in_param',
+            'Gstin: ' . $gst_number,
         ));
 
         //Return response instead of outputting
