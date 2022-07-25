@@ -2270,6 +2270,8 @@ class ServiceInvoiceController extends Controller
 
         $tax_list = Tax::where('company_id', 1)->orderBy('id', 'ASC')->get();
         $this->data['tax_list'] = $tax_list;
+
+        $this->data['order_info'] = TVSOneOrder::where('invoice_number',$service_invoice->number)->first();
         // dd($this->data['tax_list']);
         $path = storage_path('app/public/service-invoice-pdf/');
         $pathToFile = $path . '/' . $service_invoice->number . '.pdf';
