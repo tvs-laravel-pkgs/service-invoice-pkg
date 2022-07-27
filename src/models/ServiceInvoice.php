@@ -2046,7 +2046,7 @@ class ServiceInvoice extends Model
                         }
 
                     }
-                    dump($generateNumber);
+                    // dump($generateNumber);
                     // dd($status);
 
                     $approval_status = Entity::select('entities.name')->where('company_id', $job->company_id)->where('entity_type_id', 18)->first();
