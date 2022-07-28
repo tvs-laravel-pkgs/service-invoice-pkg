@@ -3941,7 +3941,7 @@ class ServiceInvoiceController extends Controller
                                 $address->name = 'Primary Address_' . $customer_data['RECID'];
                                 // $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
                                 // $bdo_trade = null;
-                                $bdo_legal = null;
+                                // $bdo_legal = null;
                                 $bdo_address = null;
                                 if(!empty($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available'){
                                     $bdo_response = Customer::getGstDetail($customer_data['GST_NUMBER']);
@@ -3954,8 +3954,13 @@ class ServiceInvoiceController extends Controller
                                     }
 
                                     // $bdo_trade = $bdo_response->original['trade_name'];
-                                    $bdo_legal = $bdo_response->original['legal_name'];
+                                    // $bdo_legal = $bdo_response->original['legal_name'];
                                     $bdo_address = $bdo_response->original['address'];
+
+                                    $customer->name = $bdo_response->original['legal_name'];
+                                    $customer->trade_name = $bdo_response->original['trade_name'];
+                                    $customer->legal_name = $bdo_response->original['legal_name'];
+                                    $customer->save();
                                 }
 
                                 if(!empty($bdo_address)){
@@ -3975,11 +3980,11 @@ class ServiceInvoiceController extends Controller
                                 $customer_address[] = $address; 
 
                                 // if(!empty($bdo_trade)){
-                                if(!empty($bdo_legal)){
-                                    // $customer->name = $bdo_trade;
-                                    $customer->name = $bdo_legal;
-                                    $customer->save();
-                                }
+                                // if(!empty($bdo_legal)){
+                                //     // $customer->name = $bdo_trade;
+                                //     $customer->name = $bdo_legal;
+                                //     $customer->save();
+                                // }
                             }
                         }
                         if($address_count == 0){
@@ -4003,7 +4008,7 @@ class ServiceInvoiceController extends Controller
                             $address->name = 'Primary Address_' . $api_customer_data['RECID'];
                             // $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
                             // $bdo_trade = null;
-                            $bdo_legal = null;
+                            // $bdo_legal = null;
                             $bdo_address = null;
                             if(!empty($api_customer_data['GST_NUMBER']) && $api_customer_data['GST_NUMBER'] != 'Not available'){
                                 $bdo_response = Customer::getGstDetail($api_customer_data['GST_NUMBER']);
@@ -4016,8 +4021,13 @@ class ServiceInvoiceController extends Controller
                                 }
 
                                 // $bdo_trade = $bdo_response->original['trade_name'];
-                                $bdo_legal = $bdo_response->original['legal_name'];
+                                // $bdo_legal = $bdo_response->original['legal_name'];
                                 $bdo_address = $bdo_response->original['address'];
+
+                                $customer->name = $bdo_response->original['legal_name'];
+                                $customer->trade_name = $bdo_response->original['trade_name'];
+                                $customer->legal_name = $bdo_response->original['legal_name'];
+                                $customer->save();
                             }
 
                             if(!empty($bdo_address)){
@@ -4039,10 +4049,10 @@ class ServiceInvoiceController extends Controller
                             $customer_address[] = $address;
 
                             // if(!empty($bdo_trade)){
-                            if(!empty($bdo_legal)){
-                                $customer->name = $bdo_legal;
-                                $customer->save();
-                            }
+                            // if(!empty($bdo_legal)){
+                            //     $customer->name = $bdo_legal;
+                            //     $customer->save();
+                            // }
                         }else{
                             $customer_address = [];
                         }
