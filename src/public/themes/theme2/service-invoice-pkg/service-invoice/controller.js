@@ -957,21 +957,28 @@ app.component('serviceInvoiceForm', {
                                     $('#submit').show();
                                     $('.add_item_btn').show();
                                 } else {
-                                    $noty = new Noty({
-                                        type: 'success',
-                                        layout: 'topRight',
-                                        text: 'GSTIN Registred Legal Name: ' + response.data.legal_name + ', and  GSTIN Registred Trade Name: ' + response.data.trade_name,
-                                        animation: {
-                                            speed: 1000 // unavailable - no need
-                                        },
-                                    }).show();
-                                    setTimeout(function () {
-                                        $noty.close();
-                                    }, 15000);
-                                    custom_noty('error', 'Customer Name Not Matched!');
-                                    custom_noty('error', 'Not Allow To Add Invoives!');
-                                    $('#submit').hide();
-                                    $('.add_item_btn').hide();
+                                    // $noty = new Noty({
+                                    //     type: 'success',
+                                    //     layout: 'topRight',
+                                    //     text: 'GSTIN Registred Legal Name: ' + response.data.legal_name + ', and  GSTIN Registred Trade Name: ' + response.data.trade_name,
+                                    //     animation: {
+                                    //         speed: 1000 // unavailable - no need
+                                    //     },
+                                    // }).show();
+                                    // setTimeout(function () {
+                                    //     $noty.close();
+                                    // }, 15000);
+                                    // custom_noty('error', 'Customer Name Not Matched!');
+                                    // custom_noty('error', 'Not Allow To Add Invoives!');
+                                    // $('#submit').hide();
+                                    // $('.add_item_btn').hide();
+
+                                    if(response.data.gst_status && response.data.gst_status != 'ACT'){
+                                        custom_noty('error', 'In Active GSTIN!');
+                                        custom_noty('error', 'Not Allow To Add Invoives!');
+                                        $('#submit').hide();
+                                        $('.add_item_btn').hide();   
+                                    }
                                 }
                             } else {
                                 custom_noty('error', response.data.error);

@@ -3942,7 +3942,7 @@ class ServiceInvoiceController extends Controller
                                 // $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
                                 // $bdo_trade = null;
                                 // $bdo_legal = null;
-                                $bdo_address = null;
+                                // $bdo_address = null;
                                 if(!empty($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available'){
                                     $bdo_response = Customer::getGstDetail($customer_data['GST_NUMBER']);
                                     if (isset($bdo_response->original) && $bdo_response->original['success'] == false) {
@@ -3955,19 +3955,21 @@ class ServiceInvoiceController extends Controller
 
                                     // $bdo_trade = $bdo_response->original['trade_name'];
                                     // $bdo_legal = $bdo_response->original['legal_name'];
-                                    $bdo_address = $bdo_response->original['address'];
+                                    // $bdo_address = $bdo_response->original['address'];
 
-                                    $customer->name = $bdo_response->original['legal_name'];
+                                    // $customer->name = $bdo_response->original['legal_name'];
                                     $customer->trade_name = $bdo_response->original['trade_name'];
                                     $customer->legal_name = $bdo_response->original['legal_name'];
                                     $customer->save();
                                 }
 
-                                if(!empty($bdo_address)){
-                                    $address->address_line1 = $bdo_address;
-                                }else{
-                                    $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
-                                }
+                                // if(!empty($bdo_address)){
+                                //     $address->address_line1 = $bdo_address;
+                                // }else{
+                                //     $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
+                                // }
+                                $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
+
                                 $city = City::where('name', $customer_data['CITY'])->first();
                                 $state = State::where('code', $customer_data['STATE'])->first();
                                 $address->country_id = $state ? $state->country_id : null;
@@ -4009,7 +4011,7 @@ class ServiceInvoiceController extends Controller
                             // $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
                             // $bdo_trade = null;
                             // $bdo_legal = null;
-                            $bdo_address = null;
+                            // $bdo_address = null;
                             if(!empty($api_customer_data['GST_NUMBER']) && $api_customer_data['GST_NUMBER'] != 'Not available'){
                                 $bdo_response = Customer::getGstDetail($api_customer_data['GST_NUMBER']);
                                 if (isset($bdo_response->original) && $bdo_response->original['success'] == false) {
@@ -4022,19 +4024,21 @@ class ServiceInvoiceController extends Controller
 
                                 // $bdo_trade = $bdo_response->original['trade_name'];
                                 // $bdo_legal = $bdo_response->original['legal_name'];
-                                $bdo_address = $bdo_response->original['address'];
+                                // $bdo_address = $bdo_response->original['address'];
 
-                                $customer->name = $bdo_response->original['legal_name'];
+                                // $customer->name = $bdo_response->original['legal_name'];
                                 $customer->trade_name = $bdo_response->original['trade_name'];
                                 $customer->legal_name = $bdo_response->original['legal_name'];
                                 $customer->save();
                             }
 
-                            if(!empty($bdo_address)){
-                                $address->address_line1 = $bdo_address;
-                            }else{
-                                $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
-                            }
+                            // if(!empty($bdo_address)){
+                            //     $address->address_line1 = $bdo_address;
+                            // }else{
+                            //     $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
+                            // }
+                            $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
+
                             $city = City::where('name', $api_customer_data['CITY'])->first();
                             // if ($city) {
                             $state = State::where('code', $api_customer_data['STATE'])->first();
