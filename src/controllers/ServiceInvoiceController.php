@@ -3881,9 +3881,30 @@ class ServiceInvoiceController extends Controller
                 return response()->json(['success' => false, 'error' => 'Address Not Available!.']);
             }
 
+            $bdo_trade = null;
+            $bdo_address = null;
+            if(!empty($request->data['gst_number']) && $request->data['gst_number'] != 'Not available'){
+                $bdo_response = Customer::getGstDetail($request->data['gst_number']);
+                if (isset($bdo_response->original) && $bdo_response->original['success'] == false) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'BDO Error',
+                        'errors' => [$bdo_response->original['error']]
+                    ]);
+                }
+
+                $bdo_trade = $bdo_response->original['trade_name'];
+                $bdo_address = $bdo_response->original['address'];
+            }
+
             $customer = Customer::firstOrNew(['code' => $request->data['code'],'company_id'=>Auth::user()->company_id]);
             $customer->company_id = Auth::user()->company_id;
-            $customer->name = $request->data['name'];
+            // $customer->name = $request->data['name'];
+            if(!empty($bdo_trade)){
+                $customer->name = $bdo_trade;
+            }else{
+                $customer->name = $request->data['name'];
+            }
             $customer->cust_group = empty($request->data['cust_group']) ? null : $request->data['cust_group'];
             $customer->gst_number = empty($request->data['gst_number']) ? null : $request->data['gst_number'];
             $customer->pan_number = empty($request->data['pan_number']) ? null : $request->data['pan_number'];
@@ -3918,7 +3939,12 @@ class ServiceInvoiceController extends Controller
                                 $address->address_of_id = 24;
                                 $address->address_type_id = 40;
                                 $address->name = 'Primary Address_' . $customer_data['RECID'];
-                                $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
+                                // $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
+                                if(!empty($bdo_address)){
+                                    $address->address_line1 = $bdo_address;
+                                }else{
+                                    $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
+                                }
                                 $city = City::where('name', $customer_data['CITY'])->first();
                                 $state = State::where('code', $customer_data['STATE'])->first();
                                 $address->country_id = $state ? $state->country_id : null;
@@ -3950,7 +3976,12 @@ class ServiceInvoiceController extends Controller
                             $address->address_of_id = 24;
                             $address->address_type_id = 40;
                             $address->name = 'Primary Address_' . $api_customer_data['RECID'];
-                            $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
+                            // $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
+                            if(!empty($bdo_address)){
+                                $address->address_line1 = $bdo_address;
+                            }else{
+                                $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
+                            }
                             $city = City::where('name', $api_customer_data['CITY'])->first();
                             // if ($city) {
                             $state = State::where('code', $api_customer_data['STATE'])->first();
