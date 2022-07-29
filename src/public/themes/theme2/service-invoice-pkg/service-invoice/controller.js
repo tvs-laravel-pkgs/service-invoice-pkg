@@ -556,6 +556,8 @@ app.component('serviceInvoiceForm', {
         self.type_id = $routeParams.type_id;
         self.enable_service_item_md_change = true;
         var attachment_removal_ids = [];
+        self.legal_confirmation_required = false;
+        self.legal_confirmation_accepted = false;
 
         $http.get(
             $form_data_url
@@ -972,6 +974,11 @@ app.component('serviceInvoiceForm', {
                                     // custom_noty('error', 'Not Allow To Add Invoives!');
                                     // $('#submit').hide();
                                     // $('.add_item_btn').hide();
+
+                                    if(self.service_invoice.to_account_type_id == 1440 && self.customer){
+                                        //CUSTOMER
+                                        self.legal_confirmation_required = true;
+                                    }
 
                                     if(response.data.gst_status && response.data.gst_status != 'ACT'){
                                         custom_noty('error', 'In Active GSTIN!');
@@ -1770,6 +1777,13 @@ app.component('serviceInvoiceForm', {
                 },
             },
             submitHandler: function (form) {
+                console.log("self.legal_confirmation_required")
+                console.log(self.legal_confirmation_required)
+                if(self.legal_confirmation_required == true){
+                    $('#legal-accpet-confirmation-modal').modal('show');
+                    return;
+                }
+
                 if (self.service_invoice.final_amount == parseInt(0).toFixed(2)) {
                     custom_noty('success', 'Service Invoice total must not be 0');
                 } else {

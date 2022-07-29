@@ -25,6 +25,7 @@
     <form id="form" enctype="multipart-formdata" autocomplete="off">
         <input type="hidden" name="id" value="{{$ctrl.service_invoice.id}}">
         <input type="hidden" name="type_id" value="{{$ctrl.type_id}}">
+        <input type="hidden" name="legal_confirmation_accepted" value="{{$ctrl.legal_confirmation_accepted}}">
         <!-- Page Main Content -->
         <div class="page-main-content form-content type2">
             <div class="container">
@@ -716,4 +717,24 @@
         </form>
     </div><!-- Modal Dialog -->
 </div><!-- Modal -->
+
+<div class="modal modal-center fade" id="legal-accpet-confirmation-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-sm modal-green" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close ripple" data-dismiss="modal" aria-label="Close"><i class="icon ion-md-close"></i></button>
+                <h4 class="modal-title" id="myModalLabel">Information !</h4>
+                <div class="modal-icon">
+                </div><!-- Modal Icon -->
+            </div><!-- Modal Header -->
+            <div class="modal-body">
+                <p>Invoice will be created in this name {{$ctrl.customer.name}}. Any change required please reach out to MDM Team.</p>
+            </div><!-- Modal Body -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" ng-click="$ctrl.legal_confirmation_required = false; $ctrl.legal_confirmation_accepted = true;" data-dismiss="modal">Done</button>
+            </div><!-- Modal Footer -->
+        </div><!-- Modal Content -->
+    </div><!-- Modal Dialog -->
+</div><!-- Modal Content -->
+
 <script src="./public/theme/js/imageuploadify.min.js"></script>
