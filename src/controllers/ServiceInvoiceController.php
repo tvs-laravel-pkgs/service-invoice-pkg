@@ -336,10 +336,15 @@ class ServiceInvoiceController extends Controller
                 }
                 if ($service_invoice_list->status_id == '1') {
                     $next_status = 2; //ApprovalLevel::where('approval_type_id', 1)->pluck('current_status_id')->first();
-                    $output .= '<a href="javascript:;" data-toggle="modal" data-target="#send-to-approval"
-					onclick="angular.element(this).scope().sendApproval(' . $service_invoice_list->id . ',' . $next_status . ')" title="Send for Approval">
-					<img src="' . $img_approval . '" alt="Send for Approval" class="img-responsive">
-					</a>';
+     //                $output .= '<a href="javascript:;" data-toggle="modal" data-target="#send-to-approval"
+					// onclick="angular.element(this).scope().sendApproval(' . $service_invoice_list->id . ',' . $next_status . ')" title="Send for Approval">
+					// <img src="' . $img_approval . '" alt="Send for Approval" class="img-responsive">
+					// </a>';
+
+                    $output .= '<a href="javascript:;" data-toggle="modal"
+                    onclick="angular.element(this).scope().checkLegalConfirmation(' . $service_invoice_list->id .  ',' . $next_status . ')" title="Send for Approval">
+                    <img src="' . $img_approval . '" alt="Send for Approval" class="img-responsive">
+                    </a>';
                 }
                 return $output;
             })
@@ -2340,6 +2345,7 @@ class ServiceInvoiceController extends Controller
             'serviceItemSubCategory',
             'serviceItemCategory',
             'serviceItemSubCategory.serviceItemCategory',
+            'gstInLog',
         ])->find($id);
         $service_invoice->customer;
         if (!$service_invoice) {
@@ -2502,6 +2508,14 @@ class ServiceInvoiceController extends Controller
         $this->data['action'] = 'View';
         $this->data['success'] = true;
         $this->data['service_invoice'] = $service_invoice;
+
+        $this->data['check_legal_confirmation'] = false;
+        if(!$service_invoice->gstInlog && $service_invoice->customer->trade_name && $service_invoice->customer->legal_name){
+            if (trim(strtolower($service_invoice->customer->legal_name)) != trim(strtolower($service_invoice->customer->name)) && trim(strtolower($service_invoice->customer->legal_name)) != trim(strtolower($service_invoice->customer->name))) {
+                $this->data['check_legal_confirmation'] = true;
+            }
+        }
+
         return response()->json($this->data);
     }
 
@@ -2526,6 +2540,14 @@ class ServiceInvoiceController extends Controller
                                 return response()->json(['success' => false, 'errors' => ['Customer Name Not Matched with GSTIN Registration!']]);
                             }
                         }
+
+                        if(isset($customer_trande_name_check->original['gst_status']) && $customer_trande_name_check->original['gst_status'] != 'ACT'){
+                            return response()->json([
+                                'success' => false,
+                                'errors' => ['In Active GSTIN.'],
+                            ]);
+                        }
+
                         $send_approval->status_id = 2; //$request->send_to_approval;
                         $send_approval->updated_by_id = Auth()->user()->id;
                         $send_approval->updated_at = date("Y-m-d H:i:s");
@@ -2595,6 +2617,14 @@ class ServiceInvoiceController extends Controller
                                         return response()->json(['success' => false, 'errors' => ['Customer Name Not Matched with GSTIN Registration!']]);
                                     }
                                 }
+
+                                if(isset($customer_trande_name_check->original['gst_status']) && $customer_trande_name_check->original['gst_status'] != 'ACT'){
+                                    return response()->json([
+                                        'success' => false,
+                                        'errors' => ['In Active GSTIN.'],
+                                    ]);
+                                }
+
                                 $send_approval->status_id = $next_status;
                                 $send_approval->updated_by_id = Auth()->user()->id;
                                 $send_approval->updated_at = date("Y-m-d H:i:s");
@@ -6018,5 +6048,38 @@ class ServiceInvoiceController extends Controller
             'success' => true,
             'file_name_path' => url('storage/app/public/service-invoice-pdf') . '/' . $service_invoice->number . '.pdf',
         ]);
+    }
+
+    public function getCustomerGstDetail(Request $request){
+
+        $service_invoice = ServiceInvoice::find($request->id);
+        $customer = Customer::find($service_invoice->customer->id);
+        $this->data['check_legal_confirmation']  = false;
+        if($service_invoice->address->gst_number){    
+            $bdo_response = Customer::getGstDetail($service_invoice->address->gst_number);
+
+            if ($bdo_response->original['success'] == false) {
+                return response()->json([
+                    'success' => false,
+                    'errors' => [$bdo_response->original['error']]
+                ]);
+            }
+
+            $customer->trade_name = $bdo_response->original['trade_name'];
+            $customer->legal_name = $bdo_response->original['legal_name'];
+            $customer->save();
+
+            if(!$service_invoice->gstInlog){
+                if (trim(strtolower($customer->legal_name)) != trim(strtolower($customer->name)) && trim(strtolower($customer->trade_name)) != trim(strtolower($customer->name))) {
+                    $this->data['check_legal_confirmation'] = true;
+                }
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $this->data,
+        ]);
+
     }
 }

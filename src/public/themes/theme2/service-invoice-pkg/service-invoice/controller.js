@@ -455,6 +455,40 @@ app.component('serviceInvoiceList', {
             dataTable.draw();
         }
 
+        $scope.checkLegalConfirmation = function (service_invoice_id,send_to_approval) {
+            self.service_invoice_id = service_invoice_id;
+            self.send_to_approval = send_to_approval;
+
+            $.ajax({
+                    url: laravel_routes['getCustomerGstDetail'],
+                    method: "post",
+                    data:{
+                        'id' :service_invoice_id,
+                    },
+                })
+                .done(function (res) {
+                    if (!res.success) {
+                        custom_noty('error', res.errors);
+                    } else {
+                        if(res.data.check_legal_confirmation == true){
+                            $('#legal-accept-confirmation-modal').modal('show');
+                        }else{
+                            $('#send-to-approval').modal('show');
+                            $scope.sendApproval(service_invoice_id,send_to_approval)
+                        }
+                    }
+                })
+                .fail(function (xhr) {
+                    console.log(xhr);
+                });
+        }
+
+        $scope.legalConfirmHandler = function(){
+            $('#send-to-approval').modal('show');
+            $scope.sendApproval(self.service_invoice_id,self.send_to_approval)
+
+        }
+
         $scope.sendApproval = function ($id, $send_to_approval) {
             $('#approval_id').val($id);
             $('#next_status').val($send_to_approval);
@@ -1849,6 +1883,9 @@ app.component('serviceInvoiceView', {
         self.angular_routes = angular_routes;
         self.type_id = $routeParams.type_id;
         self.enable_service_item_md_change = true;
+        self.show_legal_confirmation_modal = false;
+        self.legal_confirmation_accepted = false;
+
         self.ref_attachements_url_link = ref_service_invoice_attachements_url;
         if (self.type_id == 1060) {
             self.minus_value = '-';
@@ -1878,6 +1915,9 @@ app.component('serviceInvoiceView', {
             self.service_invoice_status = response.data.service_invoice_status;
             self.tcs_limit = response.data.tcs_limit;
             self.action = response.data.action;
+            if(response.data.check_legal_confirmation == true){
+                self.show_legal_confirmation_modal = true;
+            }
             console.log(self.service_invoice);
             if (self.action == 'View') {
                 $timeout(function () {
@@ -2216,77 +2256,185 @@ app.component('serviceInvoiceView', {
 
         }
 
+        $scope.sentToApprovalHandler = function(){
+            // alert();
+            $.ajax({
+                url: laravel_routes['getCustomerGstDetail'],
+                method: "post",
+                data:{
+                    'id' : self.service_invoice.id,
+                },
+            })
+            .done(function (res) {
+                if (!res.success) {
+                    custom_noty('error', res.errors);
+                } else {
+                    if(res.data.check_legal_confirmation == true){
+                        $('#legal-accept-confirmation-modal').modal('show');
+                    }else{
+                        $scope.submitForm();
+                    }
+                }
+            })
+            .fail(function (xhr) {
+                console.log(xhr);
+            });
+        }
 
-        var form_id = '#form';
-        var v = jQuery(form_id).validate({
-            ignore: '',
-            submitHandler: function (form) {
-                // var submitButtonValue =  $(this.submitButton).attr("data-id");
-                $('#submit').button('loading');
-                $.ajax({
-                    url: laravel_routes['saveApprovalStatus'],
-                    method: "POST",
-                    data: {
-                        id: $('#service_invoice_id').val(),
-                        send_to_approval: $('#send_to_approval').val(),
-                    },
-                    headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                    },
-                })
-                    .done(function (res) {
-                        // console.log(res.success);
-                        if (!res.success) {
-                            $('#submit').button('reset');
-                            var errors = '';
-                            for (var i in res.errors) {
-                                errors += '<li>' + res.errors[i] + '</li>';
-                            }
-                            $noty = new Noty({
-                                type: 'success',
-                                layout: 'topRight',
-                                text: errors,
-                                animation: {
-                                    speed: 500 // unavailable - no need
-                                },
-                            }).show();
-                            setTimeout(function () {
-                                $noty.close();
-                            }, 3000);
-                        } else {
-                            // $('#back_button').addClass("disabled");
-                            // $('#edit_button').addClass("disabled");
-                            $noty = new Noty({
-                                type: 'success',
-                                layout: 'topRight',
-                                text: res.message,
-                                animation: {
-                                    speed: 500 // unavailable - no need
-                                },
-                            }).show();
-                            setTimeout(function () {
-                                $noty.close();
-                            }, 3000);
-                            $location.path('/service-invoice-pkg/service-invoice/list');
-                            $scope.$apply()
-                        }
+
+        $scope.submitForm = function(){
+            var form_id = '#form';
+            // var v = jQuery(form_id).validate({
+                // ignore: '',
+                // submitHandler: function (form) {
+                    
+
+                    // var submitButtonValue =  $(this.submitButton).attr("data-id");
+                    $('#submit').button('loading');
+                    $.ajax({
+                        url: laravel_routes['saveApprovalStatus'],
+                        method: "POST",
+                        data: {
+                            id: $('#service_invoice_id').val(),
+                            send_to_approval: $('#send_to_approval').val(),
+                        },
+                        headers: {
+                            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        },
                     })
-                    .fail(function (xhr) {
-                        $('#submit').button('reset');
-                        $noty = new Noty({
-                            type: 'error',
-                            layout: 'topRight',
-                            text: 'Something went wrong at server',
-                            animation: {
-                                speed: 500 // unavailable - no need
-                            },
-                        }).show();
-                        setTimeout(function () {
-                            $noty.close();
-                        }, 3000);
-                    });
+                        .done(function (res) {
+                            // console.log(res.success);
+                            if (!res.success) {
+                                $('#submit').button('reset');
+                                var errors = '';
+                                for (var i in res.errors) {
+                                    errors += '<li>' + res.errors[i] + '</li>';
+                                }
+                                $noty = new Noty({
+                                    type: 'success',
+                                    layout: 'topRight',
+                                    text: errors,
+                                    animation: {
+                                        speed: 500 // unavailable - no need
+                                    },
+                                }).show();
+                                setTimeout(function () {
+                                    $noty.close();
+                                }, 3000);
+                            } else {
+                                // $('#back_button').addClass("disabled");
+                                // $('#edit_button').addClass("disabled");
+                                $noty = new Noty({
+                                    type: 'success',
+                                    layout: 'topRight',
+                                    text: res.message,
+                                    animation: {
+                                        speed: 500 // unavailable - no need
+                                    },
+                                }).show();
+                                setTimeout(function () {
+                                    $noty.close();
+                                }, 3000);
+                                $location.path('/service-invoice-pkg/service-invoice/list');
+                                $scope.$apply()
+                            }
+                        })
+                        .fail(function (xhr) {
+                            $('#submit').button('reset');
+                            $noty = new Noty({
+                                type: 'error',
+                                layout: 'topRight',
+                                text: 'Something went wrong at server',
+                                animation: {
+                                    speed: 500 // unavailable - no need
+                                },
+                            }).show();
+                            setTimeout(function () {
+                                $noty.close();
+                            }, 3000);
+                        });
 
-            },
-        });
+                // },
+            // });
+        }
+
+
+
+        // var form_id = '#form';
+        // var v = jQuery(form_id).validate({
+        //     ignore: '',
+        //     submitHandler: function (form) {
+        //         // if(self.show_legal_confirmation_modal == true){
+        //         //     $('#legal-accept-confirmation-modal').modal('show');
+        //         //     return;
+        //         // }
+
+        //         // var submitButtonValue =  $(this.submitButton).attr("data-id");
+        //         $('#submit').button('loading');
+        //         $.ajax({
+        //             url: laravel_routes['saveApprovalStatus'],
+        //             method: "POST",
+        //             data: {
+        //                 id: $('#service_invoice_id').val(),
+        //                 send_to_approval: $('#send_to_approval').val(),
+        //             },
+        //             headers: {
+        //                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        //             },
+        //         })
+        //             .done(function (res) {
+        //                 // console.log(res.success);
+        //                 if (!res.success) {
+        //                     $('#submit').button('reset');
+        //                     var errors = '';
+        //                     for (var i in res.errors) {
+        //                         errors += '<li>' + res.errors[i] + '</li>';
+        //                     }
+        //                     $noty = new Noty({
+        //                         type: 'success',
+        //                         layout: 'topRight',
+        //                         text: errors,
+        //                         animation: {
+        //                             speed: 500 // unavailable - no need
+        //                         },
+        //                     }).show();
+        //                     setTimeout(function () {
+        //                         $noty.close();
+        //                     }, 3000);
+        //                 } else {
+        //                     // $('#back_button').addClass("disabled");
+        //                     // $('#edit_button').addClass("disabled");
+        //                     $noty = new Noty({
+        //                         type: 'success',
+        //                         layout: 'topRight',
+        //                         text: res.message,
+        //                         animation: {
+        //                             speed: 500 // unavailable - no need
+        //                         },
+        //                     }).show();
+        //                     setTimeout(function () {
+        //                         $noty.close();
+        //                     }, 3000);
+        //                     $location.path('/service-invoice-pkg/service-invoice/list');
+        //                     $scope.$apply()
+        //                 }
+        //             })
+        //             .fail(function (xhr) {
+        //                 $('#submit').button('reset');
+        //                 $noty = new Noty({
+        //                     type: 'error',
+        //                     layout: 'topRight',
+        //                     text: 'Something went wrong at server',
+        //                     animation: {
+        //                         speed: 500 // unavailable - no need
+        //                     },
+        //                 }).show();
+        //                 setTimeout(function () {
+        //                     $noty.close();
+        //                 }, 3000);
+        //             });
+
+        //     },
+        // });
     }
 });

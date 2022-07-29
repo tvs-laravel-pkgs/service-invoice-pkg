@@ -206,6 +206,10 @@ class ServiceInvoice extends Model
         return $this->belongsTo('App\Company', 'company_id', 'id');
     }
 
+    public function gstInLog() {
+        return $this->hasOne('App\GstinLog', 'entity_id')->where('type_id', 221);
+    }
+
     public static function createFromObject($record_data, $company = null)
     {
         if (!$company) {
