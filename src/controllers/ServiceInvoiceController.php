@@ -47,7 +47,7 @@ use QRCode;
 use Session;
 use URL;
 use Validator;
-use App\GstInLog;
+use App\GstinLog;
 use Yajra\Datatables\Datatables;
 
 class ServiceInvoiceController extends Controller
@@ -1302,9 +1302,9 @@ class ServiceInvoiceController extends Controller
                 $gst_log_req = new Request();
                 $gst_log_req->setMethod('POST');
                 $gst_log_req->request->add(['type_id' => 221]);
-                $gst_log_req->request->add(['entity_type_id' => $service_invoice->id]);
+                $gst_log_req->request->add(['entity_id' => $service_invoice->id]);
                 $gst_log_req->request->add(['remarks' => 'test']);
-                $gst_log_res = GstInLog::saveGstLog($gst_log_req);
+                $gst_log_res = GstinLog::saveGstLog($gst_log_req);
                 if(isset($gst_log_res->original['success']) && $gst_log_res->original['success'] == false){
                     return response()->json([
                         'success' => false,
