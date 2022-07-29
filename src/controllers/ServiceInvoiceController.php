@@ -1303,6 +1303,7 @@ class ServiceInvoiceController extends Controller
                 $gst_log_req->setMethod('POST');
                 $gst_log_req->request->add(['type_id' => 221]);
                 $gst_log_req->request->add(['entity_type_id' => $service_invoice->id]);
+                $gst_log_req->request->add(['remarks' => 'test']);
                 $gst_log_res = GstInLog::saveGstLog($gst_log_req);
                 if(isset($gst_log_res->original['success']) && $gst_log_res->original['success'] == false){
                     return response()->json([
