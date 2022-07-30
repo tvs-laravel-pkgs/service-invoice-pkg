@@ -310,14 +310,14 @@
                 </div><!-- Modal Icon -->
             </div><!-- Modal Header -->
             <div class="modal-body">
-                <!-- <h6>Customer Name : {{$ctrl.customer.name}}</h6> -->
-                <!-- <h6>Trade Name : {{$ctrl.customer.trade_name}}</h6> -->
-                <!-- <h6>Legal Name : {{$ctrl.customer.legal_name}}</h6> -->
-                <p><b>Invoice will be created in this name {{$ctrl.customer.name}}. Any change required please reach out to MDM Team.</b></p>
+                <h6>Ax Customer Legal Name : {{$ctrl.invoice_customer.name}}</h6>
+                <h6>Trade Name : {{$ctrl.invoice_customer.trade_name}}</h6>
+                <h6>Legal Name : {{$ctrl.invoice_customer.legal_name}}</h6>
+                <p><b>Invoice will be created in this Ax Customer Legal Name. Any change required please reach out to MDM Team.</b></p>
             </div><!-- Modal Body -->
             <div class="modal-footer">
                  <button type="button" data-dismiss="modal" aria-label="Close" class="btn btn-primary btn-bordered">Cancel</button>
-                <button type="button" class="btn btn-default" ng-click="$ctrl.legal_confirmation_accepted = true; legalConfirmHandler()" data-dismiss="modal">Done</button>
+                <button type="button" class="btn btn-default" ng-click="$ctrl.legal_confirmation_accepted = true; legalConfirmHandler()" data-dismiss="modal">Confirm</button>
             </div><!-- Modal Footer -->
         </div><!-- Modal Content -->
     </div><!-- Modal Dialog -->
