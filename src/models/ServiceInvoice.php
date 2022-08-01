@@ -981,7 +981,7 @@ class ServiceInvoice extends Model
             $eInvoiceConfig = EInvoiceConfig::where('config_id', 130161)    // TVSONE CN Credit to Axapta
                 ->where('company_id', $this->company_id)
                 ->orderBy('id', 'DESC')
-                ->plcuk('status')
+                ->pluck('status')
                 ->first();
             if ($eInvoiceConfig == 1) {
                 $params['TVSHSNCode'] = '';
