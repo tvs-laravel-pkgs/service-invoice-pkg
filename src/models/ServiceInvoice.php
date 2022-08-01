@@ -25,6 +25,7 @@ use App\Sbu;
 use App\State;
 use App\User;
 use App\Vendor;
+use App\EInvoiceConfig;
 use Auth;
 use Carbon\Carbon;
 use DB;
@@ -975,6 +976,34 @@ class ServiceInvoice extends Model
                 $this->exportRowToAxapta($params);
             }
         }
+        // TVSONE CN Data to Store in Axapta table
+        if ($this->is_discount_avail == 1) {
+            $eInvoiceConfig = EInvoiceConfig::where('config_id', 130161)    // TVSONE CN Credit to Axapta
+                ->where('company_id', $this->company_id)
+                ->orderBy('id', 'DESC')
+                ->plcuk('status')
+                ->first();
+            if ($eInvoiceConfig == 1) {
+                $params['TVSHSNCode'] = '';
+                $params['TaxGroup'] = '';
+                $params['LineNum'] = '1';
+                $params['Voucher'] = 'V';
+                $params['AccountType'] = 'Customer';
+                $params['LedgerDimension'] = $this->customer->code;
+                $params['AmountCurDebit'] = $this->final_amount;
+                $params['AmountCurCredit'] = 0;
+                $this->exportRowToAxapta($params);
+                
+                $params['LineNum'] = '2';
+                $params['Voucher'] = 'D';
+                $params['AccountType'] = 'Vendor';
+                $params['LedgerDimension'] = 'V-' . $this->customer->code;
+                $params['AmountCurDebit'] = 0;
+                $params['AmountCurCredit'] = $this->final_amount;
+                $this->exportRowToAxapta($params);
+            }
+        }
+        // TVSONE CN Data to Store in Axapta table
 
         return [
             'success' => true,
