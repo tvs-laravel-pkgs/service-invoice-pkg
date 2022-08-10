@@ -59,6 +59,7 @@
     var get_service_item_filter_url = "{{route('getServiceItemFilter')}}";
     var search_coa_code_url = "{{url('/service-invoice-pkg/service-items/search-coa-code')}}";
     var search_sac_code_url = "{{url('/service-invoice-pkg/service-items/search-sac-code')}}";
+    var get_sub_ledger_url = "{{url('service-invoice-pkg/service-item/get-sub-ledger')}}";
 </script>
 
 <script type="text/javascript">

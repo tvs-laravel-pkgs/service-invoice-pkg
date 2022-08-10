@@ -66,4 +66,5 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 	Route::get('/service-invoice/cancel-irn/{id}', 'ServiceInvoiceController@cancelIrn')->name('cancelIrn');
 	Route::get('/service-invoice/chola-pdf/{id}', 'ServiceInvoiceController@cholaPdfCreate')->name('cholaPdfCreate');
 	Route::get('/service-invoice/reprint-pdf/{id}/{gst_in}', 'ServiceInvoiceController@reprintInvoicePdf')->name('reprintInvoicePdf');
+	Route::get('/service-item/get-sub-ledger/{id}', 'ServiceItemController@getSubLedger')->name('getSubLedger');
 });

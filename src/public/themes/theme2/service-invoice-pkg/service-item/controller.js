@@ -492,5 +492,15 @@ app.component('serviceItemForm', {
                     });
             },
         });
+
+        $scope.getSubLedger = function(coa_code) {
+            if (coa_code) {
+                $http.get(
+                    get_sub_ledger_url + '/' + coa_code
+                ).then(function (response) {
+                    self.sub_ledger_list = response.data.sub_ledger_list;
+                });
+            }
+        };
     }
 });
