@@ -66,3 +66,38 @@
     var gst_report_form_template_url = "{{URL::asset($service_invoice_pkg_prefix .'/public/themes/'.$theme.'/service-invoice-pkg/tcs-gst-report/gst-form.html')}}";
 </script>
 
+
+<script type="text/javascript">
+    var honda_service_invoice_list_template_url = "{{URL::asset($service_invoice_pkg_prefix .'/public/themes/'.$theme.'/service-invoice-pkg/honda-service-invoice/list.html')}}";
+    var honda_service_invoice_list_url = "{{url('#!/service-invoice-pkg/honda-service-invoice/list')}}";
+    var honda_service_invoice_form_template_url = "{{URL::asset($service_invoice_pkg_prefix .'/public/themes/'.$theme.'/service-invoice-pkg/honda-service-invoice/form.html')}}";
+    var honda_service_invoice_view_template_url = "{{URL::asset($service_invoice_pkg_prefix .'/public/themes/'.$theme.'/service-invoice-pkg/honda-service-invoice/view.html')}}";
+    var honda_service_invoice_get_form_data_url = "{{url('/service-invoice-pkg/honda-service-invoice/get-form-data')}}";
+    var honda_service_invoice_get_view_data_url = "{{url('/service-invoice-pkg/honda-service-invoice/view')}}";
+    var service_invoice_form_url = "{{url('#!/service-invoice-pkg/service-invoice/add')}}";
+    var get_service_item_sub_category_url = "{{url('/service-invoice-pkg/get-service-item-sub-category/')}}";
+    var honda_search_branch_url = "{{url('/service-invoice-pkg/honda-branch/search')}}";
+    var get_branch_info_url = "{{url('/service-invoice-pkg/get-branch-details')}}";
+    var service_invoice_search_customer_url = "{{url('/service-invoice-pkg/service-invoice/customer/search')}}";
+    var search_field_url = "{{url('/service-invoice-pkg/field/search')}}";
+    var get_customer_info_url = "{{url('/service-invoice-pkg/service-invoice/get-customer-details')}}";
+    var search_service_item_url = "{{url('/service-invoice-pkg/service-invoice/service-item/search')}}";
+    var get_service_item_info_url = "{{url('/service-invoice-pkg/service-invoice/get-service-item-details')}}";
+    var get_honda_service_invoice_filter_url = "{{route('getHondaServiceInvoiceFilter')}}";
+    //SERVICE-INVOICE-APPROVALS
+    var service_invoice_approval_list_template_url = "{{URL::asset($service_invoice_pkg_prefix .'/public/themes/'.$theme.'/service-invoice-pkg/service-invoice/approval/list.html')}}";
+    var service_invoice_approval_view_template_url = "{{URL::asset($service_invoice_pkg_prefix .'/public/themes/'.$theme.'/service-invoice-pkg/service-invoice/approval/view.html')}}";
+
+    var cn_dn_approval_view_data_url = "{{url('/service-invoice-pkg/service-invoice/cn-dn-approvals/approval/view/')}}";
+    var approval_type_validation_url = "{{route('approvalTypeValid')}}";
+
+    var ref_service_invoice_attachements_url = "{{URL::to('/storage/app/public/service-invoice/attachments')}}";
+    var exportServiceInvoicesToExcelUrl = "{{route('exportServiceInvoicesToExcel')}}";
+    var get_cn_dn_approval_filter_url = "{{route('getApprovalFilter')}}";
+
+    var get_gstin_details = "{{url('service-invoice-pkg/service-invoice/customer/get-gst/')}}";
+     //SERVICE-INVOICE-APPROVALS
+    var honda_service_invoice_approval_list_template_url = "{{URL::asset($service_invoice_pkg_prefix .'/public/themes/'.$theme.'/honda-service-invoice-pkg/service-invoice/approval/list.html')}}";
+    var honda_approval_type_validation_url = "{{route('hondaApprovalTypeValid')}}";
+
+</script>

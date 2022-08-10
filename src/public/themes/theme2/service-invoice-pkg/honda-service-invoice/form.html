@@ -1,0 +1,719 @@
+<!-- Content Wrap -->
+<div class="content-wrap cndn-wrap">
+    <div class="pace" style="display: none;" id="pace">
+        <div class="pace-progress" data-progress-text="100%" data-progress="99" style="transform: translate3d(100%, 0px, 0px);">
+            <div class="pace-progress-inner"></div>
+        </div>
+        <div class="pace-activity"></div>
+    </div>
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="page-header-inner">
+            <div class="page-header-content-left">
+                <div class="page-header-content button-block">
+                    <a href="{{$ctrl.list_url}}" type="button" class="btn-back btn-img"><img class="img-responsive my-tooltip" src="./public/theme/img/content/previous.svg" alt="Back" ng-shortcut="'meta+shift+left'" ng-shortcut-click data-title="ctrl+shift+left" /></a>
+                </div><!-- Page Header Content -->
+                <div class="page-header-content title-block">
+                    <h1 class="title" ng-show="$ctrl.type_id == 1060"><b> Credit Note</b></h1>
+                    <h1 class="title" ng-show="$ctrl.type_id == 1061"><b> Debit Note</b></h1>
+                    <h1 class="title" ng-show="$ctrl.type_id == 1062"><b> Invoice</b></h1>
+                    <!-- <p class="subtitle">Service Item category List / Form</p> -->
+                </div><!-- Page Header Content -->
+            </div><!-- Page Header Content Left -->
+        </div><!-- Page Header Inner -->
+    </div><!-- Page Header -->
+    <form id="form" enctype="multipart-formdata" autocomplete="off">
+        <input type="hidden" name="id" value="{{$ctrl.service_invoice.id}}">
+        <input type="hidden" name="type_id" value="{{$ctrl.type_id}}">
+        <!-- Page Main Content -->
+        <div class="page-main-content form-content type2">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="page-form pb-80">
+                            <div class="flex-wrap">
+                                <ul class="flex-list bordered">
+                                    <li class="flex-md-4">
+                                        <ul class="table-form-list">
+                                            <li ng-if="$ctrl.allow_e_invoice_selection">
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">E-Invoice Selection <span class="mandatory">*</span></label>
+                                                    <div class="table-form-list-control">
+                                                        <md-select class="type-sm" ng-model="$ctrl.service_invoice.e_invoice_registration" placeholder="Select E-Invoice" md-on-close="clearSearchEInvoice()" data-md-container-class="selectdemoSelectHeader">
+                                                            <md-select-header class="demo-select-header">
+                                                                <input ng-model="searchEInvoice" type="search" placeholder="Select E-Invoice Registration" class="demo-header-searchbox md-text">
+                                                            </md-select-header>
+                                                            <md-optgroup label="e_invoice_registration">
+                                                                <md-option ng-value="e_invoice_registration.id" ng-repeat="e_invoice_registration in $ctrl.e_invoice_registration | filter:searchEInvoice">{{e_invoice_registration.name}}</md-option>
+                                                            </md-optgroup>
+                                                        </md-select>
+                                                        <input type="hidden" name="e_invoice_registration" id="e_invoice_registration" value="{{$ctrl.service_invoice.e_invoice_registration}}" class="required">
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                            <li>
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Branch <span class="mandatory">*</span></label>
+                                                    <div class="table-form-list-control">
+                                                        <md-autocomplete class="type-sm" md-items="option in $ctrl.searchBranch($ctrl.branchSearchText)" md-selected-item="$ctrl.service_invoice.branch" md-search-text="$ctrl.branchSearchText" md-item-text="option.code" md-min-length="3" placeholder="Branch code / name" md-selected-item-change="$ctrl.getBranchDetails()" md-search-text-change="$ctrl.branchChanged()" md-autofocus>
+                                                            <md-item-template>
+                                                                <span>
+                                                                    {{option.name}} - {{option.code}}
+                                                                </span>
+                                                            </md-item-template>
+                                                            <md-not-found>
+                                                                No Branch matching "{{$ctrl.branchSearchText}}" were found.
+                                                            </md-not-found>
+                                                        </md-autocomplete>
+                                                        <input type="hidden" name="branch_id" value="{{$ctrl.service_invoice.branch.id}}" class="required">
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                            <li>
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">SBU <span class="mandatory">*</span></label>
+                                                    <div class="table-form-list-control">
+                                                        <md-select class="type-sm" ng-model="$ctrl.service_invoice.sbu_id" placeholder="Select SBU" md-on-close="clearSearchSbu()" data-md-container-class="selectdemoSelectHeader">
+                                                            <md-select-header class="demo-select-header">
+                                                                <input ng-model="searchSbu" type="search" placeholder="Search for a sbu.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                                            </md-select-header>
+                                                            <md-optgroup label="sbu">
+                                                                <md-option ng-value="sbu.id" ng-repeat="sbu in $ctrl.extras.sbu_list | filter:searchSbu">{{sbu.name}}</md-option>
+                                                            </md-optgroup>
+                                                        </md-select>
+                                                        <input type="hidden" name="sbu_id" id="sbu_id" value="{{$ctrl.service_invoice.sbu_id}}" class="required">
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                            <li>
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Category <span class="mandatory">*</span></label>
+                                                    <div class="table-form-list-control">
+                                                        <!-- <md-select class="type-sm" ng-model="$ctrl.service_invoice.service_item_sub_category.category_id" ng-change="getServiceItemSubCategoryByServiceItemCategory($ctrl.service_invoice.service_item_sub_category.category_id)" placeholder="Select Category" md-on-close="clearSearchCategory()" data-md-container-class="selectdemoSelectHeader"> -->
+                                                        <md-select class="type-sm" ng-model="$ctrl.service_invoice.category_id" placeholder="Select Category" md-on-close="clearSearchCategory()" data-md-container-class="selectdemoSelectHeader">
+                                                            <md-select-header class="demo-select-header">
+                                                                <input ng-model="searchCategory" type="search" placeholder="Search for a category.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                                            </md-select-header>
+                                                            <md-optgroup label="category">
+                                                                <md-option ng-value="category.id" ng-repeat="category in $ctrl.extras.category_list | filter:searchCategory">{{category.name}}</md-option>
+                                                            </md-optgroup>
+                                                        </md-select>
+                                                        <input type="hidden" name="category_id" id="category_id" value="{{$ctrl.service_invoice.category_id}}" class="required">
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                            <!-- <li>
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Sub Category <span class="mandatory">*</span></label>
+                                                    <div class="table-form-list-control">
+                                                        <md-select class="type-sm" ng-model="$ctrl.service_invoice.sub_category_id" placeholder="Select sub category" md-on-close="clearSearchSubCategory()" data-md-container-class="selectdemoSelectHeader">
+                                                            <md-select-header class="demo-select-header">
+                                                                <input ng-model="searchSubCategory" type="search" placeholder="Search for a sub category.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                                            </md-select-header>
+                                                            <md-optgroup label="sub_category">
+                                                                <md-option ng-value="sub_category.id" ng-repeat="sub_category in $ctrl.extras.sub_category_list | filter:searchSubCategory">{{sub_category.name}}</md-option>
+                                                            </md-optgroup>
+                                                        </md-select>
+                                                        <input type="hidden" name="sub_category_id" id="sub_category_id" value="{{$ctrl.service_invoice.sub_category_id}}" class="required">
+                                                    </div>
+                                                </div>
+                                            </li> -->
+                                            <li>
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Is Service </label>
+                                                    <div class="table-form-list-control is_service_error">
+                                                        <div class="common-radio-button type-4">
+                                                            <input type="radio" id="is_yes" name="is_service" ng-value="1" value="1" ng-model="$ctrl.service_invoice.is_service" ng-checked="$ctrl.service_invoice.is_service" class="is_service">
+                                                            <label for="is_yes">
+                                                                Yes
+                                                            </label>
+                                                            <input type="radio" id="is_no" name="is_service" ng-value="0" value="0" ng-model="$ctrl.service_invoice.is_service" ng-checked="$ctrl.service_invoice.is_service" class="is_service">
+                                                            <label for="is_no">
+                                                                No
+                                                            </label>
+                                                            <input type="radio" id="is_nontax" name="is_service" ng-value="2" value="2" ng-model="$ctrl.service_invoice.is_service" ng-checked="$ctrl.service_invoice.is_service" class="is_service">
+                                                            <label for="is_nontax">
+                                                                Non-Taxable
+                                                            </label>
+                                                        </div>
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                            <li>
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Reverse Charge Applicability </label>
+                                                    <div class="table-form-list-control reverse_charge_error" style="float: left!important;">
+                                                        <div class="common-radio-button type-4">
+                                                            <input type="radio" id="yes" name="is_reverse_charge_applicable" ng-value="1" value="1" ng-model="$ctrl.service_invoice.is_reverse_charge_applicable" ng-checked="$ctrl.service_invoice.is_reverse_charge_applicable" class="is_reverse_charge">
+                                                            <label for="yes">
+                                                                Yes
+                                                            </label>
+                                                            <input type="radio" id="no" name="is_reverse_charge_applicable" ng-value="0" value="0" ng-model="$ctrl.service_invoice.is_reverse_charge_applicable" ng-checked="!$ctrl.service_invoice.is_reverse_charge_applicable" class="is_reverse_charge">
+                                                            <label for="no">
+                                                                No
+                                                            </label>
+                                                        </div>
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                            <li>
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">PO Reference # </label>
+                                                    <div class="table-form-list-control">
+                                                        <input type="text" ng-model="$ctrl.service_invoice.po_reference_number" name="po_reference_number" class="type-sm form-control" placeholder="Enter PO Ref Number">
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                        </ul><!-- Table Form List -->
+                                    </li>
+                                    <li class="flex-md-4">
+                                        <ul class="table-form-list">
+                                            <input name="invoice_date" type="hidden" ng-model="$ctrl.service_invoice.invoice_date" readonly />
+                                            <li>
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Doc. Date <span class="mandatory">*</span></label>
+                                                    <div class="table-form-list-control doc_date_error">
+                                                        <div class="input-group date type-sm docDatePicker">
+                                                            <input name="document_date" ng-model="$ctrl.service_invoice.document_date" type="text" class="form-control doc_date" placeholder="Select Doc Date" id="doc_date" value="{{$ctrl.service_invoice.document_date}}" readonly />
+                                                            <div class="input-group-addon">
+                                                                <img class="img-responsive" src="public/theme/img/content/calender-gray-icon.svg" alt="Calendar Image" />
+                                                            </div>
+                                                        </div><!-- Input Group -->
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                            <li>
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">To Account Type <span class="mandatory">*</span></label>
+                                                    <div class="table-form-list-control">
+                                                        <md-select class="type-sm" ng-model="$ctrl.service_invoice.to_account_type_id" placeholder="Select account type" ng-change="getAccountType($ctrl.service_invoice.to_account_type_id)" md-on-close="clearSearchToAccountType()" data-md-container-class="selectdemoSelectHeader">
+                                                            <md-select-header class="demo-select-header">
+                                                                <input ng-model="searchToAccountType" type="search" placeholder="Search for a To Account Type.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                                            </md-select-header>
+                                                            <md-optgroup label="to_account_type">
+                                                                <md-option ng-value="to_account_type.id" ng-repeat="to_account_type in $ctrl.extras.to_account_type_list | filter:searchToAccountType">{{to_account_type.name}}</md-option>
+                                                            </md-optgroup>
+                                                        </md-select>
+                                                        <input type="hidden" name="to_account_type_id" id="to_account_type_id" value="{{$ctrl.service_invoice.to_account_type_id}}" class="required">
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                            <li ng-if="$ctrl.service_invoice.to_account_type_id !=NULL">
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">{{$ctrl.service_invoice.to_account_type_id == 1440 ? 'Customer': '' }}{{$ctrl.service_invoice.to_account_type_id == 1441 ? 'Vendor': '' }}{{$ctrl.service_invoice.to_account_type_id == 1442 ? 'Ledger': '' }} Code <span class="mandatory">*</span></label>
+                                                    <div class="table-form-list-control">
+                                                        <md-autocomplete class="type-sm" ng-if="$ctrl.service_invoice.to_account_type_id == 1440" md-items="option in $ctrl.searchCustomer($ctrl.CustomerSearchText)" md-selected-item="$ctrl.service_invoice.customer" md-search-text="$ctrl.CustomerSearchText" md-selected-item-change="customerSelected($ctrl.service_invoice.customer)" md-item-text="option.code" md-min-length="3" md-escape-options="clear" placeholder="Customer code / name" input-aria-labelledby="favoriteStateLabel" md-no-cache="false" ng-model-options="{trackBy: '$value.id' }">
+                                                            <md-item-template>
+                                                                <span>
+                                                                    {{option.code}} - {{option.name}}
+                                                                </span>
+                                                            </md-item-template>
+                                                            <md-not-found>
+                                                                No Customers matching "{{$ctrl.CustomerSearchText}}" were found.
+                                                            </md-not-found>
+                                                        </md-autocomplete>
+                                                        <!-- FOR VENDOR SEARCH -->
+                                                        <md-autocomplete class="type-sm" ng-if="$ctrl.service_invoice.to_account_type_id == 1441" md-items="option in $ctrl.searchVendor($ctrl.VendorSearchText)" md-selected-item="$ctrl.service_invoice.customer" md-search-text="$ctrl.VendorSearchText" md-selected-item-change="vendorSelected()" md-item-text="option.code" md-min-length="3" md-escape-options="clear" placeholder="Vendor code / name" input-aria-labelledby="favoriteStateLabel" md-no-cache="false" ng-model-options="{trackBy: '$value.id' }">
+                                                            <md-item-template>
+                                                                <span>
+                                                                    {{option.code}} - {{option.name}}
+                                                                </span>
+                                                            </md-item-template>
+                                                            <md-not-found>
+                                                                No Vendors matching "{{$ctrl.VendorSearchText}}" were found.
+                                                            </md-not-found>
+                                                        </md-autocomplete>
+                                                        <!-- FOR LEDGER SEARCH -->
+                                                        <md-autocomplete class="type-sm" ng-if="$ctrl.service_invoice.to_account_type_id == 1442" md-items="option in $ctrl.searchLedger($ctrl.LedgerSearchText)" md-selected-item="$ctrl.service_invoice.ledger" md-search-text="$ctrl.LedgerSearchText" md-selected-item-change="ledgerSelected()" md-item-text="option.code" md-min-length="3" md-escape-options="clear" placeholder="Ledger code / name" input-aria-labelledby="favoriteStateLabel" md-no-cache="false" ng-model-options="{trackBy: '$value.id' }">
+                                                            <md-item-template>
+                                                                <span>
+                                                                    {{option.code}} - {{option.name}}
+                                                                </span>
+                                                            </md-item-template>
+                                                            <md-not-found>
+                                                                No Ledger matching "{{$ctrl.LedgerSearchText}}" were found.
+                                                            </md-not-found>
+                                                        </md-autocomplete>
+                                                        <input type="hidden" name="customer_id" value="{{$ctrl.service_invoice.customer.id}}" class="required">
+                                                        <!-- <md-autocomplete class="type-sm" md-items="option in $ctrl.searchCustomer($ctrl.customerSearchText)" md-selected-item="$ctrl.service_invoice.customer" md-search-text="$ctrl.customerSearchText" md-item-text="option.code" md-min-length="3" placeholder="Customer code / name" md-selected-item-change="$ctrl.getCustomerDetails()" md-search-text-change="$ctrl.customerChanged()">
+                                                            <md-item-template>
+                                                                <span>
+                                                                    {{option.name}} - {{option.code}}
+                                                                </span>
+                                                            </md-item-template>
+                                                            <md-not-found>
+                                                                No Customers matching "{{$ctrl.customerSearchText}}" were found.
+                                                            </md-not-found>
+                                                        </md-autocomplete>
+                                                        <input type="hidden" name="customer_id" value="{{$ctrl.service_invoice.customer.id}}" class="required"> -->
+                                                    </div>
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                            <li ng-if="$ctrl.type_id == 1060 || $ctrl.type_id == 1061">
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Ref. Invoice # </label>
+                                                    <div class="table-form-list-control">
+                                                        <input type="text" ng-model="$ctrl.service_invoice.invoice_number" name="invoice_number" class="type-sm form-control" placeholder="Enter Ref. Invoice Number">
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                            <!-- <li>
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Round Off amount <span class="mandatory">*</span></label>
+                                                    <div class="table-form-list-control">
+                                                        <input type="text" ng-model="$ctrl.service_invoice.e_round_off_amount" name="e_round_off_amount" class="type-sm form-control required" placeholder="Enter Round Off amount" readonly>
+                                                    </div>
+                                                </div>
+                                            </li> -->
+                                            <li ng-if="$ctrl.type_id == 1060 || $ctrl.type_id == 1061">
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Ref. Invoice Date </label>
+                                                    <div class="table-form-list-control inv_date_error">
+                                                        <div class="input-group date type-sm invoiceDatePicker">
+                                                            <input name="invoice_date" ng-model="$ctrl.service_invoice.invoice_date" type="text" class="form-control inv_date" placeholder="Select Ref. Invoice Date" value="{{$ctrl.service_invoice.invoice_date}}" />
+                                                            <div class="input-group-addon">
+                                                                <img class="img-responsive" src="public/theme/img/content/calender-gray-icon.svg" alt="Calendar Image" />
+                                                            </div>
+                                                        </div><!-- Input Group -->
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
+                                            <li>
+                                                <input type="file" class="image_uploadify" accept="/*" name="proposal_attachments[]" multiple>
+                                            </li>
+                                        </ul><!-- Table Form List -->
+                                    </li>
+                                    <li class="flex-md-4">
+                                        <div class="info-wrap">
+                                            <p class="info-content color-red right"><b>Invoice To</b></p>
+                                            <p class="info-title" ng-show="!isObjectEmpty($ctrl.customer)">{{$ctrl.customer.name}}</p>
+                                            <p class="info-content-small italic" ng-show="!isObjectEmpty($ctrl.customer)">{{$ctrl.service_invoice.to_account_type_id == 1440 ? 'Customer': ''}}{{$ctrl.service_invoice.to_account_type_id == 1441 ? 'Vendor': ''}}{{$ctrl.service_invoice.to_account_type_id == 1442 ? 'Ledger': ''}} Code : {{$ctrl.customer.code}}</p>
+                                        </div><!-- Info Wrap -->
+                                        <div class="info-wrap" ng-show="!isObjectEmpty($ctrl.customer)">
+                                            <p class="info-content"><b>{{$ctrl.customer.mobile_no ? $ctrl.customer.mobile_no : ''}}</b></p>
+                                            <p class="info-content">{{$ctrl.customer_address.address_line1}}</p>
+                                            <div class="info-space"></div>
+                                            <p class="info-content">GST # {{$ctrl.customer_address.gst_number ? $ctrl.customer_address.gst_number : ''}}
+                                                {{$ctrl.customer.gstin ? $ctrl.customer.gstin : ''}} </p>
+                                        </div><!-- Info Wrap -->
+                                    </li>
+                                </ul><!-- Flex List -->
+                            </div><!-- Flex Wrap -->
+                            <div class="row" ng-if="$ctrl.single_address">
+                                <input type="hidden" name="address_id" value="{{$ctrl.customer_address.id}}">
+                            </div>
+                            <div class="row" ng-if="$ctrl.multiple_address">
+                                <div class="col-md-12">
+                                    <div class="page-form pb-80">
+                                        <div class="flex-wrap">
+                                            <ul class="flex-list bordered">
+                                                <li class="flex-md-4" ng-repeat="(key,address) in $ctrl.customer_addresses">
+                                                    <!-- <ul class="table-form-list"> -->
+                                                    <!-- <li> -->
+                                                    <div class="table-form-list-wrap">
+                                                        <input type="checkbox" name="address_id" id="{{address.id}}" class="address" value="{{address.id}}" ng-click="selectedAddress(address)" ng-checked="$ctrl.service_invoice.address_id == address.id">
+                                                        <div class="table-form-list-control">
+                                                            Address: {{address.address_line1}}
+                                                            GSTIN: {{address.gst_number}}
+                                                        </div><!-- Table Form List Control -->
+                                                    </div><!-- Table Form List Wrap -->
+                                                    <!-- </li> -->
+                                                    <!-- </ul> -->
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="table-wrap-header">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5 class="table-wrap-title">Details</h5>
+                                    </div><!-- Column -->
+                                    <div class="col-md-6 text-right">
+                                        <a class="btn btn-secondary-dark btn-md type2 my-tooltip add_item_btn" data-toggle="modal" data-target="#modal-cn-addnew" ng-click="addItem()" ng-shortcut="'meta+shift+o'" ng-shortcut-click data-title="ctrl+shift+o">+ Add Item</a>
+                                    </div><!-- Column -->
+                                </div><!-- Row -->
+                            </div><!-- Table Wrap Header -->
+                            <div class="table-wrap-body">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th class="action">Action</th>
+                                                <th>Item Code</th>
+                                                <th>Item Name</th>
+                                                <th>Reference</th>
+                                                <th>UOM</th>
+                                                <th class="text-right">Quantity</th>
+                                                <th class="text-right">Rate</th>
+                                                <th class="text-right">Amount</th>
+                                                <th class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list">{{tax.name}}</th>
+                                                <th class="text-right">Total Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="(index, service_invoice_item) in $ctrl.service_invoice.service_invoice_items">
+                                                <input type="hidden" name="service_invoice_items[{{index}}][id]" value="{{service_invoice_item.id}}">
+                                                <input type="hidden" name="service_invoice_items[{{index}}][service_item_id]" value="{{service_invoice_item.service_item_id}}">
+                                                <input type="hidden" name="service_invoice_items[{{index}}][description]" value="{{service_invoice_item.description}}">
+                                                <input type="hidden" name="service_invoice_items[{{index}}][qty]" value="{{service_invoice_item.qty}}">
+                                                <input type="hidden" name="service_invoice_items[{{index}}][rate]" value="{{service_invoice_item.rate}}">
+                                                <input type="hidden" name="service_invoice_items[{{index}}][sub_total]" value="{{service_invoice_item.sub_total}}">
+                                                <input type="hidden" name="service_invoice_items[{{index}}][e_invoice_uom_id]" value="{{service_invoice_item.e_invoice_uom.id}}">
+                                                <!-- FIELD GROUPS -->
+                                                <td style="display: none;">
+                                                    <span ng-repeat="(index_fg, field_group) in service_invoice_item.field_groups">
+                                                        <input type="hidden" name="service_invoice_items[{{index}}][field_groups][{{index_fg}}][id]" value="{{field_group.id}}">
+                                                        <span ng-repeat="(index_fd, field) in field_group.fields">
+                                                            <input type="hidden" name="service_invoice_items[{{index}}][field_groups][{{index_fg}}][fields][{{index_fd}}][id]" value="{{field.id}}">
+                                                            <input type="hidden" name="service_invoice_items[{{index}}][field_groups][{{index_fg}}][fields][{{index_fd}}][value]" value="{{field.value}}">
+                                                        </span>
+                                                    </span>
+                                                </td>
+                                                <td class="action">
+                                                    <a href="javascript:void(0)" ng-click="editServiceItem(service_invoice_item.service_item_id, service_invoice_item.description,  service_invoice_item.qty, service_invoice_item.rate,index,service_invoice_item.e_invoice_uom.id,$ctrl.service_invoice.to_account_type_id)">
+                                                        <img class="img-responsive" src="./public/theme/img/table/cndn/edit.svg" alt="Edit" />
+                                                    </a>
+                                                    <a href="javascript:void(0)" ng-click="removeServiceItem(service_invoice_item.id, index)">
+                                                        <img class="img-responsive" src="./public/theme/img/table/cndn/delete.svg" alt="Delete" />
+                                                    </a>
+                                                </td>
+                                                <td>{{service_invoice_item.code}}</td>
+                                                <td>{{service_invoice_item.name}}</td>
+                                                <td>{{service_invoice_item.description}}</td>
+                                                <td>{{service_invoice_item.e_invoice_uom.code}}</td>
+                                                <td class="text-right">{{$ctrl.parseInt(service_invoice_item.qty)}}</td>
+                                                <td class="text-right">{{service_invoice_item.rate | number : 2}}</td>
+                                                <td class="text-right">{{service_invoice_item.sub_total | number : 2}}</td>
+                                                <td class="text-right" ng-repeat="(tax_index, tax) in $ctrl.extras.tax_list">
+                                                    {{(service_invoice_item[tax.name] ? (service_invoice_item[tax.name].amount | number : 2) : 0.00)}}
+                                                    <!-- ({{(service_invoice_item[tax.name] ? (service_invoice_item[tax.name].percentage) : 0)}}%) -->
+                                                    <input type="hidden" name="service_invoice_items[{{index}}][taxes][{{tax_index}}][tax_id]" value="{{tax.id}}">
+                                                    <input type="hidden" name="service_invoice_items[{{index}}][taxes][{{tax_index}}][percentage]" value="{{(service_invoice_item[tax.name] ? service_invoice_item[tax.name].percentage : 0)}}">
+                                                    <input type="hidden" name="service_invoice_items[{{index}}][taxes][{{tax_index}}][amount]" value="{{(service_invoice_item[tax.name] ? service_invoice_item[tax.name].amount : 0)}}">
+                                                </td>
+                                                <td class="text-right">{{service_invoice_item.total | number : 2}}</td>
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="5"></td>
+                                                <!-- <td>Total</td> -->
+                                                <td class="text-right">{{$ctrl.table_qty}}</td>
+                                                <td class="text-right">{{$ctrl.table_rate | number : 2}}</td>
+                                                <td class="text-right">{{$ctrl.table_sub_total | number : 2}}</td>
+                                                <td class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list">{{$ctrl.tax_wise_total[tax.name+'_amount'] | number : 2}}</td>
+                                                <td class="text-right"><span ng-show="$ctrl.type_id == 1060">-</span>{{$ctrl.table_total | number : 2}}</td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="7"></td>
+                                                <td class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list"></td>
+                                                <th>Round Off</th>
+                                                <input type="hidden" ng-model="$ctrl.service_invoice.round_off_amount" name="round_off_amount" class="type-sm form-control" placeholder="Enter Round Off amount" readonly value="{{$ctrl.service_invoice.round_off_amount}}">
+                                                <th class="text-right">{{$ctrl.service_invoice.round_off_amount | number : 2}}</th>
+                                            </tr>
+                                            <tr>
+                                                <th colspan="7"></th>
+                                                <th class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list"></th>
+                                                <input type="hidden" ng-model="$ctrl.service_invoice.final_amount" name="final_amount" class="type-sm form-control" placeholder="Enter Final amount" readonly value="{{$ctrl.service_invoice.final_amount}}">
+                                                <th>Total</th>
+                                                <th class="text-right"><span ng-show="$ctrl.type_id == 1060">-</span>{{$ctrl.service_invoice.final_amount | number : 2}}</th>
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                            </div><!-- Table Wrap Body -->
+                            <input type="hidden" name="service_invoice_item_removal_ids" id="service_invoice_item_removal_ids" value="">
+                            <input type="hidden" name="items_count" value="{{$ctrl.service_invoice.service_invoice_items.length}}">
+                            <input type="hidden" name="amount_total" value="{{$ctrl.table_sub_total}}">
+                            <input type="hidden" name="tax_total" value="{{$ctrl.table_gst_total}}">
+                            <input type="hidden" name="sub_total" value="{{$ctrl.table_sub_total}}">
+                            <input type="hidden" name="total" value="{{$ctrl.table_total}}">
+                            <input type="hidden" name="attachment_removal_ids" id="attachment_removal_ids" value="">
+                            <div class="page-form-footer">
+                                <div class="row">
+                                    <div class="col-md-8 text-left">
+                                        <ul class="form-footer-list">
+                                            <li>
+                                                <span class="form-footer-label">Total Quantity</span>
+                                                <span class="form-footer-value" ng-if="$ctrl.table_qty">{{$ctrl.table_qty}}</span>
+                                            </li>
+                                            <li>
+                                                <span class="form-footer-label">Total Amount</span>
+                                                <span class="form-footer-value" ng-if="$ctrl.table_total">INR <span ng-show="$ctrl.type_id == 1060">-</span>{{$ctrl.table_total | number : 2}} <small>({{$ctrl.table_sub_total | number : 2}} + {{$ctrl.table_gst_total | number : 2}} GST)</small></span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <a href="#!/service-invoice-pkg/service-invoice/list" class="btn btn-white my-tooltip" ng-shortcut="'meta+shift+left'" ng-shortcut-click data-title="ctrl+shift+left">Cancel</a>
+                                        <button type="submit" class="btn btn-primary my-tooltip" id="submit" ng-shortcut="'meta+shift+s'" ng-shortcut-click data-title="ctrl+shift+s">Submit</button>
+                                    </div>
+                                </div>
+                            </div><!-- Page Form Footer -->
+                        </div><!-- Page Form -->
+                    </div><!-- Column -->
+                </div><!-- Row -->
+            </div><!-- Container -->
+        </div><!-- Page Main Content -->
+    </form>
+</div><!-- Content Wrap -->
+<!-- Modal -->
+<div class="modal fade" id="modal-cn-addnew" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-md fixed" role="document">
+        <form id="service-invoice-item-form" enctype="multipart-formdata" autocomplete="off">
+            <input type="hidden" name="to_account_type_id" value="{{$ctrl.service_invoice.to_account_type_id}}">
+            <input type="hidden" id="hid_document_date" name="hid_document_date" value="{{$ctrl.service_invoice.document_date}}">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true" class="icon ion-md-close"></span></button>
+                    <h5 class="modal-title">{{$ctrl.action_title}} Item to Invoice</h5>
+                </div><!-- Modal Header -->
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <ul class="table-form-list">
+                                <li>
+                                    <div class="table-form-list-wrap">
+                                        <label class="table-form-list-label">Item Code <span class="mandatory">*</span></label>
+                                        <div class="table-form-list-control">
+                                            <md-autocomplete class="type-sm type-2" md-items="option in $ctrl.searchServiceItem($ctrl.serviceItemSearchText,$ctrl.service_invoice.to_account_type_id)" md-selected-item="$ctrl.service_item" md-search-text="$ctrl.serviceItemSearchText" md-item-text="option.code" md-min-length="3" placeholder="Item code / name" md-selected-item-change="$ctrl.getServiceItemDetails($ctrl.service_invoice.to_account_type_id)" md-search-text-change="$ctrl.serviceItemChanged()" md-no-cache="true">
+                                                <md-item-template>
+                                                    <span>
+                                                        {{option.name}} - {{option.code}}
+                                                    </span>
+                                                </md-item-template>
+                                                <md-not-found>
+                                                    No Items matching "{{$ctrl.serviceItemSearchText}}" were found.
+                                                </md-not-found>
+                                            </md-autocomplete>
+                                            <input type="hidden" id="service_item_id" name="service_item_id" value="{{$ctrl.service_item.id}}" class="required">
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                </li>
+                                <li>
+                                    <div class="table-form-view-wrap">
+                                        <ul class="table-form-view-list">
+                                            <li class="list-12 border-bottom">
+                                                <span class="table-form-view-label">Item Name</span>
+                                                <span class="table-form-view-value">{{$ctrl.service_item_detail.name}}</span>
+                                            </li>
+                                            <li class="list-6 border-right">
+                                                <span class="table-form-view-label">COA Code</span>
+                                                <span class="table-form-view-value">{{$ctrl.service_item_detail.coa_code.code}}</span>
+                                            </li>
+                                            <li class="list-6">
+                                                <span class="table-form-view-label">HSN/SAC Code</span>
+                                                <span class="table-form-view-value">{{$ctrl.service_item_detail.tax_code.code}}</span>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="table-form-list-wrap">
+                                        <label class="table-form-list-label">UOM <span class="mandatory">*</span></label>
+                                        <div class="table-form-list-control">
+                                            <md-select class="type-sm" ng-model="$ctrl.e_invoice_uom.id" placeholder="Select UOM" md-on-close="clearSearchUom()" data-md-container-class="selectdemoSelectHeader">
+                                                <md-select-header class="demo-select-header">
+                                                    <input ng-model="searchUom" type="search" placeholder="Search for a UOM.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                                </md-select-header>
+                                                <md-optgroup label="e_invoice_uom">
+                                                    <md-option ng-value="uom.id" ng-repeat="uom in $ctrl.extras.uom_list | filter:searchUom">{{uom.code}} / {{uom.description}}</md-option>
+                                                </md-optgroup>
+                                            </md-select>
+                                            <input type="hidden" name="e_invoice_uom_id" id="e_invoice_uom_id" value="{{$ctrl.e_invoice_uom.id}}" class="required">
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                </li>
+                            </ul><!-- Table Form List -->
+                        </div><!-- Column -->
+                        <div class="col-md-6">
+                            <ul class="table-form-list">
+                                <li>
+                                    <div class="table-form-list-wrap">
+                                        <label class="table-form-list-label">Reference <span class="mandatory">*</span></label>
+                                        <div class="table-form-list-control" ng-if="$ctrl.action_title == 'Add'">
+                                            <textarea name="description" ng-model="$ctrl.service_item_detail.default_reference" class="form-control type-sm required" rows="3" placeholder="Enter Reference"></textarea>
+                                        </div>
+                                        <div class="table-form-list-control" ng-if="$ctrl.action_title == 'Update'">
+                                            <textarea name="description" ng-model="$ctrl.description" class="form-control type-sm required" rows="3" placeholder="Enter Reference"></textarea>
+                                        </div>
+                                    </div><!-- Table Form List Wrap -->
+                                </li>
+                                <li>
+                                    <div class="table-form-list-wrap">
+                                        <label class="table-form-list-label">Quantity <span class="mandatory">*</span></label>
+                                        <div class="table-form-list-control">
+                                            <input name="qty" ng-model="$ctrl.qty" type="text" class="form-control type-sm required" placeholder="Enter Quantity" ng-change="totalAmountCalc()" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');" />
+                                        </div>
+                                    </div>
+                                </li>
+                                <li>
+                                    <div class="table-form-list-wrap">
+                                        <label class="table-form-list-label">Rate <span class="mandatory">*</span></label>
+                                        <div class="table-form-list-control">
+                                            <input name="amount" ng-model="$ctrl.rate" type="text" class="form-control type-sm required" placeholder="Enter Amount" ng-change="totalAmountCalc()" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');" />
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                </li>
+                            </ul><!-- Table Form List -->
+                        </div><!-- Column -->
+                    </div><!-- Row -->
+                    <div class="row" ng-if="$ctrl.service_item_detail.field_groups.length > 0">
+                        <div class="col-md-6" ng-repeat="(index, field_group) in $ctrl.service_item_detail.field_groups">
+                            <input type="hidden" name="field_groups[{{index}}][id]" value="{{field_group.id}}">
+                            <h6>{{field_group.name}}</h6>
+                            <ul class="table-form-list">
+                                <li ng-repeat="(field_index, field) in field_group.fields">
+                                    <!-- SINGLE SELECT DROPDOWN -->
+                                    <div class="table-form-list-wrap" ng-if="field.type_id == 1">
+                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <div class="table-form-list-control">
+                                            <md-select class="type-sm" ng-model="field.value" placeholder="Select {{field.name}}" md-on-close="clearSearch()" data-md-container-class="selectdemoSelectHeader">
+                                                <md-select-header class="demo-select-header">
+                                                    <input ng-model="search" type="search" placeholder="Search for a {{field.name}}.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                                </md-select-header>
+                                                <md-optgroup label="fd">
+                                                    <md-option ng-value="fd.id" ng-repeat="fd in field.get_list | filter:search">{{fd.name}}</md-option>
+                                                </md-optgroup>
+                                            </md-select>
+                                            <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][value]" id="field_groups[{{index}}][fields][{{field_index}}][value]" value="{{field.value}}" ng-class="{required: field.pivot.is_required == 1}">
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                    <!-- MULTIPLE SELECT DROPDOWN -->
+                                    <div class="table-form-list-wrap" ng-if="field.type_id == 2">
+                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <div class="table-form-list-control">
+                                            <md-select class="type-sm" ng-model="field.value" placeholder="Select {{field.name}}" md-on-close="clearSearch()" data-md-container-class="selectdemoSelectHeader" multiple>
+                                                <md-select-header class="demo-select-header">
+                                                    <input ng-model="search" type="search" placeholder="Search for a sub category.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                                </md-select-header>
+                                                <md-optgroup label="fd">
+                                                    <md-option ng-value="fd.id" ng-repeat="fd in field.get_list | filter:search">{{fd.name}}</md-option>
+                                                </md-optgroup>
+                                            </md-select>
+                                            <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][value]" id="field_groups[{{index}}][fields][{{field_index}}][value]" value="{{field.value}}" ng-class="{multiselect_required: field.pivot.is_required == 1}">
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                    <!-- FREE TEXT BOX OR NUMERIC TEXT BOX -->
+                                    <div class="table-form-list-wrap" ng-if="field.type_id == 3 || field.type_id == 4">
+                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <div class="table-form-list-control">
+                                            <input name="field_groups[{{index}}][fields][{{field_index}}][value]" ng-model="field.value" type="text" class="form-control type-sm" placeholder="Enter {{field.name}}" ng-class="{required: field.pivot.is_required == 1}" />
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                    <!-- DATE PICKER -->
+                                    <div class="table-form-list-wrap" ng-if="field.type_id == 7">
+                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <div class="table-form-list-control dynamic_date_error">
+                                            <div class="input-group date type-sm dynamicDatePicker" data-provide="datepicker">
+                                                <input name="field_groups[{{index}}][fields][{{field_index}}][value]" ng-model="field.value" type="text" class="form-control dynamic_date" placeholder="Select {{field.name}}" readonly ng-class="{required: field.pivot.is_required == 1}" />
+                                                <div class="input-group-addon">
+                                                    <img class="img-responsive" src="public/theme/img/content/calender-gray-icon.svg" alt="Calendar Image" />
+                                                </div>
+                                            </div><!-- Input Group -->
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                    <!-- DATE TIME PICKER -->
+                                    <div class="table-form-list-wrap" ng-if="field.type_id == 8">
+                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <div class="table-form-list-control dynamic_date_error">
+                                            <div class="input-group date" moment-picker="field.value" format="DD-MM-YYYY LT">
+                                                <input name="field_groups[{{index}}][fields][{{field_index}}][value]" ng-model="field.value" type="text" class="form-control" placeholder="Select {{field.name}}" readonly ng-class="{required: field.pivot.is_required == 1}">
+                                                <span class="input-group-addon">
+                                                    <img class="img-responsive" src="./public/theme/img/content/calender-gray-icon.svg" alt="Calendar Image" />
+                                                </span>
+                                            </div><!-- Input Group -->
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                    <!-- SWITCH -->
+                                    <div class="table-form-list-wrap" ng-if="field.type_id == 9">
+                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory">*</span></label>
+                                        <div class="table-form-list-control">
+                                            <div class="tab-switch">
+                                                <md-switch ng-model="field.value" aria-label="Switch 1" ng-true-value="'No'" ng-false-value="'Yes'" class="md-warn type-sm type-2">
+                                                    {{ field.value }}
+                                                </md-switch>
+                                                <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][value]" value="{{field.value}}">
+                                            </div>
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                    <!-- AUTOCOMPLETE -->
+                                    <div class="table-form-list-wrap" ng-if="field.type_id == 10">
+                                        <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][id]" value="{{field.id}}">
+                                        <label class="table-form-list-label">{{field.name}}<span class="mandatory" ng-if="field.pivot.is_required">*</span></label>
+                                        <div class="table-form-list-control">
+                                            <md-autocomplete class="type-sm" md-items="option in $ctrl.searchField($ctrl.searchText, field.id)" md-selected-item="field.autoval" md-search-text="$ctrl.searchText" md-item-text="option.code" md-min-length="3" placeholder="{{field.name}} code / name">
+                                                <md-item-template>
+                                                    <span>
+                                                        {{option.name}} - {{option.code}}
+                                                    </span>
+                                                </md-item-template>
+                                                <md-not-found>
+                                                    No {{field.name}} matching "{{$ctrl.searchText}}" were found.
+                                                </md-not-found>
+                                            </md-autocomplete>
+                                            <input type="hidden" name="field_groups[{{index}}][fields][{{field_index}}][value]" value="{{field.autoval.id}}" ng-class="{required: field.pivot.is_required == 1}">
+                                        </div>
+                                    </div><!-- Table Form List Wrap -->
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div><!-- Modal Body -->
+                <input type="hidden" name="action" value="{{$ctrl.add_service_action}}">
+                <input type="hidden" name="customer_id" value="{{$ctrl.service_invoice.customer.id}}">
+                <input type="hidden" name="branch_id" value="{{$ctrl.service_invoice.branch.id}}">
+                <input type="hidden" name="state_id" value="{{$ctrl.customer.state_id}}">
+                <input type="hidden" name="gst_number" value="{{$ctrl.customer.gst_number}}">
+                <input type="hidden" name="type_id" value="{{$ctrl.type_id}}">
+                <div class="modal-footer">
+                    <div class="row">
+                        <div class="col-md-9 text-left">
+                            <div class="modal-footer-list-wrap">
+                                <ul class="modal-footer-list">
+                                    <li>
+                                        <span class="modal-footer-list-label">Amount</span>
+                                        <span class="modal-footer-list-value">{{($ctrl.sub_total ? $ctrl.sub_total : 0) | number : 2}}</span>
+                                    </li>
+                                    <li ng-repeat="(index, tax) in $ctrl.service_item_detail.tax_code.taxes">
+                                        <span class="modal-footer-list-label">{{tax.name}} ({{tax.pivot.percentage}}%)</span>
+                                        <span class="modal-footer-list-value">{{(tax.pivot.amount ? tax.pivot.amount : 0) | number : 2}}</span>
+                                    </li>
+                                    <li ng-show="($ctrl.service_invoice.branch.primary_address.state_id == '3') && ($ctrl.customer.state_id == '3') && ($ctrl.service_item_detail.tax_code != NULL) && ($ctrl.customer.gst_number == NULL) && ($ctrl.type_id != 1060)">
+                                        <span class="modal-footer-list-label">KFC (1%)</span>
+                                        <span class="modal-footer-list-value">{{$ctrl.KFC_total | number : 2}}</span>
+                                    </li>
+                                    <li ng-show="$ctrl.service_item_detail.tcs_percentage != NULL">
+                                        <!-- <span class="modal-footer-list-label">TCS ({{$ctrl.service_item_detail.tcs_percentage}}%)</span> -->
+                                        <span class="modal-footer-list-label">TCS ({{ calculateTcsPercentage() }}%)</span>
+                                        <span class="modal-footer-list-value">{{$ctrl.tcs_total | number : 2}}</span>
+                                    </li>
+                                    <li ng-show="$ctrl.service_item_detail.cess_on_gst_percentage != NULL">
+                                        <span class="modal-footer-list-label">CESS on GST ({{$ctrl.service_item_detail.cess_on_gst_percentage}}%)</span>
+                                        <span class="modal-footer-list-value">{{$ctrl.cess_gst_total | number : 2}}</span>
+                                    </li>
+                                    <li class="color-red">
+                                        <span class="modal-footer-list-label">Total</span>
+                                        <span class="modal-footer-list-value">{{($ctrl.total ? $ctrl.total : 0) | number : 2}}</span>
+                                    </li>
+                                </ul>
+                            </div><!-- Modal Footer List Wrap -->
+                        </div><!-- Column -->
+                        <div class="col-md-3">
+                            <button type="button" class="btn btn-white my-tooltip" data-dismiss="modal" ng-shortcut="'meta+shift+m'" ng-shortcut-click data-title="ctrl+shift+m">Cancel</button>
+                            <button id="addServiceItem" type="submit" class="btn btn-default my-tooltip" ng-shortcut="'meta+shift+i'" ng-shortcut-click data-title="ctrl+shift+i">Save</button>
+                        </div><!-- Column -->
+                    </div><!-- Row -->
+                </div><!-- Modal Footer -->
+            </div><!-- Modal Content -->
+        </form>
+    </div><!-- Modal Dialog -->
+</div><!-- Modal -->
+<script src="./public/theme/js/imageuploadify.min.js"></script>
