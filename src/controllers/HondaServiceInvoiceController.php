@@ -376,8 +376,6 @@ class HondaServiceInvoiceController extends Controller
                 return response()->json(['success' => false, 'error' => 'Service Invoice not found']);
             }
             $service_invoice->customer; //ADDED FOR CUSTOMER AND VENDOR BOTH
-            // $service_invoice->customer->primaryAddress; //ADDED FOR CUSTOMER AND VENDOR BOTH
-            // $service_invoice->customer_address = $service_invoice->address; //ADDED FOR CUSTOMER AND VENDOR BOTH
             $fields = Field::withTrashed()->get()->keyBy('id');
             if (count($service_invoice->serviceInvoiceItems) > 0) {
                 $gst_total = 0;
@@ -1002,81 +1000,81 @@ class HondaServiceInvoiceController extends Controller
             }
 
             //SERIAL NUMBER GENERATION & VALIDATION
-            // if (!$request->id) {
-            //     //GET FINANCIAL YEAR ID BY DOCUMENT DATE
-            //     if (date('m', strtotime($request->document_date)) > 3) {
-            //         $document_date_year = date('Y', strtotime($request->document_date)) + 1;
-            //     } else {
-            //         $document_date_year = date('Y', strtotime($request->document_date));
-            //     }
-            //     $financial_year = FinancialYear::where('from', $document_date_year)
-            //         // ->where('company_id', Auth::user()->company_id)
-            //         ->first();
-            //     if (!$financial_year) {
-            //         return response()->json(['success' => false, 'errors' => ['Fiancial Year Not Found']]);
-            //     }
-            //     $branch = Outlet::where('id', $request->branch_id)->first();
+            if (!$request->id) {
+                //GET FINANCIAL YEAR ID BY DOCUMENT DATE
+                if (date('m', strtotime($request->document_date)) > 3) {
+                    $document_date_year = date('Y', strtotime($request->document_date)) + 1;
+                } else {
+                    $document_date_year = date('Y', strtotime($request->document_date));
+                }
+                $financial_year = FinancialYear::where('from', $document_date_year)
+                    // ->where('company_id', Auth::user()->company_id)
+                    ->first();
+                if (!$financial_year) {
+                    return response()->json(['success' => false, 'errors' => ['Fiancial Year Not Found']]);
+                }
+                $branch = Outlet::where('id', $request->branch_id)->first();
 
-            //     if ($request->type_id == 1061) {
-            //         //DN
-            //         $serial_number_category = 5;
-            //     } elseif ($request->type_id == 1060) {
-            //         //CN
-            //         $serial_number_category = 4;
-            //     } elseif ($request->type_id == 1062) {
-            //         //INV
-            //         $serial_number_category = 125;
-            //     }
+                if ($request->type_id == 1061) {
+                    //DN
+                    $serial_number_category = 5;
+                } elseif ($request->type_id == 1060) {
+                    //CN
+                    $serial_number_category = 4;
+                } elseif ($request->type_id == 1062) {
+                    //INV
+                    $serial_number_category = 125;
+                }
 
-            //     $sbu = Sbu::find($request->sbu_id);
-            //     if (!$sbu) {
-            //         return response()->json(['success' => false, 'errors' => ['SBU Not Found']]);
-            //     }
+                $sbu = Sbu::find($request->sbu_id);
+                if (!$sbu) {
+                    return response()->json(['success' => false, 'errors' => ['SBU Not Found']]);
+                }
 
-            //     if (!$sbu->business_id) {
-            //         return response()->json(['success' => false, 'errors' => ['Business Not Found']]);
-            //     }
+                if (!$sbu->business_id) {
+                    return response()->json(['success' => false, 'errors' => ['Business Not Found']]);
+                }
 
-            //     //OUTLET BASED CODE
-            //     // $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, $branch->id, $sbu);
+                //OUTLET BASED CODE
+                // $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, $branch->id, $sbu);
 
-            //     //ONLY FOR SCRAP INVOICE
-            //     if ($request->category_id == 4 || $request->category_id == 11) {
-            //         if ($request->type_id == 1061) {
-            //             //DN
-            //             $serial_number_category = 128;
-            //         } elseif ($request->type_id == 1060) {
-            //             //CN
-            //             $serial_number_category = 127;
-            //         } elseif ($request->type_id == 1062) {
-            //             //INV
-            //             $serial_number_category = 126;
-            //         }
-            //         $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, null, null, null);
-            //     } else {
-            //         //STATE BUSINESS BASED CODE
-            //         $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, null, null, $sbu->business_id);
-            //     }
-            //     // dd($generateNumber);
-            //     $generateNumber['service_invoice_id'] = $request->id;
+                //ONLY FOR SCRAP INVOICE
+                if ($request->category_id == 4 || $request->category_id == 11) {
+                    if ($request->type_id == 1061) {
+                        //DN
+                        $serial_number_category = 128;
+                    } elseif ($request->type_id == 1060) {
+                        //CN
+                        $serial_number_category = 127;
+                    } elseif ($request->type_id == 1062) {
+                        //INV
+                        $serial_number_category = 126;
+                    }
+                    $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, null, null, null);
+                } else {
+                    //STATE BUSINESS BASED CODE
+                    $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, null, null, $sbu->business_id);
+                }
+                // dd($generateNumber);
+                $generateNumber['service_invoice_id'] = $request->id;
 
-            //     $error_messages_1 = [
-            //         'number.required' => 'Serial number is required',
-            //         'number.unique' => 'Serial number is already taken',
-            //     ];
+                $error_messages_1 = [
+                    'number.required' => 'Serial number is required',
+                    'number.unique' => 'Serial number is already taken',
+                ];
 
-            //     $validator_1 = Validator::make($generateNumber, [
-            //         'number' => [
-            //             'required',
-            //             'unique:service_invoices,number,' . $request->id . ',id,company_id,' . Auth::user()->company_id,
-            //         ],
-            //     ], $error_messages_1);
+                $validator_1 = Validator::make($generateNumber, [
+                    'number' => [
+                        'required',
+                        'unique:service_invoices,number,' . $request->id . ',id,company_id,' . Auth::user()->company_id,
+                    ],
+                ], $error_messages_1);
 
-            //     if ($validator_1->fails()) {
-            //         return response()->json(['success' => false, 'errors' => $validator_1->errors()->all()]);
-            //     }
+                if ($validator_1->fails()) {
+                    return response()->json(['success' => false, 'errors' => $validator_1->errors()->all()]);
+                }
 
-            // }
+            }
 
             //VALIDATE SERVICE INVOICE ITEMS
             if (!$request->service_invoice_items) {
@@ -1093,7 +1091,7 @@ class HondaServiceInvoiceController extends Controller
                 $service_invoice = new HondaServiceInvoice();
                 $service_invoice->created_at = date("Y-m-d H:i:s");
                 $service_invoice->created_by_id = Auth()->user()->id;
-                $service_invoice->number = isset($generateNumber['number']) ?  $generateNumber['number']:'3123321';
+                $service_invoice->number = isset($generateNumber['number']) ?  $generateNumber['number']:'';
                 if ($approval_status != '') {
                     $service_invoice->status_id = 1; //$approval_status->name;
                 } else {
@@ -1221,7 +1219,7 @@ class HondaServiceInvoiceController extends Controller
                     $value = rand(1, 100);
                     $image = $proposal_attachment;
                     $extension = $image->getClientOriginalExtension();
-                    $name = $service_invoice->id . 'service_invoice_attachment' . $value . '.' . $extension;
+                    $name = $service_invoice->id . 'honda_service_invoice_attachment' . $value . '.' . $extension;
                     $proposal_attachment->move(storage_path('app/public/honda-service-invoice/attachments/'), $name);
                     $attachement = new Attachment;
                     $attachement->attachment_of_id = 221;

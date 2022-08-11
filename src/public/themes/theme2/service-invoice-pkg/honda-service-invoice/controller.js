@@ -92,7 +92,7 @@ app.component('hondaServiceInvoiceList', {
         setTimeout(function () {
             var table_scroll;
             table_scroll = $('.page-main-content').height() - 37;
-            dataTable = $('#honda-service-invoice-table').DataTable({
+            dataTable = $('#service-invoice-table').DataTable({
                 "dom": cndn_dom_structure,
                 "language": {
                     // "search": "",
@@ -143,7 +143,7 @@ app.component('hondaServiceInvoiceList', {
                     { data: 'child_checkbox', searchable: false },
                     { data: 'action', searchable: false, class: 'action' },
                     { data: 'document_date', searchable: false },
-                    { data: 'number', name: 'service_invoices.number', searchable: true },
+                    { data: 'number', name: 'honda_service_invoices.number', searchable: true },
                     { data: 'type_name', name: 'configs.name', searchable: true },
                     { data: 'status', name: 'approval_type_statuses.status', searchable: false },
                     { data: 'branch', name: 'outlets.code', searchable: true },
@@ -174,7 +174,7 @@ app.component('hondaServiceInvoiceList', {
         });
 
         function RefreshTable() {
-            $('#honda-service-invoice-table').DataTable().ajax.reload();
+            $('#service-invoice-table').DataTable().ajax.reload();
         }
 
         $('#invoice_number').keyup(function () {
@@ -306,7 +306,7 @@ app.component('hondaServiceInvoiceList', {
 
         $(".search_clear").on("click", function () {
             $('#search').val('');
-            $('#honda-service-invoice-table').DataTable().search('').draw();
+            $('#service-invoice-table').DataTable().search('').draw();
         });
 
         $("#search").on('keyup', function () {
@@ -436,7 +436,7 @@ app.component('hondaServiceInvoiceList', {
                 return new Promise(function (resolve, reject) {
                     $http
                         .post(
-                            service_invoice_search_customer_url, {
+                            honda_service_invoice_search_customer_url, {
                             key: query,
                         }
                         )
@@ -474,7 +474,7 @@ app.component('hondaServiceInvoiceList', {
                 $('#pace').addClass('pace-inactive');
                 if (response.data.success == true) {
                     custom_noty('success', response.data.message);
-                    $('#honda-service-invoice-table').DataTable().ajax.reload();
+                    $('#service-invoice-table').DataTable().ajax.reload();
                     $scope.$apply();
                 } else {
                     custom_noty('error', response.data.errors);
@@ -510,7 +510,7 @@ app.component('hondaServiceInvoiceList', {
                 $('#pace').addClass('pace-inactive');
                 if (response.data.success == true) {
                     custom_noty('success', response.data.message);
-                    $('#honda-service-invoice-table').DataTable().ajax.reload();
+                    $('#service-invoice-table').DataTable().ajax.reload();
                     $scope.$apply();
                 } else {
                     custom_noty('error', response.data.errors);
@@ -1045,108 +1045,10 @@ app.component('hondaServiceInvoiceForm', {
             }
         }
 
-        //GET VENDOR DETAILS
-        // $scope.vendorSelected = function() {
-        //     $('#pace').css("display", "block");
-        //     $('#pace').addClass('pace-active');
-        //     // console.log(self.service_invoice.customer);
-        //     if (self.service_invoice.customer || self.service_invoice.customer != null) {
-        //         var res = $rootScope.getVendor(self.service_invoice.customer).then(function(res) {
-        //             // console.log(res);
-        //             if (!res.data.success) {
-        //                 $('#pace').css("display", "none");
-        //                 $('#pace').addClass('pace-inactive');
-        //                 custom_noty('error', res.data.error);
-        //                 return;
-        //             }
-        //             $('#pace').css("display", "none");
-        //             $('#pace').addClass('pace-inactive');
-        //             self.customer = res.data.vendor;
-        //             self.customer_address = [
-        //                 { address_line1: res.data.vendor.address },
-        //                 { gstin: res.data.vendor.gstin },
-        //             ];
-        //             // self.customer_address.address_line1 = res.data.vendor.address;
-        //             // self.customer_address.gstin = res.data.vendor.gstin;
-        //             self.service_invoice.customer.id = res.data.vendor.id;
-        //             console.log(self.customer_address);
-        //         });
-        //     } else {
-        //         $('#pace').css("display", "none");
-        //         $('#pace').addClass('pace-inactive');
-        //         self.customer = {};
-        //         self.customer_address = [];
-        //         self.service_invoice.service_invoice_items = [];
-        //     }
-        // }
+       
 
         console.log(self.service_invoice);
-        // self.searchLedger = $rootScope.searchLedger;
-
-        //GET VENDOR DETAILS
-        // $scope.ledgerSelected = function() {
-        //     if (self.service_invoice.ledger || self.service_invoice.ledger != null) {
-        //         var res = $rootScope.getLedger(self.service_invoice.legder.id).then(function(res) {
-        //             console.log(res);
-        //             if (!res.data.success) {
-        //                 custom_noty('error', res.data.error);
-        //                 return;
-        //             }
-        //             self.customer = res.data.ledger;
-        //         });
-        //     } else {
-        //         self.customer = {};
-        //         self.service_invoice.service_invoice_items = [];
-        //     }
-        // }
-
-        //SEARCH CUSTOMER
-        // self.searchCustomer = function(query) {
-        //     if (query) {
-        //         return new Promise(function(resolve, reject) {
-        //             $http
-        //                 .post(
-        //                     service_invoice_search_customer_url, {
-        //                         key: query,
-        //                     }
-        //                 )
-        //                 .then(function(response) {
-        //                     resolve(response.data);
-        //                 });
-        //             //reject(response);
-        //         });
-        //     } else {
-        //         return [];
-        //     }
-        // }
-
-
-        //GET CUSTOMER DETAILS
-        // self.getCustomerDetails = function() {
-        //     if (self.service_invoice.customer == null) {
-        //         return
-        //     }
-        //     $http.post(
-        //         get_customer_info_url, {
-        //             customer_id: self.service_invoice.customer.id,
-        //         }
-        //     ).then(function(response) {
-        //         if (response.data.success) {
-        //             self.customer = response.data.customer;
-        //         } else {
-        //             custom_noty('error', response.data.error);
-        //         }
-        //     });
-        // }
-
-        // self.customerChanged = function() {
-        //     self.customer = {};
-        //     self.service_invoice.service_invoice_items = [];
-        //     //SERVICE INVOICE ITEMS TABLE CALC
-        //     $timeout(function() {
-        //         $scope.serviceInvoiceItemCalc();
-        //     }, 1000);
-        // }
+     
 
         //SEARCH SERVICE ITEM
         self.searchServiceItem = function (query, $to_account_type_id) {

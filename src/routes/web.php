@@ -67,6 +67,8 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 	Route::get('/service-invoice/chola-pdf/{id}', 'ServiceInvoiceController@cholaPdfCreate')->name('cholaPdfCreate');
 	Route::get('/service-invoice/reprint-pdf/{id}/{gst_in}', 'ServiceInvoiceController@reprintInvoicePdf')->name('reprintInvoicePdf');
 
+	Route::get('/service-item/get-sub-ledger/{id}', 'ServiceItemController@getSubLedger')->name('getSubLedger');
+
 	//HONDA SERVICE 
 	Route::get('/honda-service-invoices/get-list', 'HondaServiceInvoiceController@getServiceInvoiceList')->name('getHondaServiceInvoiceList');
 	Route::get('/honda-service-invoice/view/{type_id}/{id?}', 'HondaServiceInvoiceController@viewServiceInvoice')->name('viewHondaServiceInvoice');
@@ -77,11 +79,8 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 	Route::post('/honda-service-invoice/send-multiple-approval', 'HondaServiceInvoiceController@sendMultipleApproval')->name('sendHondaMultipleApproval');
 	Route::post('/honda-service-invoice/send-to-approval', 'HondaServiceInvoiceController@saveApprovalStatus')->name('saveHondaApprovalStatus');
 	Route::get('/honda-service-invoice/cancel-irn/{id}', 'HondaServiceInvoiceController@cancelIrn')->name('cancelHondaIrn');
-
 	Route::get('/honda-service-invoice/chola-pdf/{id}', 'HondaServiceInvoiceController@cholaPdfCreate')->name('cholaHondaPdfCreate');
-	
 	Route::get('/honda-service-invoice/cn-dn-approvals/', 'HondaServiceInvoiceController@approvalTypeValid')->name('hondaApprovalTypeValid');
+	Route::post('/honda-service-invoice/customer/search', 'HondaServiceInvoiceController@searchCustomer')->name('searchCustomerServiceInvoice');
 
-
-	Route::get('/service-item/get-sub-ledger/{id}', 'ServiceItemController@getSubLedger')->name('getSubLedger');
 });
