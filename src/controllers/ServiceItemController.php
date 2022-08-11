@@ -6,6 +6,7 @@ use Abs\CoaPkg\CoaCode;
 use Abs\ServiceInvoicePkg\ServiceItem;
 use Abs\ServiceInvoicePkg\ServiceItemCategory;
 use Abs\ServiceInvoicePkg\ServiceItemSubCategory;
+use Abs\ServiceInvoicePkg\SubLedger;
 use Abs\TaxPkg\TaxCode;
 use App\Http\Controllers\Controller;
 use Auth;
@@ -219,6 +220,7 @@ class ServiceItemController extends Controller {
 			$service_item->default_reference = $request->default_reference;
 			$service_item->tcs_percentage = $request->tcs_percentage;
 			$service_item->cess_on_gst_percentage = $request->cess_on_gst_percentage;
+			$service_item->sub_ledger_id = $request->sub_ledger_id;
 			$service_item->save();
 			//SAVE FIELD-GROUP FIELD
 			$service_item->fieldGroups()->sync([]);
@@ -368,5 +370,14 @@ class ServiceItemController extends Controller {
 		return response()->download('storage/exports/' . $file_name . '.xlsx');
 		return Storage::download(storage_path('exports/') . $file_name . '.xlsx');
 	}
-
+	public function getSubLedger($id) {
+		if ($id) {
+			$sub_ledger_list = collect(SubLedger::select('id', 'ax_subgl')->where('coa_code_id', $id)->get())->prepend(['id' => '', 'ax_subgl' => 'Select Sub Ledger']);
+			$this->data['sub_ledger_list'] = $sub_ledger_list;
+		} else {
+			return response()->json(['success' => false, 'error' => 'Ledger not found']);
+		}
+		$this->data['success'] = true;
+		return response()->json($this->data);
+	}
 }

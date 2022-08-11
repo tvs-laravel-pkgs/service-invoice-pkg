@@ -66,6 +66,7 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 	Route::get('/service-invoice/cancel-irn/{id}', 'ServiceInvoiceController@cancelIrn')->name('cancelIrn');
 	Route::get('/service-invoice/chola-pdf/{id}', 'ServiceInvoiceController@cholaPdfCreate')->name('cholaPdfCreate');
 	Route::get('/service-invoice/reprint-pdf/{id}/{gst_in}', 'ServiceInvoiceController@reprintInvoicePdf')->name('reprintInvoicePdf');
+
 	//HONDA SERVICE 
 	Route::get('/honda-service-invoices/get-list', 'HondaServiceInvoiceController@getServiceInvoiceList')->name('getHondaServiceInvoiceList');
 	Route::get('/honda-service-invoice/view/{type_id}/{id?}', 'HondaServiceInvoiceController@viewServiceInvoice')->name('viewHondaServiceInvoice');
@@ -81,4 +82,6 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 	
 	Route::get('/honda-service-invoice/cn-dn-approvals/', 'HondaServiceInvoiceController@approvalTypeValid')->name('hondaApprovalTypeValid');
 
+
+	Route::get('/service-item/get-sub-ledger/{id}', 'ServiceItemController@getSubLedger')->name('getSubLedger');
 });
