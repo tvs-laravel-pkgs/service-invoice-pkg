@@ -232,7 +232,7 @@ class HondaServiceInvoiceController extends Controller
                 $img_download = asset('public/theme/img/table/cndn/download.svg');
                 $img_delete = asset('public/theme/img/table/cndn/delete.svg');
                 $img_approval = asset('public/theme/img/table/cndn/approval.svg');
-                $path = URL::to('/storage/app/public/service-invoice-pdf');
+                $path = URL::to('/storage/app/public/honda-service-invoice-pdf');
                 $output = '';
                 if ($service_invoice_list->status_id == '4') {
                     $output .= '<a href="#!/service-invoice-pkg/honda-service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
@@ -2205,7 +2205,7 @@ class HondaServiceInvoiceController extends Controller
         $tax_list = Tax::where('company_id', 1)->orderBy('id', 'ASC')->get();
         $this->data['tax_list'] = $tax_list;
         // dd($this->data['tax_list']);
-        $path = storage_path('app/public/service-invoice-pdf/');
+        $path = storage_path('app/public/honda-service-invoice-pdf/');
         $pathToFile = $path . '/' . $service_invoice->number . '.pdf';
         $name = $service_invoice->number . '.pdf';
         File::isDirectory($path) or File::makeDirectory($path, 0777, true, true);
@@ -3774,7 +3774,7 @@ class HondaServiceInvoiceController extends Controller
 
     }
 
-    public function getCustomerAddress(Request $request)
+    public function getHondaCustomerAddress(Request $request)
     {
         // dd($request->all());
         try {
@@ -4329,7 +4329,7 @@ class HondaServiceInvoiceController extends Controller
         $tax_list = Tax::where('company_id', 1)->orderBy('id', 'ASC')->get();
         $this->data['tax_list'] = $tax_list;
 
-        $path = storage_path('app/public/service-invoice-pdf/chola-pdf');
+        $path = storage_path('app/public/honda-service-invoice-pdf/chola-pdf');
         $pathToFile = $path . '/' . $service_invoice->number . '.pdf';
         File::isDirectory($path) or File::makeDirectory($path, 0777, true, true);
 
@@ -5901,7 +5901,7 @@ class HondaServiceInvoiceController extends Controller
         $tax_list = Tax::where('company_id', 1)->orderBy('id', 'ASC')->get();
         $this->data['tax_list'] = $tax_list;
         // dd($this->data['tax_list']);
-        $path = storage_path('app/public/service-invoice-pdf/');
+        $path = storage_path('app/public/honda-service-invoice-pdf/');
         $pathToFile = $path . '/' . $service_invoice->number . '.pdf';
         $name = $service_invoice->number . '.pdf';
         File::isDirectory($path) or File::makeDirectory($path, 0777, true, true);
@@ -5933,7 +5933,7 @@ class HondaServiceInvoiceController extends Controller
 
         return response()->json([
             'success' => true,
-            'file_name_path' => url('storage/app/public/service-invoice-pdf') . '/' . $service_invoice->number . '.pdf',
+            'file_name_path' => url('storage/app/public/honda-service-invoice-pdf') . '/' . $service_invoice->number . '.pdf',
         ]);
     }
 }

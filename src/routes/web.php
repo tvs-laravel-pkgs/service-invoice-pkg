@@ -91,5 +91,6 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 	Route::post('/honda-service-invoice/get-service-item-details', 'HondaServiceInvoiceController@getServiceItemDetails')->name('getHondaServiceItemDetails');
 
 	Route::post('/honda-service-invoice/cn-dn-approvals/save', 'HondaServiceInvoiceApprovalController@updateApprovalStatus')->name('updateHondaApprovalStatus');
+	Route::post('/honda-service-invoice/customer/get-address', 'HondaServiceInvoiceController@getHondaCustomerAddress')->name('getHondaCustomerAddressServiceInvoice');
 
 });

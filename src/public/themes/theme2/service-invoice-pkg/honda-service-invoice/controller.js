@@ -827,8 +827,8 @@ app.component('hondaServiceInvoiceForm', {
             $('#pace').addClass('pace-active');
             console.log(self.service_invoice.customer);
             if (self.service_invoice.customer || self.service_invoice.customer != null) {
-                // var res = $rootScope.getCustomer(self.service_invoice.customer).then(function(res) {
-                var res = $rootScope.getCustomerAddress(self.service_invoice.customer).then(function (res) {
+                 // var res = $rootScope.getCustomer(self.service_invoice.customer).then(function(res) {
+                var res = $rootScope.getHondaCustomerAddress(self.service_invoice.customer).then(function (res) {
                     console.log(res);
                     if (!res.data.success) {
                         $('#pace').css("display", "none");
