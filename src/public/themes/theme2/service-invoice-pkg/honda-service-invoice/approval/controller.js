@@ -12,7 +12,7 @@ app.component('hondaServiceInvoiceApprovalList', {
                     layout: 'topRight',
                     text: response.data.error,
                 }).show();
-                $location.path('/service-invoice-pkg/service-invoice/list')
+                $location.path('/service-invoice-pkg/honda-service-invoice/list')
                 $scope.$apply()
             }
             // self.approval_type_id = response.data.approval_level.current_status_id;
@@ -20,7 +20,7 @@ app.component('hondaServiceInvoiceApprovalList', {
         });
         console.log($routeParams.approval_level_id);
         $http.get(
-            get_cn_dn_approval_filter_url
+            get_honda_cn_dn_approval_filter_url
         ).then(function (response) {
             self.extras = response.data.extras;
             $rootScope.loading = false;
@@ -46,14 +46,14 @@ app.component('hondaServiceInvoiceApprovalList', {
                 scrollCollapse: true,
                 stateSave: true,
                 stateSaveCallback: function (settings, data) {
-                    localStorage.setItem('SIDataTables_' + settings.sInstance, JSON.stringify(data));
+                    localStorage.setItem('HondaSIDataTables_' + settings.sInstance, JSON.stringify(data));
                 },
                 stateLoadCallback: function (settings) {
-                    var state_save_val = JSON.parse(localStorage.getItem('SIDataTables_' + settings.sInstance));
+                    var state_save_val = JSON.parse(localStorage.getItem('HondaSIDataTables_' + settings.sInstance));
                     if (state_save_val) {
                         $('#search').val(state_save_val.search.search);
                     }
-                    return JSON.parse(localStorage.getItem('SIDataTables_' + settings.sInstance));
+                    return JSON.parse(localStorage.getItem('HondaSIDataTables_' + settings.sInstance));
                 },
                 processing: true,
                 serverSide: true,
@@ -62,7 +62,7 @@ app.component('hondaServiceInvoiceApprovalList', {
                 ordering: false,
 
                 ajax: {
-                    url: laravel_routes['getServiceInvoiceApprovalList'],
+                    url: laravel_routes['getHondaServiceInvoiceApprovalList'],
                     type: "GET",
                     dataType: "json",
                     data: function (d) {
@@ -435,14 +435,14 @@ app.component('hondaServiceInvoiceApprovalList', {
 
 //------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------
-app.component('serviceInvoiceApprovalView', {
+app.component('hondaServiceInvoiceApprovalView', {
     templateUrl: service_invoice_approval_view_template_url,
     controller: function ($http, $location, HelperService, $routeParams, $rootScope, $scope, $timeout, $mdSelect, $window) {
         if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061 || $routeParams.type_id == 1062) { } else {
             $location.path('/page-not-found')
             return;
         }
-        $form_data_url = cn_dn_approval_view_data_url + '/' + $routeParams.approval_type_id + '/' + $routeParams.type_id + '/' + $routeParams.id;
+        $form_data_url = honda_cn_dn_approval_view_data_url + '/' + $routeParams.approval_type_id + '/' + $routeParams.type_id + '/' + $routeParams.id;
         //alert($form_data_url);
         var self = this;
         self.hasPermission = HelperService.hasPermission;
@@ -452,7 +452,7 @@ app.component('serviceInvoiceApprovalView', {
         self.enable_service_item_md_change = true;
         self.ref_attachements_url_link = ref_service_invoice_attachements_url;
         self.show_approve_button = true;
-        self.qr_image_url = base_url + '/storage/app/public/service-invoice/IRN_images';
+        self.qr_image_url = base_url + '/storage/app/public/honda-service-invoice/IRN_images';
 
         if (self.type_id == 1060) {
             self.minus_value = '-';
@@ -468,7 +468,7 @@ app.component('serviceInvoiceApprovalView', {
                     layout: 'topRight',
                     text: response.data.error,
                 }).show();
-                $location.path('/service-invoice-pkg/cn-dn/approval/approval-level/' + $routeParams.approval_type_id + '/list/')
+                $location.path('/service-invoice-pkg/honda-cn-dn/approval/approval-level/' + $routeParams.approval_type_id + '/list/')
                 $scope.$apply()
             }
             // self.list_url = cn_dn_approval_list_url;
@@ -606,7 +606,7 @@ app.component('serviceInvoiceApprovalView', {
                 self.action_title = 'View';
                 self.update_item_key = index;
                 $http.post(
-                    get_service_item_info_url, {
+                    get_honda_service_item_info_url, {
                     service_item_id: service_invoice_item_id,
                     field_groups: self.service_invoice.service_invoice_items[index].field_groups,
                     btn_action: 'edit',
@@ -753,7 +753,7 @@ app.component('serviceInvoiceApprovalView', {
             $send_to_approval = $('#next_status').val();
             var ButtonValue = $('#approve').attr("id");
             $http.post(
-                laravel_routes['updateApprovalStatus'], {
+                laravel_routes['updateHondaApprovalStatus'], {
                 id: $id,
                 send_to_approval: $send_to_approval,
                 status_name: ButtonValue,
@@ -765,7 +765,7 @@ app.component('serviceInvoiceApprovalView', {
                     custom_noty('success', 'CN/DN ' + response.data.message + ' Successfully');
                     // $('#cn-dn-approval-table').DataTable().ajax.reload();
                     $timeout(function () {
-                        $location.path('/service-invoice-pkg/cn-dn/approval/approval-level/' + $routeParams.approval_type_id + '/list/');
+                        $location.path('/service-invoice-pkg/honda-cn-dn/approval/approval-level/' + $routeParams.approval_type_id + '/list/');
                     }, 900);
                     $scope.$apply()
                 } else {
@@ -799,7 +799,7 @@ app.component('serviceInvoiceApprovalView', {
                 }
                 $(submitButtonId).button('loading');
                 $.ajax({
-                    url: laravel_routes['updateApprovalStatus'],
+                    url: laravel_routes['updateHondaApprovalStatus'],
                     method: "POST",
                     data: {
                         id: $('#id').val(),
@@ -856,7 +856,7 @@ app.component('serviceInvoiceApprovalView', {
                                 $noty.close();
                             }, 3000);
                             $timeout(function () {
-                                $location.path('/service-invoice-pkg/cn-dn/approval/approval-level/' + $routeParams.approval_type_id + '/list/');
+                                $location.path('/service-invoice-pkg/honda-cn-dn/approval/approval-level/' + $routeParams.approval_type_id + '/list/');
                             }, 900);
                             $scope.$apply()
                         }

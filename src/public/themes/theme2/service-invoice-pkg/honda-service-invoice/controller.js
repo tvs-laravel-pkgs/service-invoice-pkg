@@ -21,13 +21,13 @@ app.config(['$routeProvider', function ($routeProvider) {
         }).
 
         //SERVICE INVOICE APPROVALS
-        when('/service-invoice-pkg/cn-dn/approval/approval-level/:approval_level_id/list/', {
+        when('/service-invoice-pkg/honda-cn-dn/approval/approval-level/:approval_level_id/list/', {
             template: '<honda-service-invoice-approval-list></honda-service-invoice-approval-list>',
-            title: 'CN/DN Approval List',
+            title: 'Honda CN/DN Approval List',
         }).
-        when('/service-invoice-pkg/cn-dn/approval/approval-level/:approval_type_id/view/:type_id/:id', {
+        when('/service-invoice-pkg/honda-cn-dn/approval/approval-level/:approval_type_id/view/:type_id/:id', {
             template: '<honda-service-invoice-approval-view></honda-service-invoice-approval-view>',
-            title: 'CN/DN Approval View',
+            title: 'Honda CN/DN Approval View',
         }).
 
         //SERVICE ITEM CATEGORIES
@@ -1580,7 +1580,7 @@ app.component('hondaServiceInvoiceForm', {
                 let formData = new FormData($(service_item_form_id)[0]);
                 $('#addServiceItem').button('loading');
                 $.ajax({
-                    url: laravel_routes['getServiceItem'],
+                    url: laravel_routes['gethondaServiceItem'],
                     method: "POST",
                     data: formData,
                     processData: false,

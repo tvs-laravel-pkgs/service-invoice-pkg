@@ -2212,7 +2212,7 @@ class HondaServiceInvoiceController extends Controller
 
         $pdf = app('dompdf.wrapper');
         $pdf->getDomPDF()->set_option("enable_php", true);
-        $pdf = $pdf->loadView('service-invoices/pdf/index', $this->data);
+        $pdf = $pdf->loadView('honda-service-invoices/pdf/index', $this->data);
 
         // return $pdf->stream('service_invoice.pdf');
         // dd($pdf);
@@ -4335,14 +4335,14 @@ class HondaServiceInvoiceController extends Controller
 
         $pdf = app('dompdf.wrapper');
         $pdf->getDomPDF()->set_option("enable_php", true);
-        $pdf = $pdf->loadView('service-invoices/pdf/chola/index', $this->data);
+        $pdf = $pdf->loadView('honda-service-invoices/pdf/chola/index', $this->data);
         // $po_file_name = 'Invoice-' . $this->number . '.pdf';
         File::delete($pathToFile);
         File::put($pathToFile, $pdf->output());
 
         return response()->json([
             'success' => true,
-            'file_name_path' => url('storage/app/public/service-invoice-pdf/chola-pdf') . '/' . $service_invoice->number . '.pdf',
+            'file_name_path' => url('storage/app/public/honda-service-invoice-pdf/chola-pdf') . '/' . $service_invoice->number . '.pdf',
         ]);
     }
 
