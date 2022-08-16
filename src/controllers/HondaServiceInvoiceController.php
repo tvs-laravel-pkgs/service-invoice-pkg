@@ -62,7 +62,7 @@ class HondaServiceInvoiceController extends Controller
     {
         $this->data['extras'] = [
             'sbu_list' => [],
-            'category_list' => collect(ServiceItemCategory::select('id', 'name')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
+            'category_list' => collect(ServiceItemCategory::select('id', 'name')->where('type', 'honda')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
             'sub_category_list' => [],
             'cn_dn_statuses' => collect(ApprovalTypeStatus::select('id', 'status')->where('approval_type_id', 1)->orderBy('id', 'asc')->get())->prepend(['id' => '', 'status' => 'Select CN/DN Status']),
             'type_list' => collect(Config::select('id', 'name')->where('config_type_id', 84)->get())->prepend(['id' => '', 'name' => 'Select Service Invoice Type']),
@@ -511,7 +511,7 @@ class HondaServiceInvoiceController extends Controller
             // 'sbu_list' => collect(Sbu::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Sbu']),
             'sbu_list' => [],
             'tax_list' => Tax::select('name', 'id')->where('company_id', 1)->orderBy('id', 'ASC')->get(),
-            'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
+            'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('type', 'honda')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
             'sub_category_list' => [],
             'uom_list' => EInvoiceUom::getList(),
             'to_account_type_list' => Config::select('name', 'id')->where('config_type_id', 27)->whereIn('id', [1440, 1441])->get(), //ACCOUNT TYPES
@@ -2409,7 +2409,7 @@ class HondaServiceInvoiceController extends Controller
         $this->data['extras'] = [
             'sbu_list' => [],
             'tax_list' => Tax::select('name', 'id')->where('company_id', 1)->orderBy('id', 'ASC')->get(),
-            'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
+            'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('type', 'honda')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
             'sub_category_list' => [],
             'uom_list' => EInvoiceUom::getList(),
         ];
@@ -3499,7 +3499,7 @@ class HondaServiceInvoiceController extends Controller
             $axUrl = "GetCustMasterDetails_Honda";
             $this->soapWrapper->add('customer', function ($service) {
                 $service
-                    ->wsdl('http://tvsappuat.tvs.in/OnGo/WebService.asmx?wsdl')
+                    ->wsdl('https://tvsapp.tvs.in/OnGo/WebService.asmx?wsdl')
                     ->trace(true);
             });
             $params = ['ACCOUNTNUM' => $key];
@@ -3770,7 +3770,7 @@ class HondaServiceInvoiceController extends Controller
             $axUrl = "GetCustMasterDetails_Honda";
             $this->soapWrapper->add('customer', function ($service) {
                 $service
-                    ->wsdl('http://tvsappuat.tvs.in/OnGo/WebService.asmx?wsdl')
+                    ->wsdl('https://tvsapp.tvs.in/OnGo/WebService.asmx?wsdl')
                     ->trace(true);
             });
             $params = ['ACCOUNTNUM' => $key];
@@ -3815,9 +3815,27 @@ class HondaServiceInvoiceController extends Controller
                                 else 
                                     $state = null;
 
+                                if(!empty($customer_data['CUSTGROUP'])){
+
+                                    $honda_cust_grp = DB::table('honda_customer_group')
+                                                            ->where('code',$customer_data['CUSTGROUP'])->first();
+                                    $customer_grp = $honda_cust_grp->id;
+
+                                } else {
+                                    $customer_grp = null;
+                                }
+                                if(!empty($customer_data['DIMENSION'])){
+
+                                    $honda_dimension = DB::table('honda_dept_dimension')
+                                                            ->where('dimension_value',$customer_data['DIMENSION'])->first();
+                                    $customer_dimension = $honda_dimension->id;
+
+                                } else {
+                                    $customer_dimension = null;
+                                }
                                 $customer->company_id = Auth::user()->company_id;
                                 $customer->name = $request->data['name'];
-                                $customer->cust_group = empty($customer_data['CUSTGROUP']) ? null : $customer_data['CUSTGROUP'];
+                                $customer->cust_group = $customer_grp;
 
                                 $customer->gst_number = !empty($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available' ? $customer_data['GST_NUMBER'] : null;
 
@@ -3826,7 +3844,7 @@ class HondaServiceInvoiceController extends Controller
                                 $customer->address = str_replace('""', '', $customer_data['ADDRESS']);;
                                 $customer->city = !empty($city) ? $city->id : null; //$customer_data['CITY'];
                                 $customer->zipcode = empty($customer_data['ZIPCODE']) || $customer_data['ZIPCODE'] == 'Not available' ? null : $customer_data['ZIPCODE'];
-                                $customer->dimension =  $customer_data['DIMENSION'];
+                                $customer->dimension = $customer_dimension;
                                 $customer->created_at = Carbon::now();
                                 $customer->save();
 

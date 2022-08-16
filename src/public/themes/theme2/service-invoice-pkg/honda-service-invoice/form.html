@@ -89,7 +89,6 @@
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Category <span class="mandatory">*</span></label>
                                                     <div class="table-form-list-control">
-                                                        <!-- <md-select class="type-sm" ng-model="$ctrl.service_invoice.service_item_sub_category.category_id" ng-change="getServiceItemSubCategoryByServiceItemCategory($ctrl.service_invoice.service_item_sub_category.category_id)" placeholder="Select Category" md-on-close="clearSearchCategory()" data-md-container-class="selectdemoSelectHeader"> -->
                                                         <md-select class="type-sm" ng-model="$ctrl.service_invoice.category_id" placeholder="Select Category" md-on-close="clearSearchCategory()" data-md-container-class="selectdemoSelectHeader">
                                                             <md-select-header class="demo-select-header">
                                                                 <input ng-model="searchCategory" type="search" placeholder="Search for a category.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
@@ -131,10 +130,10 @@
                                                             <label for="is_no">
                                                                 No
                                                             </label>
-                                                            <input type="radio" id="is_nontax" name="is_service" ng-value="2" value="2" ng-model="$ctrl.service_invoice.is_service" ng-checked="$ctrl.service_invoice.is_service" class="is_service">
+                                                          <!--   <input type="radio" id="is_nontax" name="is_service" ng-value="2" value="2" ng-model="$ctrl.service_invoice.is_service" ng-checked="$ctrl.service_invoice.is_service" class="is_service">
                                                             <label for="is_nontax">
                                                                 Non-Taxable
-                                                            </label>
+                                                            </label> -->
                                                         </div>
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
