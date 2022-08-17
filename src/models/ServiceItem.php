@@ -5,6 +5,7 @@ use Abs\AttributePkg\Models\FieldGroup;
 use Abs\CoaPkg\CoaCode;
 use Abs\TaxPkg\TaxCode;
 use App\Company;
+use Abs\ServiceInvoicePkg\SubLedger;
 use Auth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -24,6 +25,10 @@ class ServiceItem extends Model {
 
 	public function coaCode() {
 		return $this->belongsTo('Abs\CoaPkg\CoaCode', 'coa_code_id', 'id');
+	}
+
+	public function subLedger() {
+		return $this->belongsTo('Abs\ServiceInvoicePkg\SubLedger', 'sub_ledger_id', 'id');
 	}
 
 	public function taxCode() {
