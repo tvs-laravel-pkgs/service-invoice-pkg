@@ -431,7 +431,7 @@ app.component('hondaServiceInvoiceList', {
             self.extras.sbu_list = [];
         }
         //SEARCH CUSTOMER
-        self.searchCustomer = function (query) {
+        self.searchHondaCustomer = function (query) {
             if (query) {
                 return new Promise(function (resolve, reject) {
                     $http
@@ -465,7 +465,7 @@ app.component('hondaServiceInvoiceList', {
             $('#pace').css("display", "block");
             $('#pace').addClass('pace-active');
             $http.post(
-                laravel_routes['saveApprovalStatus'], {
+                laravel_routes['saveHondaApprovalStatus'], {
                 id: $id,
                 send_to_approval: $send_to_approval,
             }
@@ -817,8 +817,8 @@ app.component('hondaServiceInvoiceForm', {
             self.service_invoice.service_invoice_items = [];
         }
 
-        self.searchCustomer = $rootScope.searchCustomer;
-        // console.log(self.searchCustomer);
+        self.searchHondaCustomer = $rootScope.searchHondaCustomer;
+        // console.log(self.searchHondaCustomer);
 
         //GET CUSTOMER DETAILS
         $scope.customerSelected = function () {

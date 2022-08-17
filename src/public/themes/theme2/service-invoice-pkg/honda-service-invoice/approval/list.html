@@ -186,7 +186,7 @@
                         <div class="col-md-6">
                             <div class="input-text form-group">
                                 <label>Customer</label>
-                                <md-autocomplete md-items="option in $ctrl.searchCustomer($ctrl.customerSearchText)" md-selected-item="$ctrl.service_invoice.customer" md-search-text="$ctrl.customerSearchText" md-item-text="option.code" md-min-length="3" placeholder="Customer code / name" md-selected-item-change="getCustomerDetails($ctrl.service_invoice.customer.id)" md-search-text-change="$ctrl.customerChanged()">
+                                <md-autocomplete md-items="option in $ctrl.searchHondaCustomer($ctrl.customerSearchText)" md-selected-item="$ctrl.service_invoice.customer" md-search-text="$ctrl.customerSearchText" md-item-text="option.code" md-min-length="3" placeholder="Customer code / name" md-selected-item-change="getCustomerDetails($ctrl.service_invoice.customer.id)" md-search-text-change="$ctrl.customerChanged()">
                                     <md-item-template>
                                         <span>
                                             {{option.name}} - {{option.code}}

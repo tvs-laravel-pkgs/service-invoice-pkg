@@ -1066,7 +1066,7 @@ class HondaServiceInvoiceController extends Controller
                 $validator_1 = Validator::make($generateNumber, [
                     'number' => [
                         'required',
-                        'unique:service_invoices,number,' . $request->id . ',id,company_id,' . Auth::user()->company_id,
+                        'unique:honda_service_invoices,number,' . $request->id . ',id,company_id,' . Auth::user()->company_id,
                     ],
                 ], $error_messages_1);
 
@@ -3833,6 +3833,7 @@ class HondaServiceInvoiceController extends Controller
                                 } else {
                                     $customer_dimension = null;
                                 }
+                                $locator = isset( $customer_data['LOCATOR'] ) ? $customer_data['LOCATOR'] : null;
                                 $customer->company_id = Auth::user()->company_id;
                                 $customer->name = $request->data['name'];
                                 $customer->cust_group = $customer_grp;
@@ -3849,10 +3850,10 @@ class HondaServiceInvoiceController extends Controller
                                 $customer->save();
 
                                 $address_count = 1;
-                                $address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' => $customer_data['LOCATOR'] ]); //CUSTOMER
+                                $address = Address::firstOrNew(['entity_id' => $customer->id, 'ax_id' =>  $locator]); //CUSTOMER
                                 $address->company_id = Auth::user()->company_id;
                                 $address->entity_id = $customer->id;
-                                $address->ax_id = $customer_data['LOCATOR'];
+                                $address->ax_id = $locator;
                                 $address->gst_number = !empty($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available' ? $customer_data['GST_NUMBER'] : null;
 
                                 $address->ax_customer_location_id = isset($customer_data['LOCATOR']) ? $customer_data['LOCATOR'] : null;

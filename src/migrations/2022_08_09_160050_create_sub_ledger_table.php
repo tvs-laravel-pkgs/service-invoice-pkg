@@ -35,7 +35,9 @@ class CreateSubLedgerTable extends Migration
 			$table->unique(["company_id", "ax_subgl"]);
         });
         Schema::table('service_items', function (Blueprint $table) {
-            $table->tinyInteger('sub_ledger_id')->after('is_tcs')->nullable();
+            $table->unsignedInteger('sub_ledger_id')->after('is_tcs')->nullable();
+            $table->foreign('sub_ledger_id')->references('id')->on('sub_ledger')->onDelete('SET NULL')->onUpdate('cascade');
+
         });
     }
 

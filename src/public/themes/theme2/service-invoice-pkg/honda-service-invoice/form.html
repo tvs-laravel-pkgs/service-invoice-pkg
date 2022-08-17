@@ -55,7 +55,7 @@
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Branch <span class="mandatory">*</span></label>
                                                     <div class="table-form-list-control">
-                                                        <md-autocomplete class="type-sm" md-items="option in $ctrl.searchBranch($ctrl.branchSearchText)" md-selected-item="$ctrl.service_invoice.branch" md-search-text="$ctrl.branchSearchText" md-item-text="option.code" md-min-length="3" placeholder="Branch code / name" md-selected-item-change="$ctrl.getBranchDetails()" md-search-text-change="$ctrl.branchChanged()" md-autofocus>
+                                                        <md-autocomplete class="type-sm" md-items="option in $ctrl.searchBranch($ctrl.branchSearchText)" md-selected-item="$ctrl.service_invoice.branch" md-search-text="$ctrl.branchSearchText" md-item-text="option.name" md-min-length="3" placeholder="Branch code / name" md-selected-item-change="$ctrl.getBranchDetails()" md-search-text-change="$ctrl.branchChanged()" md-autofocus>
                                                             <md-item-template>
                                                                 <span>
                                                                     {{option.name}} - {{option.code}}
@@ -201,7 +201,7 @@
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">{{$ctrl.service_invoice.to_account_type_id == 1440 ? 'Customer': '' }}{{$ctrl.service_invoice.to_account_type_id == 1441 ? 'Vendor': '' }}{{$ctrl.service_invoice.to_account_type_id == 1442 ? 'Ledger': '' }} Code <span class="mandatory">*</span></label>
                                                     <div class="table-form-list-control">
-                                                        <md-autocomplete class="type-sm" ng-if="$ctrl.service_invoice.to_account_type_id == 1440" md-items="option in $ctrl.searchCustomer($ctrl.CustomerSearchText)" md-selected-item="$ctrl.service_invoice.customer" md-search-text="$ctrl.CustomerSearchText" md-selected-item-change="customerSelected($ctrl.service_invoice.customer)" md-item-text="option.code" md-min-length="3" md-escape-options="clear" placeholder="Customer code / name" input-aria-labelledby="favoriteStateLabel" md-no-cache="false" ng-model-options="{trackBy: '$value.id' }">
+                                                        <md-autocomplete class="type-sm" ng-if="$ctrl.service_invoice.to_account_type_id == 1440" md-items="option in $ctrl.searchHondaCustomer($ctrl.CustomerSearchText)" md-selected-item="$ctrl.service_invoice.customer" md-search-text="$ctrl.CustomerSearchText" md-selected-item-change="customerSelected($ctrl.service_invoice.customer)" md-item-text="option.code" md-min-length="3" md-escape-options="clear" placeholder="Customer code / name" input-aria-labelledby="favoriteStateLabel" md-no-cache="false" ng-model-options="{trackBy: '$value.id' }">
                                                             <md-item-template>
                                                                 <span>
                                                                     {{option.code}} - {{option.name}}

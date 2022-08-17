@@ -124,7 +124,7 @@
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Customer Code <span class="mandatory">*</span></label>
                                                     <div class="table-form-list-control">
-                                                        <md-autocomplete class="type-sm" md-items="option in $ctrl.searchCustomer($ctrl.customerSearchText)" md-selected-item="$ctrl.service_invoice.customer" md-search-text="$ctrl.customerSearchText" md-item-text="option.code" md-min-length="3" placeholder="Customer code / name" md-selected-item-change="$ctrl.getCustomerDetails()" md-search-text-change="$ctrl.customerChanged()">
+                                                        <md-autocomplete class="type-sm" md-items="option in $ctrl.searchHondaCustomer($ctrl.customerSearchText)" md-selected-item="$ctrl.service_invoice.customer" md-search-text="$ctrl.customerSearchText" md-item-text="option.code" md-min-length="3" placeholder="Customer code / name" md-selected-item-change="$ctrl.getCustomerDetails()" md-search-text-change="$ctrl.customerChanged()">
                                                             <md-item-template>
                                                                 <span>
                                                                     {{option.name}} - {{option.code}}

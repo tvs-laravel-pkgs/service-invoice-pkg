@@ -368,7 +368,7 @@ app.component('hondaServiceInvoiceApprovalList', {
             self.extras.sbu_list = [];
         }
         //SEARCH CUSTOMER
-        self.searchCustomer = function (query) {
+        self.searchHondaCustomer = function (query) {
             if (query) {
                 return new Promise(function (resolve, reject) {
                     $http
