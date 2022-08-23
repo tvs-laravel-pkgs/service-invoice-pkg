@@ -3,7 +3,7 @@
 namespace Abs\ServiceInvoicePkg;
 
 use Abs\AttributePkg\Models\Field;
-use Abs\AxaptaExportPkg\AxaptaExport;
+use Abs\AxaptaExportPkg\HondaAxaptaExport;
 use Abs\ImportCronJobPkg\ImportCronJob;
 use Abs\SerialNumberPkg\SerialNumberGroup;
 use Abs\ServiceInvoicePkg\HondaServiceInvoiceController;
@@ -169,7 +169,7 @@ class HondaServiceInvoice extends Model
 
     public function attachments()
     {
-        return $this->hasMany('App\Attachment', 'entity_id', 'id')->where('attachment_of_id', 221)->where('attachment_type_id', 241);
+        return $this->hasMany('App\Attachment', 'entity_id', 'id')->where('attachment_of_id', 130173)->where('attachment_type_id', 241);
     }
 
     public static function createFromCollection($records, $company = null)
@@ -267,7 +267,7 @@ class HondaServiceInvoice extends Model
     {
         $this->lineNumber = 1;
         // DB::beginTransaction();
-        $axaptaExports = AxaptaExport::where([
+        $axaptaExports = HondaAxaptaExport::where([
             'DocumentNum' => $this->number,
             'company_id' => $this->company_id,
         ])->get();
@@ -278,14 +278,6 @@ class HondaServiceInvoice extends Model
                 'errors' => $errors,
             ];
         }
-
-        //if ($delete) {
-        //    AxaptaExport::where([
-        //        'company_id' => $this->company_id,
-        //        'entity_type_id' => 1400,
-        //        'entity_id' => $this->id,
-        //    ])->delete();
-        //}
         // try {
         $item_codes = [];
         $total_amount_with_gst['debit'] = 0;
@@ -347,12 +339,11 @@ class HondaServiceInvoice extends Model
             $date1 = Carbon::createFromFormat('d-m-Y', '31-07-2021');
             $date2 = Carbon::createFromFormat('d-m-Y', date('d-m-Y', strtotime($service_invoice->document_date)));
             $kfc_result = $date1->gte($date2);
-
             if (empty($service_invoice->branch->primaryAddress)) {
                 $errors[] = 'Branch Primary Address Not Found! : ' . $service_invoice->branch->name;
                 continue;
             }
-            // dd($service_invoice->address);
+            
             // $service_invoice->customer->primaryAddress;
             $invoice_cgst_percentage = 0;
             $invoice_sgst_percentage = 0;
@@ -379,9 +370,7 @@ class HondaServiceInvoice extends Model
             }
             if (!empty($service_invoice)) {
                 if ($service_invoice->address->state_id) {
-                    if ($service_invoice->address->state_id == 3 && $service_invoice->branch->primaryAddress->state_id == 3 && empty($service_invoice->address->gst_number) && $service_invoice->type_id != 1060 && $kfc_result) {
-                        // if (empty($service_invoice->address->gst_number)) {
-                        // if ($service_invoice->type_id != 1060) {
+                    if ($service_invoice->address->state_id == 3 && $service_invoice->branch->primaryAddress->state_id == 3 && empty($service_invoice->address->gst_number) && $service_invoice->type_id != 1060 && $kfc_result) { 
                         if (!empty($invoice_item->serviceItem->taxCode)) {
                             $KFC_IN = 1;
                             foreach ($invoice_item->serviceItem->taxCode->taxes as $tax) {
@@ -451,15 +440,7 @@ class HondaServiceInvoice extends Model
                         }
                     }
                 }
-
-                // dump($total_amount_with_gst['credit'], $total_amount_with_gst['debit'], $total_amount_with_gst['invoice']);
-                // dump($total_amount_with_gst_not_kfc['credit'], $total_amount_with_gst_not_kfc['debit'], $total_amount_with_gst_not_kfc['invoice']);
-                // dd(1);
-                // dump($invoice_cgst_percentage, $invoice_sgst_percentage, $invoice_igst_percentage);
-                // dump($invoice_item->sub_total);
-                // dump($invoice_kfc_percentage);
-                // dd($invoice_item->serviceItem->taxCode->taxes);
-                // dump($invoice_kfc_percentage);
+ 
                 if (!empty($invoice_item->serviceItem->taxCode)) {
                     foreach ($invoice_item->serviceItem->taxCode->taxes as $key => $tax) {
                         // dump($tax->name);
@@ -497,29 +478,9 @@ class HondaServiceInvoice extends Model
                             $tcs_calc_gst['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
                         }
                     }
-                }
-                // dump($tcs_calc_gst['credit'], $tcs_calc_gst['debit'], $tcs_calc_gst['invoice'], $invoice_item->sub_total);
-                // dump($kfc['credit'], $kfc['debit'], $kfc['invoice'], $invoice_item->sub_total);
-                // dump($kfc['invoice'], $tcs_calc_gst['invoice'], $invoice_item->sub_total);
-                // if ($invoice_item->serviceItem->tcs_percentage && $invoice_item->serviceItem->is_tcs == 1) {
+                } 
                 if ($invoice_item->serviceItem->tcs_percentage) {
-                    // $document_date = (string) $service_invoice->document_date;
-                    // $date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
-                    // $date2 = Carbon::createFromFormat('d-m-Y', $document_date);
-                    // $result = $date1->gte($date2);
-
-                    // $tcs_limit = Entity::where('entity_type_id', 38)->where('company_id', Auth::user()->company_id)->pluck('name')->first();
-                    // $tcs_percentage = 0;
-                    // if($invoice_item->sub_total >= $tcs_limit) {
-                    //     $tcs_percentage = $invoice_item->serviceItem->tcs_percentage;
-                    //     if (!$result) {
-                    //         $tcs_percentage = 1;
-                    //     }
-                    // }
-
-                    // $tcs_total['credit'] += $this->type_id == 1060 ? round(($kfc_amt['credit'] + $igst_amt['credit'] + $sgst_amt['credit'] + $cgst_amt['credit'] + $invoice_item->sub_total) * $invoice_item->serviceItem->tcs_percentage / 100, 2) : 0;
-                    // $tcs_total['debit'] += $this->type_id == 1061 ? round(($kfc_amt['debit'] + $igst_amt['debit'] + $sgst_amt['debit'] + $cgst_amt['debit'] + $invoice_item->sub_total) * $invoice_item->serviceItem->tcs_percentage / 100, 2) : 0;
-                    // $tcs_total['invoice'] += $this->type_id == 1062 ? round(($kfc_amt['invoice'] + $igst_amt['invoice'] + $sgst_amt['invoice'] + $cgst_amt['invoice'] + $invoice_item->sub_total) * $invoice_item->serviceItem->tcs_percentage / 100, 2) : 0;
+                    
                     $tcs_total['credit'] += $this->type_id == 1060 ? round(($kfc_amt['credit'] + $igst_amt['credit'] + $sgst_amt['credit'] + $cgst_amt['credit'] + $invoice_item->sub_total) * $tcs_percentage / 100, 2) : 0;
                     $tcs_total['debit'] += $this->type_id == 1061 ? round(($kfc_amt['debit'] + $igst_amt['debit'] + $sgst_amt['debit'] + $cgst_amt['debit'] + $invoice_item->sub_total) * $tcs_percentage / 100, 2) : 0;
                     $tcs_total['invoice'] += $this->type_id == 1062 ? round(($kfc_amt['invoice'] + $igst_amt['invoice'] + $sgst_amt['invoice'] + $cgst_amt['invoice'] + $invoice_item->sub_total) * $tcs_percentage / 100, 2) : 0;
@@ -535,12 +496,15 @@ class HondaServiceInvoice extends Model
             }
             $item_codes[] = $invoice_item->serviceItem->code;
             $item_descriptions[] = $invoice_item->description;
+            $params['PlantCode'] = $service_invoice->branch->al_plant_code;
+            $params['Account'] = $service_invoice->customer->code;
+            $params['Department'] = $service_invoice->serviceItemCategory->name;
+            $params['Sub_GL'] = $invoice_item->serviceItem->subLedger->ax_subgl;
+            $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
+            $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
+            $params['Qty'] = $invoice_item->qty;
         }
-        // dump($tcs_total['invoice'], $tcs_total['credit'], $tcs_total['debit'], $this->serviceInvoiceItems()->sum('sub_total'));
-        // dump($cess_on_gst_total['invoice'], $cess_on_gst_total['credit'], $cess_on_gst_total['debit'], $this->serviceInvoiceItems()->sum('sub_total'));
-        // dd($this->branch->primaryAddress->state->cess_on_gst_coa_code);
-        // dd(1);
-        // dump($total_amount_with_gst['invoice'], $total_amount_with_gst['credit'], $total_amount_with_gst['debit']);
+        
         $Txt = implode(',', $item_descriptions);
         if ($this->type_id == 1060) {
             //CN
@@ -648,7 +612,13 @@ class HondaServiceInvoice extends Model
         } else {
             $params['TVSHSNCode'] = $params['TVSSACCode'] = null;
         }
-        // dump($params);
+        $params['PlantCode'] = $service_invoice->branch->al_plant_code;
+        $params['Account'] = $service_invoice->customer->code;
+        $params['Department'] = $service_invoice->serviceItemCategory->name;
+        $params['Sub_GL'] = $invoice_item->serviceItem->subLedger->ax_subgl;
+        $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
+        $params['VatPercentage'] = "";
+        $params['Qty'] = $invoice_item->qty;
         // dd(1);
 
         $this->exportRowToAxapta($params);
@@ -699,7 +669,13 @@ class HondaServiceInvoice extends Model
             } else {
                 $params['TVSHSNCode'] = $params['TVSSACCode'] = null;
             }
-            // dump($params);
+            $params['PlantCode'] = $service_invoice->branch->al_plant_code;
+            $params['Account'] = $service_invoice->customer->code;
+            $params['Department'] = $service_invoice->serviceItemCategory->name;
+            $params['Sub_GL'] = $invoice_item->serviceItem->subLedger->code;
+            $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
+            $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
+            $params['Qty'] = $invoice_item->qty;
             $this->exportRowToAxapta($params);
 
             $service_invoice = $invoice_item->serviceInvoice()->with([
@@ -732,14 +708,17 @@ class HondaServiceInvoice extends Model
                     $invoice_kfc_percentage = $invoice_tax->pivot->percentage;
                 }
             }
-            // $service_invoice->customer->primaryAddress;
-            // dump($service_invoice);
-            // dd(1);
             if (!empty($service_invoice)) {
                 if ($service_invoice->address->state_id) {
+                    $params['PlantCode'] = $service_invoice->branch->al_plant_code;
+                    $params['Account'] = $service_invoice->customer->code;
+                    $params['Department'] = $service_invoice->serviceItemCategory->name;
+                    $params['Sub_GL'] = $invoice_item->serviceItem->subLedger->code;
+                    $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
+                   // $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
+                    $params['Qty'] = $invoice_item->qty;
                     if ($service_invoice->address->state_id == 3 && $service_invoice->branch->primaryAddress->state_id == 3 && empty($service_invoice->address->gst_number) && $service_invoice->type_id != 1060 && $kfc_result) {
-                        // if ($service_invoice->type_id != 1060) {
-                        // if (empty($service_invoice->address->gst_number)) {
+                       
                         //FOR AXAPTA EXPORT WHILE GETING KFC ADD SEPERATE TAX LIKE CGST,SGST
                         if (!empty($invoice_item->serviceItem->taxCode)) {
                             foreach ($invoice_item->serviceItem->taxCode->taxes as $tax) {
@@ -763,6 +742,7 @@ class HondaServiceInvoice extends Model
                                     //REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
                                     $params['TVSHSNCode'] = $params['TVSSACCode'] = null;
                                     // dump($params);
+
                                     $this->exportRowToAxapta($params);
                                 }
                                 //FOR CGST
@@ -909,6 +889,13 @@ class HondaServiceInvoice extends Model
 
             //REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
             $params['TVSHSNCode'] = $params['TVSSACCode'] = null;
+            $params['PlantCode'] = $service_invoice->branch->al_plant_code;
+            $params['Account'] = $service_invoice->customer->code;
+            $params['Department'] = $service_invoice->serviceItemCategory->name;
+            $params['Sub_GL'] = $invoice_item->serviceItem->subLedger->code;
+            $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
+           // $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
+            $params['Qty'] = $invoice_item->qty;
             // dump($params);
             $this->exportRowToAxapta($params);
         }
@@ -933,11 +920,25 @@ class HondaServiceInvoice extends Model
             // dd($params);
             //REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
             $params['TVSHSNCode'] = $params['TVSSACCode'] = null;
+            $params['PlantCode'] = $service_invoice->branch->al_plant_code;
+            $params['Account'] = $service_invoice->customer->code;
+            $params['Department'] = $service_invoice->serviceItemCategory->name;
+            $params['Sub_GL'] = $invoice_item->serviceItem->subLedger->code;
+            $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
+           // $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
+            $params['Qty'] = $invoice_item->qty;
             // dump($params);
             $this->exportRowToAxapta($params);
         }
 
         if (!empty($service_invoice->round_off_amount) && $service_invoice->round_off_amount != '0.00') {
+            $params['PlantCode'] = $service_invoice->branch->al_plant_code;
+            $params['Account'] = $service_invoice->customer->code;
+            $params['Department'] = $service_invoice->serviceItemCategory->name;
+            $params['Sub_GL'] = $invoice_item->serviceItem->subLedger->code;
+            $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
+            $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
+            $params['Qty'] = $invoice_item->qty;
             if ($amount_diff > 0) {
                 if ($this->type_id == 1061) {
                     $params['AmountCurCredit'] = $this->type_id == 1061 ? $amount_diff : 0;
@@ -952,9 +953,6 @@ class HondaServiceInvoice extends Model
                 $params['LineNum'] = ++$line_number;
                 // dump($params['LineNum']);
                 $line_number = $params['LineNum'];
-
-                // dump('if');
-                // dd($params);
                 $this->exportRowToAxapta($params);
             } else {
                 if ($this->type_id == 1061) {
@@ -1157,13 +1155,7 @@ class HondaServiceInvoice extends Model
                         }
                     }
                 }
-
-                // dump($total_amount_with_gst['credit'], $total_amount_with_gst['debit'], $total_amount_with_gst['invoice']);
-                // dump($invoice_cgst_percentage, $invoice_sgst_percentage, $invoice_igst_percentage);
-                // dump($invoice_item->sub_total);
-                // dump($invoice_kfc_percentage);
-                // dd($invoice_item->serviceItem->taxCode->taxes);
-                // dump($invoice_kfc_percentage);
+ 
                 if (!empty($invoice_item->serviceItem->taxCode)) {
                     foreach ($invoice_item->serviceItem->taxCode->taxes as $key => $tax) {
                         // dump($tax->name);
@@ -1201,11 +1193,7 @@ class HondaServiceInvoice extends Model
                             $tcs_calc_gst['invoice'] += $this->type_id == 1062 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
                         }
                     }
-                }
-                // dump($tcs_calc_gst['credit'], $tcs_calc_gst['debit'], $tcs_calc_gst['invoice'], $invoice_item->sub_total);
-                // dump($kfc['credit'], $kfc['debit'], $kfc['invoice'], $invoice_item->sub_total);
-                // dump($kfc['invoice'], $tcs_calc_gst['invoice'], $invoice_item->sub_total);
-                // if ($invoice_item->serviceItem->tcs_percentage && $invoice_item->serviceItem->is_tcs == 1) {
+                } 
                 if ($invoice_item->serviceItem->tcs_percentage) {
                     $tcs_total['credit'] += $this->type_id == 1060 ? round(($kfc_amt['credit'] + $igst_amt['credit'] + $sgst_amt['credit'] + $cgst_amt['credit'] + $invoice_item->sub_total) * $tcs_percentage / 100, 2) : 0;
                     $tcs_total['debit'] += $this->type_id == 1061 ? round(($kfc_amt['debit'] + $igst_amt['debit'] + $sgst_amt['debit'] + $cgst_amt['debit'] + $invoice_item->sub_total) * $tcs_percentage / 100, 2) : 0;
@@ -1224,9 +1212,6 @@ class HondaServiceInvoice extends Model
             $item_codes[] = $invoice_item->serviceItem->code;
             $item_descriptions[] = $invoice_item->description;
         }
-        // dump($tcs_total['invoice'], $tcs_total['credit'], $tcs_total['debit'], $this->serviceInvoiceItems()->sum('sub_total'));
-        // dd(1);
-        // dump($total_amount_with_gst['invoice'], $total_amount_with_gst['credit'], $total_amount_with_gst['debit']);
         $Txt = implode(',', $item_descriptions);
         if ($this->type_id == 1060) {
             //CN
@@ -1239,9 +1224,6 @@ class HondaServiceInvoice extends Model
             $Txt .= ' - Invoice for ';
         }
         $Txt .= implode(',', $item_codes);
-
-        // dump($Txt);
-        // dump($this->serviceInvoiceItems()->sum('sub_total'));
         $amount_diff = 0;
         if (!empty($this->final_amount) && !empty($this->total)) {
             $amount_diff = number_format(($this->final_amount - $this->total), 2);
@@ -1671,10 +1653,8 @@ class HondaServiceInvoice extends Model
 
     protected function exportRowToAxapta($params)
     {
-        // dd($params);
-        // $invoice, $sno, $TransDate, $owner, $outlet, $coa_code, $ratio, $bank_detail, $rent_details, $debit, $credit, $voucher, $txt, $payment_modes, $flip, $account_type, $ledger_dimention, $sac_code, $sharing_type_id, $hsn_code = '', $tds_group_in = ''
-
-        $export = new AxaptaExport([
+        
+        $export = new HondaAxaptaExport([
             'company_id' => $this->company_id,
             'entity_type_id' => 1400,
             'entity_id' => $this->id,
@@ -1682,7 +1662,7 @@ class HondaServiceInvoice extends Model
         ]);
 
         $params['TVSHSNCode'] = isset($params['TVSHSNCode']) ? $params['TVSHSNCode'] : '';
-        $export->Application = 'VIMS';
+        $export->Application = 'HONDA';
         $export->ApplicationType = 'CNDN';
         $export->CurrencyCode = 'INR';
         $export->JournalName = 'BPAS_NJV';
@@ -1722,6 +1702,14 @@ class HondaServiceInvoice extends Model
         $export->TVSCompanyLocationId = ($params['TVSHSNCode'] || $params['TVSSACCode']) && $this->outlet->axapta_location_id ? $this->outlet->axapta_location_id : '';
         $ax_export_status = AxExportStatus::where('code', 'pending')->first();
         $export->sync_status_id = $ax_export_status->id;
+        dd($params);
+        $export->PlantCode = $params['PlantCode'];
+        $export->Account = $params['Account'];
+        $export->Department = $params['Department'];
+        $export->Sub_GL = $params['Sub_GL'];
+        $export->InvoiceDate = $params['InvoiceDate'];
+        $export->VatPercentage = $params['VatPercentage'];
+        $export->Qty =  $params['Qty'];
         $export->save();
 
     }
@@ -2737,7 +2725,7 @@ class HondaServiceInvoice extends Model
 
         $pdf = app('dompdf.wrapper');
         $pdf->getDomPDF()->set_option("enable_php", true);
-        $pdf = $pdf->loadView('service-invoices/pdf/index', $data);
+        $pdf = $pdf->loadView('honda-service-invoices/pdf/index', $data);
         // $po_file_name = 'Invoice-' . $this->number . '.pdf';
         File::delete($pathToFile);
         File::put($pathToFile, $pdf->output());
@@ -2965,7 +2953,7 @@ class HondaServiceInvoice extends Model
 
         $pdf = app('dompdf.wrapper');
         $pdf->getDomPDF()->set_option("enable_php", true);
-        $pdf = $pdf->loadView('service-invoices/pdf/index', $data);
+        $pdf = $pdf->loadView('honda-service-invoices/pdf/index', $data);
         // $po_file_name = 'Invoice-' . $this->number . '.pdf';
         File::delete($pathToFile);
         File::put($pathToFile, $pdf->output());

@@ -7,7 +7,7 @@ use Abs\AttributePkg\Models\Field;
 use Abs\AttributePkg\Models\FieldConfigSource;
 use Abs\AttributePkg\Models\FieldGroup;
 use Abs\AttributePkg\Models\FieldSourceTable;
-use Abs\AxaptaExportPkg\AxaptaExport;
+use Abs\AxaptaExportPkg\HondaAxaptaExport;
 use Abs\SerialNumberPkg\SerialNumberGroup;
 use Abs\ServiceInvoicePkg\HondaServiceInvoice;
 use Abs\ServiceInvoicePkg\HondaServiceInvoiceItem;
@@ -1074,8 +1074,6 @@ class HondaServiceInvoiceController extends Controller
                     return response()->json(['success' => false, 'errors' => $validator_1->errors()->all()]);
                 }
 
-            }
-
             //VALIDATE SERVICE INVOICE ITEMS
             if (!$request->service_invoice_items) {
                 return response()->json(['success' => false, 'errors' => ['Service invoice item is required']]);
@@ -1086,7 +1084,7 @@ class HondaServiceInvoiceController extends Controller
                 $service_invoice = HondaServiceInvoice::find($request->id);
                 $service_invoice->updated_at = date("Y-m-d H:i:s");
                 $service_invoice->updated_by_id = Auth()->user()->id;
-                $message = 'Service invoice updated successfully';
+                $message = 'Service invoice was successfully updated and sent for approval.';
             } else {
                 $service_invoice = new HondaServiceInvoice();
                 $service_invoice->created_at = date("Y-m-d H:i:s");
@@ -1097,7 +1095,7 @@ class HondaServiceInvoiceController extends Controller
                 } else {
                     return response()->json(['success' => false, 'errors' => ['Initial CN/DN Status has not mapped.!']]);
                 }
-                $message = 'Service invoice added successfully';
+                $message = 'Service invoice was successfully initiated and sent for approval.';
             }
             if ($request->type_id == 1061) {
                 $service_invoice->is_cn_created = 0;
@@ -1267,59 +1265,24 @@ class HondaServiceInvoiceController extends Controller
             'serviceInvoiceItems.taxes',
         ])->find($service_invoice_id);
 
-        // dd($service_invoice);
-        // $r = $service_invoice->exportToAxapta();
-        // if (!$r['success']) {
-        //     return $r;
-        // }
-        // dd('stop');
-        //ADDED FOR QUEUE METHOD STRAT
-        // CreatePdfCnDn::dispatch($service_invoice_id, Auth::user()->company_id, Auth::user()->id);
-        // $service_invoice = ServiceInvoice::find($service_invoice_id);
-        // $service_invoice->status_id = 3; //IN PROGRESS
-        // $service_invoice->save();
-        //ADDED FOR QUEUE METHOD END
+       
         $service_invoice->customer;
         $service_invoice->address;
-        // $service_invoice->customer->primaryAddress;
-        // dd($service_invoice->outlets->primaryAddress->country);
         $service_invoice->company->formatted_address = $service_invoice->company->primaryAddress ? $service_invoice->company->primaryAddress->getFormattedAddress() : 'NA';
-        // $service_invoice->outlets->formatted_address = $service_invoice->outlets->primaryAddress ? $service_invoice->outlets->primaryAddress->getFormattedAddress() : 'NA';
-        $service_invoice->outlets = $service_invoice->outlets ? $service_invoice->outlets : 'NA';
-        // $service_invoice->customer->formatted_address = $service_invoice->customer->primaryAddress ? $service_invoice->customer->primaryAddress->address_line1 : 'NA';
+     
         $service_invoice->customer->formatted_address = $service_invoice->address ? $service_invoice->address->address_line1 : 'NA';
 
         if ($service_invoice->to_account_type_id == 1440) {
-            // $city = City::where('name', $service_invoice->customer->city)->first();
-            // dd($city);
-            // if ($city) {
+
             $state = State::find($service_invoice->address ? $service_invoice->address->state_id : null);
             $service_invoice->address->state_code = $state ? $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-' : '-';
-            // } else {
-            // $service_invoice->customer->state_code = '-';
-            // }
+          
         } else {
             $state = State::find($service_invoice->address ? $service_invoice->address->state_id : null);
-            // $state = State::find($service_invoice->customer->primaryAddress ? $service_invoice->customer->primaryAddress->state_id : NULL);
+           
             $service_invoice->address->state_code = $state ? $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-' : '-';
 
-            // dd($service_invoice->customer_id);
-            // $address = Address::with(['city', 'state', 'country'])->where('address_of_id', 21)->where('entity_id', $service_invoice->customer_id)->first();
-            // $address = Address::with(['city', 'state', 'country'])->find($service_invoice->address_id);
-            // // dd($address);
-            // if ($address) {
-            //     $service_invoice->customer->address .= $address->address_line1 ? $address->address_line1 . ', ' : '';
-            //     $service_invoice->customer->address .= $address->address_line2 ? $address->address_line2 . ', ' : '';
-            //     $service_invoice->customer->address .= $address->city ? $address->city->name . ', ' : '';
-            //     $service_invoice->customer->address .= $address->state ? $address->state->name . ', ' : '';
-            //     $service_invoice->customer->address .= $address->country ? $address->country->name . ', ' : '';
-            //     $service_invoice->customer->address .= $address->pincode ? $address->pincode . '.' : '';
-            // } else {
-            //     $service_invoice->customer->address = '';
-            // }
         }
-        // dd(1);
-        // dd($service_invoice);
         $fields = Field::withTrashed()->get()->keyBy('id');
 
         if (count($service_invoice->serviceInvoiceItems) > 0) {
@@ -1495,17 +1458,7 @@ class HondaServiceInvoiceController extends Controller
         } else {
             $service_invoice->round_off_amount = 0;
         }
-        // dd($service_invoice->round_off_amount);
-
-        // if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->pincode))) {
-        //     $errors[] = 'Customer Pincode Required. Customer Pincode Not Found!';
-        //     return [
-        //         'success' => false,
-        //         'errors' => ['Customer Pincode Required. Customer Pincode Not Found!'],
-        //     ];
-        //     // DB::commit();
-
-        // }
+       
 
         if (empty($service_invoice->address->state_id)) {
             $errors[] = 'Customer State Required. Customer State Not Found!';
@@ -1669,23 +1622,7 @@ class HondaServiceInvoiceController extends Controller
                     if ($tcs_amount > 0) {
                         $tcs_total += $tcs_amount;
                     }
-                    // if ($service_item->tcs_percentage) {
-                    //     $date = date('d-m-Y', strtotime($service_invoice->document_date));
-                    //     $document_date = (string) $date;
-                    //     $date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
-                    //     $date2 = Carbon::createFromFormat('d-m-Y', $document_date);
-                    //     $result = $date1->gte($date2);
-
-                    //     $tcs_percentage = $service_item->tcs_percentage;
-                    //     if (!$result) {
-                    //         $tcs_percentage = 1;
-                    //     }
-
-                    //     $gst_total = 0;
-                    //     $gst_total = $cgst_amt + $sgst_amt + $igst_amt;
-                    //     // $tcs_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
-                    //     $tcs_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $tcs_percentage / 100, 2);
-                    // }
+                     
 
                     //FOR CESS on GST TAX
                     if ($service_item->cess_on_gst_percentage) {
@@ -1923,17 +1860,7 @@ class HondaServiceInvoiceController extends Controller
                         ),
                     )
                 );
-                // //SAVE JSON DATA TO SERVICE INVOICE TABLE
-                // $service_invoice_save_json_data = ServiceInvoice::find($service_invoice_id);
-                // $service_invoice_save_json_data->json_request_send_to_bdo_api = $json_encoded_data;
-                // $service_invoice_save_json_data->status_id = 2;
-                // $service_invoice_save_json_data->save();
-                // if ($service_invoice_save_json_data) {
-                //     DB::commit();
-                // }
-                // dump($json_encoded_data);
-                // dd(1);
-
+               
                 //AES ENCRYPT
                 //ENCRYPT WITH Decrypted BDO SEK KEY TO PLAIN TEXT AND JSON DATA
                 $encrypt_data = self::encryptAesData($decrypt_data_with_bdo_sek, $json_encoded_data);
@@ -2039,22 +1966,7 @@ class HondaServiceInvoiceController extends Controller
                         $api_params['message'] = 'Error GENERATE IRN!';
 
                         $api_params['errors'] = empty($errors) ? 'Error GENERATE IRN, Try again later!' : json_encode($errors);
-                        // DB::beginTransaction();
-
-                        // $api_log = new ApiLog;
-                        // $api_log->type_id = $service_invoice->type_id;
-                        // $api_log->entity_number = $service_invoice->number;
-                        // $api_log->entity_id = $service_invoice->id;
-                        // $api_log->url = $bdo_generate_irn_url;
-                        // $api_log->src_data = $params;
-                        // $api_log->response_data = $generate_irn_output_data;
-                        // $api_log->user_id = Auth::user()->id;
-                        // $api_log->created_by_id = Auth::user()->id;
-                        // $api_log->status_id = !empty($errors) ? 11272 : 11271; //FAILED //SUCCESS
-                        // $api_log->errors = empty($errors) ? NULL : json_encode($errors);
-                        // $api_log->save();
-                        // // dd($api_log);
-                        // DB::commit();
+                  
                         $api_logs[3] = $api_params;
 
                         return [
@@ -2139,21 +2051,7 @@ class HondaServiceInvoiceController extends Controller
                 $service_invoice_save->version = $get_version->Version;
                 $service_invoice_save->irn_request = $json_encoded_data;
                 $service_invoice_save->irn_response = $irn_decrypt_data;
-
-                // if (!$r['success']) {
-                //     $service_invoice_save->status_id = 2; //APPROVAL 1 PENDING
-                //     return [
-                //         'success' => false,
-                //         'errors' => ['Somthing Went Wrong!'],
-                //     ];
-                // }
-
-                // if (count($errors) > 0) {
-                //     $service_invoice->errors = empty($errors) ? NULL : json_encode($errors);
-                //     $service_invoice->status_id = 6; //E-Invoice Fail
-                //     $service_invoice->save();
-                //     // return;
-                // }
+ 
                 $service_invoice->errors = empty($errors) ? null : json_encode($errors);
                 $service_invoice_save->save();
 
@@ -2175,24 +2073,7 @@ class HondaServiceInvoiceController extends Controller
         } else {
             if(empty($eInvoiceConfig))
                 $this->qrCodeGeneration($service_invoice);
-        }
-        //  else {
-        //     $service_invoice_save = ServiceInvoice::find($service_invoice_id);
-
-        //     if (count($errors) > 0) {
-        //         $service_invoice->errors = json_encode($errors);
-        //         $service_invoice->status_id = 6; //E-Invoice Fail
-        //         $service_invoice->save();
-        //         // return;
-        //     }
-        //     $service_invoice_save->status_id = 4; //APPROVED
-        //     $service_invoice_save->save();
-
-        // }
-
-        // dd('out');
-        // dd($service_invoice);
-        // dd('stop Encryption');
+        } 
         //----------// ENCRYPTION END //----------//
         $service_invoice['additional_image_name'] = $additional_image_name;
         $service_invoice['additional_image_path'] = $additional_image_path;
@@ -2631,7 +2512,7 @@ class HondaServiceInvoiceController extends Controller
 
             $service_invoice_ids = $service_invoice_ids->pluck('honda_service_invoices.id');
             // dump($service_invoice_ids);
-            $axapta_records = AxaptaExport::where([
+            $axapta_records = HondaAxaptaExport::where([
                 'company_id' => Auth::user()->company_id,
                 'entity_type_id' => 1400,
             ])
@@ -2746,20 +2627,7 @@ class HondaServiceInvoiceController extends Controller
                 // dd($service_invoice_header);
                 if ($service_invoices) {
                     foreach ($service_invoices as $key => $service_invoice) {
-                        // foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
-                        //     dd($serviceInvoiceItem->serviceItem);
-                        // }
-                        // dump($service_invoice);
-                        // if ($service_invoice->type_id == 1060) {
-                        //     // $type = 'CN';
-                        //     $sign_value = '-';
-                        // } elseif ($service_invoice->type_id == 1061) {
-                        //     // $type = 'DN';
-                        //     $sign_value = '';
-                        // } elseif ($service_invoice->type_id == 1062) {
-                        //     // $type = 'INV';
-                        //     $sign_value = '';
-                        // }
+                     
                         $gst_total = 0;
                         $cgst_amt = 0;
                         $sgst_amt = 0;
@@ -2769,28 +2637,7 @@ class HondaServiceInvoiceController extends Controller
                         $tcs_percentage = 0;
 
                         foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
-                            // dump($serviceInvoiceItem);
-                            // $state_id = $service_invoice->address ? $service_invoice->address->state_id ? $service_invoice->address->state_id : '' : '';
-
-                            // $taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id, $state_id);
-
-                            // if (!$taxes['success']) {
-                            //     return response()->json(['success' => false, 'error' => $taxes['error']]);
-                            // }
-
-                            // $service_item = ServiceItem::with([
-                            //     'coaCode',
-                            //     'taxCode',
-                            //     'taxCode.taxes' => function ($query) use ($taxes) {
-                            //         $query->whereIn('tax_id', $taxes['tax_ids']);
-                            //     },
-                            // ])
-                            //     ->find($serviceInvoiceItem->service_item_id);
-                            // // dd($service_item->taxCode->code);
-                            // if (!$service_item) {
-                            //     return response()->json(['success' => false, 'error' => 'Service Item not found']);
-                            // }
-                            // dd($serviceInvoiceItem->serviceItem);
+                          
                             //TAX CALC AND PUSH
                             $service_invoice_item_taxs = DB::table('honda_service_invoice_item_tax')->where('service_invoice_item_id', $serviceInvoiceItem->id)->get();
                             // dd($service_invoice_item_taxs);
@@ -3261,98 +3108,7 @@ class HondaServiceInvoiceController extends Controller
 
         $service_invoice = HondaServiceInvoice::find($request->id);
 
-        // $rsa = new Crypt_RSA;
-
-        // $public_key = 'MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEAxqHazGS4OkY/bDp0oklL+Ser7EpTpxyeMop8kfBlhzc8dzWryuAECwu8i/avzL4f5XG/DdSgMz7EdZCMrcxtmGJlMo2tUqjVlIsUslMG6Cmn46w0u+pSiM9McqIvJgnntKDHg90EIWg1BNnZkJy1NcDrB4O4ea66Y6WGNdb0DxciaYRlToohv8q72YLEII/z7W/7EyDYEaoSlgYs4BUP69LF7SANDZ8ZuTpQQKGF4TJKNhJ+ocmJ8ahb2HTwH3Ol0THF+0gJmaigs8wcpWFOE2K+KxWfyX6bPBpjTzC+wQChCnGQREhaKdzawE/aRVEVnvWc43dhm0janHp29mAAVv+ngYP9tKeFMjVqbr8YuoT2InHWFKhpPN8wsk30YxyDvWkN3mUgj3Q/IUhiDh6fU8GBZ+iIoxiUfrKvC/XzXVsCE2JlGVceuZR8OzwGrxk+dvMnVHyauN1YWnJuUTYTrCw3rgpNOyTWWmlw2z5dDMpoHlY0WmTVh0CrMeQdP33D3LGsa+7JYRyoRBhUTHepxLwk8UiLbu6bGO1sQwstLTTmk+Z9ZSk9EUK03Bkgv0hOmSPKC4MLD5rOM/oaP0LLzZ49jm9yXIrgbEcn7rv82hk8ghqTfChmQV/q+94qijf+rM2XJ7QX6XBES0UvnWnV6bVjSoLuBi9TF1ttLpiT3fkCAwEAAQ=='; //PROVIDE FROM BDO COMPANY
-
-        // // $clientid = "prakashr@featsolutions.in"; //PROVIDE FROM BDO COMPANY
-        // // $clientid = "amutha@sundarammotors.com"; //PROVIDE FROM BDO COMPANY
-        // // $clientid = "61b27a26bd86cbb93c5c11be0c2856"; //LIVE
-        // $clientid = config('custom.CLIENT_ID');
-
-        // // dump('clientid ' . $clientid);
-
-        // $rsa->loadKey($public_key);
-        // $rsa->setEncryptionMode(2);
-        // // $client_secret_key = 'BBAkBDB0YzZiYThkYTg4ZDZBBDJjZBUyBGFkBBB0BWB='; // CLIENT SECRET KEY
-        // // $client_secret_key = 'TQAkSDQ0YzZiYTTkYTg4ZDZSSDJjZSUySGFkSSQ0SWQ='; // CLIENT SECRET KEY
-        // // $client_secret_key = '7dd55886594bccadb03c48eb3f448e'; // LIVE
-        // $client_secret_key = config('custom.CLIENT_SECRET_KEY');
-
-        // $ClientSecret = $rsa->encrypt($client_secret_key);
-        // $clientsecretencrypted = base64_encode($ClientSecret);
-        // // dump('ClientSecret ' . $clientsecretencrypted);
-
-        // $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        // $app_secret_key = substr(str_shuffle($characters), 0, 32); // RANDOM KEY GENERATE
-        // // $app_secret_key = 'Rdp5EB5w756dVph0C3jCXY1K6RPC6RCD'; // RANDOM KEY GENERATE
-        // $AppSecret = $rsa->encrypt($app_secret_key);
-        // $appsecretkey = base64_encode($AppSecret);
-        // // dump('appsecretkey ' . $appsecretkey);
-
-        // // $bdo_login_url = 'https://sandboxeinvoiceapi.bdo.in/bdoauth/bdoauthenticate';
-        // // $bdo_login_url = 'https://einvoiceapi.bdo.in/bdoauth/bdoauthenticate'; //LIVE
-        // $bdo_login_url = config('custom.BDO_LOGIN_URL');
-
-        // $ch = curl_init($bdo_login_url);
-        // // Setup request to send json via POST`
-        // $params = json_encode(array(
-        //     'clientid' => $clientid,
-        //     'clientsecretencrypted' => $clientsecretencrypted,
-        //     'appsecretkey' => $appsecretkey,
-        // ));
-
-        // // Attach encoded JSON string to the POST fields
-        // curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
-
-        // // Set the content type to application/json
-        // curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
-
-        // // Return response instead of outputting
-        // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-        // // Execute the POST request
-        // $server_output_data = curl_exec($ch);
-
-        // // Get the POST request header status
-        // $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-        // // If header status is not Created or not OK, return error message
-        // if ($status != 200) {
-        //     // $errors[] = curl_errno($ch);
-        //     return [
-        //         'success' => false,
-        //         'errors' => curl_errno($ch),
-        //     ];
-        //     // return response()->json([
-        //     //  'success' => false,
-        //     //  'error' => 'call to URL $bdo_login_url failed with status $status',
-        //     //  'errors' => ["response " . $server_output . ", curl_error " . curl_error($ch) . ", curl_errno " . curl_errno($ch)],
-        //     // ]);
-        // }
-        // $server_output = json_decode($server_output_data);
-
-        // DB::beginTransaction();
-
-        // $api_log = new ApiLog;
-        // $api_log->type_id = $service_invoice->type_id;
-        // $api_log->entity_number = $service_invoice->number;
-        // $api_log->entity_id = $service_invoice->id;
-        // $api_log->url = $bdo_login_url;
-        // $api_log->src_data = $params;
-        // $api_log->response_data = $server_output_data;
-        // $api_log->user_id = Auth::user()->id;
-        // $api_log->status_id = $server_output->status == 0 ? 11272 : 11271;
-        // $api_log->errors = curl_errno($ch);
-        // $api_log->created_by_id = Auth::user()->id;
-        // $api_log->save();
-
-        // DB::commit();
-        // if ($server_output->status == 0) {
-        //     return ['success' => false, 'errors' => $server_output->ErrorMsg];
-        // }
-
-        // curl_close($ch);
+     
 
         $authToken = getBdoAuthToken(Auth::user()->company_id);
         $errors = $authToken['errors'];
@@ -3368,18 +3124,6 @@ class HondaServiceInvoiceController extends Controller
         $bdo_authtoken = $authToken['result']['bdo_authtoken'];
         $status = $authToken['result']['status'];
         $bdo_sek = $authToken['result']['bdo_secret'];
-
-        // $expiry = $server_output->expiry;
-        // $bdo_authtoken = $server_output->bdo_authtoken;
-        // $status = $server_output->status;
-        // $bdo_sek = $server_output->bdo_sek;
-
-        //DECRYPT WITH APP KEY AND BDO SEK KEY
-        // $decrypt_data_with_bdo_sek = self::decryptAesData($app_secret_key, $bdo_sek);
-        // if (!$decrypt_data_with_bdo_sek) {
-        //     $errors[] = 'Decryption Error!';
-        //     return response()->json(['success' => false, 'errors' => ['Decryption Error!']]);
-        // }
 
         $json_encoded_data =
             json_encode(
@@ -3775,7 +3519,7 @@ class HondaServiceInvoiceController extends Controller
             });
             $params = ['ACCOUNTNUM' => $key];
             $getResult = $this->soapWrapper->call('customer.'.$axUrl, [$params]);
-             $customer_data = $getResult->GetCustMasterDetails_HondaResult;
+            $customer_data = $getResult->GetCustMasterDetails_HondaResult;
             if (empty($customer_data)) {
                 return response()->json(['success' => false, 'error' => 'Address Not Available!.']);
             }
@@ -5263,432 +5007,23 @@ class HondaServiceInvoiceController extends Controller
                     if ($tcs_amount > 0) {
                         $tcs_total += $tcs_amount;
                     }
-                    // if ($service_item->tcs_percentage) {
-                    //     $date = date('d-m-Y', strtotime($service_invoice->document_date));
-                    //     $document_date = (string) $date;
-                    //     $date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
-                    //     $date2 = Carbon::createFromFormat('d-m-Y', $document_date);
-                    //     $result = $date1->gte($date2);
-
-                    //     $tcs_percentage = $service_item->tcs_percentage;
-                    //     if (!$result) {
-                    //         $tcs_percentage = 1;
-                    //     }
-
-                    //     $gst_total = 0;
-                    //     $gst_total = $cgst_amt + $sgst_amt + $igst_amt;
-                    //     // $tcs_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
-                    //     $tcs_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $tcs_percentage / 100, 2);
-                    // }
-
+                     
                     //FOR CESS on GST TAX
-                    if ($service_item->cess_on_gst_percentage) {
-                        // $gst_total = 0;
-                        // $gst_total = $cgst_amt + $sgst_amt + $igst_amt;
-                        // $cess_on_gst_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->cess_on_gst_percentage / 100, 2);
+                    if ($service_item->cess_on_gst_percentage) { 
                         $cess_on_gst_total += round(($serviceInvoiceItem->sub_total) * $service_item->cess_on_gst_percentage / 100, 2);
-                    }
-
-                    // $item['SlNo'] = $sno; //Statically assumed
-                    // $item['PrdDesc'] = $serviceInvoiceItem->serviceItem->name;
-                    // $item['IsServc'] = "Y"; //ALWAYS Y
-                    // $item['HsnCd'] = $serviceInvoiceItem->serviceItem->taxCode ? $serviceInvoiceItem->serviceItem->taxCode->code : null;
-
-                    //BchDtls
-                    // $item['BchDtls']["Nm"] = null;
-                    // $item['BchDtls']["Expdt"] = null;
-                    // $item['BchDtls']["wrDt"] = null;
-
-                    // $item['Barcde'] = null;
-                    // $item['Qty'] = $serviceInvoiceItem->qty;
-                    // $item['FreeQty'] = 0;
-                    // $item['Unit'] = $serviceInvoiceItem->eInvoiceUom ? $serviceInvoiceItem->eInvoiceUom->code : "NOS";
-                    // $item['UnitPrice'] = number_format($serviceInvoiceItem->rate ? $serviceInvoiceItem->rate : 0); //NEED TO CLARIFY
-                    // $item['TotAmt'] = number_format($serviceInvoiceItem->sub_total ? $serviceInvoiceItem->sub_total : 0);
-                    // $item['Discount'] = 0; //Always value will be "0"
-                    // $item['PreTaxVal'] = number_format($serviceInvoiceItem->sub_total ? $serviceInvoiceItem->sub_total : 0);
-                    // $item['AssAmt'] = number_format($serviceInvoiceItem->sub_total - 0);
-                    // $item['IgstRt'] = isset($serviceInvoiceItem->IGST) ? number_format($serviceInvoiceItem->IGST->pivot->percentage) : 0;
-                    // $item['IgstAmt'] = number_format(isset($serviceInvoiceItem->IGST) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->IGST->pivot->percentage / 100 : 0, 2);
-                    // $item['CgstRt'] = number_format(isset($serviceInvoiceItem->CGST) ? $serviceInvoiceItem->CGST->pivot->percentage : 0, 2);
-                    // $item['CgstAmt'] = number_format(isset($serviceInvoiceItem->CGST) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->CGST->pivot->percentage / 100 : 0, 2);
-                    // $item['SgstRt'] = number_format(isset($serviceInvoiceItem->SGST) ? $serviceInvoiceItem->SGST->pivot->percentage : 0, 2);
-                    // $item['SgstAmt'] = number_format(isset($serviceInvoiceItem->SGST) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->SGST->pivot->percentage / 100 : 0, 2);
-                    // $item['CesRt'] = 0;
-                    // $item['CesAmt'] = 0;
-                    // $item['CesNonAdvlAmt'] = 0;
-                    // $item['StateCesRt'] = 0; //NEED TO CLARIFY IF KFC
-                    // $item['StateCesAmt'] = 0; //NEED TO CLARIFY IF KFC
-                    // $item['StateCesNonAdvlAmt'] = 0; //NEED TO CLARIFY IF KFC
-                    // $item['OthChrg'] = 0;
-                    // $item['OthChrg'] = number_format(isset($serviceInvoiceItem->TCS) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->TCS->pivot->percentage / 100 : 0, 2); //FOR TCS TAX
-                    // $item['TotItemVal'] = number_format(($serviceInvoiceItem->sub_total ? $serviceInvoiceItem->sub_total : 0) + (isset($serviceInvoiceItem->IGST) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->IGST->pivot->percentage / 100 : 0) + (isset($serviceInvoiceItem->CGST) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->CGST->pivot->percentage / 100 : 0) + (isset($serviceInvoiceItem->SGST) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->SGST->pivot->percentage / 100 : 0), 2);
-                    // + (isset($serviceInvoiceItem->TCS) ? $serviceInvoiceItem->sub_total * $serviceInvoiceItem->TCS->pivot->percentage / 100 : 0), 2); BDO Monish Told to remove item level other Charges
-
-                    // $item['OrdLineRef'] = "0";
-                    // $item['OrgCntry'] = "IN"; //Always value will be "IND"
-                    // $item['PrdSlNo'] = null;
-
-                    //AttribDtls
-                    // $item['AttribDtls'][] = [
-                    //     "Nm" => null,
-                    //     "Val" => null,
-                    // ];
-
-                    //EGST
-                    //NO DATA GIVEN IN WORD DOC START
-                    // $item['EGST']['nilrated_amt'] = null;
-                    // $item['EGST']['exempted_amt'] = null;
-                    // $item['EGST']['non_gst_amt'] = null;
-                    // $item['EGST']['reason'] = null;
-                    // $item['EGST']['debit_gl_id'] = null;
-                    // $item['EGST']['debit_gl_name'] = null;
-                    // $item['EGST']['credit_gl_id'] = null;
-                    // $item['EGST']['credit_gl_name'] = null;
-                    // $item['EGST']['sublocation'] = null;
-                    //NO DATA GIVEN IN WORD DOC END
+                    } 
 
                     $sno++;
                     // $items[] = $item;
 
                 }
 
-                //RefDtls BELLOW
-                //PrecDocDtls
-                // $prodoc_detail = [];
-                // $prodoc_detail['InvNo'] = $service_invoice->invoice_number ? $service_invoice->invoice_number : null;
-                // $prodoc_detail['InvDt'] = $service_invoice->invoice_date ? date('d-m-Y', strtotime($service_invoice->invoice_date)) : null;
-                // $prodoc_detail['OthRefNo'] = null; //no DATA ?
-                //ContrDtls
-                // $control_detail = [];
-                // $control_detail['RecAdvRefr'] = null; //no DATA ?
-                // $control_detail['RecAdvDt'] = null; //no DATA ?
-                // $control_detail['Tendrefr'] = null; //no DATA ?
-                // $control_detail['Contrrefr'] = null; //no DATA ?
-                // $control_detail['Extrefr'] = null; //no DATA ?
-                // $control_detail['Projrefr'] = null;
-                // $control_detail['Porefr'] = null;
-                // $control_detail['PoRefDt'] = null;
-
-                //AddlDocDtls
-                // $additionaldoc_detail = [];
-                // $additionaldoc_detail['Url'] = null;
-                // $additionaldoc_detail['Docs'] = null;
-                // $additionaldoc_detail['Info'] = null;
-                // dd(preg_replace("/\r|\n/", "", $service_invoice->customer->primaryAddress->address_line1));
-                // dd($cgst_total, $sgst_total, $igst_total);
-
-                // $json_encoded_data =
-                //     json_encode(
-                //     array(
-                //         'TranDtls' => array(
-                //             'TaxSch' => "GST",
-                //             'SupTyp' => "B2B", //ALWAYS B2B FOR REGISTER IRN
-                //             'RegRev' => $service_invoice->is_reverse_charge_applicable == 1 ? "Y" : "N",
-                //             'EcmGstin' => null,
-                //             'IgstonIntra' => null, //NEED TO CLARIFY
-                //             'supplydir' => "O", //NULL ADDED 28-sep-2020 discussion "supplydir": "O"
-                //         ),
-                //         'DocDtls' => array(
-                //             "Typ" => $service_invoice->type,
-                //             "No" => $service_invoice->number,
-                //             // "No" => '23AUG2020SN166',
-                //             "Dt" => date('d-m-Y', strtotime($service_invoice->document_date)),
-                //         ),
-                //         'SellerDtls' => array(
-                //             "Gstin" => $service_invoice->outlets ? ($service_invoice->outlets->gst_number ? $service_invoice->outlets->gst_number : 'N/A') : 'N/A',
-                //             // "Gstin" => $service_invoice->outlets->gst_number,
-                //             "LglNm" => $service_invoice->outlets ? $service_invoice->outlets->name : 'N/A',
-                //             "TrdNm" => $service_invoice->outlets ? $service_invoice->outlets->name : 'N/A',
-                //             "Addr1" => $service_invoice->outlets->primaryAddress ? preg_replace('/\r|\n|:|"/', ",", $service_invoice->outlets->primaryAddress->address_line1) : 'N/A',
-                //             "Addr2" => $service_invoice->outlets->primaryAddress ? preg_replace('/\r|\n|:|"/', ",", $service_invoice->outlets->primaryAddress->address_line2) : null,
-                //             "Loc" => $service_invoice->outlets->primaryAddress ? ($service_invoice->outlets->primaryAddress->state ? $service_invoice->outlets->primaryAddress->state->name : 'N/A') : 'N/A',
-                //             "Pin" => $service_invoice->outlets->primaryAddress ? $service_invoice->outlets->primaryAddress->pincode : 'N/A',
-                //             "Stcd" => $service_invoice->outlets->primaryAddress ? ($service_invoice->outlets->primaryAddress->state ? $service_invoice->outlets->primaryAddress->state->e_invoice_state_code : 'N/A') : 'N/A',
-                //             // "Pin" => 637001,
-                //             // "Stcd" => "33",
-                //             "Ph" => '123456789', //need to clarify
-                //             "Em" => null, //need to clarify
-                //         ),
-                //         "BuyerDtls" => array(
-                //             "Gstin" => $service_invoice->address->gst_number ? $service_invoice->address->gst_number : 'N/A', //need to clarify if available ok otherwise ?
-                //             // "Gstin" => $service_invoice->customer->gst_number ? $service_invoice->customer->gst_number : 'N/A', //need to clarify if available ok otherwise ?
-                //             // "Gstin" => "32ATAPM8948G1ZK", //for TN TESTING
-                //             "LglNm" => $service_invoice->customer ? $service_invoice->customer->name : 'N/A',
-                //             "TrdNm" => $service_invoice->customer ? $service_invoice->customer->name : null,
-                //             // "Pos" => $service_invoice->customer->primaryAddress ? ($service_invoice->customer->primaryAddress->state ? $service_invoice->customer->primaryAddress->state->e_invoice_state_code : 'N/A') : 'N/A',
-                //             // "Loc" => $service_invoice->customer->primaryAddress ? ($service_invoice->customer->primaryAddress->state ? $service_invoice->customer->primaryAddress->state->name : 'N/A') : 'N/A',
-                //             "Pos" => $service_invoice->address ? ($service_invoice->address->state ? $service_invoice->address->state->e_invoice_state_code : 'N/A') : 'N/A',
-                //             // "Pos" => "27",
-                //             "Loc" => $service_invoice->address ? ($service_invoice->address->state ? $service_invoice->address->state->name : 'N/A') : 'N/A',
-
-                //             "Addr1" => $service_invoice->address ? preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->address_line1) : 'N/A',
-                //             "Addr2" => $service_invoice->address ? preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->address_line2) : null,
-                //             "Stcd" => $service_invoice->address ? ($service_invoice->address->state ? $service_invoice->address->state->e_invoice_state_code : null) : null,
-                //             "Pin" => $service_invoice->address ? $service_invoice->address->pincode : null,
-                //             // "Pin" => 680001,
-                //             // "Stcd" => "32",
-                //             "Ph" => $service_invoice->customer->mobile_no ? $service_invoice->customer->mobile_no : null,
-                //             "Em" => $service_invoice->customer->email ? $service_invoice->customer->email : null,
-                //         ),
-                //         // 'BuyerDtls' => array(
-                //         'DispDtls' => array(
-                //             "Nm" => null,
-                //             "Addr1" => null,
-                //             "Addr2" => null,
-                //             "Loc" => null,
-                //             "Pin" => null,
-                //             "Stcd" => null,
-                //         ),
-                //         'ShipDtls' => array(
-                //             "Gstin" => null,
-                //             "LglNm" => null,
-                //             "TrdNm" => null,
-                //             "Addr1" => null,
-                //             "Addr2" => null,
-                //             "Loc" => null,
-                //             "Pin" => null,
-                //             "Stcd" => null,
-                //         ),
-                //         'ItemList' => array(
-                //             'Item' => $items,
-                //         ),
-                //         'ValDtls' => array(
-                //             "AssVal" => number_format($service_invoice->sub_total ? $service_invoice->sub_total : 0, 2),
-                //             "CgstVal" => number_format($cgst_total, 2),
-                //             "SgstVal" => number_format($sgst_total, 2),
-                //             "IgstVal" => number_format($igst_total, 2),
-                //             "CesVal" => 0,
-                //             "StCesVal" => 0,
-                //             "Discount" => 0,
-                //             "OthChrg" => number_format($tcs_total + $cess_on_gst_total, 2),
-                //             "RndOffAmt" => number_format($service_invoice->final_amount - $service_invoice->total, 2),
-                //             // "RndOffAmt" => 0, // Invalid invoice round off amount ,should be  + or - RS 10.
-                //             "TotInvVal" => number_format($service_invoice->final_amount, 2),
-                //             "TotInvValFc" => null,
-                //         ),
-                //         "PayDtls" => array(
-                //             "Nm" => null,
-                //             "Accdet" => null,
-                //             "Mode" => null,
-                //             "Fininsbr" => null,
-                //             "Payterm" => null, //NO DATA
-                //             "Payinstr" => null, //NO DATA
-                //             "Crtrn" => null, //NO DATA
-                //             "Dirdr" => null, //NO DATA
-                //             "Crday" => 0, //NO DATA
-                //             "Paidamt" => 0, //NO DATA
-                //             "Paymtdue" => 0, //NO DATA
-                //         ),
-                //         "RefDtls" => array(
-                //             "InvRm" => null,
-                //             "DocPerdDtls" => array(
-                //                 "InvStDt" => null,
-                //                 "InvEndDt" => null,
-                //             ),
-                //             "PrecDocDtls" => [
-                //                 $prodoc_detail,
-                //             ],
-                //             "ContrDtls" => [
-                //                 $control_detail,
-                //             ],
-                //         ),
-                //         "AddlDocDtls" => [
-                //             $additionaldoc_detail,
-                //         ],
-                //         "ExpDtls" => array(
-                //             "ShipBNo" => null,
-                //             "ShipBDt" => null,
-                //             "Port" => null,
-                //             "RefClm" => null,
-                //             "ForCur" => null,
-                //             "CntCode" => null, // ALWAYS IND //// ERROR : For Supply type other than EXPWP and EXPWOP, country code should be blank
-                //             "ExpDuty" => null,
-                //         ),
-                //         "EwbDtls" => array(
-                //             "Transid" => null,
-                //             "Transname" => null,
-                //             "Distance" => null,
-                //             "Transdocno" => null,
-                //             "TransdocDt" => null,
-                //             "Vehno" => null,
-                //             "Vehtype" => null,
-                //             "TransMode" => null,
-                //         ),
-                //     )
-                // );
-                // //SAVE JSON DATA TO SERVICE INVOICE TABLE
-                // $service_invoice_save_json_data = ServiceInvoice::find($service_invoice_id);
-                // $service_invoice_save_json_data->json_request_send_to_bdo_api = $json_encoded_data;
-                // $service_invoice_save_json_data->status_id = 2;
-                // $service_invoice_save_json_data->save();
-                // if ($service_invoice_save_json_data) {
-                //     DB::commit();
-                // }
-                // dump($json_encoded_data);
-                // dd(1);
-
-                //AES ENCRYPT
-                //ENCRYPT WITH Decrypted BDO SEK KEY TO PLAIN TEXT AND JSON DATA
-                // $encrypt_data = self::encryptAesData($decrypt_data_with_bdo_sek, $json_encoded_data);
-                // if (!$encrypt_data) {
-                //     $errors[] = 'IRN Encryption Error!';
-                //     return response()->json(['success' => false, 'error' => 'IRN Encryption Error!']);
-                // }
-                // // dd($encrypt_data);
-
-                // //ENCRYPTED GIVEN DATA TO DBO
-                // // $bdo_generate_irn_url = 'https://sandboxeinvoiceapi.bdo.in/bdoapi/public/generateIRN';
-                // // $bdo_generate_irn_url = 'https://einvoiceapi.bdo.in/bdoapi/public/generateIRN'; //LIVE
-                // $bdo_generate_irn_url = config('custom.BDO_IRN_REGISTRATION_URL');
-
-                // $ch = curl_init($bdo_generate_irn_url);
-                // // Setup request to send json via POST`
-                // $params = json_encode(array(
-                //     'Data' => $encrypt_data,
-                // ));
-
-                // // Attach encoded JSON string to the POST fields
-                // curl_setopt($ch, CURLOPT_POSTFIELDS, $params);
-
-                // // Set the content type to application/json
-                // curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-                //     'Content-Type: application/json',
-                //     'client_id: ' . $clientid,
-                //     'bdo_authtoken: ' . $bdo_authtoken,
-                //     'action: GENIRN',
-                // ));
-
-                // // Return response instead of outputting
-                // curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-                // // Execute the POST request
-                // $generate_irn_output_data = curl_exec($ch);
-                // // dump($generate_irn_output_data);
-
-                // curl_close($ch);
-
-                // $generate_irn_output = json_decode($generate_irn_output_data, true);
-
-                // If header status is not Created or not OK, return error message
-
-                // dd(json_encode($errors));
-                // $api_params = [
-                //     'type_id' => $service_invoice->type_id,
-                //     'entity_number' => $service_invoice->number,
-                //     'entity_id' => $service_invoice->id,
-                //     'url' => $bdo_generate_irn_url,
-                //     'src_data' => $params,
-                //     'response_data' => $generate_irn_output_data,
-                //     'user_id' => Auth::user()->id,
-                //     'status_id' => $status == 0 ? 11272 : 11271,
-                //     // 'errors' => !empty($errors) ? NULL : json_encode($errors),
-                //     'created_by_id' => Auth::user()->id,
-                // ];
-
-                // if($generate_irn_output_data == "GSP AUTHTOKEN IS NOT VALID"){
-                //     return [
-                //         'success' => false,
-                //         'errors' => "GSP AUTHTOKEN IS NOT VALID, TRY AGAIN",
-                //         'api_logs' => $api_logs
-                //     ];
-                // }
-
-                // if (is_array($generate_irn_output['Error'])) {
-                //     $bdo_errors = [];
-                //     $rearrange_key = 0;
-                //     foreach ($generate_irn_output['Error'] as $key => $error) {
-                //         // dump($rearrange_key, $error);
-                //         $bdo_errors[$rearrange_key] = $error;
-                //         $errors[$rearrange_key] = $error;
-                //         $rearrange_key++;
-                //     }
-                //     // dump($bdo_errors);
-                //     $api_params['errors'] = empty($errors) ? 'Somthin went worng!, Try again later!' : json_encode($errors);
-                //     $api_params['message'] = 'Error GENERATE IRN array!';
-
-                //     $api_logs[2] = $api_params;
-                //     return [
-                //         'success' => false,
-                //         'errors' => $bdo_errors,
-                //         'api_logs' => $api_logs,
-                //     ];
-                //     if ($generate_irn_output['status'] == 0) {
-                //         $api_params['errors'] = ['Somthing Went Wrong!. Try Again Later!'];
-                //         $api_params['message'] = 'Error Generating IRN!';
-                //         $api_logs[5] = $api_params;
-                //         return [
-                //             'success' => false,
-                //             'errors' => 'Somthing Went Wrong!. Try Again Later!',
-                //             'api_logs' => $api_logs,
-                //         ];
-                //     }
-                //     // return response()->json(['success' => false, 'errors' => $bdo_errors]);
-                //     // dd('Error: ' . $generate_irn_output['Error']['E2000']);
-                // } elseif (!is_array($generate_irn_output['Error'])) {
-                //     if ($generate_irn_output['Status'] != 1) {
-                //         $errors[] = $generate_irn_output['Error'];
-                //         $api_params['message'] = 'Error GENERATE IRN!';
-
-                //         $api_params['errors'] = empty($errors) ? 'Error GENERATE IRN, Try again later!' : json_encode($errors);
-                //         // DB::beginTransaction();
-
-                //         // $api_log = new ApiLog;
-                //         // $api_log->type_id = $service_invoice->type_id;
-                //         // $api_log->entity_number = $service_invoice->number;
-                //         // $api_log->entity_id = $service_invoice->id;
-                //         // $api_log->url = $bdo_generate_irn_url;
-                //         // $api_log->src_data = $params;
-                //         // $api_log->response_data = $generate_irn_output_data;
-                //         // $api_log->user_id = Auth::user()->id;
-                //         // $api_log->created_by_id = Auth::user()->id;
-                //         // $api_log->status_id = !empty($errors) ? 11272 : 11271; //FAILED //SUCCESS
-                //         // $api_log->errors = empty($errors) ? NULL : json_encode($errors);
-                //         // $api_log->save();
-                //         // // dd($api_log);
-                //         // DB::commit();
-                //         $api_logs[3] = $api_params;
-
-                //         return [
-                //             'success' => false,
-                //             'errors' => $generate_irn_output['Error'],
-                //             'api_logs' => $api_logs,
-                //         ];
-                //         // dd('Error: ' . $generate_irn_output['Error']);
-                //     }
-                // }
-
+        
                 $api_params['message'] = 'Success GENSERATE IRN!';
 
                 $api_params['errors'] = null;
                 $api_logs[4] = $api_params;
-
-                // dump($generate_irn_output['Data']);
-
-                //AES DECRYPTION AFTER GENERATE IRN
-                // $irn_decrypt_data = self::decryptAesData($decrypt_data_with_bdo_sek, $generate_irn_output['Data']);
-                // dd($irn_decrypt_data);
-                // if (!$irn_decrypt_data) {
-                //     $errors[] = 'IRN Decryption Error!';
-                //     return ['success' => false, 'error' => 'IRN Decryption Error!'];
-                // }
-                // dump($irn_decrypt_data);
-                // $final_json_decode = json_decode($irn_decrypt_data);
-                // dd($final_json_decode);
-
-                // if ($final_json_decode->irnStatus == 0) {
-                //     $api_params['message'] = $final_json_decode->irnStatus;
-                //     $api_params['errors'] = $final_json_decode->irnStatus;
-                //     $api_logs[6] = $api_params;
-                //     return [
-                //         'success' => false,
-                //         'errors' => $final_json_decode->ErrorMsg,
-                //         'api_logs' => $api_logs,
-                //     ];
-                // }
-
-                // $IRN_images_des = storage_path('app/public/honda-service-invoice/IRN_images');
-                // File::makeDirectory($IRN_images_des, $mode = 0777, true, true);
+ 
 
                 $qr_code_name = $service_invoice->company_id . $service_invoice->number;
                 // $url = QRCode::text($final_json_decode->QRCode)->setSize(4)->setOutfile('storage/app/public/honda-service-invoice/IRN_images/' . $service_invoice->number . '.png')->png();
@@ -5733,21 +5068,6 @@ class HondaServiceInvoiceController extends Controller
                 $service_invoice_save->irn_response = $irn_decrypt_data;
                 $service_invoice_save->status_id = 4; //$approval_levels->next_status_id;
 
-
-                // if (!$r['success']) {
-                //     $service_invoice_save->status_id = 2; //APPROVAL 1 PENDING
-                //     return [
-                //         'success' => false,
-                //         'errors' => ['Somthing Went Wrong!'],
-                //     ];
-                // }
-
-                // if (count($errors) > 0) {
-                //     $service_invoice->errors = empty($errors) ? NULL : json_encode($errors);
-                //     $service_invoice->status_id = 6; //E-Invoice Fail
-                //     $service_invoice->save();
-                //     // return;
-                // }
                 $service_invoice->errors = empty($errors) ? null : json_encode($errors);
                 $service_invoice_save->save();
 
@@ -5770,23 +5090,8 @@ class HondaServiceInvoiceController extends Controller
             if(empty($eInvoiceConfig))
                 $this->qrCodeGeneration($service_invoice);
         }
-        //  else {
-        //     $service_invoice_save = ServiceInvoice::find($service_invoice_id);
-
-        //     if (count($errors) > 0) {
-        //         $service_invoice->errors = json_encode($errors);
-        //         $service_invoice->status_id = 6; //E-Invoice Fail
-        //         $service_invoice->save();
-        //         // return;
-        //     }
-        //     $service_invoice_save->status_id = 4; //APPROVED
-        //     $service_invoice_save->save();
-
-        // }
-
-        // dd('out');
-        // dd($service_invoice);
-        // dd('stop Encryption');
+       
+         
         //----------// ENCRYPTION END //----------//
         $service_invoice['additional_image_name'] = $additional_image_name;
         $service_invoice['additional_image_path'] = $additional_image_path;
@@ -5806,7 +5111,7 @@ class HondaServiceInvoiceController extends Controller
 
         $pdf = app('dompdf.wrapper');
         $pdf->getDomPDF()->set_option("enable_php", true);
-        $pdf = $pdf->loadView('service-invoices/pdf/index', $this->data);
+        $pdf = $pdf->loadView('honda-service-invoices/pdf/index', $this->data);
 
         // return $pdf->stream('service_invoice.pdf');
         // dd($pdf);
@@ -5820,7 +5125,7 @@ class HondaServiceInvoiceController extends Controller
         // $r['api_logs'] = [];
 
         //ENTRY IN AX_EXPORTS
-        $axaptaExportsCheck = AxaptaExport::where([
+        $axaptaExportsCheck = HondaAxaptaExport::where([
             'DocumentNum' => $service_invoice->number,
             'company_id' => $service_invoice->company_id,
         ])->get();

@@ -566,7 +566,7 @@ app.component('hondaServiceInvoiceForm', {
                     layout: 'topRight',
                     text: response.data.error,
                 }).show();
-                $location.path('/service-invoice-pkg/service-invoice/list')
+                $location.path('/service-invoice-pkg/honda-service-invoice/list')
                 $scope.$apply()
             }
             self.list_url = honda_service_invoice_list_url;
@@ -1695,8 +1695,7 @@ app.component('hondaServiceInvoiceForm', {
                                 custom_noty('error', errors);
                             } else {
                                 custom_noty('success', res.message);
-                                // $location.path('/service-invoice-pkg/service-invoice/list');
-                                $location.path('/service-invoice-pkg/honda-service-invoice/view/' + $routeParams.type_id + '/' + res.service_invoice_id);
+                                 $location.path('/service-invoice-pkg/honda-service-invoice/view/' + $routeParams.type_id + '/' + res.service_invoice_id);
                                 $scope.$apply()
                             }
                         })
