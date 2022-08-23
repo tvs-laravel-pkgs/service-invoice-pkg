@@ -1912,7 +1912,7 @@ class ServiceInvoice extends Model
                     }
                     // dump($to_account_type_id . 'to_account_type_id');
                     // dump($record);
-                    // dump($record['Customer/Vendor Code']);
+                    // dd($record['Customer/Vendor Code']);
                     if (empty($record['Customer/Vendor Code'])) {
                         $status['errors'][] = 'Customer Code is empty';
                     } else {
@@ -1940,22 +1940,25 @@ class ServiceInvoice extends Model
                             if (!$customer) {
                                 $status['errors'][] = 'Invalid Customer: ' . $record['Customer/Vendor Code'];
                             }
-                            if ($customer->id) {
-                                $customer_address = Address::where([
-                                    'company_id' => $job->company_id,
-                                    'entity_id' => $customer->id,
-                                    'address_of_id' => 24, //CUSTOMER
-                                    'is_primary' => 1, //PRIMARY
-                                ])
-                                // ->orderBy('id', 'desc')
-                                    ->first();
-                            }
-                            if (!$customer_address) {
-                                $status['errors'][] = 'Address Not Mapped with Customer: ' . $record['Customer/Vendor Code'];
-                            } else {
-                                if (!$customer_address->state_id) {
-                                    $status['errors'][] = 'State Not Mapped with this Customer: ' . $record['Customer/Vendor Code'];
+                            if ($customer) {
+                                if ($customer->id) {
+                                    $customer_address = Address::where([
+                                        'company_id' => $job->company_id,
+                                        'entity_id' => $customer->id,
+                                        'address_of_id' => 24, //CUSTOMER
+                                        'is_primary' => 1, //PRIMARY
+                                    ])
+                                    // ->orderBy('id', 'desc')
+                                        ->first();
                                 }
+                                if (!$customer_address) {
+                                    $status['errors'][] = 'Address Not Mapped with Customer: ' . $record['Customer/Vendor Code'];
+                                } else {
+                                    if (!$customer_address->state_id) {
+                                        $status['errors'][] = 'State Not Mapped with this Customer: ' . $record['Customer/Vendor Code'];
+                                    }
+                                }
+                                     
                             }
                         } elseif ($to_account_type_id == 1441) {
                             //VENDOR
