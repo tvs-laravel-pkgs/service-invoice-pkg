@@ -1018,13 +1018,13 @@ class HondaServiceInvoiceController extends Controller
 
                 if ($request->type_id == 1061) {
                     //DN
-                    $serial_number_category = 5;
+                    $serial_number_category = 189;
                 } elseif ($request->type_id == 1060) {
                     //CN
-                    $serial_number_category = 4;
+                    $serial_number_category = 190;
                 } elseif ($request->type_id == 1062) {
                     //INV
-                    $serial_number_category = 125;
+                    $serial_number_category = 191;
                 }
 
                 $sbu = Sbu::find($request->sbu_id);

@@ -586,6 +586,7 @@ class ServiceInvoiceController extends Controller
                 'fieldGroups.fields.fieldType',
                 'coaCode',
                 'taxCode',
+                'subLedger',
                 'taxCode.taxes' => function ($query) use ($taxes) {
                     $query->whereIn('tax_id', $taxes['tax_ids']);
                 },
