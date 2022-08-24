@@ -1674,8 +1674,10 @@ class HondaServiceInvoice extends Model
         $export->Approved = 1;
         $export->TransDate = date("Y-m-d", strtotime($this->document_date));
         //dd($ledger_dimention);
-        $export->AccountType = $params['AccountType'];
-
+        if($params['AccountType'] == 'Customer')
+            $export->AccountType = 0;
+        else
+            $export->AccountType = 1;
         $export->DefaultDimension = $this->sbu->name . '-' . $this->outlet->code;
         $export->Txt = $params['Txt'];
         $export->AmountCurDebit = $params['AmountCurDebit'] > 0 ? $params['AmountCurDebit'] : 0;
@@ -1704,7 +1706,12 @@ class HondaServiceInvoice extends Model
         $export->sync_status_id = $ax_export_status->id;
         $export->PlantCode = $params['PlantCode'];
         $export->Account = $params['Account'];
-        $export->Department = $params['Department'];
+
+        if($params['Department']){
+            $dept = DB::table('honda_dept_dimension')->where('description',$params['Department'])->first();
+            $export->Department = $dept->dimension_value;
+        }else
+            $export->Department = '';
         $export->Sub_GL = $params['Sub_GL'];
         $export->InvoiceDate = $params['InvoiceDate'];
         $export->VatPercentage = $params['VatPercentage'];

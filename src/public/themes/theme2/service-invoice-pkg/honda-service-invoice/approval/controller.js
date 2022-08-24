@@ -17,8 +17,7 @@ app.component('hondaServiceInvoiceApprovalList', {
             }
             // self.approval_type_id = response.data.approval_level.current_status_id;
             $rootScope.loading = false;
-        });
-        console.log($routeParams.approval_level_id);
+        }); 
         $http.get(
             get_honda_cn_dn_approval_filter_url
         ).then(function (response) {
@@ -765,7 +764,7 @@ app.component('hondaServiceInvoiceApprovalView', {
                     custom_noty('success', 'CN/DN ' + response.data.message + ' Successfully');
                     // $('#cn-dn-approval-table').DataTable().ajax.reload();
                     $timeout(function () {
-                        $location.path('/service-invoice-pkg/honda-cn-dn/approval/approval-level/' + $routeParams.approval_type_id + '/list/');
+                        $location.path('/service-invoice-pkg/honda-service-invoice/list');
                     }, 900);
                     $scope.$apply()
                 } else {
@@ -851,6 +850,9 @@ app.component('hondaServiceInvoiceApprovalView', {
                                         speed: 500 // unavailable - no need
                                     },
                                 }).show();
+                                 $timeout(function () {
+                                    $location.path('/service-invoice-pkg/honda-service-invoice/list');
+                                }, 900);
                             }
                             setTimeout(function () {
                                 $noty.close();
