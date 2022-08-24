@@ -1073,7 +1073,7 @@ class HondaServiceInvoiceController extends Controller
                 if ($validator_1->fails()) {
                     return response()->json(['success' => false, 'errors' => $validator_1->errors()->all()]);
                 }
-
+            }
             //VALIDATE SERVICE INVOICE ITEMS
             if (!$request->service_invoice_items) {
                 return response()->json(['success' => false, 'errors' => ['Service invoice item is required']]);
@@ -1220,7 +1220,7 @@ class HondaServiceInvoiceController extends Controller
                     $name = $service_invoice->id . 'honda_service_invoice_attachment' . $value . '.' . $extension;
                     $proposal_attachment->move(storage_path('app/public/honda-service-invoice/attachments/'), $name);
                     $attachement = new Attachment;
-                    $attachement->attachment_of_id = 221;
+                    $attachement->attachment_of_id = 130173;
                     $attachement->attachment_type_id = 241;
                     $attachement->entity_id = $service_invoice->id;
                     $attachement->name = $name;

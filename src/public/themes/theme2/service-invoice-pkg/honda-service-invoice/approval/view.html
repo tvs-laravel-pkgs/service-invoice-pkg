@@ -11,7 +11,7 @@
         <div class="page-header-inner">
             <div class="page-header-content-left">
                 <div class="page-header-content button-block">
-                    <a href="#!/service-invoice-pkg/cn-dn/approval/approval-level/{{$ctrl.approval_type_id}}/list/" type="button" class="btn-back btn-img my-tooltip" ng-shortcut="'meta+shift+left'" ng-shortcut-click data-title="ctrl+shift+left"><img class="img-responsive" src="./public/theme/img/content/previous.svg" alt="Back" /></a>
+                    <a href="#!/service-invoice-pkg/honda-cn-dn/approval/approval-level/{{$ctrl.approval_type_id}}/list/" type="button" class="btn-back btn-img my-tooltip" ng-shortcut="'meta+shift+left'" ng-shortcut-click data-title="ctrl+shift+left"><img class="img-responsive" src="./public/theme/img/content/previous.svg" alt="Back" /></a>
                 </div><!-- Page Header Content -->
                 <div class="page-header-content title-block">
                     <h1 class="title" ng-show="$ctrl.type_id == 1060"><b>{{$ctrl.action}} Credit Note</b></h1>
@@ -351,7 +351,7 @@
                                         </ul>
                                     </div>
                                     <div class="col-md-4">
-                                        <a href="#!/service-invoice-pkg/cn-dn/approval/approval-level/{{$ctrl.approval_type_id}}/list/" class="btn btn-white my-tooltip" id="back_button" ng-shortcut="'meta+shift+b'" ng-shortcut-click data-title="ctrl+shift+b">Back</a>                                     
+                                        <a href="#!/service-invoice-pkg/honda-cn-dn/approval/approval-level/{{$ctrl.approval_type_id}}/list/" class="btn btn-white my-tooltip" id="back_button" ng-shortcut="'meta+shift+b'" ng-shortcut-click data-title="ctrl+shift+b">Back</a>                                     
                                         <button type="button" class="btn btn-primary my-tooltip" ng-if="$ctrl.service_invoice.status_id == 2 && $ctrl.show_approve_button" ng-shortcut="'meta+shift+a'" ng-shortcut-click data-title="ctrl+shift+a" data-target="#cn-dn-approval-modal" data-toggle="modal" ng-click="sendApproval($ctrl.service_invoice_id,$ctrl.next_status)">Approve</button>
                                     </div>
                                     <input type="hidden" name="send_to_approval" id="send_to_approval" value="{{$ctrl.approval_status.current_status_id}}">

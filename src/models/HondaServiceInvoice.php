@@ -499,7 +499,7 @@ class HondaServiceInvoice extends Model
             $params['PlantCode'] = $service_invoice->branch->al_plant_code;
             $params['Account'] = $service_invoice->customer->code;
             $params['Department'] = $service_invoice->serviceItemCategory->name;
-            $params['Sub_GL'] = $invoice_item->serviceItem->subLedger->ax_subgl;
+            $params['Sub_GL'] = isset($invoice_item->serviceItem->subLedger->ax_subgl) ? $invoice_item->serviceItem->subLedger->ax_subgl : '' ;
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
             $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
             $params['Qty'] = $invoice_item->qty;
@@ -615,7 +615,7 @@ class HondaServiceInvoice extends Model
         $params['PlantCode'] = $service_invoice->branch->al_plant_code;
         $params['Account'] = $service_invoice->customer->code;
         $params['Department'] = $service_invoice->serviceItemCategory->name;
-        $params['Sub_GL'] = $invoice_item->serviceItem->subLedger->ax_subgl;
+        $params['Sub_GL'] = isset($invoice_item->serviceItem->subLedger->ax_subgl) ? $invoice_item->serviceItem->subLedger->ax_subgl : '' ;
         $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
         $params['VatPercentage'] = "";
         $params['Qty'] = $invoice_item->qty;
@@ -672,7 +672,7 @@ class HondaServiceInvoice extends Model
             $params['PlantCode'] = $service_invoice->branch->al_plant_code;
             $params['Account'] = $service_invoice->customer->code;
             $params['Department'] = $service_invoice->serviceItemCategory->name;
-            $params['Sub_GL'] = $invoice_item->serviceItem->subLedger->code;
+            $params['Sub_GL'] = isset($invoice_item->serviceItem->subLedger->ax_subgl) ? $invoice_item->serviceItem->subLedger->ax_subgl : '' ;
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
             $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
             $params['Qty'] = $invoice_item->qty;
@@ -713,7 +713,7 @@ class HondaServiceInvoice extends Model
                     $params['PlantCode'] = $service_invoice->branch->al_plant_code;
                     $params['Account'] = $service_invoice->customer->code;
                     $params['Department'] = $service_invoice->serviceItemCategory->name;
-                    $params['Sub_GL'] = $invoice_item->serviceItem->subLedger->code;
+                   $params['Sub_GL'] = isset($invoice_item->serviceItem->subLedger->ax_subgl) ? $invoice_item->serviceItem->subLedger->ax_subgl : '' ;
                     $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
                    // $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
                     $params['Qty'] = $invoice_item->qty;
@@ -892,7 +892,7 @@ class HondaServiceInvoice extends Model
             $params['PlantCode'] = $service_invoice->branch->al_plant_code;
             $params['Account'] = $service_invoice->customer->code;
             $params['Department'] = $service_invoice->serviceItemCategory->name;
-            $params['Sub_GL'] = $invoice_item->serviceItem->subLedger->code;
+            $params['Sub_GL'] = isset($invoice_item->serviceItem->subLedger->ax_subgl) ? $invoice_item->serviceItem->subLedger->ax_subgl : '' ;
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
            // $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
             $params['Qty'] = $invoice_item->qty;
@@ -923,7 +923,7 @@ class HondaServiceInvoice extends Model
             $params['PlantCode'] = $service_invoice->branch->al_plant_code;
             $params['Account'] = $service_invoice->customer->code;
             $params['Department'] = $service_invoice->serviceItemCategory->name;
-            $params['Sub_GL'] = $invoice_item->serviceItem->subLedger->code;
+            $params['Sub_GL'] = isset($invoice_item->serviceItem->subLedger->ax_subgl) ? $invoice_item->serviceItem->subLedger->ax_subgl : '' ;
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
            // $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
             $params['Qty'] = $invoice_item->qty;
@@ -935,7 +935,7 @@ class HondaServiceInvoice extends Model
             $params['PlantCode'] = $service_invoice->branch->al_plant_code;
             $params['Account'] = $service_invoice->customer->code;
             $params['Department'] = $service_invoice->serviceItemCategory->name;
-            $params['Sub_GL'] = $invoice_item->serviceItem->subLedger->code;
+            $params['Sub_GL'] = isset($invoice_item->serviceItem->subLedger->ax_subgl) ? $invoice_item->serviceItem->subLedger->ax_subgl : '' ;
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
             $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
             $params['Qty'] = $invoice_item->qty;
@@ -1702,7 +1702,6 @@ class HondaServiceInvoice extends Model
         $export->TVSCompanyLocationId = ($params['TVSHSNCode'] || $params['TVSSACCode']) && $this->outlet->axapta_location_id ? $this->outlet->axapta_location_id : '';
         $ax_export_status = AxExportStatus::where('code', 'pending')->first();
         $export->sync_status_id = $ax_export_status->id;
-        dd($params);
         $export->PlantCode = $params['PlantCode'];
         $export->Account = $params['Account'];
         $export->Department = $params['Department'];
