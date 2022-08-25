@@ -184,11 +184,11 @@ class HondaServiceInvoiceController extends Controller
             ->orderBy('honda_service_invoices.id', 'Desc');
         // ->get();
         // dd($service_invoice_list);
-        if (Entrust::can('view-all-cn-dn')) {
+        if (Entrust::can('honda-view-all-cn-dn')) {
             $service_invoice_list = $service_invoice_list->where('honda_service_invoices.company_id', Auth::user()->company_id);
-        } elseif (Entrust::can('view-own-cn-dn')) {
+        } elseif (Entrust::can('honda-view-own-cn-dn')) {
             $service_invoice_list = $service_invoice_list->where('honda_service_invoices.created_by_id', Auth::user()->id);
-        } elseif (Entrust::can('view-outlet-based-cn-dn')) {
+        } elseif (Entrust::can('honda-view-outlet-based-cn-dn')) {
             $view_user_outlets_only = User::leftJoin('employees', 'employees.id', 'users.entity_id')
                 ->leftJoin('employee_outlet', 'employee_outlet.employee_id', 'employees.id')
                 ->leftJoin('outlets', 'outlets.id', 'employee_outlet.outlet_id')
@@ -198,7 +198,7 @@ class HondaServiceInvoiceController extends Controller
                 ->pluck('employee_outlet.outlet_id')
                 ->toArray();
             $service_invoice_list = $service_invoice_list->whereIn('honda_service_invoices.branch_id', $view_user_outlets_only);
-        } elseif (Entrust::can('view-sbu-based-cn-dn')) {
+        } elseif (Entrust::can('honda-view-sbu-based-cn-dn')) {
             $view_employee_sbu_only = Employee::leftJoin('users', 'users.entity_id', 'employees.id')
                 ->leftJoin('employee_sbu', 'employee_sbu.employee_id', 'employees.id')
                 ->where('employee_sbu.employee_id', Auth::user()->entity_id)
@@ -245,7 +245,7 @@ class HondaServiceInvoiceController extends Controller
                         $output .= '<a href="javascript:;" onclick="angular.element(this).scope().cholaPdfDownload(' . $service_invoice_list->id . ')"><img class="img-responsive" src="' . $img_download . '" alt="Download" title="Chola PDF"/>
 	                        </a>';
                     }
-                    if (Entrust::can('service-invoice-irn-cancel')) {
+                    if (Entrust::can('honda-service-invoice-irn-cancel')) {
                         if ($service_invoice_list->ack_date) {
                             $current_date_time = date('d-m-Y H:i:s');
                             if (!empty($service_invoice_list->ack_date)) {
@@ -267,7 +267,7 @@ class HondaServiceInvoiceController extends Controller
 
                         }
                     }
-                    if (Entrust::can('service-invoice-cancel')) {
+                    if (Entrust::can('honda-service-invoice-cancel')) {
                         $btype = ($service_invoice_list->gst_number && !empty($service_invoice_list->gst_number))?"B2B":"B2C";
                         if (empty($service_invoice_list->ack_date)) {
                             $output .= '<a href="javascript:;" data-toggle="modal" data-target="#delete_irn"
@@ -298,7 +298,7 @@ class HondaServiceInvoiceController extends Controller
                         $output .= '<a href="javascript:;" onclick="angular.element(this).scope().cholaPdfDownload(' . $service_invoice_list->id . ')"><img class="img-responsive" src="' . $img_download . '" alt="Download" title="Chola PDF"/>
 	                        </a>';
                     }
-                    if (Entrust::can('service-invoice-irn-cancel')) {
+                    if (Entrust::can('honda-service-invoice-irn-cancel')) {
 
                         if ($service_invoice_list->ack_date) {
                             $current_date_time = date('d-m-Y H:i:s');
@@ -560,7 +560,7 @@ class HondaServiceInvoiceController extends Controller
             'outlets.name',
             'outlets.lsd'
         );
-        if (!Entrust::can('create-service-invoice-for-all-outlets')) {
+        if (!Entrust::can('honda-create-service-invoice-for-all-outlets')) {
             $list = $list->leftJoin('employee_outlet', 'employee_outlet.outlet_id', 'outlets.id')
                 ->leftJoin('employees', 'employees.id', 'employee_outlet.employee_id')
                 ->leftJoin('users', 'users.entity_id', 'employees.id')
@@ -2493,7 +2493,7 @@ class HondaServiceInvoiceController extends Controller
                     }
                 })
                 ->where(function ($query) use ($request) {
-                    if (Entrust::can('view-own-cn-dn')) {
+                    if (Entrust::can('honda-view-own-cn-dn')) {
                         $query->where('honda_service_invoices.created_by_id', Auth::id());
                     }
                 })
@@ -2596,11 +2596,11 @@ class HondaServiceInvoiceController extends Controller
                 ->whereIn('status_id', [4, 7, 8])
             // ->get()
             ;
-            if (Entrust::can('tcs-export-all')) {
+            if (Entrust::can('honda-tcs-export-all')) {
                 $query = $query->where('honda_service_invoices.company_id', Auth::user()->company_id);
-            } elseif (Entrust::can('tcs-export-own')) {
+            } elseif (Entrust::can('honda-tcs-export-own')) {
                 $query = $query->where('honda_service_invoices.created_by_id', Auth::user()->id);
-            } elseif (Entrust::can('tcs-export-outlet-based')) {
+            } elseif (Entrust::can('honda-tcs-export-outlet-based')) {
                 $view_user_outlets_only = User::leftJoin('employees', 'employees.id', 'users.entity_id')
                     ->leftJoin('employee_outlet', 'employee_outlet.employee_id', 'employees.id')
                     ->leftJoin('outlets', 'outlets.id', 'employee_outlet.outlet_id')

@@ -158,11 +158,11 @@ class HondaServiceInvoiceApprovalController extends Controller {
 			->groupBy('honda_service_invoices.id')
 			->orderBy('honda_service_invoices.id', 'Desc');
 		// dd($cn_dn_approval_list);
-		if (Entrust::can('CN/DN Approval 1 View All')) {
+		if (Entrust::can('Honda CN/DN Approval 1 View All')) {
 			$cn_dn_approval_list = $cn_dn_approval_list->where('honda_service_invoices.company_id', Auth::user()->company_id);
-		} elseif (Entrust::can('view-own-cn-dn-approval')) {
+		} elseif (Entrust::can('honda-view-own-cn-dn-approval')) {
 			$cn_dn_approval_list = $cn_dn_approval_list->where('honda_service_invoices.created_by_id', Auth::user()->id);
-		} elseif (Entrust::can('CN/DN Approval 1 Outlet Based')) {
+		} elseif (Entrust::can('Honda CN/DN Approval 1 Outlet Based')) {
 			$view_user_outlets_only = User::leftJoin('employees', 'employees.id', 'users.entity_id')
 				->leftJoin('employee_outlet', 'employee_outlet.employee_id', 'employees.id')
 				->leftJoin('outlets', 'outlets.id', 'employee_outlet.outlet_id')
@@ -172,7 +172,7 @@ class HondaServiceInvoiceApprovalController extends Controller {
 				->pluck('employee_outlet.outlet_id')
 				->toArray();
 			$cn_dn_approval_list = $cn_dn_approval_list->whereIn('honda_service_invoices.branch_id', $view_user_outlets_only);
-		} elseif (Entrust::can('CN/DN Approval 1 Sub Employee Based')) {
+		} elseif (Entrust::can('Honda CN/DN Approval 1 Sub Employee Based')) {
 			$sub_employee_based = Employee::join('users', 'users.entity_id', 'employees.id')
 				->join('honda_service_invoices', 'honda_service_invoices.created_by_id', 'users.id')
 				->where('users.company_id', Auth::user()->company_id)

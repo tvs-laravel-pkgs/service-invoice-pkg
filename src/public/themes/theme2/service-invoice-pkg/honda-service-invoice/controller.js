@@ -75,12 +75,12 @@ app.component('hondaServiceInvoiceList', {
     controller: function ($http, $location, HelperService, $scope, $routeParams, $rootScope, $element, $mdSelect, $timeout) {
         var self = this;
         self.hasPermission = HelperService.hasPermission;
-        self.create_cn = self.hasPermission('create-cn');
-        self.create_dn = self.hasPermission('create-dn');
-        self.create_inv = self.hasPermission('create-inv');
-        self.import_cn_dn = self.hasPermission('import-cn-dn');
-        self.tcs_export = self.hasPermission('tcs-export-all');
-        self.gst_export = self.hasPermission('gst-export');
+        self.create_cn = self.hasPermission('honda-create-cn');
+        self.create_dn = self.hasPermission('honda-create-dn');
+        self.create_inv = self.hasPermission('honda-create-inv');
+        self.import_cn_dn = self.hasPermission('honda-import-cn-dn');
+        self.tcs_export = self.hasPermission('honda-tcs-export-all');
+        self.gst_export = self.hasPermission('honda-gst-export');
         $http.get(
             get_honda_service_invoice_filter_url
         ).then(function (response) {
@@ -549,9 +549,9 @@ app.component('hondaServiceInvoiceForm', {
         $form_data_url = typeof ($routeParams.id) == 'undefined' ? honda_service_invoice_get_form_data_url + '/' + $routeParams.type_id : honda_service_invoice_get_form_data_url + '/' + $routeParams.type_id + '/' + $routeParams.id;
         var self = this;
         self.hasPermission = HelperService.hasPermission;
-        self.allow_e_invoice_selection = self.hasPermission('allow-e-invoice-selection');
-        self.e_invoice_only = self.hasPermission('e-invoice-only');
-        self.without_e_invoice_only = self.hasPermission('without-e-invoice-only');
+        self.allow_e_invoice_selection = self.hasPermission('honda-allow-e-invoice-selection');
+        self.e_invoice_only = self.hasPermission('honda-e-invoice-only');
+        self.without_e_invoice_only = self.hasPermission('honda-without-e-invoice-only');
         self.angular_routes = angular_routes;
         self.type_id = $routeParams.type_id;
         self.enable_service_item_md_change = true;
