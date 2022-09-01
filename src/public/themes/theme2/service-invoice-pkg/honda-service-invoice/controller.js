@@ -78,6 +78,7 @@ app.component('hondaServiceInvoiceList', {
         self.create_cn = self.hasPermission('honda-create-cn');
         self.create_dn = self.hasPermission('honda-create-dn');
         self.create_inv = self.hasPermission('honda-create-inv');
+        self.create_tcs_dn = self.hasPermission('honda-create-tcs-dn');
         self.import_cn_dn = self.hasPermission('honda-import-cn-dn');
         self.tcs_export = self.hasPermission('honda-tcs-export-all');
         self.gst_export = self.hasPermission('honda-gst-export');
@@ -542,7 +543,7 @@ app.component('hondaServiceInvoiceList', {
 app.component('hondaServiceInvoiceForm', {
     templateUrl: honda_service_invoice_form_template_url,
     controller: function ($http, $location, HelperService, $routeParams, $rootScope, $scope, $timeout, $mdSelect, $window) {
-        if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061 || $routeParams.type_id == 1062) { } else {
+        if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061 || $routeParams.type_id == 1062 ||  $routeParams.type_id == 1063) { } else {
             $location.path('/page-not-found')
             return;
         }
@@ -577,7 +578,7 @@ app.component('hondaServiceInvoiceForm', {
             self.config_values = response.data.config_values;
             self.tcs_limit = response.data.tcs_limit;
             self.action = response.data.action;
-            console.log(response);
+            self.e_invoice_uom = { 'id': 1};
             if (self.action == 'Edit') {
                 // $timeout(function() {
                 //     $scope.getServiceItemSubCategoryByServiceItemCategory(self.service_invoice.service_item_sub_category.category_id);
@@ -1203,7 +1204,7 @@ app.component('hondaServiceInvoiceForm', {
             self.total = '';
             self.service_item = '';
             self.service_item_detail = '';
-            self.e_invoice_uom = {};
+            self.e_invoice_uom = {'id' : 1};
             // console.log(' == add btn ==');
             // console.log(self.service_item_detail);
         }
@@ -1625,6 +1626,58 @@ app.component('hondaServiceInvoiceForm', {
             },
         });
 
+         //SEARCH Invoice
+        self.searchTcsInvoice = function (query) {
+            if (query) {
+                return new Promise(function (resolve, reject) {
+                    $http
+                        .post(
+                            honda_search_invoice_tcs_url, {
+                            key: query,
+                        }
+                        )
+                        .then(function (response) {
+                            resolve(response.data);
+                        });
+                    //reject(response);
+                });
+            } else {
+                return [];
+            }
+        }
+
+        //GET BRANCH DETAILS
+        self.getInvoiceDetails = function (query) {
+            if (query == null) {
+                return
+            }
+             return new Promise(function (resolve, reject) {
+                    $http
+                        .post(
+                            honda_fetch_tcs_invoice_details_url, {
+                            key: query,
+                        }
+                        )
+                        .then(function (response) {
+                            //resolve(response.data);
+                            self.service_invoice.invoice_date = response.data.date
+                            self.service_invoice.vin_number = response.data.vin_number
+                            self.service_invoice.amount = response.data.vat_accessible_value
+                            self.service_invoice.inv_person = response.data.customer_name_id
+                        });
+                    //reject(response);
+                });
+        }
+
+        //Invoice Changed
+        self.invoiceChanged = function () {
+            self.service_invoice.service_invoice_items = [];
+            //SERVICE INVOICE ITEMS TABLE CALC
+            $timeout(function () {
+                $scope.serviceInvoiceItemCalc();
+            }, 1000);
+        }
+
         var form_id = '#form';
         var v = jQuery(form_id).validate({
             invalidHandler: function (event, validator) {
@@ -1652,18 +1705,18 @@ app.component('hondaServiceInvoiceForm', {
                 // 'invoice_date': {
                 // required: true,
                 // required: function(){
-                //     if($routeParams.type_id == 1060 || $routeParams.type_id == 1061){
+                //     if($routeParams.type_id == 1063){
                 //         return true;
                 //     }
                 // },
                 // },
-                // 'invoice_number': {
-                // required: function() {
-                // if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061) {
-                // return true;
-                // }
-                // },
-                // },
+                'invoice_number': {
+                required: function() {
+                if ($routeParams.type_id == 1063) {
+                return true;
+                }
+                },
+                },
                 // 'is_e_reverse_charge_applicable': {
                 //     required: true,
                 // },

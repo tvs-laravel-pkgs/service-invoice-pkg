@@ -48,6 +48,7 @@ use Session;
 use URL;
 use Validator;
 use Yajra\Datatables\Datatables;
+use App\Honda\SaleInvoiceDetail;
 
 class HondaServiceInvoiceController extends Controller
 {
@@ -236,14 +237,14 @@ class HondaServiceInvoiceController extends Controller
                 $output = '';
                 if ($service_invoice_list->status_id == '4') {
                     $output .= '<a href="#!/service-invoice-pkg/honda-service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
-	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
-	                    	</a>
-	                    	<a href="' . $path . '/' . $service_invoice_list->number . '.pdf" class="" target="_blank"><img class="img-responsive" src="' . $img_download . '" alt="Download" title="PDF" />
-	                        </a>';
+                            <img class="img-responsive" src="' . $img_view . '" alt="View" />
+                            </a>
+                            <a href="' . $path . '/' . $service_invoice_list->number . '.pdf" class="" target="_blank"><img class="img-responsive" src="' . $img_download . '" alt="Download" title="PDF" />
+                            </a>';
                     if ($service_invoice_list->pdf_format_id == 11311) {
                         //CHOLA CUSTOMER
                         $output .= '<a href="javascript:;" onclick="angular.element(this).scope().cholaPdfDownload(' . $service_invoice_list->id . ')"><img class="img-responsive" src="' . $img_download . '" alt="Download" title="Chola PDF"/>
-	                        </a>';
+                            </a>';
                     }
                     if (Entrust::can('honda-service-invoice-irn-cancel')) {
                         if ($service_invoice_list->ack_date) {
@@ -255,9 +256,9 @@ class HondaServiceInvoiceController extends Controller
                                 $hours = $diff / (60 * 60);
                                 if ($hours < 24) {
                                     $output .= '<a href="javascript:;" data-toggle="modal" data-target="#delete_irn"
-									onclick="angular.element(this).scope().deleteIRN(' . $service_invoice_list->id . ')" dusk = "delete-btn" title="Cancel IRN">
-									<img src="' . $img_delete . '" alt="Cancel IRN" class="img-responsive">
-									</a>';
+                                    onclick="angular.element(this).scope().deleteIRN(' . $service_invoice_list->id . ')" dusk = "delete-btn" title="Cancel IRN">
+                                    <img src="' . $img_delete . '" alt="Cancel IRN" class="img-responsive">
+                                    </a>';
                                 } else {
                                     $output .= '';
                                 }
@@ -271,32 +272,32 @@ class HondaServiceInvoiceController extends Controller
                         $btype = ($service_invoice_list->gst_number && !empty($service_invoice_list->gst_number))?"B2B":"B2C";
                         if (empty($service_invoice_list->ack_date)) {
                             $output .= '<a href="javascript:;" data-toggle="modal" data-target="#delete_irn"
-									onclick="angular.element(this).scope().deleteB2C(' . $service_invoice_list->id . ')" dusk = "delete-btn" title="Cancel '.$btype.'">
-									<img src="' . $img_delete . '" alt="Cancel '.$btype.'" class="img-responsive">
-									</a>';
+                                    onclick="angular.element(this).scope().deleteB2C(' . $service_invoice_list->id . ')" dusk = "delete-btn" title="Cancel '.$btype.'">
+                                    <img src="' . $img_delete . '" alt="Cancel '.$btype.'" class="img-responsive">
+                                    </a>';
                         }
                     }
                 } elseif ($service_invoice_list->status_id != '4' && $service_invoice_list->status_id != '3' && $service_invoice_list->status_id != '7' && $service_invoice_list->status_id != '8') {
                     $output .= '<a href="#!/service-invoice-pkg/honda-service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
-	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
-	                    	</a>
-	                    	<a href="#!/service-invoice-pkg/honda-service-invoice/edit/' . $type_id . '/' . $service_invoice_list->id . '" class="">
-	                        <img class="img-responsive" src="' . $img_edit . '" alt="Edit" />
-	                    	</a>';
+                            <img class="img-responsive" src="' . $img_view . '" alt="View" />
+                            </a>
+                            <a href="#!/service-invoice-pkg/honda-service-invoice/edit/' . $type_id . '/' . $service_invoice_list->id . '" class="">
+                            <img class="img-responsive" src="' . $img_edit . '" alt="Edit" />
+                            </a>';
                 } elseif ($service_invoice_list->status_id == '3') {
                     $output .= '<a href="#!/service-invoice-pkg/honda-service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
-	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
-	                    	</a>';
+                            <img class="img-responsive" src="' . $img_view . '" alt="View" />
+                            </a>';
                 } elseif ($service_invoice_list->status_id == '7') {
                     $output .= '<a href="#!/service-invoice-pkg/honda-service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
-	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
-	                    	</a>
-	                    	<a href="' . $path . '/' . $service_invoice_list->number . '.pdf" class="" target="_blank"><img class="img-responsive" src="' . $img_download . '" alt="Download" title="PDF"/>
-	                        </a>';
+                            <img class="img-responsive" src="' . $img_view . '" alt="View" />
+                            </a>
+                            <a href="' . $path . '/' . $service_invoice_list->number . '.pdf" class="" target="_blank"><img class="img-responsive" src="' . $img_download . '" alt="Download" title="PDF"/>
+                            </a>';
                     if ($service_invoice_list->pdf_format_id == 11311) {
                         //CHOLA CUSTOMER
                         $output .= '<a href="javascript:;" onclick="angular.element(this).scope().cholaPdfDownload(' . $service_invoice_list->id . ')"><img class="img-responsive" src="' . $img_download . '" alt="Download" title="Chola PDF"/>
-	                        </a>';
+                            </a>';
                     }
                     if (Entrust::can('honda-service-invoice-irn-cancel')) {
 
@@ -309,9 +310,9 @@ class HondaServiceInvoiceController extends Controller
                                 $hours = $diff / (60 * 60);
                                 if ($hours < 24 && $service_invoice_list->state_id == 7) {
                                     $output .= '<a href="javascript:;" data-toggle="modal" data-target="#delete_irn"
-									onclick="angular.element(this).scope().deleteIRN(' . $service_invoice_list->id . ')" dusk = "delete-btn" title="Cancel IRN">
-									<img src="' . $img_delete . '" alt="Cancel IRN" class="img-responsive">
-									</a>';
+                                    onclick="angular.element(this).scope().deleteIRN(' . $service_invoice_list->id . ')" dusk = "delete-btn" title="Cancel IRN">
+                                    <img src="' . $img_delete . '" alt="Cancel IRN" class="img-responsive">
+                                    </a>';
                                 } else {
                                     $output .= '';
                                 }
@@ -323,22 +324,22 @@ class HondaServiceInvoiceController extends Controller
 
                 } elseif ($service_invoice_list->status_id == '8') {
                     $output .= '<a href="#!/service-invoice-pkg/honda-service-invoice/view/' . $type_id . '/' . $service_invoice_list->id . '" class="">
-	                        <img class="img-responsive" src="' . $img_view . '" alt="View" />
-	                    	</a>
-	                    	<a href="' . $path . '/' . $service_invoice_list->number . '.pdf" class="" target="_blank"><img class="img-responsive" src="' . $img_download . '" alt="Download" title="PDF"/>
-	                        </a>';
+                            <img class="img-responsive" src="' . $img_view . '" alt="View" />
+                            </a>
+                            <a href="' . $path . '/' . $service_invoice_list->number . '.pdf" class="" target="_blank"><img class="img-responsive" src="' . $img_download . '" alt="Download" title="PDF"/>
+                            </a>';
                     if ($service_invoice_list->pdf_format_id == 11311) {
                         //CHOLA CUSTOMER
                         $output .= '<a href="javascript:;" onclick="angular.element(this).scope().cholaPdfDownload(' . $service_invoice_list->id . ')"><img class="img-responsive" src="' . $img_download . '" alt="Download" title="Chola PDF"/>
-	                        </a>';
+                            </a>';
                     }
                 }
                 if ($service_invoice_list->status_id == '1') {
                     $next_status = 2; //ApprovalLevel::where('approval_type_id', 1)->pluck('current_status_id')->first();
                     $output .= '<a href="javascript:;" data-toggle="modal" data-target="#send-to-approval"
-					onclick="angular.element(this).scope().sendApproval(' . $service_invoice_list->id . ',' . $next_status . ')" title="Send for Approval">
-					<img src="' . $img_approval . '" alt="Send for Approval" class="img-responsive">
-					</a>';
+                    onclick="angular.element(this).scope().sendApproval(' . $service_invoice_list->id . ',' . $next_status . ')" title="Send for Approval">
+                    <img src="' . $img_approval . '" alt="Send for Approval" class="img-responsive">
+                    </a>';
                 }
                 return $output;
             })
@@ -884,12 +885,12 @@ class HondaServiceInvoiceController extends Controller
                             $date2 = Carbon::createFromFormat('d-m-Y', $document_date);
                             $result = $date1->gte($date2);
 
-							$percentage = 0;
+                            $percentage = 0;
                             if ($result) {
                                 //customer have HSN and SAC Code
                                 $gst_total += round((1 / 100) * ($request->qty * $request->amount), 2);
                                 $KFC_tax_amount = round($request->qty * $request->amount * 1 / 100, 2); //ONE PERCENTAGE FOR KFC
-								$percentage = 1;
+                                $percentage = 1;
                             }
 
                             $service_item['KFC'] = [ //4 for KFC
@@ -955,8 +956,7 @@ class HondaServiceInvoiceController extends Controller
     {
          DB::beginTransaction();
         try {
-
-            $error_messages = [
+             $error_messages = [
                 'branch_id.required' => 'Branch is required',
                 'sbu_id.required' => 'Sbu is required',
                 'category_id.required' => 'Category is required',
@@ -966,6 +966,7 @@ class HondaServiceInvoiceController extends Controller
                 'proposal_attachments.*.mimes' => 'Only jpeg,png and bmp images are allowed',
                 'number.unique' => 'Service invoice number has already been taken',
             ];
+            
 
             $validator = Validator::make($request->all(), [
                 'branch_id' => [
@@ -1025,6 +1026,9 @@ class HondaServiceInvoiceController extends Controller
                 } elseif ($request->type_id == 1062) {
                     //INV
                     $serial_number_category = 191;
+                } elseif ($request->type_id == 1063) {
+                    //TCS DN
+                    $serial_number_category = 186;
                 }
 
                 $sbu = Sbu::find($request->sbu_id);
@@ -1091,6 +1095,10 @@ class HondaServiceInvoiceController extends Controller
                 $service_invoice->created_at = date("Y-m-d H:i:s");
                 $service_invoice->created_by_id = Auth()->user()->id;
                 $service_invoice->number = isset($generateNumber['number']) ?  $generateNumber['number']:'';
+
+                if($request->type_id == '1063')
+                $service_invoice->customer_type = ($request->customer_type == '0' ? 'Form 60' : 'PAN');
+
                 if ($approval_status != '') {
                     $service_invoice->status_id = 1; //$approval_status->name;
                 } else {
@@ -3277,7 +3285,7 @@ class HondaServiceInvoiceController extends Controller
                         $data['name'] = $customer_data['NAME'];
                         $data['mobile_no'] = isset($customer_data['LOCATOR']) && $customer_data['LOCATOR'] != 'Not available' ? $customer_data['LOCATOR'] : null;
                         $data['cust_group'] = isset($customer_data['CUSTGROUP']) && $customer_data['CUSTGROUP'] != 'Not available' ? $customer_data['CUSTGROUP'] : null;
-                        $data['pan_number'] = isset($customer_data['PANNO']) && $customer_data['PANNO'] != 'Not available' ? $customer_data['PANNO'] : null;
+                        $data['pan_number'] = isset($customer_data['PANNO']) && $customer_data['PANNO'] != 'Not available' ? $customer_data['PANNO'] : '-';
 
                         $list[] = $data;
                     }
@@ -3631,6 +3639,7 @@ class HondaServiceInvoiceController extends Controller
                                 $address->pincode = empty($customer_data['ZIPCODE']) || $customer_data['ZIPCODE'] == 'Not available' ? null : $customer_data['ZIPCODE'];
                                 $address->is_primary = isset($customer_data['ISPRIMARY']) ? $customer_data['ISPRIMARY'] : 0;
                                 $address->save();
+                                $address->pan_number = $request->data['pan_number'];
                                 $customer_address[] = $address;
                             }
                         }
@@ -5140,4 +5149,35 @@ class HondaServiceInvoiceController extends Controller
             'file_name_path' => url('storage/app/public/honda-service-invoice-pdf') . '/' . $service_invoice->number . '.pdf',
         ]);
     }
+
+    public function searchHondaSaleInvoiceTCS(Request $r)
+    {
+        $key = $r->key;
+        // TCS DEBIT NOTE VALIDATION
+
+        //GET INV DET
+        $list = DB::table('honda_sale_invoice_detail_requests')
+                    ->join('honda_sale_invoice_details' , 'honda_sale_invoice_details.id' , 'honda_sale_invoice_detail_requests.sale_invoice_id')
+                    ->select('honda_sale_invoice_details.number','honda_sale_invoice_details.id')
+                    ->where('honda_sale_invoice_detail_requests.vat_accessible_value' , '>', '10,00,000');
+         
+        $list = $list->where(function ($q) use ($key) {
+                        $q->where('honda_sale_invoice_details.number', 'like', '%' . $key . '%');
+                    })->get();
+
+        return response()->json($list);
+    }
+
+    public function hondaFetchTcsInvoiceDetails(Request $r)
+    {
+        $key = $r->key;
+        $list = DB::table('honda_sale_invoice_detail_requests')
+                    ->join('honda_sale_invoice_details' , 'honda_sale_invoice_details.id' , 'honda_sale_invoice_detail_requests.sale_invoice_id')
+                     ->join('honda_vehicle_details' , 'honda_vehicle_details.id' , 'honda_sale_invoice_details.vehicle_id')
+                    ->select('honda_sale_invoice_details.id','honda_vehicle_details.vin_number','honda_sale_invoice_details.date','honda_sale_invoice_detail_requests.vat_accessible_value','honda_sale_invoice_detail_requests.customer_name_id')
+                    ->where('honda_sale_invoice_details.id' , $key)
+                    ->first();
+        return response()->json($list);
+    }
+
 }

@@ -220,7 +220,7 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 				'parent_id' => 3040,
 				'name' => 'without-e-invoice-only',
 				'display_name' => 'Without E-Invoice Only',
-			],
+			], 
 			//MASTER > SERVICE INVOICE
 			3063 => [
 				'display_order' => 12,
@@ -312,7 +312,7 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 			3077 => [
 				'display_order' => 1,
 				'parent_id' => 3076,
-				'name' => 'tcs-export-own',
+				'name' => 'honda-tcs-export-own',
 				'display_name' => 'TCS Export Own',
 			],
 			3078 => [
@@ -372,6 +372,12 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 				'name' => 'honda-without-e-invoice-only',
 				'display_name' => 'Without E-Invoice Only',
 			],
+			3087 => [
+				'display_order' => 19,
+				'parent_id' => 3063,
+				'name' => 'honda-create-tcs-dn',
+				'display_name' => 'Create TCS DN',
+			], 
 
 		];
 

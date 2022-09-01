@@ -100,5 +100,9 @@
      //SERVICE-INVOICE-APPROVALS
     var honda_service_invoice_approval_list_template_url = "{{URL::asset($service_invoice_pkg_prefix .'/public/themes/'.$theme.'/service-invoice-pkg/honda-service-invoice/approval/list.html')}}";
     var honda_approval_type_validation_url = "{{route('hondaApprovalTypeValid')}}";
+    var honda_search_invoice_tcs_url = "{{route('searchHondaSaleInvoiceTCS')}}";
+    var honda_fetch_tcs_invoice_details_url = "{{route('hondaFetchTcsInvoiceDetails')}}";
+
+    
 
 </script>

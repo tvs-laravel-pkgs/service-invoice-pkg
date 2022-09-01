@@ -2988,4 +2988,14 @@ class HondaServiceInvoice extends Model
 
         return $api_log;
     }
+
+    public static function tcs_dn_details($inv_no){
+
+        return DB::table('honda_sale_invoice_detail_requests')
+                    ->join('honda_sale_invoice_details' , 'honda_sale_invoice_details.id' , 'honda_sale_invoice_detail_requests.sale_invoice_id')
+                    ->join('honda_vehicle_details' , 'honda_vehicle_details.id' , 'honda_sale_invoice_details.vehicle_id')
+                    ->select('honda_sale_invoice_details.id','honda_vehicle_details.vin_number','honda_sale_invoice_details.date','honda_sale_invoice_detail_requests.vat_accessible_value','honda_sale_invoice_detail_requests.customer_name_id')
+                    ->where('honda_sale_invoice_details.number' , $inv_no)
+                    ->first();
+    }
 }
