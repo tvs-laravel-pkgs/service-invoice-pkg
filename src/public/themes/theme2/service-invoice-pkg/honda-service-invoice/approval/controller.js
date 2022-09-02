@@ -435,9 +435,9 @@ app.component('hondaServiceInvoiceApprovalList', {
 //------------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------------
 app.component('hondaServiceInvoiceApprovalView', {
-    templateUrl: service_invoice_approval_view_template_url,
+    templateUrl: honda_service_invoice_approval_view_template_url,
     controller: function ($http, $location, HelperService, $routeParams, $rootScope, $scope, $timeout, $mdSelect, $window) {
-        if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061 || $routeParams.type_id == 1062) { } else {
+        if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061 || $routeParams.type_id == 1062 || $routeParams.type_id == 1063) { } else {
             $location.path('/page-not-found')
             return;
         }
@@ -455,7 +455,7 @@ app.component('hondaServiceInvoiceApprovalView', {
 
         if (self.type_id == 1060) {
             self.minus_value = '-';
-        } else if (self.type_id == 1061 || self.type_id == 1062) {
+        } else if (self.type_id == 1061 || self.type_id == 1062 || self.type_id == 1063) {
             self.minus_value = '';
         }
         $http.get(

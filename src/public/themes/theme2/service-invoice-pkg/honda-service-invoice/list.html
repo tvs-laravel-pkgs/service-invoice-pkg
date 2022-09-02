@@ -8,9 +8,15 @@
     <div class="page-header">
         <div class="page-header-inner">
             <div class="page-header-content-left">
-                <div class="page-header-content title-block">
-                    <h1 class="title type-2">Credit &amp; Debit Notes</h1>
+
+                <div class="page-header-content title-block"  ng-if='$ctrl.list_type != tcsdn'>
+                    <h1 class="title type-2" >Credit & Debit Notes</h1>
                 </div><!-- Page Header Content -->
+
+                <div class="page-header-content title-block"  ng-if='$ctrl.list_type == tcsdn'>
+                    <h1 class="title type-2">TCS Debit Notes</h1>
+                </div><!-- Page Header Content -->
+
                 <div class="page-header-content button-block">
                     <button class="btn btn-bordered my-tooltip" data-toggle="modal" data-target="#filter" ng-shortcut="'meta+shift+f'" ng-shortcut-click data-title="ctrl+shift+f"><i class="icon ion-md-funnel"></i>Filter</button>
                 </div><!-- Page Header Content -->
@@ -47,9 +53,12 @@
                             </li>
                         </ul>
                     </div>
-                    <a href="#!/service-invoice-pkg/honda-service-invoice/add/1060" ng-if="$ctrl.create_cn == true" class="btn btn-primary my-tooltip" ng-shortcut="'meta+shift+c'" ng-shortcut-click data-title="ctrl+shift+c">Add CN</a>
-                    <a href="#!/service-invoice-pkg/honda-service-invoice/add/1061" ng-if="$ctrl.create_dn == true" class="btn btn-primary my-tooltip" ng-shortcut="'meta+shift+d'" ng-shortcut-click data-title="ctrl+shift+d">Add DN</a>
-                    <a href="#!/service-invoice-pkg/honda-service-invoice/add/1062" ng-if="$ctrl.create_inv == true" class="btn btn-primary my-tooltip">Add INV</a>
+                   
+                    <a href="#!/service-invoice-pkg/honda-service-invoice/add/1060" ng-if="$ctrl.create_cn == true" class="btn btn-primary my-tooltip" ng-shortcut="'meta+shift+c'" ng-shortcut-click data-title="ctrl+shift+c"  ng-show='$ctrl.list_type != tcsdn'>Add CN</a>
+                    <a href="#!/service-invoice-pkg/honda-service-invoice/add/1061" ng-if="$ctrl.create_dn == true" class="btn btn-primary my-tooltip" ng-shortcut="'meta+shift+d'" ng-shortcut-click data-title="ctrl+shift+d"  ng-show='$ctrl.list_type != tcsdn'>Add DN</a>
+                    <a href="#!/service-invoice-pkg/honda-service-invoice/add/1062" ng-if="$ctrl.create_inv == true" class="btn btn-primary my-tooltip" ng-show='$ctrl.list_type != tcsdn'>Add INV</a>
+                    <a href="#!/service-invoice-pkg/honda-service-invoice/add/1063" ng-if="$ctrl.create_tcs_dn == true" class="btn btn-primary my-tooltip" ng-show='$ctrl.list_type == tcsdn'>Add DN</a>
+
                 </div><!-- Page Header Content -->
             </div><!-- Page Header Content Right -->
         </div><!-- Page Header Inner -->

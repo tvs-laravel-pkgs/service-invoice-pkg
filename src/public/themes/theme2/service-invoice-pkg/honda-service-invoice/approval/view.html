@@ -17,6 +17,7 @@
                     <h1 class="title" ng-show="$ctrl.type_id == 1060"><b>{{$ctrl.action}} Credit Note</b></h1>
                     <h1 class="title" ng-show="$ctrl.type_id == 1061"><b>{{$ctrl.action}} Debit Note</b></h1>
                     <h1 class="title" ng-show="$ctrl.type_id == 1062"><b>{{$ctrl.action}} Invoice</b></h1>
+                    <h1 class="title" ng-show="$ctrl.type_id == 1063"><b>{{$ctrl.action}} TCS Debit Note</b></h1>
                     <!-- <p class="subtitle">Service Item category List / Form</p> -->
                 </div><!-- Page Header Content -->
             </div><!-- Page Header Content Left -->
@@ -77,7 +78,7 @@
                                                     </div>
                                                 </div>
                                             </li> -->
-                                            <li>
+                                            <li ng-show="$ctrl.type_id != 1063">
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Is Service </label>
                                                     <div class="table-form-list-control type-sm" style="min-width:130px !important;">
@@ -89,7 +90,7 @@
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
-                                            <li>
+                                            <li ng-show="$ctrl.type_id != 1063">
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Reverse Charge Applicability </label>
                                                     <div class="table-form-list-control type-sm" style="min-width:130px !important;">
@@ -178,7 +179,7 @@
                                                     </div>
                                                 </div>
                                             </li> -->
-                                            <li>
+                                            <li ng-show="$ctrl.type_id != 1063">
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Ref. Invoice Date </label>
                                                     <div class="table-form-list-control invoice_date_error">
@@ -188,6 +189,16 @@
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
+                                             <li ng-if="$ctrl.type_id == 1063">  
+                                                <div class="info-wrap" ng-show="$ctrl.service_invoice.vin_number">
+                                                    <p class="info-content"><b>Invoice Date # </b> {{$ctrl.service_invoice.invoice_date}}</p>
+                                                     <p class="info-content"><b>Invoice Amount # </b> {{$ctrl.service_invoice.amount}}</p>
+                                                     <p class="info-content"><b>Invoice VIN # </b> {{$ctrl.service_invoice.vin_number ? $ctrl.service_invoice.vin_number : '_'}} </p>
+                                                      <input name="invoice_date" type="hidden" ng-model="$ctrl.service_invoice.invoice_date" readonly />
+                                                     <input type="hidden" ng-model="$ctrl.service_invoice.amount" name="invoice_amount" class="type-sm form-control">
+                                                    <input type="hidden" ng-model="$ctrl.service_invoice.vin_number" name="vin_number" class="type-sm form-control"> 
+                                                </div><!-- Info Wrap -->  
+                                            </li>       
                                             <li ng-if="$ctrl.service_invoice.version">
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Version </label>
@@ -235,6 +246,11 @@
                                                 </div>
                                             </div>
                                             <!-- <p class="info-content color-red" ng-if="$ctrl.service_invoice.status_id == 5"><b>Remarks:</b> {{$ctrl.service_invoice.comments}}</p> -->
+                                        </div><!-- Info Wrap -->
+                                        <div class="info-wrap" ng-show="!isObjectEmpty($ctrl.customer) && $ctrl.service_invoice.inv_person">
+
+                                            <p class="info-content"><b>Invoiced Customer # </b>{{$ctrl.service_invoice.inv_person ? $ctrl.service_invoice.inv_person : '_'}} </p>
+                                            <input type="hidden" ng-model="$ctrl.service_invoice.inv_person" name="inv_person" class="type-sm form-control">
                                         </div><!-- Info Wrap -->
                                     </li>
                                 </ul><!-- Flex List -->

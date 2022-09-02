@@ -82,6 +82,9 @@ app.component('hondaServiceInvoiceList', {
         self.import_cn_dn = self.hasPermission('honda-import-cn-dn');
         self.tcs_export = self.hasPermission('honda-tcs-export-all');
         self.gst_export = self.hasPermission('honda-gst-export');
+        setTimeout(function () {
+                   self.list_type = $routeParams.type;
+                }, 5000);
         $http.get(
             get_honda_service_invoice_filter_url
         ).then(function (response) {
@@ -128,6 +131,7 @@ app.component('hondaServiceInvoiceList', {
                     type: "GET",
                     dataType: "json",
                     data: function (d) {
+                        d.dn_type = $routeParams.type;
                         d.invoice_number = $('#invoice_number').val();
                         d.invoice_date = $('#invoice_date').val();
                         d.type_id = $('#type_id').val();
@@ -238,36 +242,6 @@ app.component('hondaServiceInvoiceList', {
             $('#gstin').val('');
             dataTable.draw();
         }
-        //GET SERVICE ITEM SUB CATEGORY BY CATEGORY
-        // $scope.getServiceItemSubCategory = function(category_id) {
-        //     self.extras.sub_category_list = [];
-        //     if (category_id == '') {
-        //         $('#sub_category_id').val('');
-        //     }
-        //     $('#category_id').val(category_id);
-        //     dataTable.draw();
-        //     if (category_id) {
-        //         $.ajax({
-        //                 url: get_service_item_sub_category_url + '/' + category_id,
-        //                 method: "GET",
-        //             })
-        //             .done(function(res) {
-        //                 if (!res.success) {
-        //                     new Noty({
-        //                         type: 'error',
-        //                         layout: 'topRight',
-        //                         text: res.error
-        //                     }).show();
-        //                 } else {
-        //                     self.extras.sub_category_list = res.sub_category_list;
-        //                     $scope.$apply()
-        //                 }
-        //             })
-        //             .fail(function(xhr) {
-        //                 console.log(xhr);
-        //             });
-        //     }
-        // }
         self.export_value = function (value) {
             console.log(value);
             $("#export_type").val(value);
@@ -567,10 +541,16 @@ app.component('hondaServiceInvoiceForm', {
                     layout: 'topRight',
                     text: response.data.error,
                 }).show();
-                $location.path('/service-invoice-pkg/honda-service-invoice/list')
+                if ($routeParams.type_id != 1063)
+                    $location.path('/service-invoice-pkg/honda-service-invoice/list')
+                else
+                    $location.path('/service-invoice-pkg/honda-service-invoice/list?type=tcsdn')
                 $scope.$apply()
             }
-            self.list_url = honda_service_invoice_list_url;
+            if($routeParams.type_id != 1063)
+                self.list_url = honda_service_invoice_list_url;
+            else
+                self.list_url = honda_service_invoice_list_url+'?type=tcsdn';
             self.service_invoice = response.data.service_invoice;
             self.customer = {};
             self.e_invoice_uom = {};
@@ -579,6 +559,8 @@ app.component('hondaServiceInvoiceForm', {
             self.tcs_limit = response.data.tcs_limit;
             self.action = response.data.action;
             self.e_invoice_uom = { 'id': 1};
+            if($routeParams.type_id == 1063 )
+                self.service_invoice.category_id = 17;
             if (self.action == 'Edit') {
                 // $timeout(function() {
                 //     $scope.getServiceItemSubCategoryByServiceItemCategory(self.service_invoice.service_item_sub_category.category_id);
@@ -611,7 +593,7 @@ app.component('hondaServiceInvoiceForm', {
                 // $scope.apply();
 
                 //ATTACHMENTS
-                if (self.service_invoice.attachments.length) {
+                if (self.service_invoice.attachments && self.service_invoice.attachments.length) {
                     $(self.service_invoice.attachments).each(function (key, attachment) {
                         var design = '<div class="imageuploadify-container" data-attachment_id="' + attachment.id + '" style="margin-left: 0px; margin-right: 0px;">' +
                             '<div class="imageuploadify-btn-remove"><button type="button" class="btn btn-danger glyphicon glyphicon-remove"></button></div>' +
@@ -823,7 +805,6 @@ app.component('hondaServiceInvoiceForm', {
 
         //GET CUSTOMER DETAILS
         $scope.customerSelected = function () {
-            console.log('test');
             $('#pace').css("display", "block");
             $('#pace').addClass('pace-active');
             console.log(self.service_invoice.customer);
@@ -1662,7 +1643,7 @@ app.component('hondaServiceInvoiceForm', {
                             //resolve(response.data);
                             self.service_invoice.invoice_date = response.data.date
                             self.service_invoice.vin_number = response.data.vin_number
-                            self.service_invoice.amount = response.data.vat_accessible_value
+                            self.service_invoice.amount = response.data.on_road_price
                             self.service_invoice.inv_person = response.data.customer_name_id
                         });
                     //reject(response);
@@ -1767,7 +1748,7 @@ app.component('hondaServiceInvoiceForm', {
 app.component('hondaServiceInvoiceView', {
     templateUrl: honda_service_invoice_view_template_url,
     controller: function ($http, $location, HelperService, $routeParams, $rootScope, $scope, $timeout, $mdSelect, $window) {
-        if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061 || $routeParams.type_id == 1062) { } else {
+        if ($routeParams.type_id == 1060 || $routeParams.type_id == 1061 || $routeParams.type_id == 1062 ||  $routeParams.type_id == 1063) { } else {
             $location.path('/page-not-found')
             return;
         }
@@ -1780,7 +1761,7 @@ app.component('hondaServiceInvoiceView', {
         self.ref_attachements_url_link = ref_service_invoice_attachements_url;
         if (self.type_id == 1060) {
             self.minus_value = '-';
-        } else if (self.type_id == 1061 || self.type_id == 1062) {
+        } else if (self.type_id == 1061 || self.type_id == 1062 || self.type_id == 1063) {
             self.minus_value = '';
         }
         $scope.attachment_url = base_url + '/storage/app/public/honda-service-invoice-pdf';
@@ -1795,10 +1776,18 @@ app.component('hondaServiceInvoiceView', {
                     layout: 'topRight',
                     text: response.data.error,
                 }).show();
-                $location.path('/service-invoice-pkg/honda-service-invoice/list')
+                if (self.type_id != 1063) {
+                    $location.path('/service-invoice-pkg/honda-service-invoice/list')
+                } else {
+                    $location.path('/service-invoice-pkg/honda-service-invoice/list?type=tcsdn')
+                }
+                
                 $scope.$apply()
             }
-            self.list_url = honda_service_invoice_list_url;
+             if ($routeParams.type_id != 1063)
+                self.list_url = honda_service_invoice_list_url;
+            else
+                self.list_url = honda_service_invoice_list_url+'?type=tcsdn';
             self.service_invoice = response.data.service_invoice;
             self.customer = {};
             self.extras = response.data.extras;

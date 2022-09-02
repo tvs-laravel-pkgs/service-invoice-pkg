@@ -181,6 +181,12 @@ class HondaServiceInvoiceController extends Controller
                     $query->where('honda_service_invoices.status_id', $request->status_id);
                 }
             })
+            ->where(function ($query) use ($request) {
+                if ($request->dn_type == 'tcsdn') {
+                    $query->where('honda_service_invoices.number', 'LIKE', '%TCSDN%');
+                }else
+                    $query->where('honda_service_invoices.number', 'NOT LIKE', '%TCSDN%');
+            })
             ->groupBy('honda_service_invoices.id')
             ->orderBy('honda_service_invoices.id', 'Desc');
         // ->get();
@@ -503,7 +509,14 @@ class HondaServiceInvoiceController extends Controller
                     //dd($serviceInvoiceItem->sac_code_value);
                 }
             }
-
+              // dd($service_invoice->cancel_irn);
+            if($type_id == 1063){
+                $tcs_dn_inv = HondaServiceInvoice::tcs_dn_details($service_invoice->invoice_number);
+                $service_invoice->vin_number = $tcs_dn_inv->vin_number;
+                $service_invoice->invoice_date = $tcs_dn_inv->date;
+                $service_invoice->amount = $tcs_dn_inv->on_road_price;
+                $service_invoice->inv_person = $tcs_dn_inv->customer_name_id;
+            }
             $this->data['action'] = 'Edit';
         }
 
@@ -1000,7 +1013,10 @@ class HondaServiceInvoiceController extends Controller
             if ($validator->fails()) {
                 return response()->json(['success' => false, 'errors' => $validator->errors()->all()]);
             }
-
+            //TCS DN Invoice validation
+            $inv_exist = HondaServiceInvoice::where('invoice_number' , $request->invoice_number)->first();
+            if($inv_exist )
+                return response()->json(['success' => false, 'errors' => ['TCS Debit Note '.$inv_exist->number.' created already for request invoice number']]);
             //SERIAL NUMBER GENERATION & VALIDATION
             if (!$request->id) {
                 //GET FINANCIAL YEAR ID BY DOCUMENT DATE
@@ -2295,6 +2311,13 @@ class HondaServiceInvoiceController extends Controller
             $service_invoice->cancel_irn = true;
         }
         // dd($service_invoice->cancel_irn);
+        if($type_id == 1063){
+            $tcs_dn_inv = HondaServiceInvoice::tcs_dn_details($service_invoice->invoice_number);
+            $service_invoice->vin_number = $tcs_dn_inv->vin_number;
+            $service_invoice->invoice_date = $tcs_dn_inv->date;
+            $service_invoice->amount = $tcs_dn_inv->on_road_price;
+            $service_invoice->inv_person = $tcs_dn_inv->customer_name_id;
+        }
 
         $this->data['extras'] = [
             'sbu_list' => [],
@@ -5159,7 +5182,7 @@ class HondaServiceInvoiceController extends Controller
         $list = DB::table('honda_sale_invoice_detail_requests')
                     ->join('honda_sale_invoice_details' , 'honda_sale_invoice_details.id' , 'honda_sale_invoice_detail_requests.sale_invoice_id')
                     ->select('honda_sale_invoice_details.number','honda_sale_invoice_details.id')
-                    ->where('honda_sale_invoice_detail_requests.vat_accessible_value' , '>', '10,00,000');
+                    ->where('honda_sale_invoice_detail_requests.on_road_price' , '>', '1000000');
          
         $list = $list->where(function ($q) use ($key) {
                         $q->where('honda_sale_invoice_details.number', 'like', '%' . $key . '%');
@@ -5174,7 +5197,7 @@ class HondaServiceInvoiceController extends Controller
         $list = DB::table('honda_sale_invoice_detail_requests')
                     ->join('honda_sale_invoice_details' , 'honda_sale_invoice_details.id' , 'honda_sale_invoice_detail_requests.sale_invoice_id')
                      ->join('honda_vehicle_details' , 'honda_vehicle_details.id' , 'honda_sale_invoice_details.vehicle_id')
-                    ->select('honda_sale_invoice_details.id','honda_vehicle_details.vin_number','honda_sale_invoice_details.date','honda_sale_invoice_detail_requests.vat_accessible_value','honda_sale_invoice_detail_requests.customer_name_id')
+                    ->select('honda_sale_invoice_details.id','honda_vehicle_details.vin_number','honda_sale_invoice_details.date','honda_sale_invoice_detail_requests.on_road_price','honda_sale_invoice_detail_requests.customer_name_id')
                     ->where('honda_sale_invoice_details.id' , $key)
                     ->first();
         return response()->json($list);

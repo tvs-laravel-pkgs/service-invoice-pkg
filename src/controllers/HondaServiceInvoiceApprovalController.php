@@ -374,6 +374,13 @@ class HondaServiceInvoiceApprovalController extends Controller {
 				$serviceInvoiceItem->name = $serviceInvoiceItem->serviceItem->name;
 			}
 		}
+		if($type_id == 1063){
+            $tcs_dn_inv = HondaServiceInvoice::tcs_dn_details($service_invoice->invoice_number);
+            $service_invoice->vin_number = $tcs_dn_inv->vin_number;
+            $service_invoice->invoice_date = $tcs_dn_inv->date;
+            $service_invoice->amount = $tcs_dn_inv->on_road_price;
+            $service_invoice->inv_person = $tcs_dn_inv->customer_name_id;
+        }		
 		$this->data['extras'] = [
 			'sbu_list' => [],
 			'tax_list' => Tax::select('name', 'id')->where('company_id', 1)->orderBy('id', 'ASC')->get(),

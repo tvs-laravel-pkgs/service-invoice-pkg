@@ -33,6 +33,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use PHPExcel_IOFactory;
 use PHPExcel_Shared_Date;
+use Illuminate\Support\Str;
 
 class HondaServiceInvoice extends Model
 {
@@ -500,6 +501,7 @@ class HondaServiceInvoice extends Model
             $params['Account'] = $service_invoice->customer->code;
             $params['Department'] = $service_invoice->serviceItemCategory->name;
             $params['Sub_GL'] = isset($invoice_item->serviceItem->subLedger->ax_subgl) ? $invoice_item->serviceItem->subLedger->ax_subgl : '' ;
+            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
             $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
             $params['Qty'] = $invoice_item->qty;
@@ -616,6 +618,7 @@ class HondaServiceInvoice extends Model
         $params['Account'] = $service_invoice->customer->code;
         $params['Department'] = $service_invoice->serviceItemCategory->name;
         $params['Sub_GL'] = isset($invoice_item->serviceItem->subLedger->ax_subgl) ? $invoice_item->serviceItem->subLedger->ax_subgl : '' ;
+        $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
         $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
         $params['VatPercentage'] = "";
         $params['Qty'] = $invoice_item->qty;
@@ -673,6 +676,7 @@ class HondaServiceInvoice extends Model
             $params['Account'] = $service_invoice->customer->code;
             $params['Department'] = $service_invoice->serviceItemCategory->name;
             $params['Sub_GL'] = isset($invoice_item->serviceItem->subLedger->ax_subgl) ? $invoice_item->serviceItem->subLedger->ax_subgl : '' ;
+            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
             $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
             $params['Qty'] = $invoice_item->qty;
@@ -714,6 +718,7 @@ class HondaServiceInvoice extends Model
                     $params['Account'] = $service_invoice->customer->code;
                     $params['Department'] = $service_invoice->serviceItemCategory->name;
                    $params['Sub_GL'] = isset($invoice_item->serviceItem->subLedger->ax_subgl) ? $invoice_item->serviceItem->subLedger->ax_subgl : '' ;
+                    $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
                     $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
                    // $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
                     $params['Qty'] = $invoice_item->qty;
@@ -893,6 +898,7 @@ class HondaServiceInvoice extends Model
             $params['Account'] = $service_invoice->customer->code;
             $params['Department'] = $service_invoice->serviceItemCategory->name;
             $params['Sub_GL'] = isset($invoice_item->serviceItem->subLedger->ax_subgl) ? $invoice_item->serviceItem->subLedger->ax_subgl : '' ;
+            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
            // $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
             $params['Qty'] = $invoice_item->qty;
@@ -924,6 +930,7 @@ class HondaServiceInvoice extends Model
             $params['Account'] = $service_invoice->customer->code;
             $params['Department'] = $service_invoice->serviceItemCategory->name;
             $params['Sub_GL'] = isset($invoice_item->serviceItem->subLedger->ax_subgl) ? $invoice_item->serviceItem->subLedger->ax_subgl : '' ;
+            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
            // $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
             $params['Qty'] = $invoice_item->qty;
@@ -936,6 +943,7 @@ class HondaServiceInvoice extends Model
             $params['Account'] = $service_invoice->customer->code;
             $params['Department'] = $service_invoice->serviceItemCategory->name;
             $params['Sub_GL'] = isset($invoice_item->serviceItem->subLedger->ax_subgl) ? $invoice_item->serviceItem->subLedger->ax_subgl : '' ;
+            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
             $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
             $params['Qty'] = $invoice_item->qty;
@@ -1663,7 +1671,10 @@ class HondaServiceInvoice extends Model
 
         $params['TVSHSNCode'] = isset($params['TVSHSNCode']) ? $params['TVSHSNCode'] : '';
         $export->Application = 'HONDA';
-        $export->ApplicationType = 'CNDN';
+        if(isset($params['ApplicationType']) && ($params['ApplicationType'] =='TCSDN'))
+            $export->ApplicationType = 'TCSDN';
+        else 
+            $export->ApplicationType = 'CNDN';
         $export->CurrencyCode = 'INR';
         $export->JournalName = 'BPAS_NJV';
         $export->JournalNum = "";
@@ -2673,7 +2684,10 @@ class HondaServiceInvoice extends Model
         } elseif ($this->type_id == 1061) {
             $this->sac_code_status = 'Tax Invoice(DBN)';
             $this->document_type = 'DBN';
-        } else {
+        } elseif ($this->type_id == 1063) {
+            $this->sac_code_status = 'Tax Invoice(TCS DBN)';
+            $this->document_type = 'TCS DBN';
+        }else {
             $this->sac_code_status = 'Invoice(INV)';
             $this->document_type = 'INV';
         }
@@ -2708,7 +2722,7 @@ class HondaServiceInvoice extends Model
 
         // $this->customer->state_code = $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-';
 
-        $this->qr_image = $this->qr_image ? base_path('storage/app/public/service-invoice/IRN_images/' . $this->qr_image) : null;
+        $this->qr_image = $this->qr_image ? base_path('storage/app/public/honda-service-invoice/IRN_images/' . $this->qr_image) : null;
         $this->irn_number = $this->irn_number ? $this->irn_number : null;
         $this->ack_no = $this->ack_no ? $this->ack_no : null;
         $this->ack_date = $this->ack_date ? $this->ack_date : null;
@@ -2725,7 +2739,7 @@ class HondaServiceInvoice extends Model
         $tax_list = Tax::get();
         $data['tax_list'] = $tax_list;
         // dd($this->data['service_invoice_pdf']);
-        $path = storage_path('app/public/service-invoice-pdf/');
+        $path = storage_path('app/public/honda-service-invoice-pdf/');
         $pathToFile = $path . '/' . $this->number . '.pdf';
         File::isDirectory($path) or File::makeDirectory($path, 0777, true, true);
 
@@ -2994,7 +3008,7 @@ class HondaServiceInvoice extends Model
         return DB::table('honda_sale_invoice_detail_requests')
                     ->join('honda_sale_invoice_details' , 'honda_sale_invoice_details.id' , 'honda_sale_invoice_detail_requests.sale_invoice_id')
                     ->join('honda_vehicle_details' , 'honda_vehicle_details.id' , 'honda_sale_invoice_details.vehicle_id')
-                    ->select('honda_sale_invoice_details.id','honda_vehicle_details.vin_number','honda_sale_invoice_details.date','honda_sale_invoice_detail_requests.vat_accessible_value','honda_sale_invoice_detail_requests.customer_name_id')
+                    ->select('honda_sale_invoice_details.id','honda_vehicle_details.vin_number','honda_sale_invoice_details.date','honda_sale_invoice_detail_requests.on_road_price','honda_sale_invoice_detail_requests.customer_name_id')
                     ->where('honda_sale_invoice_details.number' , $inv_no)
                     ->first();
     }
