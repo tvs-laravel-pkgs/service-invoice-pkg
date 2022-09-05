@@ -2317,7 +2317,7 @@ class HondaServiceInvoiceController extends Controller
                 $service_invoice->cancel_irn = true;
             } else {
                 $service_invoice->cancel_irn = false;
-            }
+            } 
         } else {
             $service_invoice->cancel_irn = true;
         }
