@@ -1133,7 +1133,6 @@ class HondaServiceInvoiceController extends Controller
             } elseif ($request->type_id == 1060) {
                 $service_invoice->is_cn_created = 1;
             }
-
             $service_invoice->type_id = $request->type_id;
             $service_invoice->fill($request->all());
             $service_invoice->round_off_amount = abs($request->round_off_amount);
@@ -3624,7 +3623,6 @@ class HondaServiceInvoiceController extends Controller
                                 $customer->company_id = Auth::user()->company_id;
                                 $customer->name = $request->data['name'];
                                 $customer->cust_group = $customer_grp;
-
                                 $customer->gst_number = !empty($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available' ? $customer_data['GST_NUMBER'] : null;
 
                                 $customer->pan_number = empty($request->data['pan_number']) ? null : $request->data['pan_number'];
@@ -3643,7 +3641,7 @@ class HondaServiceInvoiceController extends Controller
                                 $address->ax_id = $locator;
                                 $address->gst_number = !empty($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available' ? $customer_data['GST_NUMBER'] : null;
 
-                                $address->ax_customer_location_id = isset($customer_data['LOCATOR']) ? $customer_data['LOCATOR'] : null;
+                                $address->ax_customer_location_id = !empty( $customer_data['LOCATOR'] ) ? $customer_data['LOCATOR'] : null;
 
                                 $address->address_of_id = 24;
                                 $address->address_type_id = 40;

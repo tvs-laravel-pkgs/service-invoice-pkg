@@ -14,7 +14,7 @@ app.component('hondaServiceInvoiceApprovalList', {
                     text: response.data.error,
                 }).show();
                 if(self.list_type == 'tcsdn')
-                    $location.path('/service-invoice-pkg/honda-service-invoice/list?type=tcsdn')
+                    $location.url('/service-invoice-pkg/honda-service-invoice/list?type=tcsdn')
                 else
                     $location.path('/service-invoice-pkg/honda-service-invoice/list')
                 $scope.$apply()
@@ -473,7 +473,7 @@ app.component('hondaServiceInvoiceApprovalView', {
                     text: response.data.error,
                 }).show();
                 if(self.type_id == 1063)
-                    $location.path('/service-invoice-pkg/honda-cn-dn/approval/approval-level/' + $routeParams.approval_type_id + '/list?type=tcsdn')
+                    $location.url('/service-invoice-pkg/honda-cn-dn/approval/approval-level/' + $routeParams.approval_type_id + '/list?type=tcsdn')
 
                 else
                     $location.path('/service-invoice-pkg/honda-cn-dn/approval/approval-level/' + $routeParams.approval_type_id + '/list/')
@@ -756,7 +756,7 @@ app.component('hondaServiceInvoiceApprovalView', {
                     // $('#cn-dn-approval-table').DataTable().ajax.reload();
                     $timeout(function () {
                         if(self.type_id == 1063)
-                            $location.path('/service-invoice-pkg/honda-service-invoice/list?type=tcsdn')
+                            $location.url('/service-invoice-pkg/honda-service-invoice/list?type=tcsdn')
                         else
                             $location.path('/service-invoice-pkg/honda-service-invoice/list')
                     }, 900);
@@ -846,7 +846,7 @@ app.component('hondaServiceInvoiceApprovalView', {
                                 }).show();
                                  $timeout(function () {
                                       if(self.type_id == 1063)
-                                        $location.path('/service-invoice-pkg/honda-service-invoice/list?type=tcsdn')
+                                        $location.url('/service-invoice-pkg/honda-service-invoice/list?type=tcsdn')
                                       else
                                         $location.path('/service-invoice-pkg/honda-service-invoice/list')
                                 }, 900);
@@ -856,7 +856,7 @@ app.component('hondaServiceInvoiceApprovalView', {
                             }, 3000);
                             $timeout(function () {
                                 if(self.type_id == 1063)
-                                    $location.path('/service-invoice-pkg/honda-cn-dn/approval/approval-level/' + $routeParams.approval_type_id + '/list?type=tcsdn');
+                                    $location.url('/service-invoice-pkg/honda-cn-dn/approval/approval-level/' + $routeParams.approval_type_id + '/list?type=tcsdn');
                                 else
                                     $location.path('/service-invoice-pkg/honda-cn-dn/approval/approval-level/' + $routeParams.approval_type_id + '/list/');
 

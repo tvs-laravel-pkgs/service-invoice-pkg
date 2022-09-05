@@ -95,7 +95,7 @@
                                                                 <input ng-model="searchCategory" type="search" placeholder="Search for a category.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
                                                             </md-select-header>
                                                             <md-optgroup label="category">
-                                                                <md-option ng-value="category.id" ng-repeat="category in $ctrl.extras.category_list | filter:searchCategory" ng-selected="category.id == $ctrl.service_invoice.category_id" >{{category.name}}</md-option>
+                                                                <md-option ng-value="category.id" ng-repeat="category in $ctrl.extras.category_list | filter:searchCategory" ng-selected="category.name == $ctrl.service_invoice.category_name" >{{category.name}}</md-option>
                                                             </md-optgroup>
                                                         </md-select>
                                                         <input type="hidden" name="category_id" id="category_id" value="{{$ctrl.service_invoice.category_id}}" class="required">
@@ -293,6 +293,7 @@
                                                                 No invoice matching "{{$ctrl.invoiceSearchText}}" were found.
                                                             </md-not-found>
                                                         </md-autocomplete>
+                                                        
                                                         <input type="hidden" md-name="invoice_number"  name="invoice_number" value="{{$ctrl.service_invoice.invoice_number.number}}" class="required">
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
@@ -315,7 +316,7 @@
                                                     <p class="info-content"><b>Invoice Date # </b> {{$ctrl.service_invoice.invoice_date}}</p>
                                                      <p class="info-content"><b>Invoice Amount # </b> {{$ctrl.service_invoice.amount}}</p>
                                                      <p class="info-content"><b>Invoice VIN # </b> {{$ctrl.service_invoice.vin_number ? $ctrl.service_invoice.vin_number : '_'}} </p>
-                                                      <input name="invoice_date" type="hidden" ng-model="$ctrl.service_invoice.invoice_date" value="$ctrl.service_invoice.invoice_date" readonly />
+                                                      <input name="invoice_date" type="hidden" ng-model="$ctrl.service_invoice.invoice_date" value="{{$ctrl.service_invoice.invoice_date}}" readonly />
                                                      <input type="hidden" ng-model="$ctrl.service_invoice.amount" name="invoice_amount" class="type-sm form-control">
                                                     <input type="hidden" ng-model="$ctrl.service_invoice.vin_number" name="vin_number" class="type-sm form-control"> 
                                                 </div><!-- Info Wrap -->  
