@@ -82,9 +82,7 @@ app.component('hondaServiceInvoiceList', {
         self.import_cn_dn = self.hasPermission('honda-import-cn-dn');
         self.tcs_export = self.hasPermission('honda-tcs-export-all');
         self.gst_export = self.hasPermission('honda-gst-export');
-        setTimeout(function () {
-                   self.list_type = $routeParams.type;
-                }, 5000);
+        self.list_type = $routeParams.type;
         $http.get(
             get_honda_service_invoice_filter_url
         ).then(function (response) {

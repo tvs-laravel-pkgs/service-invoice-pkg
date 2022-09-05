@@ -32,10 +32,6 @@ class HondaServiceInvoiceApprovalController extends Controller {
 	}
 
 	public function approvalTypeValid() {
-		// $this->data['approval_level'] = $approval_level = ApprovalLevel::where('approval_type_id', 1)->first();
-		// if (!$approval_level) {
-		// 	return response()->json(['success' => false, 'error' => 'Approval Type ID not found']);
-		// }
 		$this->data['success'] = true;
 		return response()->json($this->data);
 	}
@@ -155,6 +151,12 @@ class HondaServiceInvoiceApprovalController extends Controller {
 					$query->where('honda_service_invoices.status_id', $request->status_id);
 				}
 			})
+			->where(function ($query) use ($request) {
+                if ($request->dn_type == 'tcsdn') {
+                    $query->where('honda_service_invoices.number', 'LIKE', '%TCSDN%');
+                }else
+                    $query->where('honda_service_invoices.number', 'NOT LIKE', '%TCSDN%');
+            })
 			->groupBy('honda_service_invoices.id')
 			->orderBy('honda_service_invoices.id', 'Desc');
 		// dd($cn_dn_approval_list);

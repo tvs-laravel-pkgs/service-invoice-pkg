@@ -315,7 +315,7 @@
                                                     <p class="info-content"><b>Invoice Date # </b> {{$ctrl.service_invoice.invoice_date}}</p>
                                                      <p class="info-content"><b>Invoice Amount # </b> {{$ctrl.service_invoice.amount}}</p>
                                                      <p class="info-content"><b>Invoice VIN # </b> {{$ctrl.service_invoice.vin_number ? $ctrl.service_invoice.vin_number : '_'}} </p>
-                                                      <input name="invoice_date" type="hidden" ng-model="$ctrl.service_invoice.invoice_date" readonly />
+                                                      <input name="invoice_date" type="hidden" ng-model="$ctrl.service_invoice.invoice_date" value="$ctrl.service_invoice.invoice_date" readonly />
                                                      <input type="hidden" ng-model="$ctrl.service_invoice.amount" name="invoice_amount" class="type-sm form-control">
                                                     <input type="hidden" ng-model="$ctrl.service_invoice.vin_number" name="vin_number" class="type-sm form-control"> 
                                                 </div><!-- Info Wrap -->  

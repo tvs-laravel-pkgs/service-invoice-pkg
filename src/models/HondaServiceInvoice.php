@@ -324,6 +324,10 @@ class HondaServiceInvoice extends Model
 
         $errors = [];
         $item_descriptions = [];
+
+        if($this->type_id == '1063')
+          $this->type_id = '1062';
+      
         foreach ($this->serviceInvoiceItems as $invoice_item) {
             $service_invoice = $invoice_item->serviceInvoice()->with([
                 'toAccountType',

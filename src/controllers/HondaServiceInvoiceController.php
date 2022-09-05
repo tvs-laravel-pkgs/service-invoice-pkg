@@ -1014,9 +1014,16 @@ class HondaServiceInvoiceController extends Controller
                 return response()->json(['success' => false, 'errors' => $validator->errors()->all()]);
             }
             //TCS DN Invoice validation
-            $inv_exist = HondaServiceInvoice::where('invoice_number' , $request->invoice_number)->first();
-            if($inv_exist )
-                return response()->json(['success' => false, 'errors' => ['TCS Debit Note '.$inv_exist->number.' created already for request invoice number']]);
+            if($request->type_id == '1063') {
+                $inv_exist = HondaServiceInvoice::where('invoice_number' , $request->invoice_number)
+                                                ->where(function ($query) use ($request) {
+                                                        if (!empty($request->id)) {
+                                                            $query->where('id', '!=' , $request->id);
+                                                        }
+                                                    })->first();
+                if( $inv_exist )
+                    return response()->json(['success' => false, 'errors' => ['TCS Debit Note '.$inv_exist->number.' created already for request invoice number']]);
+            }
             //SERIAL NUMBER GENERATION & VALIDATION
             if (!$request->id) {
                 //GET FINANCIAL YEAR ID BY DOCUMENT DATE
@@ -1100,7 +1107,6 @@ class HondaServiceInvoiceController extends Controller
                 return response()->json(['success' => false, 'errors' => ['Service invoice item is required']]);
             }
             $approval_status = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 18)->first();
-
             if ($request->id) {
                 $service_invoice = HondaServiceInvoice::find($request->id);
                 $service_invoice->updated_at = date("Y-m-d H:i:s");
@@ -1459,6 +1465,9 @@ class HondaServiceInvoiceController extends Controller
         } elseif ($service_invoice->type_id == 1061) {
             $service_invoice->sac_code_status = 'Tax Invoice(DBN)';
             $service_invoice->document_type = 'DBN';
+        } elseif ($service_invoice->type_id == 1063) {
+            $service_invoice->sac_code_status = 'Tax Invoice(TCS DBN)';
+            $service_invoice->document_type = 'TCS DBN';
         } else {
             $service_invoice->sac_code_status = 'Invoice(INV)';
             $service_invoice->document_type = 'INV';
@@ -1474,6 +1483,9 @@ class HondaServiceInvoiceController extends Controller
         } elseif ($service_invoice->type_id == 1062) {
             $service_invoice->type = 'INV';
             $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdINV");
+        } elseif ($service_invoice->type_id == 1063) {
+            $service_invoice->type = 'DBN';
+            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdDN");
         }
 
         if ($service_invoice->total > $service_invoice->final_amount) {
@@ -3575,8 +3587,7 @@ class HondaServiceInvoiceController extends Controller
                  $data = [];
                 if (isset($api_customer_data)) {
                     $array_count = array_filter($api_customer_data, 'is_array');
-                    if (count($array_count) > 0) {
-                        //dd('mu;l');
+                    if (count($array_count) > 0) { 
                         $address_count = 0;
                         foreach ($api_customer_data as $key => $customer_data) {
                              if(isset($customer_data['DATAAREAID']) && ($customer_data['DATAAREAID'] != Auth::user()->company->ax_company_code)){
@@ -3609,7 +3620,7 @@ class HondaServiceInvoiceController extends Controller
                                 } else {
                                     $customer_dimension = null;
                                 }
-                                $locator = isset( $customer_data['LOCATOR'] ) ? $customer_data['LOCATOR'] : null;
+                                $locator =  !empty( $customer_data['LOCATOR'] ) ? $customer_data['LOCATOR'] : null;
                                 $customer->company_id = Auth::user()->company_id;
                                 $customer->name = $request->data['name'];
                                 $customer->cust_group = $customer_grp;
