@@ -1135,6 +1135,8 @@ class HondaServiceInvoiceController extends Controller
             }
             $service_invoice->type_id = $request->type_id;
             $service_invoice->fill($request->all());
+            if($request->type_id == '1063')
+                $service_invoice->is_service = 0;
             $service_invoice->round_off_amount = abs($request->round_off_amount);
             // $service_invoice->invoice_date = date('Y-m-d H:i:s');
             $service_invoice->company_id = Auth::user()->company_id;
@@ -2113,8 +2115,13 @@ class HondaServiceInvoiceController extends Controller
         //----------// ENCRYPTION END //----------//
         $service_invoice['additional_image_name'] = $additional_image_name;
         $service_invoice['additional_image_path'] = $additional_image_path;
-
-        //dd($serviceInvoiceItem->field_groups);
+        if($service_invoice->type_id == 1063) {
+            $tcs_dn_details = HondaServiceInvoice::tcs_dn_details($service_invoice->invoice_number);
+            $service_invoice->date = $tcs_dn_details->date;
+            $service_invoice->invoice_number = $service_invoice->invoice_number;
+            $serviceInvoiceItem->description = "TCS Debit Note for ".$service_invoice->invoice_number .'. Dt- ' .$service_invoice->date;
+        }
+                //dd($serviceInvoiceItem->field_groups);
         $this->data['service_invoice_pdf'] = $service_invoice;
         $this->data['circular_detail'] = $circular_detail;
         // dd($this->data['service_invoice_pdf']);
@@ -5203,13 +5210,14 @@ class HondaServiceInvoiceController extends Controller
     public function hondaFetchTcsInvoiceDetails(Request $r)
     {
         $key = $r->key;
-        $list = DB::table('honda_sale_invoice_detail_requests')
+        $data['list'] = DB::table('honda_sale_invoice_detail_requests')
                     ->join('honda_sale_invoice_details' , 'honda_sale_invoice_details.id' , 'honda_sale_invoice_detail_requests.sale_invoice_id')
                      ->join('honda_vehicle_details' , 'honda_vehicle_details.id' , 'honda_sale_invoice_details.vehicle_id')
                     ->select('honda_sale_invoice_details.id','honda_vehicle_details.vin_number','honda_sale_invoice_details.date','honda_sale_invoice_detail_requests.on_road_price','honda_sale_invoice_detail_requests.customer_name_id')
                     ->where('honda_sale_invoice_details.id' , $key)
                     ->first();
-        return response()->json($list);
+        $data['item'] = DB::table('service_items')->where('code','tcs_dn')->first();
+        return response()->json($data);
     }
 
 }

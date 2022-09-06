@@ -169,7 +169,7 @@
                                                     <label class="table-form-list-label">Customer Type </label>
                                                     <div class="table-form-list-control customer_type_error">
                                                         <div class="common-radio-button type-4">
-                                                            <input type="radio" id="is_pan" name="customer_type" ng-value="1" value="1" ng-model="$ctrl.service_invoice.is_service" ng-checked="$ctrl.service_invoice.customer_type" class="customer_type">
+                                                            <input type="radio" id="is_pan" name="customer_type" ng-value="1" value="1" ng-model="$ctrl.service_invoice.customer_type" ng-checked="$ctrl.service_invoice.customer_type" class="customer_type">
                                                             <label for="is_pan">
                                                                 PAN
                                                             </label>
@@ -254,7 +254,7 @@
                                                                 No Ledger matching "{{$ctrl.LedgerSearchText}}" were found.
                                                             </md-not-found>
                                                         </md-autocomplete>
-                                                        <input type="hidden" name="customer_id" value="{{$ctrl.service_invoice.customer.id}}" class="required">
+                                                        <input type="hidden" name="customer_id"  id="customer_id" value="{{$ctrl.service_invoice.customer.id}}" class="required">
                                                         <!-- <md-autocomplete class="type-sm" md-items="option in $ctrl.searchCustomer($ctrl.customerSearchText)" md-selected-item="$ctrl.service_invoice.customer" md-search-text="$ctrl.customerSearchText" md-item-text="option.code" md-min-length="3" placeholder="Customer code / name" md-selected-item-change="$ctrl.getCustomerDetails()" md-search-text-change="$ctrl.customerChanged()">
                                                             <md-item-template>
                                                                 <span>
@@ -293,7 +293,7 @@
                                                                 No invoice matching "{{$ctrl.invoiceSearchText}}" were found.
                                                             </md-not-found>
                                                         </md-autocomplete>
-                                                        
+
                                                         <input type="hidden" md-name="invoice_number"  name="invoice_number" value="{{$ctrl.service_invoice.invoice_number.number}}" class="required">
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
@@ -380,7 +380,7 @@
                                     <div class="col-md-6">
                                         <h5 class="table-wrap-title">Details</h5>
                                     </div><!-- Column -->
-                                    <div class="col-md-6 text-right">
+                                    <div class="col-md-6 text-right" ng-if="$ctrl.type_id != 1063">
                                         <a class="btn btn-secondary-dark btn-md type2 my-tooltip add_item_btn" data-toggle="modal" data-target="#modal-cn-addnew" ng-click="addItem()" ng-shortcut="'meta+shift+o'" ng-shortcut-click data-title="ctrl+shift+o">+ Add Item</a>
                                     </div><!-- Column -->
                                 </div><!-- Row -->
@@ -722,7 +722,7 @@
                     </div>
                 </div><!-- Modal Body -->
                 <input type="hidden" name="action" value="{{$ctrl.add_service_action}}">
-                <input type="hidden" name="customer_id" value="{{$ctrl.service_invoice.customer.id}}">
+                <input type="hidden" name="customer_id" id="customer_id" value="{{$ctrl.service_invoice.customer.id}}">
                 <input type="hidden" name="branch_id" value="{{$ctrl.service_invoice.branch.id}}">
                 <input type="hidden" name="state_id" value="{{$ctrl.customer.state_id}}">
                 <input type="hidden" name="gst_number" value="{{$ctrl.customer.gst_number}}">

@@ -92,7 +92,7 @@
     var honda_cn_dn_approval_view_data_url = "{{url('/service-invoice-pkg/honda-service-invoice/cn-dn-approvals/approval/view/')}}";
     var approval_type_validation_url = "{{route('approvalTypeValid')}}";
 
-    var ref_service_invoice_attachements_url = "{{URL::to('/storage/app/public/service-invoice/attachments')}}";
+    var ref_honda_service_invoice_attachements_url = "{{URL::to('/storage/app/public/honda-service-invoice/attachments')}}";
     var exportServiceInvoicesToExcelUrl = "{{route('exportServiceInvoicesToExcel')}}";
     var get_honda_cn_dn_approval_filter_url = "{{route('getHondaApprovalFilter')}}";
 

@@ -563,6 +563,7 @@ app.component('hondaServiceInvoiceForm', {
             if($routeParams.type_id == 1063 )
                 self.service_invoice.category_name = "Vehicle";
             if (self.action == 'Edit') {
+                self.service_invoice.invoice_number.number = response.data.service_invoice.invoice_number
                 // $timeout(function() {
                 //     $scope.getServiceItemSubCategoryByServiceItemCategory(self.service_invoice.service_item_sub_category.category_id);
                 // }, 1000);
@@ -1561,6 +1562,7 @@ app.component('hondaServiceInvoiceForm', {
             },
             submitHandler: function (form) {
                 let formData = new FormData($(service_item_form_id)[0]);
+                console.log(formData);
                 $('#addServiceItem').button('loading');
                 $.ajax({
                     url: laravel_routes['gethondaServiceItem'],
@@ -1569,8 +1571,7 @@ app.component('hondaServiceInvoiceForm', {
                     processData: false,
                     contentType: false,
                 })
-                    .done(function (res) {
-                        console.log(res);
+                    .done(function (res) { 
                         if (!res.success) {
                             $('#addServiceItem').button('reset');
                             var errors = '';
@@ -1633,6 +1634,11 @@ app.component('hondaServiceInvoiceForm', {
             if (query == null) {
                 return
             }
+            if(!$("#customer_id").val()){
+                custom_noty('error', 'Kindly select the customer');
+                return
+            }
+
              return new Promise(function (resolve, reject) {
                     $http
                         .post(
@@ -1642,11 +1648,66 @@ app.component('hondaServiceInvoiceForm', {
                         )
                         .then(function (response) {
                             //resolve(response.data);
-                            self.service_invoice.invoice_date = response.data.date
-                            self.service_invoice.vin_number = response.data.vin_number
-                            self.service_invoice.amount = response.data.on_road_price
-                            self.service_invoice.inv_person = response.data.customer_name_id
-                        });
+                            self.service_invoice.invoice_date = response.data.list.date
+                            self.service_invoice.vin_number = response.data.list.vin_number
+                            self.service_invoice.amount = response.data.list.on_road_price
+                            self.service_invoice.inv_person = response.data.list.customer_name_id
+                           
+                        }); 
+                         setTimeout(function () {
+                            $.ajax({
+                                url: laravel_routes['gethondaServiceItem'],
+                                method: "POST",
+                                data: {
+                                    to_account_type_id: '1440',
+                                    hid_document_date: $("#doc_date").val(),
+                                    service_item_id: '615',
+                                    e_invoice_uom_id: '1',
+                                    description: '4',
+                                    qty: '1',
+                                    amount: self.service_invoice.amount,
+                                    action: 'add',
+                                    customer_id: $("#customer_id").val(),
+                                    branch_id: '609',
+                                    state_id: '6',
+                                    gst_number: '',
+                                    type_id: '1063',   //tcs dn  
+                                    },headers: {
+                                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                                    },
+                            })
+                            .done(function (res) {
+                                    if (!res.success) {
+                                        $('#addServiceItem').button('reset');
+                                        var errors = '';
+                                        for (var i in res.errors) {
+                                            errors += '<li>' + res.errors[i] + '</li>';
+                                        }
+                                        custom_noty('error', errors);
+                                    } else {
+                                        console.log(res.service_item);
+                                        $('#modal-cn-addnew').modal('toggle');
+                                        if (!self.service_invoice.service_invoice_items) {
+                                            self.service_invoice.service_invoice_items = [];
+                                        }
+                                        if (res.add) {
+                                            self.service_invoice.service_invoice_items.push(res.service_item);
+                                        } else {
+                                            var edited_service_invoice_item_primary_id = self.service_invoice.service_invoice_items[self.update_item_key].id;
+                                            self.service_invoice.service_invoice_items[self.update_item_key] = res.service_item;
+                                            self.service_invoice.service_invoice_items[self.update_item_key].id = edited_service_invoice_item_primary_id;
+                                        }
+
+                                        $scope.$apply()
+                                        //SERVICE ITEMS TCS CALC
+                                        $scope.serviceInvoiceItemTcsCal();
+                                        //SERVICE INVOICE ITEMS TABLE CALC
+                                        $scope.serviceInvoiceItemCalc();
+                                        
+                                    }
+                            })
+
+                            }, 3000);
                     //reject(response);
                 });
         }
@@ -1668,14 +1729,7 @@ app.component('hondaServiceInvoiceForm', {
             errorPlacement: function (error, element) {
                 if (element.hasClass("doc_date")) {
                     error.appendTo('.doc_date_error');
-                }
-                // else if (element.hasClass("inv_date")) {
-                //     error.appendTo('.inv_date_error');
-                // }
-                // else if (element.hasClass("is_reverse_charge")) {
-                //     error.appendTo('.reverse_charge_error');
-                // }
-                else {
+                } else {
                     error.insertAfter(element);
                 }
             },
@@ -1683,15 +1737,7 @@ app.component('hondaServiceInvoiceForm', {
             rules: {
                 'document_date': {
                     required: true,
-                },
-                // 'invoice_date': {
-                // required: true,
-                // required: function(){
-                //     if($routeParams.type_id == 1063){
-                //         return true;
-                //     }
-                // },
-                // },
+                }, 
                 'invoice_number': {
                 required: function() {
                 if ($routeParams.type_id == 1063) {
@@ -1699,9 +1745,6 @@ app.component('hondaServiceInvoiceForm', {
                 }
                 },
                 },
-                // 'is_e_reverse_charge_applicable': {
-                //     required: true,
-                // },
                 'proposal_attachments[]': {
                     // required: true,
                 },
@@ -1759,7 +1802,7 @@ app.component('hondaServiceInvoiceView', {
         self.angular_routes = angular_routes;
         self.type_id = $routeParams.type_id;
         self.enable_service_item_md_change = true;
-        self.ref_attachements_url_link = ref_service_invoice_attachements_url;
+        self.ref_attachements_url_link = ref_honda_service_invoice_attachements_url;
         if (self.type_id == 1060) {
             self.minus_value = '-';
         } else if (self.type_id == 1061 || self.type_id == 1062 || self.type_id == 1063) {
