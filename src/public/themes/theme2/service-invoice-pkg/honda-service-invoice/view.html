@@ -261,7 +261,7 @@
                                     </div><!-- Column -->
                                 </div><!-- Row -->
                             </div><!-- Table Wrap Header -->
-                            <div class="table-wrap-body">
+                            <div class="table-wrap-body" ng-if="$ctrl.type_id != 1063">
                                 <div class="table-responsive">
                                     <table class="table">
                                         <thead>
@@ -344,6 +344,53 @@
                                     </table>
                                 </div>
                             </div><!-- Table Wrap Body -->
+
+                            <div class="table-wrap-body" ng-if="$ctrl.type_id == 1063">
+                                <div class="table-responsive">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Item Code</th>
+                                                <th>Item Name</th>
+                                                <th>Reference</th>
+                                                <th class="text-right">Invoice Amount</th>
+                                                <th class="text-right">Tcs</th>
+                                                <th class="text-right">Round Off</th>
+                                                <th class="text-right">Total Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr ng-repeat="(index, service_invoice_item) in $ctrl.service_invoice.service_invoice_items">
+                                                <input type="hidden" name="service_invoice_items[{{index}}][id]" value="{{service_invoice_item.id}}">
+                                                <input type="hidden" name="service_invoice_items[{{index}}][service_item_id]" value="{{service_invoice_item.service_item_id}}">
+                                                <input type="hidden" name="service_invoice_items[{{index}}][description]" value="{{service_invoice_item.description}}">
+                                                <input type="hidden" name="service_invoice_items[{{index}}][qty]" value="{{service_invoice_item.qty}}">
+                                                <input type="hidden" name="service_invoice_items[{{index}}][rate]" value="{{service_invoice_item.rate}}">
+                                                <input type="hidden" name="service_invoice_items[{{index}}][sub_total]" value="{{service_invoice_item.sub_total}}">
+                                                <!-- FIELD GROUPS -->
+                                                <td style="display: none;">
+                                                    <span ng-repeat="(index_fg, field_group) in service_invoice_item.field_groups">
+                                                        <input type="hidden" name="service_invoice_items[{{index}}][field_groups][{{index_fg}}][id]" value="{{field_group.id}}">
+                                                        <span ng-repeat="(index_fd, field) in field_group.fields">
+                                                            <input type="hidden" name="service_invoice_items[{{index}}][field_groups][{{index_fg}}][fields][{{index_fd}}][id]" value="{{field.id}}">
+                                                            <input type="hidden" name="service_invoice_items[{{index}}][field_groups][{{index_fg}}][fields][{{index_fd}}][value]" value="{{field.value}}">
+                                                        </span>
+                                                    </span>
+                                                </td>
+                                                <td>{{service_invoice_item.code}}</td>
+                                                <td>{{service_invoice_item.name}}</td>
+                                                <td>{{service_invoice_item.description}}</td>
+                                                <td class="text-right">{{$ctrl.service_invoice.amount | number : 2}}</td>
+                                                <td class="text-right">{{service_invoice_item.total | number : 2}}</td>
+                                                <td class="text-right">{{$ctrl.service_invoice.round_off_amount | number : 2}}</td>
+                                                <td class="text-right">{{$ctrl.service_invoice.final_amount | number : 2}}</td>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div><!-- Table Wrap Body -->
+
+                            
+
                             <input type="hidden" name="service_invoice_item_removal_ids" id="service_invoice_item_removal_ids" value="">
                             <input type="hidden" name="items_count" value="{{$ctrl.service_invoice.service_invoice_items.length}}">
                             <input type="hidden" name="amount_total" value="{{$ctrl.table_sub_total}}">

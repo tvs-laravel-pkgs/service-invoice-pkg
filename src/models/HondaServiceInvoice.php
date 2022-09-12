@@ -326,7 +326,7 @@ class HondaServiceInvoice extends Model
         $item_descriptions = [];
 
         if($this->type_id == '1063')
-          $this->type_id = '1062';
+          $this->type_id = '1061';
       
         foreach ($this->serviceInvoiceItems as $invoice_item) {
             $service_invoice = $invoice_item->serviceInvoice()->with([
@@ -1679,6 +1679,12 @@ class HondaServiceInvoice extends Model
             $export->ApplicationType = 'TCSDN';
         else 
             $export->ApplicationType = 'CNDN';
+
+        if($this->type_id != 1060)
+            $export->DocumentType = 136;
+        else
+            $export->DocumentType = 142;
+
         $export->CurrencyCode = 'INR';
         $export->JournalName = 'BPAS_NJV';
         $export->JournalNum = "";
@@ -1690,9 +1696,9 @@ class HondaServiceInvoice extends Model
         $export->TransDate = date("Y-m-d", strtotime($this->document_date));
         //dd($ledger_dimention);
         if($params['AccountType'] == 'Customer')
-            $export->AccountType = 0;
-        else
             $export->AccountType = 1;
+        else
+            $export->AccountType = 0;
         $export->DefaultDimension = $this->sbu->name . '-' . $this->outlet->code;
         $export->Txt = $params['Txt'];
         $export->AmountCurDebit = $params['AmountCurDebit'] > 0 ? $params['AmountCurDebit'] : 0;
@@ -1703,7 +1709,7 @@ class HondaServiceInvoice extends Model
         $export->PaymMode = '';
         $export->TaxGroup = $params['TaxGroup'];
         $export->TaxItemGroup = '';
-        $export->Invoice = $this->number;
+        $export->Invoice = $this->invoice_number;
         $export->SalesTaxFormTypes_IN_FormType = '';
         $export->TDSGroup_IN = $params['TaxGroup'];
         $export->DocumentNum = $this->number;
@@ -1727,9 +1733,10 @@ class HondaServiceInvoice extends Model
             $export->Department = $dept->dimension_value;
         }else
             $export->Department = '';
-        $export->Sub_GL = $params['Sub_GL'];
-        $export->InvoiceDate = $params['InvoiceDate'];
-        $export->VatPercentage = $params['VatPercentage'];
+        if($params['AccountType'] != 'Customer')
+         $export->Sub_GL = $params['Sub_GL'];
+        $export->InvoiceDate = $this->invoice_date;
+        $export->VatPercentage = ($params['VatPercentage'] > 0) ? $params['VatPercentage'] : '';
         $export->Qty =  $params['Qty'];
         $export->save();
 
@@ -2549,6 +2556,12 @@ class HondaServiceInvoice extends Model
             foreach ($this->serviceInvoiceItems as $key => $serviceInvoiceItem) {
                 $taxes = $serviceInvoiceItem->taxes;
                 $type = $serviceInvoiceItem->serviceItem;
+                if($this->type_id == 1063){
+                    $tcs_dn_inv = HondaServiceInvoice::tcs_dn_details($serviceInvoiceItem->serviceItem->Invoice);
+                    $serviceInvoiceItem->rate = $tcs_dn_inv->on_road_price;
+                    $serviceInvoiceItem['TCS']->pivot->amount = $serviceInvoiceItem->sub_total;
+                }
+
                 foreach ($taxes as $array_key_replace => $tax) {
                     $serviceInvoiceItem[$tax->name] = $tax;
                 }
@@ -2673,7 +2686,7 @@ class HondaServiceInvoice extends Model
 
                 if ($serviceInvoiceItem->serviceItem->subCategory->attachment) {
                     $additional_image_name = $serviceInvoiceItem->serviceItem->subCategory->attachment->name;
-                    $additional_image_path = base_path('storage/app/public/service-invoice/service-item-sub-category/attachments/');
+                    $additional_image_path = base_path('storage/app/public/honda-service-invoice/service-item-sub-category/attachments/');
                 }
             }
         }
@@ -2689,7 +2702,7 @@ class HondaServiceInvoice extends Model
             $this->sac_code_status = 'Tax Invoice(DBN)';
             $this->document_type = 'DBN';
         } elseif ($this->type_id == 1063) {
-            $this->sac_code_status = 'Tax Invoice(TCS DBN)';
+            $this->sac_code_status = 'TCS DBN';
             $this->document_type = 'TCS DBN';
         }else {
             $this->sac_code_status = 'Invoice(INV)';
@@ -2904,7 +2917,7 @@ class HondaServiceInvoice extends Model
 
                 if ($serviceInvoiceItem->serviceItem->subCategory->attachment) {
                     $additional_image_name = $serviceInvoiceItem->serviceItem->subCategory->attachment->name;
-                    $additional_image_path = base_path('storage/app/public/service-invoice/service-item-sub-category/attachments/');
+                    $additional_image_path = base_path('storage/app/public/honda-service-invoice/service-item-sub-category/attachments/');
                 }
             }
         }
@@ -2954,7 +2967,7 @@ class HondaServiceInvoice extends Model
 
         // $this->customer->state_code = $state->e_invoice_state_code ? $state->name . '(' . $state->e_invoice_state_code . ')' : '-';
 
-        $this->qr_image = $this->qr_image ? base_path('storage/app/public/service-invoice/IRN_images/' . $this->qr_image) : null;
+        $this->qr_image = $this->qr_image ? base_path('storage/app/public/honda-service-invoice/IRN_images/' . $this->qr_image) : null;
         $this->irn_number = $this->irn_number ? $this->irn_number : null;
         $this->ack_no = $this->ack_no ? $this->ack_no : null;
         $this->ack_date = $this->ack_date ? $this->ack_date : null;

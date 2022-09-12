@@ -977,7 +977,7 @@ app.component('hondaServiceInvoiceForm', {
             }
         }
 
-        self.searchVendor = $rootScope.searchVendor;
+        self.searchHondaVendor = $rootScope.searchHondaVendor;
 
         $scope.vendorSelected = function () {
             console.log('test');
@@ -986,7 +986,7 @@ app.component('hondaServiceInvoiceForm', {
             console.log(self.service_invoice.customer);
             if (self.service_invoice.customer || self.service_invoice.customer != null) {
                 // var res = $rootScope.getCustomer(self.service_invoice.customer).then(function(res) {
-                var res = $rootScope.getVendorAddress(self.service_invoice.customer).then(function (res) {
+                var res = $rootScope.getHondaVendorAddress(self.service_invoice.customer).then(function (res) {
                     console.log(res);
                     if (!res.data.success) {
                         $('#pace').css("display", "none");
@@ -1663,7 +1663,7 @@ app.component('hondaServiceInvoiceForm', {
                                     hid_document_date: $("#doc_date").val(),
                                     service_item_id: '615',
                                     e_invoice_uom_id: '1',
-                                    description: '4',
+                                    description: self.service_invoice.invoice_number.number,
                                     qty: '1',
                                     amount: self.service_invoice.amount,
                                     action: 'add',
@@ -1685,11 +1685,7 @@ app.component('hondaServiceInvoiceForm', {
                                         }
                                         custom_noty('error', errors);
                                     } else {
-                                        console.log(res.service_item);
-                                        $('#modal-cn-addnew').modal('toggle');
-                                        if (!self.service_invoice.service_invoice_items) {
-                                            self.service_invoice.service_invoice_items = [];
-                                        }
+                                        self.service_invoice.service_invoice_items = [];
                                         if (res.add) {
                                             self.service_invoice.service_invoice_items.push(res.service_item);
                                         } else {
@@ -1697,17 +1693,20 @@ app.component('hondaServiceInvoiceForm', {
                                             self.service_invoice.service_invoice_items[self.update_item_key] = res.service_item;
                                             self.service_invoice.service_invoice_items[self.update_item_key].id = edited_service_invoice_item_primary_id;
                                         }
-
-                                        $scope.$apply()
                                         //SERVICE ITEMS TCS CALC
                                         $scope.serviceInvoiceItemTcsCal();
-                                        //SERVICE INVOICE ITEMS TABLE CALC
-                                        $scope.serviceInvoiceItemCalc();
-                                        
+                                        self.tcs_amt = self.service_invoice.service_invoice_items[0]['TCS'].amount;
+                                        self.service_invoice.table_total = parseFloat(self.tcs_amt).toFixed(2);
+                                        self.service_invoice.table_sub_total = parseFloat(self.tcs_amt).toFixed(2);
+                                        self.service_invoice.final_amount = Math.round(self.service_invoice.table_total).toFixed(2);
+                                        self.service_invoice.round_off_amount = parseFloat(self.service_invoice.final_amount - self.service_invoice.table_total ).toFixed(2);
+                                        $("#total_tcs_amt").html(self.service_invoice.final_amount);
+                                        $scope.$apply()
+
                                     }
                             })
 
-                            }, 3000);
+                            }, 1000);
                     //reject(response);
                 });
         }
