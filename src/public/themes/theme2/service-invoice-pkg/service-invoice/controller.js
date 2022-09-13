@@ -972,6 +972,13 @@ app.component('serviceInvoiceForm', {
                                     custom_noty('error', 'Not Allow To Add Invoives!');
                                     $('#submit').hide();
                                     $('.add_item_btn').hide();
+
+                                    if(response.data.gst_status && response.data.gst_status != 'ACT'){
+                                        custom_noty('error', 'In Active GSTIN!');
+                                        custom_noty('error', 'Not Allow To Add Invoives!');
+                                        $('#submit').hide();
+                                        $('.add_item_btn').hide();   
+                                    }
                                 }
                             } else {
                                 custom_noty('error', response.data.error);

@@ -3881,9 +3881,30 @@ class ServiceInvoiceController extends Controller
                 return response()->json(['success' => false, 'error' => 'Address Not Available!.']);
             }
 
+            // $bdo_trade = null;
+            // $bdo_address = null;
+            // if(!empty($request->data['gst_number']) && $request->data['gst_number'] != 'Not available'){
+            //     $bdo_response = Customer::getGstDetail($request->data['gst_number']);
+            //     if (isset($bdo_response->original) && $bdo_response->original['success'] == false) {
+            //         return response()->json([
+            //             'success' => false,
+            //             'error' => 'BDO Error',
+            //             'errors' => [$bdo_response->original['error']]
+            //         ]);
+            //     }
+
+            //     $bdo_trade = $bdo_response->original['trade_name'];
+            //     $bdo_address = $bdo_response->original['address'];
+            // }
+
             $customer = Customer::firstOrNew(['code' => $request->data['code'],'company_id'=>Auth::user()->company_id]);
             $customer->company_id = Auth::user()->company_id;
             $customer->name = $request->data['name'];
+            // if(!empty($bdo_trade)){
+            //     $customer->name = $bdo_trade;
+            // }else{
+            //     $customer->name = $request->data['name'];
+            // }
             $customer->cust_group = empty($request->data['cust_group']) ? null : $request->data['cust_group'];
             $customer->gst_number = empty($request->data['gst_number']) ? null : $request->data['gst_number'];
             $customer->pan_number = empty($request->data['pan_number']) ? null : $request->data['pan_number'];
@@ -3918,7 +3939,37 @@ class ServiceInvoiceController extends Controller
                                 $address->address_of_id = 24;
                                 $address->address_type_id = 40;
                                 $address->name = 'Primary Address_' . $customer_data['RECID'];
+                                // $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
+                                // $bdo_trade = null;
+                                // $bdo_legal = null;
+                                // $bdo_address = null;
+                                if(!empty($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available'){
+                                    $bdo_response = Customer::getGstDetail($customer_data['GST_NUMBER']);
+                                    if (isset($bdo_response->original) && $bdo_response->original['success'] == false) {
+                                        return response()->json([
+                                            'success' => false,
+                                            'error' => 'BDO Error',
+                                            'errors' => [$bdo_response->original['error']]
+                                        ]);
+                                    }
+
+                                    // $bdo_trade = $bdo_response->original['trade_name'];
+                                    // $bdo_legal = $bdo_response->original['legal_name'];
+                                    // $bdo_address = $bdo_response->original['address'];
+
+                                    // $customer->name = $bdo_response->original['legal_name'];
+                                    $customer->trade_name = $bdo_response->original['trade_name'];
+                                    $customer->legal_name = $bdo_response->original['legal_name'];
+                                    $customer->save();
+                                }
+
+                                // if(!empty($bdo_address)){
+                                //     $address->address_line1 = $bdo_address;
+                                // }else{
+                                //     $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
+                                // }
                                 $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
+
                                 $city = City::where('name', $customer_data['CITY'])->first();
                                 $state = State::where('code', $customer_data['STATE'])->first();
                                 $address->country_id = $state ? $state->country_id : null;
@@ -3928,7 +3979,14 @@ class ServiceInvoiceController extends Controller
                                 $address->is_primary = isset($customer_data['ISPRIMARY']) ? $customer_data['ISPRIMARY'] : 0;
 
                                 $address->save();
-                                $customer_address[] = $address;   
+                                $customer_address[] = $address; 
+
+                                // if(!empty($bdo_trade)){
+                                // if(!empty($bdo_legal)){
+                                //     // $customer->name = $bdo_trade;
+                                //     $customer->name = $bdo_legal;
+                                //     $customer->save();
+                                // }
                             }
                         }
                         if($address_count == 0){
@@ -3950,7 +4008,37 @@ class ServiceInvoiceController extends Controller
                             $address->address_of_id = 24;
                             $address->address_type_id = 40;
                             $address->name = 'Primary Address_' . $api_customer_data['RECID'];
+                            // $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
+                            // $bdo_trade = null;
+                            // $bdo_legal = null;
+                            // $bdo_address = null;
+                            if(!empty($api_customer_data['GST_NUMBER']) && $api_customer_data['GST_NUMBER'] != 'Not available'){
+                                $bdo_response = Customer::getGstDetail($api_customer_data['GST_NUMBER']);
+                                if (isset($bdo_response->original) && $bdo_response->original['success'] == false) {
+                                    return response()->json([
+                                        'success' => false,
+                                        'error' => 'BDO Error',
+                                        'errors' => [$bdo_response->original['error']]
+                                    ]);
+                                }
+
+                                // $bdo_trade = $bdo_response->original['trade_name'];
+                                // $bdo_legal = $bdo_response->original['legal_name'];
+                                // $bdo_address = $bdo_response->original['address'];
+
+                                // $customer->name = $bdo_response->original['legal_name'];
+                                $customer->trade_name = $bdo_response->original['trade_name'];
+                                $customer->legal_name = $bdo_response->original['legal_name'];
+                                $customer->save();
+                            }
+
+                            // if(!empty($bdo_address)){
+                            //     $address->address_line1 = $bdo_address;
+                            // }else{
+                            //     $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
+                            // }
                             $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
+
                             $city = City::where('name', $api_customer_data['CITY'])->first();
                             // if ($city) {
                             $state = State::where('code', $api_customer_data['STATE'])->first();
@@ -3963,6 +4051,12 @@ class ServiceInvoiceController extends Controller
                             $address->save();
                             // dd($address);
                             $customer_address[] = $address;
+
+                            // if(!empty($bdo_trade)){
+                            // if(!empty($bdo_legal)){
+                            //     $customer->name = $bdo_legal;
+                            //     $customer->save();
+                            // }
                         }else{
                             $customer_address = [];
                         }
@@ -4892,7 +4986,7 @@ class ServiceInvoiceController extends Controller
 
     }
 
-    public function reprintInvoicePdf($service_invoice_id) {
+    public function reprintInvoicePdf($service_invoice_id,$gst_number) {
         $errors = [];
 
         $service_invoice = $service_invoice_pdf = ServiceInvoice::with([
@@ -4938,6 +5032,12 @@ class ServiceInvoiceController extends Controller
         $status = $authToken['result']['status'];
         $bdo_sek = $authToken['result']['bdo_secret'];
 
+        if($service_invoice->outlets){
+           $gst_in_param =  $service_invoice->outlets->gst_number ? $service_invoice->outlets->gst_number : 'N/A';            
+        }else{
+            $gst_in_param = 'N/A';
+        }
+
         $ch = curl_init($bdo_generate_irn_url);
 
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "GET"); 
@@ -4945,13 +5045,9 @@ class ServiceInvoiceController extends Controller
         // Set the content type to application/json
         curl_setopt($ch, CURLOPT_HTTPHEADER, array(
             'Content-Type: application/json',
-            // 'client_id: 43f4ac36182c5d36c70b3350565071',
             'client_id: ' . $clientid,
             'bdo_authtoken: ' . $bdo_authtoken,
-            // 'bdo_authtoken: eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiI0M2Y0YWMzNjE4MmM1ZDM2YzcwYjMzNTA1NjUwNzEiLCJiZG9fc2VydmljZXR5cGUiOjIsImlhdCI6MTY1MTgyMjU0NSwiZXhwIjoxNjUxOTA4OTQ1fQ.Br3METwfq58caKRhtF1zMSV3IGcj1s-qfl8tCC1WqAM',
-            'Gstin: ' . $service_invoice->outlets ? ($service_invoice->outlets->gst_number ? $service_invoice->outlets->gst_number : 'N/A') : 'N/A',
-            // 'Gstin: 33AAGCT6376B1ZF',
-            // 'action: GENIRN',
+            'Gstin: ' . $gst_number,
         ));
 
         //Return response instead of outputting
