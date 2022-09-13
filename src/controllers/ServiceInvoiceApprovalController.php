@@ -471,6 +471,7 @@ class ServiceInvoiceApprovalController extends Controller {
 			            $sms_params['sms_sender_id'] = config('services.tvsone_sms_sender_id');
 			            $sms_params['message'] = 'Thanks for purchasing the TVSONE membership, click the link '.$short_url.' to download the Invoice – TVS';
 			            tvsoneSendSMS($sms_params);
+			            //test
 					}
 					
 				}
