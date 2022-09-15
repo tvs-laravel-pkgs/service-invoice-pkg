@@ -507,7 +507,7 @@ class HondaServiceInvoice extends Model
             $params['Sub_GL'] = isset($invoice_item->serviceItem->subLedger->ax_subgl) ? $invoice_item->serviceItem->subLedger->ax_subgl : '' ;
             $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
-            $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
+            $params['VatPercentage'] = '';
             $params['Qty'] = $invoice_item->qty;
         }
         
@@ -682,7 +682,7 @@ class HondaServiceInvoice extends Model
             $params['Sub_GL'] = isset($invoice_item->serviceItem->subLedger->ax_subgl) ? $invoice_item->serviceItem->subLedger->ax_subgl : '' ;
             $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
-            $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
+            $params['VatPercentage'] = '';
             $params['Qty'] = $invoice_item->qty;
             $this->exportRowToAxapta($params);
 
@@ -724,7 +724,7 @@ class HondaServiceInvoice extends Model
                    $params['Sub_GL'] = isset($invoice_item->serviceItem->subLedger->ax_subgl) ? $invoice_item->serviceItem->subLedger->ax_subgl : '' ;
                     $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
                     $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
-                   // $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
+                   $params['VatPercentage'] = '';
                     $params['Qty'] = $invoice_item->qty;
                     if ($service_invoice->address->state_id == 3 && $service_invoice->branch->primaryAddress->state_id == 3 && empty($service_invoice->address->gst_number) && $service_invoice->type_id != 1060 && $kfc_result) {
                        
@@ -751,7 +751,7 @@ class HondaServiceInvoice extends Model
                                     //REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
                                     $params['TVSHSNCode'] = $params['TVSSACCode'] = null;
                                     // dump($params);
-
+                                    $params['VatPercentage'] = $invoice_cgst_percentage;
                                     $this->exportRowToAxapta($params);
                                 }
                                 //FOR CGST
@@ -769,7 +769,7 @@ class HondaServiceInvoice extends Model
 
                                     //REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
                                     $params['TVSHSNCode'] = $params['TVSSACCode'] = null;
-
+                                    $params['VatPercentage'] = $invoice_sgst_percentage;
                                     // dump($params);
                                     $this->exportRowToAxapta($params);
                                 }
@@ -793,6 +793,7 @@ class HondaServiceInvoice extends Model
                                 //REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
                                 $params['TVSHSNCode'] = $params['TVSSACCode'] = null;
                                 // dump($params);
+                                $params['VatPercentage'] = $invoice_kfc_percentage;
                                 $this->exportRowToAxapta($params);
                             }
 
@@ -822,6 +823,8 @@ class HondaServiceInvoice extends Model
                                     //REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
                                     $params['TVSHSNCode'] = $params['TVSSACCode'] = null;
                                     // dump($params);
+
+                                    $params['VatPercentage'] = $invoice_cgst_percentage;
                                     $this->exportRowToAxapta($params);
                                 }
                                 //FOR CGST
@@ -843,7 +846,7 @@ class HondaServiceInvoice extends Model
 
                                     //REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
                                     $params['TVSHSNCode'] = $params['TVSSACCode'] = null;
-
+                                    $params['VatPercentage'] = $invoice_sgst_percentage;
                                     // dump($params);
                                     $this->exportRowToAxapta($params);
                                 }
@@ -866,7 +869,7 @@ class HondaServiceInvoice extends Model
 
                                     //REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
                                     $params['TVSHSNCode'] = $params['TVSSACCode'] = null;
-
+                                    $params['VatPercentage'] = $invoice_igst_percentage;
                                     // dump($params);
                                     $this->exportRowToAxapta($params);
                                 }
@@ -904,7 +907,7 @@ class HondaServiceInvoice extends Model
             $params['Sub_GL'] = isset($invoice_item->serviceItem->subLedger->ax_subgl) ? $invoice_item->serviceItem->subLedger->ax_subgl : '' ;
             $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
-           // $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
+           $params['VatPercentage'] = '';
             $params['Qty'] = $invoice_item->qty;
             // dump($params);
             $this->exportRowToAxapta($params);
@@ -936,7 +939,7 @@ class HondaServiceInvoice extends Model
             $params['Sub_GL'] = isset($invoice_item->serviceItem->subLedger->ax_subgl) ? $invoice_item->serviceItem->subLedger->ax_subgl : '' ;
             $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
-           // $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
+           $params['VatPercentage'] = '';
             $params['Qty'] = $invoice_item->qty;
             // dump($params);
             $this->exportRowToAxapta($params);
@@ -949,7 +952,7 @@ class HondaServiceInvoice extends Model
             $params['Sub_GL'] = isset($invoice_item->serviceItem->subLedger->ax_subgl) ? $invoice_item->serviceItem->subLedger->ax_subgl : '' ;
             $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
-            $params['VatPercentage'] = $invoice_cgst_percentage + $invoice_sgst_percentage + $invoice_igst_percentage + $invoice_kfc_percentage + $tcs_percentage;
+            $params['VatPercentage'] = '';
             $params['Qty'] = $invoice_item->qty;
             if ($amount_diff > 0) {
                 if ($this->type_id == 1061) {

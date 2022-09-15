@@ -81,10 +81,7 @@
                                         <div class="col-md-3">
                                             <div class="input-text form-group">
                                                 <label>COA Code <sup class="mandatory">*</sup></label>
-                                                <md-autocomplete md-items="option in $ctrl.searchCoaCode($ctrl.coaCodeSearchText)" 
-                                                md-selected-item-change="getSubLedger($ctrl.service_item.coa_code.id)"
-                                                md-selected-item="$ctrl.service_item.coa_code" md-search-text="$ctrl.coaCodeSearchText" 
-                                                md-item-text="option.code" md-min-length="3" placeholder="COA Code / Name">
+                                                <md-autocomplete md-items="option in $ctrl.searchCoaCode($ctrl.coaCodeSearchText)" md-selected-item="$ctrl.service_item.coa_code" md-search-text="$ctrl.coaCodeSearchText" md-item-text="option.code" md-min-length="3" placeholder="COA Code / Name">
                                                     <md-item-template>
                                                         <span>
                                                             {{option.code}} - {{option.name}}
@@ -108,7 +105,7 @@
                                                         <md-option ng-value="type.id" ng-repeat="type in $ctrl.sub_ledger_list | filter:searchSubLedger">{{type.ax_subgl}}</md-option>
                                                     </md-optgroup>
                                                 </md-select>
-                                                <input type="hidden" name="sub_ledger_id" value='{{$ctrl.service_item.sub_ledger_id}}' class="required">
+                                                <input type="hidden" name="sub_ledger_id" value='{{$ctrl.service_item.sub_ledger_id}}'>
                                             </div><!-- Feild -->
                                         </div><!-- Column -->
                                         <div class="col-md-3">

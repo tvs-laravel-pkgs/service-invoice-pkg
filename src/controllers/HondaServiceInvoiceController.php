@@ -1457,6 +1457,7 @@ class HondaServiceInvoiceController extends Controller
                 }
                 //PUSH TOTAL FIELD GROUPS
                 $serviceInvoiceItem->field_groups = $field_group_val;
+                $serviceInvoiceItem->description = $serviceInvoiceItem->serviceItem->name .' - '.$serviceInvoiceItem->description;
                 $item_count++;
 
                 if (isset($serviceInvoiceItem->serviceItem->subCategory->attachment) && $serviceInvoiceItem->serviceItem->subCategory->attachment) {
@@ -3352,7 +3353,7 @@ class HondaServiceInvoiceController extends Controller
                         $data['name'] = $customer_data['NAME'];
                         $data['mobile_no'] = isset($customer_data['LOCATOR']) && $customer_data['LOCATOR'] != 'Not available' ? $customer_data['LOCATOR'] : null;
                         $data['cust_group'] = isset($customer_data['CUSTGROUP']) && $customer_data['CUSTGROUP'] != 'Not available' ? $customer_data['CUSTGROUP'] : null;
-                        $data['pan_number'] = isset($customer_data['PANNO']) && $customer_data['PANNO'] != 'Not available' ? $customer_data['PANNO'] : null;
+                        $data['pan_number'] = isset($customer_data['PAN']) && $customer_data['PAN'] != 'Not available' && $customer_data['PAN'] != [] ? $customer_data['PAN'] : null;
 
                         $list[] = $data;
                     }
@@ -3361,7 +3362,7 @@ class HondaServiceInvoiceController extends Controller
                     $data['name'] = $api_customer_data['NAME'];
                     $data['mobile_no'] = isset($api_customer_data['LOCATOR']) && $api_customer_data['LOCATOR'] != 'Not available' ? $api_customer_data['LOCATOR'] : null;
                     $data['cust_group'] = isset($api_customer_data['CUSTGROUP']) && $api_customer_data['CUSTGROUP'] != 'Not available' ? $api_customer_data['CUSTGROUP'] : null;
-                    $data['pan_number'] = isset($api_customer_data['PANNO']) && $api_customer_data['PANNO'] != 'Not available' ? $api_customer_data['PANNO'] : null;
+                    $data['pan_number'] = isset($api_customer_data['PAN']) && $api_customer_data['PAN'] != 'Not available'  && $api_customer_data['PAN'] != [] ? $api_customer_data['PAN'] : null;
 
                     $list[] = $data;
                 }
@@ -3735,9 +3736,6 @@ class HondaServiceInvoiceController extends Controller
         try {
             $key = $r->key;
             $axUrl = "GetVendMasterDetails_Honda";
-            if(Auth::user()->company_id == 1){
-                $axUrl = "GetNewVendMasterDetails_Search_TVS";
-            }
             $this->soapWrapper->add('vendor', function ($service) {
                 $service
                     ->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
@@ -3745,12 +3743,7 @@ class HondaServiceInvoiceController extends Controller
             });
             $params = ['ACCOUNTNUM' => $r->key];
             $getResult = $this->soapWrapper->call('vendor.'.$axUrl, [$params]);
-            if(Auth::user()->company_id == 1){
-                $vendor_data = $getResult->GetNewVendMasterDetails_Search_TVSResult;
-            }
-            else{
-                $vendor_data = $getResult->GetVendMasterDetails_HondaResult;
-            }
+            $vendor_data = $getResult->GetVendMasterDetails_HondaResult;
             if (empty($vendor_data)) {
                 return response()->json(['success' => false, 'error' => 'Vendor Not Available!.']);
             }
@@ -3779,7 +3772,7 @@ class HondaServiceInvoiceController extends Controller
                         $data['name'] = $vendor_data['NAME'];
                         $data['mobile_no'] = isset($vendor_data['LOCATOR']) && $vendor_data['LOCATOR'] != 'Not available' ? $vendor_data['LOCATOR'] : null;
                         $data['vendor_group'] = isset($vendor_data['VENDGROUP']) && $vendor_data['VENDGROUP'] != 'Not available' ? $vendor_data['VENDGROUP'] : null;
-                        $data['pan_number'] = isset($vendor_data['PANNO']) && $vendor_data['PANNO'] != 'Not available' ? $vendor_data['PANNO'] : null;
+                        $data['pan_number'] = isset($vendor_data['PAN']) && $vendor_data['PAN'] != 'Not available' && $vendor_data['PAN'] != '[]' ? $vendor_data['PAN'] : null;
 
                         $list[] = $data;
                     }
@@ -3788,7 +3781,7 @@ class HondaServiceInvoiceController extends Controller
                     $data['name'] = $api_vendor_data['NAME'];
                     $data['mobile_no'] = isset($api_vendor_data['LOCATOR']) && $api_vendor_data['LOCATOR'] != 'Not available' ? $api_vendor_data['LOCATOR'] : null;
                     $data['vendor_group'] = isset($api_vendor_data['VENDGROUP']) && $api_vendor_data['VENDGROUP'] != 'Not available' ? $api_vendor_data['VENDGROUP'] : null;
-                    $data['pan_number'] = isset($api_vendor_data['PANNO']) && $api_vendor_data['PANNO'] != 'Not available' ? $api_vendor_data['PANNO'] : null;
+                    $data['pan_number'] = isset($api_vendor_data['PAN']) && $api_vendor_data['PAN'] != 'Not available' && $api_vendor_data['PAN'] != '[]' ? $api_vendor_data['PAN'] : null;
 
                     $list[] = $data;
                 }

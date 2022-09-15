@@ -813,7 +813,6 @@ app.component('hondaServiceInvoiceForm', {
             if (self.service_invoice.customer || self.service_invoice.customer != null) {
                  // var res = $rootScope.getCustomer(self.service_invoice.customer).then(function(res) {
                 var res = $rootScope.getHondaCustomerAddress(self.service_invoice.customer).then(function (res) {
-                    console.log(res);
                     if (!res.data.success) {
                         $('#pace').css("display", "none");
                         $('#pace').addClass('pace-inactive');
@@ -822,8 +821,18 @@ app.component('hondaServiceInvoiceForm', {
                     }
                     $('#pace').addClass('pace-inactive');
                     $('#pace').css("display", "none");
-                    console.log(res.data);
                     self.customer = res.data.customer;
+
+                    if( self.customer.pan_number == null || self.customer.pan_number == '' || self.customer.pan_number == '-') {
+                        custom_noty('error', 'PAN Number is mandatory.Kindly contact MDM Team');
+                        custom_noty('error', 'Not Allow To Add Invoives!');
+                        $('#submit').hide();
+                        $('.add_item_btn').hide(); 
+                    } else {
+                        $('#submit').show();
+                        $('.add_item_btn').show(); 
+                    }
+
                     self.service_invoice.customer.id = res.data.customer.id;
                     if (res.data.customer_address.length > 1) {
                         self.multiple_address = true;
@@ -838,12 +847,11 @@ app.component('hondaServiceInvoiceForm', {
                         // self.customer = res.data.customer;
                         // self.service_invoice.customer.id = res.data.customer.id;
                         self.customer_address = res.data.customer_address[0];
-                        console.log(self.customer + 'single');
                         if (res.data.customer_address[0].gst_number) {
                             setTimeout(function () {
                                 $scope.checkCustomerGSTIN(res.data.customer_address[0].gst_number, self.customer.name);
                             }, 1000);
-                        }
+                        } 
                     }
                 });
             } else {
@@ -908,8 +916,6 @@ app.component('hondaServiceInvoiceForm', {
 
                                 var trade_name = response.data.trade_name.toLowerCase();
                                 var legal_name = response.data.legal_name.toLowerCase();
-                                console.log("trade_name = " + trade_name);
-                                console.log("legal_name = " + legal_name);
                                 if (customer_name === legal_name) {
                                     $noty = new Noty({
                                         type: 'success',
@@ -946,7 +952,7 @@ app.component('hondaServiceInvoiceForm', {
                                         layout: 'topRight',
                                         text: 'GSTIN Registred Legal Name: ' + response.data.legal_name + ', and  GSTIN Registred Trade Name: ' + response.data.trade_name,
                                         animation: {
-                                            speed: 1000 // unavailable - no need
+                                            speed: 12000 // unavailable - no need
                                         },
                                     }).show();
                                     setTimeout(function () {
@@ -954,8 +960,8 @@ app.component('hondaServiceInvoiceForm', {
                                     }, 15000);
                                     custom_noty('error', 'Customer Name Not Matched!');
                                     custom_noty('error', 'Not Allow To Add Invoives!');
-                                    $('#submit').hide();
-                                    $('.add_item_btn').hide();
+                                    $('#submit').show();
+                                    $('.add_item_btn').show();
 
                                     if(response.data.gst_status && response.data.gst_status != 'ACT'){
                                         custom_noty('error', 'In Active GSTIN!');
@@ -980,14 +986,12 @@ app.component('hondaServiceInvoiceForm', {
         self.searchHondaVendor = $rootScope.searchHondaVendor;
 
         $scope.vendorSelected = function () {
-            console.log('test');
             $('#pace').css("display", "block");
             $('#pace').addClass('pace-active');
             console.log(self.service_invoice.customer);
             if (self.service_invoice.customer || self.service_invoice.customer != null) {
                 // var res = $rootScope.getCustomer(self.service_invoice.customer).then(function(res) {
                 var res = $rootScope.getHondaVendorAddress(self.service_invoice.customer).then(function (res) {
-                    console.log(res);
                     if (!res.data.success) {
                         $('#pace').css("display", "none");
                         $('#pace').addClass('pace-inactive');
@@ -996,8 +1000,16 @@ app.component('hondaServiceInvoiceForm', {
                     }
                     $('#pace').addClass('pace-inactive');
                     $('#pace').css("display", "none");
-                    console.log(res.data);
                     self.customer = res.data.vendor;
+                    if( self.customer.pan_number == null || self.customer.pan_number == '' || self.customer.pan_number == '-') {
+                        custom_noty('error', 'PAN Number is mandatory.Kindly contact MDM Team');
+                        custom_noty('error', 'Not Allow To Add Invoives!');
+                        $('#submit').hide();
+                        $('.add_item_btn').hide(); 
+                    } else {
+                        $('#submit').show();
+                        $('.add_item_btn').show(); 
+                    }
                     self.service_invoice.customer.id = res.data.vendor.id;
                     if (res.data.vendor_address.length > 1) {
                         self.multiple_address = true;
@@ -1580,7 +1592,6 @@ app.component('hondaServiceInvoiceForm', {
                             }
                             custom_noty('error', errors);
                         } else {
-                            console.log(res.service_item);
                             $('#modal-cn-addnew').modal('toggle');
                             if (!self.service_invoice.service_invoice_items) {
                                 self.service_invoice.service_invoice_items = [];
@@ -1695,6 +1706,8 @@ app.component('hondaServiceInvoiceForm', {
                                         }
                                         //SERVICE ITEMS TCS CALC
                                         $scope.serviceInvoiceItemTcsCal();
+                                        //SERVICE INVOICE ITEMS TABLE CALC
+                                        $scope.serviceInvoiceItemCalc();
                                         self.tcs_amt = self.service_invoice.service_invoice_items[0]['TCS'].amount;
                                         self.service_invoice.table_total = parseFloat(self.tcs_amt).toFixed(2);
                                         self.service_invoice.table_sub_total = parseFloat(self.tcs_amt).toFixed(2);
@@ -1877,57 +1890,6 @@ app.component('hondaServiceInvoiceView', {
             }
             $rootScope.loading = false;
         });
-
-        $scope.vendorSelected = function () {
-            // console.log('vendor');
-            $('#pace').css("display", "block");
-            $('#pace').addClass('pace-active');
-            console.log(self.service_invoice.customer);
-            if (self.service_invoice.customer || self.service_invoice.customer != null) {
-                // var res = $rootScope.getCustomer(self.service_invoice.customer).then(function(res) {
-                var res = $rootScope.getVendorAddress(self.service_invoice.customer).then(function (res) {
-                    console.log(res);
-                    if (!res.data.success) {
-                        $('#pace').css("display", "none");
-                        $('#pace').addClass('pace-inactive');
-                        custom_noty('error', res.data.error);
-                        return;
-                    }
-                    $('#pace').addClass('pace-inactive');
-                    $('#pace').css("display", "none");
-                    console.log(res.data);
-                    self.customer = res.data.vendor;
-                    self.service_invoice.customer.id = res.data.vendor.id;
-                    if (res.data.vendor_address.length > 1) {
-                        self.multiple_address = true;
-                        self.single_address = false;
-                        self.customer_addresses = res.data.vendor_address;
-                        console.log(self.vendor_address);
-                    } else {
-                        self.multiple_address = false;
-                        self.single_address = true;
-                        self.customer.state_id = res.data.vendor_address[0].state_id;
-                        self.customer.gst_number = res.data.vendor_address[0].gst_number;
-
-                        self.customer_address = res.data.vendor_address[0];
-                        console.log(self.customer + 'single');
-                        if (res.data.vendor_address[0].gst_number) {
-                            setTimeout(function () {
-                                $scope.checkCustomerGSTIN(res.data.vendor_address[0].gst_number, self.vendor.name);
-                            }, 1000);
-                        }
-                    }
-                });
-            } else {
-                $('#pace').css("display", "none");
-                $('#pace').addClass('pace-inactive');
-                self.customer = {};
-                self.customer_address = {};
-                self.customer_addresses = {};
-                self.service_invoice.service_invoice_items = [];
-            } 
-        }
-
         $scope.cancelIRN = function () {
             $('#cancel_irn').button('loading');
             $id = $("#service_invoice_id").val();
