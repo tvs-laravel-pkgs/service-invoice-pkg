@@ -480,9 +480,16 @@ class ServiceInvoiceApprovalController extends Controller {
 			}
 			DB::commit();
 			return response()->json(['success' => true, 'message' => $message]);
-		} catch (Exception $e) {
+		} catch (\Exception $e) {
 			DB::rollBack();
-			return response()->json(['success' => false, 'errors' => ['Exception Error' => $e->getMessage()]]);
+			// return response()->json(['success' => false, 'errors' => ['Exception Error' => $e->getMessage()]]);
+			return response()->json([
+                'success' => false,
+                'error' => 'Server Error',
+                'errors' => [
+                    'Error : ' . $e->getMessage() . '. Line : ' . $e->getLine() . '. File : ' . $e->getFile(),
+                ],
+            ]);
 		}
 	}
 
@@ -553,9 +560,16 @@ class ServiceInvoiceApprovalController extends Controller {
 				DB::commit();
 				// return response()->json(['success' => true, 'message' => 'CN/DN Approved successfully']);
 				return response()->json(['success' => true, 'message' => 'Approved successfully']);
-			} catch (Exception $e) {
+			} catch (\Exception $e) {
 				DB::rollBack();
-				return response()->json(['success' => false, 'errors' => ['Exception Error' => $e->getMessage()]]);
+				// return response()->json(['success' => false, 'errors' => ['Exception Error' => $e->getMessage()]]);
+				return response()->json([
+                	'success' => false,
+	                'error' => 'Server Error',
+	                'errors' => [
+	                    'Error : ' . $e->getMessage() . '. Line : ' . $e->getLine() . '. File : ' . $e->getFile(),
+	                ],
+            	]);
 			}
 		}
 	}
