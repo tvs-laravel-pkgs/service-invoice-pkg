@@ -414,7 +414,7 @@ class ServiceInvoiceApprovalController extends Controller {
 				}
 
 				//PLATINUM MEMBERSHIP VEHICLE ADDITION
-				if(count($tvs_one_order->orderItems) > 0){
+				if($tvs_one_order && count($tvs_one_order->orderItems) > 0){
 					$order_item = TVSOneOrderItem::find($tvs_one_order->orderItems[0]->id);
 					if($order_item->entity_type_id == 12328 && !empty($order_item->addition_vehicle_membership_id)){
 
@@ -519,7 +519,7 @@ class ServiceInvoiceApprovalController extends Controller {
 					}
 
 					//PLATINUM MEMBERSHIP VEHICLE ADDITION
-					if(count($tvs_one_order->orderItems) > 0){
+					if($tvs_one_order && count($tvs_one_order->orderItems) > 0){
 						$order_item = TVSOneOrderItem::find($tvs_one_order->orderItems[0]->id);
 						if($order_item->entity_type_id == 12328 && !empty($order_item->addition_vehicle_membership_id)){
 
