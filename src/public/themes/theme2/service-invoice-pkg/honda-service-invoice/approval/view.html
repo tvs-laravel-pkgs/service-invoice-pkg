@@ -238,6 +238,7 @@
                                             <p class="info-content">{{$ctrl.service_invoice.address.address_line1}}</p>
                                             <div class="info-space"></div>
                                             <p class="info-content">GST # {{$ctrl.service_invoice.address.gst_number ? $ctrl.service_invoice.address.gst_number : 'NA'}}</p>
+                                             <p class="info-content">PAN # {{$ctrl.service_invoice.address.pan_number ? $ctrl.service_invoice.address.pan_number : ''}} </p>
                                             <div class="info-space"></div>
                                             <div class="table-form-list-wrap" ng-if="$ctrl.service_invoice.status_id == 5">
                                                 <label class="table-form-list-label">Remarks</label>

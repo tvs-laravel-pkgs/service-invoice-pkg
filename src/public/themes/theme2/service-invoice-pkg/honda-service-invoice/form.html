@@ -322,7 +322,18 @@
                                                 </div><!-- Info Wrap -->  
                                             </li>                                              
                                             <li>
-                                                <input type="file" class="image_uploadify" accept="/*" name="proposal_attachments[]" multiple>
+                                               <!-- <input type="file" class="image_uploadify" name="proposal_attachments[]" multiple> -->
+                                                <div class="bt-fi-multiple-wrap">
+                                                                        <div class="file-loading">
+                                                                            <input 
+                                                                                type="file" 
+                                                                                id="bt_attachments" 
+                                                                                name="proposal_attachments[]" 
+                                                                                class="bootstrap-file-input" 
+                                                                                watch-options="true" 
+                                                                            />
+                                                                        </div><!-- File Loading -->
+                                                                    </div><!-- Bootstrap File Input Multiple Wrap -->
                                             </li>
                                         </ul><!-- Table Form List -->
                                     </li>

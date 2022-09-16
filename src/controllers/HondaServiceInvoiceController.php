@@ -1258,6 +1258,7 @@ class HondaServiceInvoiceController extends Controller
             $attachement_path = storage_path('app/public/honda-service-invoice/attachments/');
             Storage::makeDirectory($attachement_path, 0777);
             if (!empty($request->proposal_attachments)) {
+
                 foreach ($request->proposal_attachments as $key => $proposal_attachment) {
                     $value = rand(1, 100);
                     $image = $proposal_attachment;
@@ -2134,8 +2135,9 @@ class HondaServiceInvoiceController extends Controller
             $tcs_dn_details = HondaServiceInvoice::tcs_dn_details($service_invoice->invoice_number);
             $service_invoice->date = $tcs_dn_details->date;
             $service_invoice->invoice_number = $service_invoice->invoice_number;
-            $serviceInvoiceItem->description = "TCS Debit Note for ".$service_invoice->invoice_number .'. Dt- ' .$service_invoice->date;
+            $serviceInvoiceItem->description = "TCS DBN for Billno -".$service_invoice->invoice_number .'. Dt- ' .$service_invoice->date;
             $serviceInvoiceItem->rate = $tcs_dn_details->on_road_price;
+            $tcs_dn_inv_no = $service_invoice->invoice_number;
         }
                 //dd($serviceInvoiceItem->field_groups);
         $this->data['service_invoice_pdf'] = $service_invoice;
@@ -2164,7 +2166,10 @@ class HondaServiceInvoiceController extends Controller
         //     'success' => true,
         // ];
         $r['api_logs'] = [];
+         if($service_invoice->type_id == 1063) {
 
+            $serviceInvoiceItem->description = "TCS DBN for Billno -".$tcs_dn_inv_no;
+        }
         //ENTRY IN AX_EXPORTS
         $r = $service_invoice->exportToAxapta();
         if (!$r['success']) {
@@ -3345,8 +3350,9 @@ class HondaServiceInvoiceController extends Controller
             $list = [];
             if (isset($api_customer_data)) {
                 $data = [];
+               
                 $array_count = array_filter($api_customer_data, 'is_array');
-                if (count($array_count) > 0) {
+                if (count($array_count) > 0 && isset($api_customer_data[0])) {
                     // if (count($api_customer_data) > 0) {
                     foreach ($api_customer_data as $key => $customer_data) {
                         $data['code'] = $customer_data['ACCOUNTNUM'];
@@ -3354,6 +3360,8 @@ class HondaServiceInvoiceController extends Controller
                         $data['mobile_no'] = isset($customer_data['LOCATOR']) && $customer_data['LOCATOR'] != 'Not available' ? $customer_data['LOCATOR'] : null;
                         $data['cust_group'] = isset($customer_data['CUSTGROUP']) && $customer_data['CUSTGROUP'] != 'Not available' ? $customer_data['CUSTGROUP'] : null;
                         $data['pan_number'] = isset($customer_data['PAN']) && $customer_data['PAN'] != 'Not available' && $customer_data['PAN'] != [] ? $customer_data['PAN'] : null;
+                        $data['pincode'] = isset($customer_data['PAN']) && $customer_data['PAN'] != 'Not available' && $customer_data['PAN'] != [] ? $customer_data['PAN'] : null;
+                        $data['state'] = isset($customer_data['PAN']) && $customer_data['PAN'] != 'Not available' && $customer_data['PAN'] != [] ? $customer_data['PAN'] : null;
 
                         $list[] = $data;
                     }
@@ -3369,9 +3377,11 @@ class HondaServiceInvoiceController extends Controller
             }
             return response()->json($list);
         } catch (\SoapFault $e) {
-            return response()->json(['success' => false, 'error' => 'Somthing went worng in SOAP Service!']);
+            return response()->json([]);
+            //return response()->json(['success' => false, 'error' => 'Somthing went worng in SOAP Service!']);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'error' => 'Somthing went worng!']);
+            return response()->json([]);
+            //return response()->json(['success' => false, 'error' => 'Somthing went worng!']);
         }
 
     }
@@ -5200,19 +5210,20 @@ class HondaServiceInvoiceController extends Controller
 
     public function searchHondaSaleInvoiceTCS(Request $r)
     {
-        $key = $r->key;
+         $key = $r->key;
         // TCS DEBIT NOTE VALIDATION
 
         //GET INV DET
         $list = DB::table('honda_sale_invoice_detail_requests')
                     ->join('honda_sale_invoice_details' , 'honda_sale_invoice_details.id' , 'honda_sale_invoice_detail_requests.sale_invoice_id')
                     ->select('honda_sale_invoice_details.number','honda_sale_invoice_details.id')
-                    ->where('honda_sale_invoice_detail_requests.on_road_price' , '>', '1000000');
-         
-        $list = $list->where(function ($q) use ($key) {
-                        $q->where('honda_sale_invoice_details.number', 'like', '%' . $key . '%');
+                    ->where('honda_sale_invoice_detail_requests.on_road_price' , '>', '1000000')
+         ->where(function ($q) use ($r) {
+                        if(!empty($r->key))
+                        $q->where('honda_sale_invoice_details.number', 'like', '%' . $r->key . '%');
+                        if(!empty($r->pan_number))
+                        $q->where('honda_sale_invoice_details.contact_pan_number', 'like', '%' . $r->pan_number . '%');
                     })->get();
-
         return response()->json($list);
     }
 
