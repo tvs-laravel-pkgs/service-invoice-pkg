@@ -1489,19 +1489,19 @@ class HondaServiceInvoiceController extends Controller
             $service_invoice->document_type = 'INV';
         }
 
-        $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdCN");
+        $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdHondaCN");
         if ($service_invoice->type_id == 1060) {
             $service_invoice->type = 'CRN';
-            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdCN");
+            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdHondaCN");
         } elseif ($service_invoice->type_id == 1061) {
             $service_invoice->type = 'DBN';
-            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdDN");
+            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdHondaDN");
         } elseif ($service_invoice->type_id == 1062) {
             $service_invoice->type = 'INV';
-            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdINV");
+            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdHondaINV");
         } elseif ($service_invoice->type_id == 1063) {
             $service_invoice->type = 'DBN';
-            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdDN");
+            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdHondaDN");
         }
 
         if ($service_invoice->total > $service_invoice->final_amount) {
@@ -3362,6 +3362,7 @@ class HondaServiceInvoiceController extends Controller
                         $data['pan_number'] = isset($customer_data['PAN']) && $customer_data['PAN'] != 'Not available' && $customer_data['PAN'] != [] ? $customer_data['PAN'] : null;
                         $data['pincode'] = isset($customer_data['PAN']) && $customer_data['PAN'] != 'Not available' && $customer_data['PAN'] != [] ? $customer_data['PAN'] : null;
                         $data['state'] = isset($customer_data['PAN']) && $customer_data['PAN'] != 'Not available' && $customer_data['PAN'] != [] ? $customer_data['PAN'] : null;
+                       
 
                         $list[] = $data;
                     }
@@ -3633,7 +3634,6 @@ class HondaServiceInvoiceController extends Controller
                         $address_count = 0;
                         foreach ($api_customer_data as $key => $customer_data) {
                              if(isset($customer_data['DATAAREAID']) && ($customer_data['DATAAREAID'] != Auth::user()->company->ax_company_code)){
-
                                 $customer = Customer::firstOrNew(['code' => $request->data['code'],'company_id'=>Auth::user()->company_id]);
                                 if($customer_data['CITY'])
                                     $city = City::where('name', $customer_data['CITY'])->first();
@@ -3662,6 +3662,14 @@ class HondaServiceInvoiceController extends Controller
                                 } else {
                                     $customer_dimension = null;
                                 }
+
+                                if ($state == null) {
+                                    return response()->json(['success' => false, 'error' => 'State data is missing for picked customer.So kindly contact AX team']);
+                                }
+                                if (empty($customer_data['ZIPCODE']) || $customer_data['ZIPCODE'] == 'Not available') {
+                                     return response()->json(['success' => false, 'error' => 'Pincode data is missing for picked customer.So kindly contact AX team']);
+                                }
+
                                 $locator =  !empty( $customer_data['LOCATOR'] ) ? $customer_data['LOCATOR'] : null;
                                 $customer->company_id = Auth::user()->company_id;
                                 $customer->name = $request->data['name'];

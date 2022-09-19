@@ -962,7 +962,7 @@ class HondaServiceInvoice extends Model
             $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
            $params['VatPercentage'] = '';
-            $params['Qty'] = $invoice_item->qty;
+            $params['Qty'] = '';
             // dump($params);
             $this->exportRowToAxapta($params);
         }
@@ -976,6 +976,8 @@ class HondaServiceInvoice extends Model
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
             $params['VatPercentage'] = '';
             $params['Qty'] = '';
+            $params['TVSSACCode'] = '';
+            $params['TVSHSNCode'] = '';
             if ($amount_diff > 0) {
                 if ($this->type_id == 1061) {
                     $params['AmountCurCredit'] = $this->type_id == 1061 ? $amount_diff : 0;
