@@ -16,6 +16,7 @@ use App\Entity;
 use App\Http\Controllers\Controller;
 use App\User;
 use App\TVSOneOrder;
+use App\TVSOneOrderItem;
 use File;
 use QRCode;
 use Auth;
@@ -25,6 +26,7 @@ use Illuminate\Http\Request;
 use Yajra\Datatables\Datatables;
 use phpseclib\Crypt\RSA as Crypt_RSA;
 use GuzzleHttp\Client;
+use App\ShortUrl;
 
 class ServiceInvoiceApprovalController extends Controller {
 
@@ -410,6 +412,19 @@ class ServiceInvoiceApprovalController extends Controller {
 					$tvs_one_order->status_id = 12894;
 					$tvs_one_order->save();
 				}
+
+				//PLATINUM MEMBERSHIP VEHICLE ADDITION
+				if($tvs_one_order && count($tvs_one_order->orderItems) > 0){
+					$order_item = TVSOneOrderItem::find($tvs_one_order->orderItems[0]->id);
+					if($order_item->entity_type_id == 12328 && !empty($order_item->addition_vehicle_membership_id)){
+
+						$params = [];
+						$params['order_item_id'] = $order_item->id;
+						TVSOneOrderItem::addAdditionVehicles($params);
+					}
+				}
+
+				
 			} elseif ($request->status_name == 'reject') {
 				$approval_status->status_id = 5; //$approval_levels->reject_status_id;
 				$approval_status->comments = $request->comments;
@@ -443,15 +458,38 @@ class ServiceInvoiceApprovalController extends Controller {
 						// DB::rollBack();
 						return response()->json($r);
 					}
+
+					//SMS
+					if($approval_status->status_id == 4 && !empty($tvs_one_order->customer->mobile_no)){
+						$link = url('storage/app/public/service-invoice-pdf/'.$approval_status->number.'.pdf');
+			            $short_url = ShortUrl::createShortLink($link, $maxlength = "5");
+						$sms_params = [];
+			            $sms_params['mobile_number'] = $tvs_one_order->customer->mobile_no;
+			            $sms_params['sms_url'] = config('services.tvsone_sms_url');
+			            $sms_params['sms_user'] = config('services.tvsone_sms_user');
+			            $sms_params['sms_password'] = config('services.tvsone_sms_password');
+			            $sms_params['sms_sender_id'] = config('services.tvsone_sms_sender_id');
+			            $sms_params['message'] = 'Thanks for purchasing the TVSONE membership, click the link '.$short_url.' to download the Invoice – TVS';
+			            tvsoneSendSMS($sms_params);
+			            //test
+					}
+					
 				}
 			} else {
 				return response()->json(['success' => false, 'errors' => ['Final CN/DN Status has not mapped.!']]);
 			}
 			DB::commit();
 			return response()->json(['success' => true, 'message' => $message]);
-		} catch (Exception $e) {
+		} catch (\Exception $e) {
 			DB::rollBack();
-			return response()->json(['success' => false, 'errors' => ['Exception Error' => $e->getMessage()]]);
+			// return response()->json(['success' => false, 'errors' => ['Exception Error' => $e->getMessage()]]);
+			return response()->json([
+                'success' => false,
+                'error' => 'Server Error',
+                'errors' => [
+                    'Error : ' . $e->getMessage() . '. Line : ' . $e->getLine() . '. File : ' . $e->getFile(),
+                ],
+            ]);
 		}
 	}
 
@@ -480,6 +518,17 @@ class ServiceInvoiceApprovalController extends Controller {
 						$tvs_one_order->save();
 					}
 
+					//PLATINUM MEMBERSHIP VEHICLE ADDITION
+					if($tvs_one_order && count($tvs_one_order->orderItems) > 0){
+						$order_item = TVSOneOrderItem::find($tvs_one_order->orderItems[0]->id);
+						if($order_item->entity_type_id == 12328 && !empty($order_item->addition_vehicle_membership_id)){
+
+							$params = [];
+							$params['order_item_id'] = $order_item->id;
+							TVSOneOrderItem::addAdditionVehicles($params);
+						}
+					}
+
 					$approved_status = new ServiceInvoiceController();
 					$approval_levels = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 19)->first(); //ENTITIES ALSO CHANGES FOR 3; FOR QUEUE PROCESS
 					if ($approval_levels != '') {
@@ -493,13 +542,34 @@ class ServiceInvoiceApprovalController extends Controller {
 					} else {
 						return response()->json(['success' => false, 'errors' => ['Final CN/DN Status has not mapped.!']]);
 					}
+
+					//SMS
+					if($send_approval->status_id == 4 && !empty($tvs_one_order->customer->mobile_no)){
+						$link = url('storage/app/public/service-invoice-pdf/'.$send_approval->number.'.pdf');
+			            $short_url = ShortUrl::createShortLink($link, $maxlength = "5");
+						$sms_params = [];
+			            $sms_params['mobile_number'] = $tvs_one_order->customer->mobile_no;
+			            $sms_params['sms_url'] = config('services.tvsone_sms_url');
+			            $sms_params['sms_user'] = config('services.tvsone_sms_user');
+			            $sms_params['sms_password'] = config('services.tvsone_sms_password');
+			            $sms_params['sms_sender_id'] = config('services.tvsone_sms_sender_id');
+			            $sms_params['message'] = 'Thanks for purchasing the TVSONE membership, click the link '.$short_url.' to download the Invoice – TVS';
+			            tvsoneSendSMS($sms_params);
+					}
 				}
 				DB::commit();
 				// return response()->json(['success' => true, 'message' => 'CN/DN Approved successfully']);
 				return response()->json(['success' => true, 'message' => 'Approved successfully']);
-			} catch (Exception $e) {
+			} catch (\Exception $e) {
 				DB::rollBack();
-				return response()->json(['success' => false, 'errors' => ['Exception Error' => $e->getMessage()]]);
+				// return response()->json(['success' => false, 'errors' => ['Exception Error' => $e->getMessage()]]);
+				return response()->json([
+                	'success' => false,
+	                'error' => 'Server Error',
+	                'errors' => [
+	                    'Error : ' . $e->getMessage() . '. Line : ' . $e->getLine() . '. File : ' . $e->getFile(),
+	                ],
+            	]);
 			}
 		}
 	}
