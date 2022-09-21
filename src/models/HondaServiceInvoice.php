@@ -1776,6 +1776,7 @@ class HondaServiceInvoice extends Model
         $export->VatPercentage = ($params['VatPercentage'] > 0) ? $params['VatPercentage'] : '';
         $export->Qty =  $params['Qty'];
         $export->save();
+        $this->importRowToAxaptaStaging($params);
 
     }
 
@@ -3065,5 +3066,93 @@ class HondaServiceInvoice extends Model
                     ->select('honda_sale_invoice_details.id','honda_vehicle_details.vin_number','honda_sale_invoice_details.date','honda_sale_invoice_detail_requests.on_road_price','honda_sale_invoice_detail_requests.customer_name_id')
                     ->where('honda_sale_invoice_details.number' , $inv_no)
                     ->first();
+    }
+
+    protected function importRowToAxaptaStaging($params)
+    {
+        
+        if($params['AccountType'] == 'Customer'){
+            $fa_journaltype_vc = 1;
+        }elseif ($params['AccountType'] == 'Vendor') {
+            $fa_journaltype_vc = 2;
+        }elseif($params['AccountType'] == 'Ledger') {
+            $fa_journaltype_vc = 0;
+        }elseif($params['AccountType'] == 'Bank') {
+            $fa_journaltype_vc = 6;
+        }
+        if ($this->type_id == 1060) {
+            $jounral = '155';
+        }elseif ($this->type_id == 1062) {
+            $jounral = '142';
+        }elseif ($this->type_id == 1063) {
+            $jounral = '163'; //TCS Debit Note (Rev)    157 C157_+Brsnch Code
+        }
+
+        if($params['Department']){
+            $dept = DB::table('honda_dept_dimension')->where('description',$params['Department'])->first();
+            $fa_department_vc = $dept->dimension_value;
+        }else
+           $fa_department_vc = ''; 
+
+
+        if($params['AccountType'] != 'Customer') {
+            $coa_code = explode('-' , $params['LedgerDimension'])[0];
+            $sub_gl = DB::table('sub_ledger')->join('coa_codes','coa_codes.id','sub_ledger.coa_code_id')->where('coa_codes.code',$coa_code )->select('ax_subgl')->first();
+            if(empty($sub_gl))
+                $sub_gl = '';
+            else
+                $sub_gl = $sub_gl->ax_subgl;
+
+            $fa_purpose_vc = $sub_gl;
+        } else
+            $fa_purpose_vc = '';
+
+        if(isset($params['TVSHSNCode']))
+            $hsn_sac_code = $params['TVSHSNCode'];
+        else
+            $hsn_sac_code = $params['TVSSACCode'];
+
+        $insert_ax_data = DB::table('honda_axapta_staging')->insert([
+            'dataarea' => 'TMH',
+            'fa_custsuppcd_vc' => $params['LedgerDimension'],
+            'fa_orgdocno_vc' => $this->number,
+            'fa_loccode_vc' => $params['PlantCode'],
+            'fa_journaltype_vc' => $fa_journaltype_vc,
+            'fa_journalname_vc' => 'C'.$jounral.'_'.$params['PlantCode'],
+            'fa_doccode_vc' => $jounral,
+            'fa_orgdoc_d' => date("Y-m-d H:i:s", strtotime($this->document_date)),
+            'itd_srlno_c' => $this->lineNumber++,
+            'fa_glcode_vc' => ($params['AccountType'] == 'Customer') ? '' : (explode('-' , $params['LedgerDimension'])[0]),
+            'fa_offsetjournaltype_vc' => '',
+            'fa_department_vc'=> $fa_department_vc,
+            'fa_costcenter_vc' => '',
+            'fa_purpose_vc' => $fa_purpose_vc,
+            'fa_vinno_vc' =>'',
+            'fa_rono_vc' =>'',
+            'fa_employee_vc' => '',
+            'fa_custsuppcd_vc' =>  ($params['AccountType'] == 'Customer') ?  $params['LedgerDimension']: '',
+            'fa_debitamt_n' => $params['AmountCurDebit'] > 0 ? $params['AmountCurDebit'] : 0,
+            'fa_creditamt_n' => $params['AmountCurCredit'] > 0 ? $params['AmountCurCredit'] : 0,
+            'fa_duedate_d' =>  date("Y-m-d H:i:s", strtotime($this->document_date)),
+            'fa_commvehcd_vc' => '',
+            'fa_reforgdocno_vc' => $this->number,
+            'fa_reforgdoc_d' => date("Y-m-d H:i:s", strtotime($this->document_date)),
+            'fa_insurercd_vc' => $this->outlet->gst_number,
+            'fa_transactiontxt_vc' => $params['Txt'],
+            'usm_userid_vc' => $this->createdBy->employee->code,
+            'last_modified_d' => $this->updated_at,
+            'transferred' => 0,
+            'posted' => 0,
+            'fa_qty_n' => $params['Qty'],
+            'fa_taxper_n' => ($params['VatPercentage'] > 0) ? $params['VatPercentage'] : '',
+            'fa_areacd_vc' => '',
+            'fa_lsosind_vc' =>'',
+            'fa_dmsflag_c' => '',
+            'fa_costprice_n' => 0,
+            'fa_budgetcd_vc' => '',
+            'fa_hsnsaccd_vc' => $hsn_sac_code,
+            'fa_shippingadd_vc' =>''
+    ]);
+
     }
 }

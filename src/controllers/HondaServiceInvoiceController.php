@@ -1558,11 +1558,11 @@ class HondaServiceInvoiceController extends Controller
                 }
 
                 if ($service_invoice->address) {
-                    if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->address_line1)) > 100) {
-                        $errors[] = 'Customer Address Maximum Allowed Length 100!';
+                    if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->address_line1)) > 250) {
+                        $errors[] = 'Customer Address Maximum Allowed Length 250!';
                         return [
                             'success' => false,
-                            'errors' => ['Customer Address Maximum Allowed Length 100!'],
+                            'errors' => ['Customer Address Maximum Allowed Length 250!'],
                         ];
                         // DB::commit();
                     }
