@@ -80,6 +80,7 @@
     var honda_search_branch_url = "{{url('/service-invoice-pkg/honda-branch/search')}}";
     var get_branch_info_url = "{{url('/service-invoice-pkg/get-branch-details')}}";
     var honda_service_invoice_search_customer_url = "{{url('/service-invoice-pkg/honda-service-invoice/customer/search')}}";
+    var honda_service_invoice_search_vendor_url = "{{url('/service-invoice-pkg/honda-service-invoice/searchVendor')}}";
     var search_field_url = "{{url('/service-invoice-pkg/field/search')}}";
     var get_customer_info_url = "{{url('/service-invoice-pkg/service-invoice/get-customer-details')}}";
     var search_service_item_url = "{{url('/service-invoice-pkg/service-invoice/service-item/search')}}";
