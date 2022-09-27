@@ -243,7 +243,7 @@ class HondaServiceInvoiceApprovalController extends Controller {
 			'serviceInvoiceItems.eavInts',
 			'serviceInvoiceItems.eavDatetimes',
 			'serviceInvoiceItems.taxes',
-			'serviceItemCategory',
+			'serviceInvoiceItems.serviceItemCategory',
 			'serviceItemSubCategory',
 			'serviceItemSubCategory.serviceItemCategory',
 		])->find($id);
@@ -372,8 +372,8 @@ class HondaServiceInvoiceApprovalController extends Controller {
 					}
 				}
 				$serviceInvoiceItem->total = round($serviceInvoiceItem->sub_total, 2) + round($gst_total, 2);
-				$serviceInvoiceItem->code = $serviceInvoiceItem->serviceItem->code;
-				$serviceInvoiceItem->name = $serviceInvoiceItem->serviceItem->name;
+				//$serviceInvoiceItem->code = $serviceInvoiceItem->serviceItem->code;
+				//$serviceInvoiceItem->name = $serviceInvoiceItem->serviceItem->name;
 			}
 		}
 		if($type_id == 1063){

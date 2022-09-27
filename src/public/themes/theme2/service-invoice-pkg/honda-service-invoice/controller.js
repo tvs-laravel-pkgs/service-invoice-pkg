@@ -1004,8 +1004,10 @@ $('#bt_attachments').on('click', () => {
                                     }, 15000);
                                     custom_noty('error', 'Customer Name Not Matched!');
                                     custom_noty('error', 'Not Allow To Add Invoives!');
-                                    $('#submit').show();
-                                    $('.add_item_btn').show();
+                                    if( self.customer.pan_number != null || self.customer.pan_number != '' || self.customer.pan_number != '-') {
+                                        $('#submit').show();
+                                        $('.add_item_btn').show(); 
+                                    }
 
                                     if(response.data.gst_status && response.data.gst_status != 'ACT'){
                                         custom_noty('error', 'In Active GSTIN!');
@@ -1179,7 +1181,6 @@ $('#bt_attachments').on('click', () => {
         }
 
         $scope.getSubGL = function(coa_code) {
-alert(coa_code);
             if (coa_code) {
                 $http.get(
                     get_sub_ledger_url + '/' + coa_code

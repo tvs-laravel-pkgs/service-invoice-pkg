@@ -379,7 +379,7 @@ class HondaServiceInvoiceController extends Controller
                 'serviceInvoiceItems.eavDatetimes',
                 'serviceInvoiceItems.taxes',
                 'serviceItemSubCategory',
-                'serviceItemCategory',
+                'serviceInvoiceItems.serviceItemCategory',
             ])->find($id);
             if (!$service_invoice) {
                 return response()->json(['success' => false, 'error' => 'Service Invoice not found']);
@@ -609,11 +609,12 @@ class HondaServiceInvoiceController extends Controller
         //dd($request->all());
 
         //GET TAXES BY CONDITIONS
-        $taxes = TaxCode::find($request->hsn_sac_id)->taxes()->get();
-        $sac_code_value = $request->tax_id;
+        $taxes = $this->getTaxesBasedHSN($request->hsn_sac_id, $request->branch_id, $request->customer_id, $request->to_account_type_id, $request->state_id);
+        $taxes = TaxCode::find($request->hsn_sac_id)->taxes()->whereIn('tax_id', $taxes['tax_ids'])->get();
+
+        $sac_code_value = $request->hsn_sac_id;
         $coa_codes = CoaCode::all();
         session(['sac_code_value' => $sac_code_value]);
-        // dd($service_item);
         return response()->json(['success' => true, 'taxes' => $taxes , 'coa_codes' =>$coa_codes]);
     }
 
@@ -629,11 +630,96 @@ class HondaServiceInvoiceController extends Controller
         return response()->json($this->data);
     }
 
+    
+    public static function getTaxesBasedHSN($hsn_id,$branch_id, $customer_id, $to_account_type_id = NULL, $state_id = NULL) {
+        $response = array();
+
+        $serviceItem = TaxCode::find($hsn_id);
+        if (!$serviceItem) {
+            $response['success'] = false;
+            $response['error'] = 'TaxCode not found';
+            return $response;
+        }
+
+        $branch = Outlet::find($branch_id);
+        if (!$branch) {
+            $response['success'] = false;
+            $response['error'] = 'Branch not found';
+            return $response;
+        }
+        if (!$branch->state_id) {
+            $response['success'] = false;
+            $response['error'] = 'No state informations available for branch';
+            return $response;
+        }
+
+        if ($to_account_type_id == 1441) {
+            //FOR VENDOR SEARCH
+            $customer = Vendor::find($customer_id);
+            if (!$customer) {
+                $response['success'] = false;
+                $response['error'] = 'Vendor not found';
+                return $response;
+            }
+            if (!$customer->primaryAddress || !$customer->primaryAddress->state_id) {
+                $response['success'] = false;
+                $response['error'] = 'No state informations available for vendor';
+                return $response;
+            }
+        } else {
+            $customer = Customer::find($customer_id);
+            if (!$customer) {
+                $response['success'] = false;
+                $response['error'] = 'Customer not found';
+                return $response;
+            }
+            if (!$customer->primaryAddress || !$customer->primaryAddress->state_id) {
+                $response['success'] = false;
+                $response['error'] = 'No state informations available for customer';
+                return $response;
+            }
+        }
+
+        $branch_state_id = $branch->state_id ? $branch->state_id : null;
+        if ($state_id) {
+            $customer_state_id = $state_id ? $state_id : null;
+        } else {
+            $customer_state_id = ($customer->primaryAddress ? ($customer->primaryAddress->state_id ? $customer->primaryAddress->state_id : null) : null);
+        }
+        // dd($customer_state_id);
+        if ($branch_state_id && $customer_state_id) {
+            //WITHIN STATE && STATE SPECIFIC(IF CUSTOMER STATE MATCHES)
+            if ($branch_state_id == $customer_state_id) {
+                $general_taxes = Tax::where('type_id', 1160)->pluck('id')->toArray();
+            } else {
+                //INTER STATE && STATE SPECIFIC(IF CUSTOMER STATE MATCHES)
+                $general_taxes = Tax::where('type_id', 1161)->pluck('id')->toArray();
+            }
+            $statespec_tax = Tax::where('type_id', 1162)->first();
+            if ($statespec_tax && $serviceItem) {
+                $state_specifi_tax = $serviceItem->taxes()->where('state_id', $customer_state_id)->pluck('tax_id')->toArray();
+            } else {
+                $state_specifi_tax = [];
+            }
+            $taxes = array_unique(array_merge($general_taxes, $state_specifi_tax));
+            // $taxes = $general_taxes;
+
+        } else {
+            $taxes = [];
+        }
+
+        $response['success'] = true;
+        $response['tax_ids'] = $taxes;
+        return $response;
+    }
+
     public function getServiceItem(Request $request)
     {
-        $request->category_id = 19;
         //GET TAXES BY CONDITIONS
-
+        $taxes = $this->getTaxesBasedHSN($request->service_item_hsn, $request->branch_id, $request->customer_id, $request->to_account_type_id, $request->state_id);
+        if (!$taxes['success']) {
+            return response()->json(['success' => false, 'error' => $taxes['error']]);
+        }
 
         $outlet = Outlet::find($request->branch_id);
         if ($request->to_account_type_id == 1440) {
@@ -649,7 +735,8 @@ class HondaServiceInvoiceController extends Controller
         $service_item->category = ServiceItemCategory::join('honda_dept_dimension' , 'honda_dept_dimension.description','service_item_categories.name')
                                 ->select('honda_dept_dimension.dimension_value','honda_dept_dimension.description', 'service_item_categories.id')
                                 ->where('service_item_categories.type', 'honda')
-                                ->where('service_item_categories.company_id', Auth::user()->company_id)->get();
+                                ->where('service_item_categories.id',$request->category_id)
+                                ->where('service_item_categories.company_id', Auth::user()->company_id)->first();
 
         $service_item->coa_codes = CoaCode::find($request->service_item_coa);
         $service_item->sac_code_id = $service_item->taxCode->id;
@@ -782,9 +869,6 @@ class HondaServiceInvoiceController extends Controller
                     'required:true',
                 ],
                 'sbu_id' => [
-                    'required:true',
-                ],
-                'category_id' => [
                     'required:true',
                 ],
                 'address_id' => [
@@ -1235,7 +1319,7 @@ class HondaServiceInvoiceController extends Controller
                         ];
                     }
                 }
-                if ($serviceInvoiceItem->serviceItem->sac_code_id) {
+                if ($serviceInvoiceItem->service_item_hsn_id) {
                     $item_count_with_tax_code++;
                 }
                 //PUSH TOTAL FIELD GROUPS
@@ -1409,21 +1493,19 @@ class HondaServiceInvoiceController extends Controller
                         // return response()->json(['success' => false, 'error' => $taxes['error']]);
                     }
 
-                    $service_item = ServiceItem::with([
+                    $service_item = HondaServiceInvoiceItem::with([
                         'coaCode',
                         'taxCode',
-                        'taxCode.taxes' => function ($query) use ($taxes) {
-                            $query->whereIn('tax_id', $taxes['tax_ids']);
-                        },
                     ])
-                        ->find($serviceInvoiceItem->service_item_id);
+                        ->find($serviceInvoiceItem->id);
+                        $service_item->taxCode->taxes =  $service_item->taxCode->taxes()->get();
                     if (!$service_item) {
                         $errors[] = 'Service Item not found';
                         // return response()->json(['success' => false, 'error' => 'Service Item not found']);
                     }
 
                     //TAX CALC AND PUSH
-                    if (!is_null($service_item->sac_code_id)) {
+                    if (!is_null($service_item->service_item_hsn_id)) {
                         if (count($service_item->taxCode->taxes) > 0) {
                             foreach ($service_item->taxCode->taxes as $key => $value) {
                                 //FOR CGST
@@ -1467,9 +1549,9 @@ class HondaServiceInvoiceController extends Controller
                     }
 
                     $item['SlNo'] = $sno; //Statically assumed
-                    $item['PrdDesc'] = $serviceInvoiceItem->serviceItem->name;
+                    $item['PrdDesc'] = $serviceInvoiceItem->description;
                     $item['IsServc'] = "Y"; //ALWAYS Y
-                    $item['HsnCd'] = $serviceInvoiceItem->serviceItem->taxCode ? $serviceInvoiceItem->serviceItem->taxCode->code : null;
+                    $item['HsnCd'] = $serviceInvoiceItem->taxCode ? $serviceInvoiceItem->code : null;
 
                     //BchDtls
                     $item['BchDtls']["Nm"] = null;
@@ -1975,7 +2057,7 @@ class HondaServiceInvoiceController extends Controller
             'serviceInvoiceItems.eavDatetimes',
             'serviceInvoiceItems.taxes',
             'serviceItemSubCategory',
-            'serviceItemCategory',
+            'serviceInvoiceItems.serviceItemCategory',
             'serviceItemSubCategory.serviceItemCategory',
         ])->find($id);
         $service_invoice->customer;
@@ -3743,7 +3825,7 @@ class HondaServiceInvoiceController extends Controller
         $service_invoice = HondaServiceInvoice::with([
             'company',
             // 'customer',
-            'serviceItemCategory',
+            'serviceInvoiceItems.serviceItemCategory',
             'toAccountType',
             'address',
             'outlets',

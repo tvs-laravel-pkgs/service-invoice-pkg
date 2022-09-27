@@ -10,7 +10,8 @@ class HondaServiceInvoiceItem extends Model {
 		'service_invoice_id',
 		'service_item_hsn_id',
 		'service_item_coa_id',
-		'service_item_subgl_id'
+		'service_item_subgl_id',
+		'service_item_category_id',
 		'e_invoice_uom_id',
 		'description',
 		'qty',
@@ -121,4 +122,21 @@ class HondaServiceInvoiceItem extends Model {
 
 		return $record;
 	}
+
+	public function coaCode() {
+		return $this->belongsTo('Abs\CoaPkg\CoaCode', 'service_item_coa_id', 'id');
+	}
+
+	public function sub_gl() {
+		return $this->belongsTo('Abs\ServiceInvoicePkg\SubLedger', 'service_item_subgl_id', 'id');
+	}
+
+	public function taxCode() {
+		return $this->belongsTo('Abs\TaxPkg\TaxCode', 'service_item_hsn_id', 'id');
+	}
+	 public function serviceItemCategory()
+    {
+        return $this->belongsTo('Abs\ServiceInvoicePkg\ServiceItemCategory', 'service_item_category_id', 'id');
+    }
+
 }
