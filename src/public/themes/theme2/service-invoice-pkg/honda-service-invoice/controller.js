@@ -97,7 +97,7 @@ app.component('hondaServiceInvoiceList', {
         setTimeout(function () {
             var table_scroll;
             table_scroll = $('.page-main-content').height() - 37;
-            dataTable = $('#honda-service-invoice-table').DataTable({
+            dataTable = $('#service-invoice-table').DataTable({
                 "dom": cndn_dom_structure,
                 "language": {
                     // "search": "",
@@ -180,7 +180,7 @@ app.component('hondaServiceInvoiceList', {
         });
 
         function RefreshTable() {
-            $('#honda-service-invoice-table').DataTable().ajax.reload();
+            $('#service-invoice-table').DataTable().ajax.reload();
         }
 
         $('#invoice_number').keyup(function () {
@@ -282,7 +282,7 @@ app.component('hondaServiceInvoiceList', {
 
         $(".search_clear").on("click", function () {
             $('#search').val('');
-            $('#honda-service-invoice-table').DataTable().search('').draw();
+            $('#service-invoice-table').DataTable().search('').draw();
         });
 
         $("#search").on('keyup', function () {
@@ -450,7 +450,7 @@ app.component('hondaServiceInvoiceList', {
                 $('#pace').addClass('pace-inactive');
                 if (response.data.success == true) {
                     custom_noty('success', response.data.message);
-                    $('#honda-service-invoice-table').DataTable().ajax.reload();
+                    $('#service-invoice-table').DataTable().ajax.reload();
                     $scope.$apply();
                 } else {
                     custom_noty('error', response.data.errors);
@@ -486,7 +486,7 @@ app.component('hondaServiceInvoiceList', {
                 $('#pace').addClass('pace-inactive');
                 if (response.data.success == true) {
                     custom_noty('success', response.data.message);
-                    $('#service-invoice-table').DataTable().ajax.reload();
+                    $('#honda-service-invoice-table').DataTable().ajax.reload();
                     $scope.$apply();
                 } else {
                     custom_noty('error', response.data.errors);
@@ -616,76 +616,10 @@ app.component('hondaServiceInvoiceForm', {
                     $("#hid_document_date").val(val);
                 }, 1000);
                 self.service_invoice.is_reverse_charge_applicable = 0;
-                self.service_invoice.is_service = 0;
+
             }
             $rootScope.loading = false;
         });
-/* Bootstrap File Input */
-        $(".bootstrap-file-input").fileinput({
-            uploadUrl: "/site/test-upload",
-            theme: 'fas',
-            overwriteInitial: true,
-            maxFileSize: 5000,
-            showUpload: false,
-            browseOnZoneClick: true,
-            removeFromPreviewOnError: true,
-            initialPreviewShowDelete: true,
-            deleteUrl: '',
-            showCaption: false,
-            showCancel: false,
-            showBrowse: false,
-            showRemove: false,
-            preferIconicPreview: true,
-            previewFileIconSettings: { // configure your icon file extensions
-                'doc': '<i class="fas fa-file-word text-primary"></i>',
-                'xls': '<i class="fas fa-file-excel text-success"></i>',
-                'ppt': '<i class="fas fa-file-powerpoint text-danger"></i>',
-                'pdf': '<i class="fas fa-file-pdf text-danger"></i>',
-                'zip': '<i class="fas fa-file-archive text-muted"></i>',
-                'htm': '<i class="fas fa-file-code text-muted"></i>',
-                'txt': '<i class="fas fa-file-alt text-muted"></i>',
-                'mov': '<i class="fas fa-file-video text-warning"></i>',
-                'mp3': '<i class="fas fa-file-audio text-warning"></i>',
-                // note for these file types below no extension determination logic 
-                // has been configured (the keys itself will be used as extensions)
-                'jpg': '<i class="fas fa-file-image text-info"></i>',
-                'svg': '<i class="fas fa-file-image text-info"></i>', 
-                'gif': '<i class="fas fa-file-image text-info"></i>', 
-                'png': '<i class="fas fa-file-image text-info"></i>'    
-            },
-            previewFileExtSettings: { // configure the logic for determining icon file extensions
-                'doc': function(ext) {
-                    return ext.match(/(doc|docx)$/i);
-                },
-                'xls': function(ext) {
-                    return ext.match(/(xls|xlsx)$/i);
-                },
-                'ppt': function(ext) {
-                    return ext.match(/(ppt|pptx)$/i);
-                },
-                'zip': function(ext) {
-                    return ext.match(/(zip|rar|tar|gzip|gz|7z)$/i);
-                },
-                'htm': function(ext) {
-                    return ext.match(/(htm|html)$/i);
-                },
-                'txt': function(ext) {
-                    return ext.match(/(txt|ini|csv|java|php|js|css)$/i);
-                },
-                'mov': function(ext) {
-                    return ext.match(/(avi|mpg|mkv|mov|mp4|3gp|webm|wmv)$/i);
-                },
-                'mp3': function(ext) {
-                    return ext.match(/(mp3|wav)$/i);
-                }
-            },
-            slugCallback: function(filename) {
-                return filename.replace('(', '_').replace(']', '_');
-            }
-        });
-$('#bt_attachments').on('click', () => {
-            $('.fileinput-remove').trigger('click')
-        })
 
         //FOR FILTER
         if (self.e_invoice_only && self.without_e_invoice_only) {
@@ -709,19 +643,6 @@ $('#bt_attachments').on('click', () => {
                 { id: '', name: 'Selcet E-Invoice' },
             ];
         }
-        // setTimeout(function() {
-        //     $scope.onSelectedEInvoice = function(val) {
-        //         console.log(val);
-        //         var e_invoice_selection = val;
-        //         if (e_invoice_selection) {
-        //             console.log('if');
-        //             self.e_invoice_selection = e_invoice_selection;
-        //         } else {
-        //             console.log('else');
-        //             self.e_invoice_selection = 1;
-        //         }
-        //     }
-        // }, 1500);
 
         /* Tab Funtion */
         $('.btn-nxt').on("click", function () {
@@ -740,13 +661,6 @@ $('#bt_attachments').on('click', () => {
             }
         });
 
-        // $(document).bind('click', function(event) {
-        //     $mdSelect.hide();// });
-        // $window.addEventListener('click', function(e) {
-        //     $mdSelect.hide();// })
-        /* Image Uploadify Funtion */
-        // $("input[name='proposal_attachments[]']").imageuploadify();
-        // console.log(self.config_values);
         $('.image_uploadify').imageuploadify();
 
         var min_offset = '';
@@ -879,6 +793,7 @@ $('#bt_attachments').on('click', () => {
             if (self.service_invoice.customer || self.service_invoice.customer != null) {
                  // var res = $rootScope.getCustomer(self.service_invoice.customer).then(function(res) {
                 var res = $rootScope.getHondaCustomerAddress(self.service_invoice.customer).then(function (res) {
+                    console.log(res);
                     if (!res.data.success) {
                         $('#pace').css("display", "none");
                         $('#pace').addClass('pace-inactive');
@@ -887,18 +802,8 @@ $('#bt_attachments').on('click', () => {
                     }
                     $('#pace').addClass('pace-inactive');
                     $('#pace').css("display", "none");
+                    console.log(res.data);
                     self.customer = res.data.customer;
-
-                    if( self.customer.pan_number == null || self.customer.pan_number == '' || self.customer.pan_number == '-') {
-                        custom_noty('error', 'PAN Number is mandatory.Kindly contact MDM Team');
-                        custom_noty('error', 'Not Allow To Add Invoives!');
-                        $('#submit').hide();
-                        $('.add_item_btn').hide(); 
-                    } else {
-                        $('#submit').show();
-                        $('.add_item_btn').show(); 
-                    }
-
                     self.service_invoice.customer.id = res.data.customer.id;
                     if (res.data.customer_address.length > 1) {
                         self.multiple_address = true;
@@ -913,11 +818,12 @@ $('#bt_attachments').on('click', () => {
                         // self.customer = res.data.customer;
                         // self.service_invoice.customer.id = res.data.customer.id;
                         self.customer_address = res.data.customer_address[0];
+                        console.log(self.customer + 'single');
                         if (res.data.customer_address[0].gst_number) {
                             setTimeout(function () {
                                 $scope.checkCustomerGSTIN(res.data.customer_address[0].gst_number, self.customer.name);
                             }, 1000);
-                        } 
+                        }
                     }
                 });
             } else {
@@ -974,7 +880,6 @@ $('#bt_attachments').on('click', () => {
                         $('#pace').addClass('pace-inactive');
                         console.log(response);
                         if (!response.data.success) {
-                            // showErrorNoty(response);
                             custom_noty('error', response.data.error);
                             return;
                         } else {
@@ -982,6 +887,8 @@ $('#bt_attachments').on('click', () => {
 
                                 var trade_name = response.data.trade_name.toLowerCase();
                                 var legal_name = response.data.legal_name.toLowerCase();
+                                console.log("trade_name = " + trade_name);
+                                console.log("legal_name = " + legal_name);
                                 if (customer_name === legal_name) {
                                     $noty = new Noty({
                                         type: 'success',
@@ -1018,7 +925,7 @@ $('#bt_attachments').on('click', () => {
                                         layout: 'topRight',
                                         text: 'GSTIN Registred Legal Name: ' + response.data.legal_name + ', and  GSTIN Registred Trade Name: ' + response.data.trade_name,
                                         animation: {
-                                            speed: 12000 // unavailable - no need
+                                            speed: 1000 // unavailable - no need
                                         },
                                     }).show();
                                     setTimeout(function () {
@@ -1026,8 +933,8 @@ $('#bt_attachments').on('click', () => {
                                     }, 15000);
                                     custom_noty('error', 'Customer Name Not Matched!');
                                     custom_noty('error', 'Not Allow To Add Invoives!');
-                                    $('#submit').show();
-                                    $('.add_item_btn').show();
+                                    $('#submit').hide();
+                                    $('.add_item_btn').hide();
 
                                     if(response.data.gst_status && response.data.gst_status != 'ACT'){
                                         custom_noty('error', 'In Active GSTIN!');
@@ -1049,15 +956,17 @@ $('#bt_attachments').on('click', () => {
             }
         }
 
-        self.searchHondaVendor = $rootScope.searchHondaVendor;
+        self.searchVendor = $rootScope.searchVendor;
 
         $scope.vendorSelected = function () {
+            console.log('test');
             $('#pace').css("display", "block");
             $('#pace').addClass('pace-active');
             console.log(self.service_invoice.customer);
             if (self.service_invoice.customer || self.service_invoice.customer != null) {
                 // var res = $rootScope.getCustomer(self.service_invoice.customer).then(function(res) {
-                var res = $rootScope.getHondaVendorAddress(self.service_invoice.customer).then(function (res) {
+                var res = $rootScope.getVendorAddress(self.service_invoice.customer).then(function (res) {
+                    console.log(res);
                     if (!res.data.success) {
                         $('#pace').css("display", "none");
                         $('#pace').addClass('pace-inactive');
@@ -1066,16 +975,8 @@ $('#bt_attachments').on('click', () => {
                     }
                     $('#pace').addClass('pace-inactive');
                     $('#pace').css("display", "none");
+                    console.log(res.data);
                     self.customer = res.data.vendor;
-                    if( self.customer.pan_number == null || self.customer.pan_number == '' || self.customer.pan_number == '-') {
-                        custom_noty('error', 'PAN Number is mandatory.Kindly contact MDM Team');
-                        custom_noty('error', 'Not Allow To Add Invoives!');
-                        $('#submit').hide();
-                        $('.add_item_btn').hide(); 
-                    } else {
-                        $('#submit').show();
-                        $('.add_item_btn').show(); 
-                    }
                     self.service_invoice.customer.id = res.data.vendor.id;
                     if (res.data.vendor_address.length > 1) {
                         self.multiple_address = true;
@@ -1107,23 +1008,18 @@ $('#bt_attachments').on('click', () => {
             }
         }
 
-       
-
-        console.log(self.service_invoice);
-     
-
         //SEARCH SERVICE ITEM
-        self.searchServiceItem = function (query, $to_account_type_id) {
+        self.searchServiceItemHsnSac = function (query, $to_account_type_id) {
             if (query) {
                 return new Promise(function (resolve, reject) {
                     $http
                         .post(
-                            search_service_item_url, {
+                            search_service_item_hsn_sac_url, {
                             key: query,
                             type_id: self.type_id,
-                            category_id: $('#category_id').val(),
-                            sub_category_id: $('#sub_category_id').val(),
-                            is_service: $("input[name='is_service']:checked").val(),
+                            // category_id: $('#category_id').val(),
+                            // sub_category_id: $('#sub_category_id').val(),
+                            // is_service: $("input[name='is_service']:checked").val(),
                         }
                         )
                         .then(function (response) {
@@ -1156,13 +1052,15 @@ $('#bt_attachments').on('click', () => {
 
         //GET SERVICE ITEM DETAILS
         self.getServiceItemDetails = function ($to_account_type_id) {
-            if (!self.service_item) {
+            if (! ($("#service_item_hsn").val()) ) {
                 return
             }
+            
             if (self.enable_service_item_md_change) {
+                tax_id = $("#service_item_hsn").val();
                 $http.post(
-                    get_service_item_info_url, {
-                    service_item_id: self.service_item.id,
+                    get_honda_service_item_info_url, {
+                    hsn_sac_id: tax_id,
                     btn_action: 'add',
                     branch_id: self.service_invoice.branch.id,
                     customer_id: self.service_invoice.customer.id,
@@ -1171,15 +1069,45 @@ $('#bt_attachments').on('click', () => {
                     gst_number: self.customer.gst_number,
                 }
                 ).then(function (response) {
-                    console.log(response);
                     if (response.data.success) {
-                        self.service_item_detail = response.data.service_item;
-                        // console.log(response.data.service_item);
+                        self.service_item_detail.tax_code.taxes = response.data.taxes;
+                        self.coa_codes = response.data.coa_codes;
                         //AMOUNT CALCULATION
                         $scope.totalAmountCalc();
                     } else {
                         custom_noty('error', response.data.error);
                     }
+                });
+            }
+        }
+
+          //SEARCH COA CODE
+        self.searchCoaCodeFilter = function(query) {
+            if (query) {
+                return new Promise(function(resolve, reject) {
+                    $http
+                        .post(
+                            search_coa_code_url, {
+                                key: query,
+                            }
+                        )
+                        .then(function(response) {
+                            resolve(response.data);
+                        });
+                    //reject(response);
+                });
+            } else {
+                return [];
+            }
+        }
+
+        $scope.getSubGL = function(coa_code) {
+alert(coa_code);
+            if (coa_code) {
+                $http.get(
+                    get_sub_ledger_url + '/' + coa_code
+                ).then(function (response) {
+                    self.sub_ledger_list = response.data.sub_ledger_list;
                 });
             }
         }
@@ -1190,6 +1118,32 @@ $('#bt_attachments').on('click', () => {
 
 
         //GET SBU BY BRANCH
+        $scope.getSbuByBranch = function (branch_id) {
+            self.extras.sbu_list = [];
+            if (branch_id) {
+                $.ajax({
+                    url: get_sbu_url + '/' + branch_id,
+                    method: "GET",
+                })
+                    .done(function (res) {
+                        if (!res.success) {
+                            new Noty({
+                                type: 'error',
+                                layout: 'topRight',
+                                text: res.error
+                            }).show();
+                        } else {
+                            self.extras.sbu_list = res.sbu_list;
+                            $scope.$apply()
+                        }
+                    })
+                    .fail(function (xhr) {
+                        console.log(xhr);
+                    });
+            }
+        }
+
+         //GET SBU BY BRANCH
         $scope.getSbuByBranch = function (branch_id) {
             self.extras.sbu_list = [];
             if (branch_id) {
@@ -1264,6 +1218,7 @@ $('#bt_attachments').on('click', () => {
             self.sub_total = '';
             self.total = '';
             self.service_item = '';
+            self.service_item_hsn = '';
             self.service_item_detail = '';
             self.e_invoice_uom = {'id' : 1};
             // console.log(' == add btn ==');
@@ -1278,7 +1233,7 @@ $('#bt_attachments').on('click', () => {
                 self.action_title = 'Update';
                 self.update_item_key = index;
                 $http.post(
-                    get_service_item_info_url, {
+                    get_honda_service_item_info_url, {
                     service_item_id: service_invoice_item_id,
                     field_groups: self.service_invoice.service_invoice_items[index].field_groups,
                     btn_action: 'edit',
@@ -1336,7 +1291,6 @@ $('#bt_attachments').on('click', () => {
                         var tcs_percentage = self.service_item_detail.tcs_percentage;
                     }
                 }
-                console.log(tcs_percentage);
                 return tcs_percentage;
             }
         }
@@ -1658,6 +1612,7 @@ $('#bt_attachments').on('click', () => {
                             }
                             custom_noty('error', errors);
                         } else {
+                            console.log(res.service_item);
                             $('#modal-cn-addnew').modal('toggle');
                             if (!self.service_invoice.service_invoice_items) {
                                 self.service_invoice.service_invoice_items = [];
@@ -1693,8 +1648,7 @@ $('#bt_attachments').on('click', () => {
                     $http
                         .post(
                             honda_search_invoice_tcs_url, {
-                                key: query,
-                                pan_number:self.customer_address?.pan_number,
+                            key: query,
                         }
                         )
                         .then(function (response) {
@@ -1741,7 +1695,7 @@ $('#bt_attachments').on('click', () => {
                                     hid_document_date: $("#doc_date").val(),
                                     service_item_id: '615',
                                     e_invoice_uom_id: '1',
-                                    description: self.service_invoice.invoice_number.number,
+                                    description: '4',
                                     qty: '1',
                                     amount: self.service_invoice.amount,
                                     action: 'add',
@@ -1764,8 +1718,10 @@ $('#bt_attachments').on('click', () => {
                                         custom_noty('error', errors);
                                     } else {
                                         console.log(res.service_item);
-
-                                        self.service_invoice.service_invoice_items = [];
+                                        $('#modal-cn-addnew').modal('toggle');
+                                        if (!self.service_invoice.service_invoice_items) {
+                                            self.service_invoice.service_invoice_items = [];
+                                        }
                                         if (res.add) {
                                             self.service_invoice.service_invoice_items.push(res.service_item);
                                         } else {
@@ -1773,22 +1729,17 @@ $('#bt_attachments').on('click', () => {
                                             self.service_invoice.service_invoice_items[self.update_item_key] = res.service_item;
                                             self.service_invoice.service_invoice_items[self.update_item_key].id = edited_service_invoice_item_primary_id;
                                         }
+
+                                        $scope.$apply()
                                         //SERVICE ITEMS TCS CALC
                                         $scope.serviceInvoiceItemTcsCal();
                                         //SERVICE INVOICE ITEMS TABLE CALC
                                         $scope.serviceInvoiceItemCalc();
-                                        self.tcs_amt = self.service_invoice.service_invoice_items[0]['TCS'].amount;
-                                        self.service_invoice.table_total = parseFloat(self.tcs_amt).toFixed(2);
-                                        self.service_invoice.table_sub_total = parseFloat(self.tcs_amt).toFixed(2);
-                                        self.service_invoice.final_amount = Math.round(self.service_invoice.table_total).toFixed(2);
-                                        self.service_invoice.round_off_amount = parseFloat(self.service_invoice.final_amount - self.service_invoice.table_total ).toFixed(2);
-                                        $("#total_tcs_amt").html(self.service_invoice.final_amount);
-                                        $scope.$apply()
-
+                                        
                                     }
                             })
 
-                            }, 1000);
+                            }, 3000);
                     //reject(response);
                 });
         }
@@ -1959,6 +1910,57 @@ app.component('hondaServiceInvoiceView', {
             }
             $rootScope.loading = false;
         });
+
+        $scope.vendorSelected = function () {
+            // console.log('vendor');
+            $('#pace').css("display", "block");
+            $('#pace').addClass('pace-active');
+            console.log(self.service_invoice.customer);
+            if (self.service_invoice.customer || self.service_invoice.customer != null) {
+                // var res = $rootScope.getCustomer(self.service_invoice.customer).then(function(res) {
+                var res = $rootScope.getVendorAddress(self.service_invoice.customer).then(function (res) {
+                    console.log(res);
+                    if (!res.data.success) {
+                        $('#pace').css("display", "none");
+                        $('#pace').addClass('pace-inactive');
+                        custom_noty('error', res.data.error);
+                        return;
+                    }
+                    $('#pace').addClass('pace-inactive');
+                    $('#pace').css("display", "none");
+                    console.log(res.data);
+                    self.customer = res.data.vendor;
+                    self.service_invoice.customer.id = res.data.vendor.id;
+                    if (res.data.vendor_address.length > 1) {
+                        self.multiple_address = true;
+                        self.single_address = false;
+                        self.customer_addresses = res.data.vendor_address;
+                        console.log(self.vendor_address);
+                    } else {
+                        self.multiple_address = false;
+                        self.single_address = true;
+                        self.customer.state_id = res.data.vendor_address[0].state_id;
+                        self.customer.gst_number = res.data.vendor_address[0].gst_number;
+
+                        self.customer_address = res.data.vendor_address[0];
+                        console.log(self.customer + 'single');
+                        if (res.data.vendor_address[0].gst_number) {
+                            setTimeout(function () {
+                                $scope.checkCustomerGSTIN(res.data.vendor_address[0].gst_number, self.vendor.name);
+                            }, 1000);
+                        }
+                    }
+                });
+            } else {
+                $('#pace').css("display", "none");
+                $('#pace').addClass('pace-inactive');
+                self.customer = {};
+                self.customer_address = {};
+                self.customer_addresses = {};
+                self.service_invoice.service_invoice_items = [];
+            } 
+        }
+
         $scope.cancelIRN = function () {
             $('#cancel_irn').button('loading');
             $id = $("#service_invoice_id").val();
@@ -2025,7 +2027,7 @@ app.component('hondaServiceInvoiceView', {
                 self.action_title = 'View';
                 self.update_item_key = index;
                 $http.post(
-                    get_service_item_info_url, {
+                    get_honda_service_item_info_url, {
                     service_item_id: service_invoice_item_id,
                     field_groups: self.service_invoice.service_invoice_items[index].field_groups,
                     btn_action: 'view',

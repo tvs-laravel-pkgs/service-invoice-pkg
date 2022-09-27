@@ -83,6 +83,7 @@
     var search_field_url = "{{url('/service-invoice-pkg/field/search')}}";
     var get_customer_info_url = "{{url('/service-invoice-pkg/service-invoice/get-customer-details')}}";
     var search_service_item_url = "{{url('/service-invoice-pkg/service-invoice/service-item/search')}}";
+    var search_service_item_hsn_sac_url = "{{url('/service-invoice-pkg/honda-service-invoice/searchhsn')}}";
     var get_honda_service_item_info_url = "{{url('/service-invoice-pkg/honda-service-invoice/get-service-item-details')}}";
     var get_honda_service_invoice_filter_url = "{{route('getHondaServiceInvoiceFilter')}}";
     //SERVICE-INVOICE-APPROVALS
@@ -102,7 +103,7 @@
     var honda_approval_type_validation_url = "{{route('hondaApprovalTypeValid')}}";
     var honda_search_invoice_tcs_url = "{{route('searchHondaSaleInvoiceTCS')}}";
     var honda_fetch_tcs_invoice_details_url = "{{route('hondaFetchTcsInvoiceDetails')}}";
-
-    
+    var honda_service_invoice_search_vendor_url = "{{url('/service-invoice-pkg/honda-service-invoice/searchVendor')}}";
+    var get_honda_service_item_sub_gl = "{{url('/service-invoice-pkg/honda-service-invoice/getSubgl')}}";
 
 </script>

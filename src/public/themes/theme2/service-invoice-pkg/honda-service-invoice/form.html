@@ -86,22 +86,6 @@
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
-                                            <li>
-                                                <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Category <span class="mandatory">*</span></label>
-                                                    <div class="table-form-list-control">
-                                                        <md-select class="type-sm" ng-model="$ctrl.service_invoice.category_id" placeholder="Select Category" md-on-close="clearSearchCategory()" data-md-container-class="selectdemoSelectHeader">
-                                                            <md-select-header class="demo-select-header">
-                                                                <input ng-model="searchCategory" type="search" placeholder="Search for a category.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
-                                                            </md-select-header>
-                                                            <md-optgroup label="category">
-                                                                <md-option ng-value="category.id" ng-repeat="category in $ctrl.extras.category_list | filter:searchCategory" ng-selected="category.name == $ctrl.service_invoice.category_name" >{{category.name}}</md-option>
-                                                            </md-optgroup>
-                                                        </md-select>
-                                                        <input type="hidden" name="category_id" id="category_id" value="{{$ctrl.service_invoice.category_id}}" class="required">
-                                                    </div><!-- Table Form List Control -->
-                                                </div><!-- Table Form List Wrap -->
-                                            </li>
                                             <!-- <li>
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Sub Category <span class="mandatory">*</span></label>
@@ -118,44 +102,6 @@
                                                     </div>
                                                 </div>
                                             </li> -->
-                                            <li>
-                                                <div class="table-form-list-wrap"  ng-show="$ctrl.type_id != 1063">
-                                                    <label class="table-form-list-label">Is Service </label> 
-                                                    <div class="table-form-list-control is_service_error">
-                                                        <div class="common-radio-button type-4">
-                                                            <input type="radio" id="is_yes" name="is_service" ng-value="1" value="1" ng-model="$ctrl.service_invoice.is_service" ng-checked="$ctrl.service_invoice.is_service" class="is_service">
-                                                            <label for="is_yes">
-                                                                HSN
-                                                            </label>
-                                                            <input type="radio" id="is_no" name="is_service" ng-value="0" value="0" ng-model="$ctrl.service_invoice.is_service" ng-checked="$ctrl.service_invoice.is_service" class="is_service">
-                                                            <label for="is_no">
-                                                                SAC
-                                                            </label>
-                                                          <!--   <input type="radio" id="is_nontax" name="is_service" ng-value="2" value="2" ng-model="$ctrl.service_invoice.is_service" ng-checked="$ctrl.service_invoice.is_service" class="is_service">
-                                                            <label for="is_nontax">
-                                                                Non-Taxable
-                                                            </label> -->
-                                                        </div>
-                                                    </div><!-- Table Form List Control -->
-                                                </div><!-- Table Form List Wrap -->
-                                            </li>
-                                            <li>
-                                                <div class="table-form-list-wrap"  ng-show="$ctrl.type_id != 1063">
-                                                    <label class="table-form-list-label">Reverse Charge Applicability </label>
-                                                    <div class="table-form-list-control reverse_charge_error" style="float: left!important;">
-                                                        <div class="common-radio-button type-4">
-                                                            <input type="radio" id="yes" name="is_reverse_charge_applicable" ng-value="1" value="1" ng-model="$ctrl.service_invoice.is_reverse_charge_applicable" ng-checked="$ctrl.service_invoice.is_reverse_charge_applicable" class="is_reverse_charge">
-                                                            <label for="yes">
-                                                                Yes
-                                                            </label>
-                                                            <input type="radio" id="no" name="is_reverse_charge_applicable" ng-value="0" value="0" ng-model="$ctrl.service_invoice.is_reverse_charge_applicable" ng-checked="!$ctrl.service_invoice.is_reverse_charge_applicable" class="is_reverse_charge">
-                                                            <label for="no">
-                                                                No
-                                                            </label>
-                                                        </div>
-                                                    </div><!-- Table Form List Control -->
-                                                </div><!-- Table Form List Wrap -->
-                                            </li>
                                             <li>
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">PO Reference # </label>
@@ -402,8 +348,7 @@
                                         <thead>
                                             <tr>
                                                 <th class="action">Action</th>
-                                                <th>Item Code</th>
-                                                <th>Item Name</th>
+                                                <th>Item Description</th>
                                                 <th>Reference</th>
                                                 <th>UOM</th>
                                                 <th class="text-right">Quantity</th>
@@ -440,8 +385,7 @@
                                                         <img class="img-responsive" src="./public/theme/img/table/cndn/delete.svg" alt="Delete" />
                                                     </a>
                                                 </td>
-                                                <td>{{service_invoice_item.code}}</td>
-                                                <td>{{service_invoice_item.name}}</td>
+                                                <td>{{service_invoice_item.desc}}</td>
                                                 <td>{{service_invoice_item.description}}</td>
                                                 <td>{{service_invoice_item.e_invoice_uom.code}}</td>
                                                 <td class="text-right">{{$ctrl.parseInt(service_invoice_item.qty)}}</td>
@@ -586,44 +530,95 @@
                             <ul class="table-form-list">
                                 <li>
                                     <div class="table-form-list-wrap">
-                                        <label class="table-form-list-label">Item Code <span class="mandatory">*</span></label>
+                                        <label class="table-form-list-label">Description <span class="mandatory">*</span></label>
                                         <div class="table-form-list-control">
-                                            <md-autocomplete class="type-sm type-2" md-items="option in $ctrl.searchServiceItem($ctrl.serviceItemSearchText,($ctrl.type_id == 1063 ? '1440' : $ctrl.service_invoice.to_account_type_id) )" md-selected-item="$ctrl.service_item" md-search-text="$ctrl.serviceItemSearchText" md-item-text="option.code" md-min-length="3" placeholder="Item code / name" md-selected-item-change="$ctrl.getServiceItemDetails($ctrl.service_invoice.to_account_type_id)" md-search-text-change="$ctrl.serviceItemChanged()" md-no-cache="true">
-                                                <md-item-template>
-                                                    <span>
-                                                        {{option.name}} - {{option.code}}
-                                                    </span>
-                                                </md-item-template>
-                                                <md-not-found>
-                                                    No Items matching "{{$ctrl.serviceItemSearchText}}" were found.
-                                                </md-not-found>
-                                            </md-autocomplete>
-                                            <input type="hidden" id="service_item_id" name="service_item_id" value="{{$ctrl.service_item.id}}" class="required">
+                                            <input type="text" id="service_item_desc" name="service_item_desc" value="{{$ctrl.service_item.desc}}" class="form-control type-sm required">
                                         </div><!-- Table Form List Control -->
                                     </div><!-- Table Form List Wrap -->
                                 </li>
                                 <li>
-                                    <div class="table-form-view-wrap">
-                                        <ul class="table-form-view-list">
-                                            <li class="list-12 border-bottom">
-                                                <span class="table-form-view-label">Item Name</span>
-                                                <span class="table-form-view-value">{{$ctrl.service_item_detail.name}}</span>
-                                            </li>
-                                            <li class="list-6 border-right">
-                                                <span class="table-form-view-label">COA Code</span>
-                                                <span class="table-form-view-value">{{$ctrl.service_item_detail.coa_code.code}}</span>
-                                            </li>
-                                            <li class="list-6 border-right">
-                                                <span class="table-form-view-label">GL-Sub</span>
-                                                <span class="table-form-view-value">{{$ctrl.service_item_detail.sub_ledger.ax_subgl}}</span>
-                                            </li>
-                                            <li class="list-6">
-                                                <span class="table-form-view-label">HSN/SAC Code</span>
-                                                <span class="table-form-view-value">{{$ctrl.service_item_detail.tax_code.code}}</span>
-                                            </li>
-                                        </ul>
-                                    </div>
+                                    <div class="table-form-list-wrap">
+                                        <label class="table-form-list-label">HSN/SAC Code<span class="mandatory">*</span></label>
+                                           <div class="table-form-list-control">
+                                            <md-autocomplete class="type-sm type-2" md-items="option in $ctrl.searchServiceItemHsnSac($ctrl.serviceItemhsnSearchText,($ctrl.type_id == 1063 ? '1440' : $ctrl.service_invoice.to_account_type_id) )" md-selected-item="$ctrl.service_item_detail.tax_code" md-search-text="$ctrl.serviceItemhsnSearchText" md-item-text="option.code" md-min-length="3" placeholder="HSN/SAC code" md-selected-item-change="$ctrl.getServiceItemDetails($ctrl.service_invoice.to_account_type_id)" md-search-text-change="$ctrl.serviceItemChanged()" md-no-cache="true">
+                                                <md-item-template>
+                                                    <span>
+                                                        {{option.code}}
+                                                    </span>
+                                                </md-item-template>
+                                                <md-not-found>
+                                                    No Items matching "{{$ctrl.serviceItemhsnSearchText}}" were found.
+                                                </md-not-found>
+                                            </md-autocomplete>
+                                            <input type="hidden" id="service_item_hsn" name="service_item_hsn" value="{{$ctrl.service_item_detail.tax_code.id}}" class="required">
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
                                 </li>
+                                  <li>
+                                    <div class="table-form-list-wrap">
+                                        <label class="table-form-list-label">Is Service </label> 
+                                        <div class="table-form-list-control is_service_error">
+                                                <input type="text" id="is_service" name="is_service" ng-model="$ctrl.service_invoice.is_service" value="{{$ctrl.service_item_detail.tax_code.name}}" class="form-control type-sm" readonly>
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                </li>
+                                 <li>
+                                    <div class="table-form-list-wrap">
+                                        <label class="table-form-list-label">Category <span class="mandatory">*</span></label>
+                                        <div class="table-form-list-control">
+                                            <md-select class="type-sm" ng-model="$ctrl.service_invoice.category_id" placeholder="Select Category" md-on-close="clearSearchCategory()" data-md-container-class="selectdemoSelectHeader">
+                                                <md-select-header class="demo-select-header">
+                                                    <input ng-model="searchCategory" type="search" placeholder="Search for a category.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                                </md-select-header>
+                                                <md-optgroup label="category">
+                                                    <md-option ng-value="category.id" ng-repeat="category in $ctrl.extras.category_list | filter:searchCategory" ng-selected="category.name == $ctrl.service_invoice.category_name" >{{category.name}}</md-option>
+                                                </md-optgroup>
+                                            </md-select>
+                                            <input type="hidden" name="category_id" id="category_id" value="{{$ctrl.service_invoice.category_id}}" class="required">
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                </li>
+                                <li>
+                                    <div class="table-form-list-wrap">
+                                        <label class="table-form-list-label">COA Code<span class="mandatory">*</span></label>
+                                        <div class="table-form-list-control">
+                                             <md-autocomplete class="type-sm type-2" md-items="option in $ctrl.searchCoaCodeFilter($ctrl.serviceItemCoaText)" md-selected-item="$ctrl.service_item_detail.cao_code" md-search-text="$ctrl.serviceItemCoaText" md-item-text="option.code" md-min-length="3" placeholder="COA Code" md-selected-item-change="$ctrl.getSubGL(option.code)" md-no-cache="true">
+                                                <md-item-template>
+                                                    <span>
+                                                        {{option.code}}
+                                                    </span>
+                                                </md-item-template>
+                                                <md-not-found>
+                                                    No Items matching "{{$ctrl.serviceItemCoaText}}" were found.
+                                                </md-not-found>
+                                            </md-autocomplete>
+                                            <input type="hidden" id="service_item_coa" name="service_item_coa" value="{{$ctrl.service_item_detail.cao_code.id}}" class="required">
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                </li>
+                                <li>
+                                    <div class="table-form-list-wrap">
+                                        <label class="table-form-list-label">GL-Sub</label>
+                                        <div class="table-form-list-control">
+                                             <md-autocomplete class="type-sm type-2" md-items="option in $ctrl.sub_ledger_list($ctrl.serviceItemSubglText)" md-selected-item="$ctrl.service_item_detail.sub_gl" md-search-text="$ctrl.serviceItemSubglText" md-item-text="option.code" md-min-length="3" placeholder="SubGL Code" md-no-cache="true">
+                                                <md-item-template>
+                                                    <span>
+                                                        {{option.code}}
+                                                    </span>
+                                                </md-item-template>
+                                                <md-not-found>
+                                                    No Items matching "{{$ctrl.serviceItemSubglText}}" were found.
+                                                </md-not-found>
+                                            </md-autocomplete>
+                                            <input type="hidden" id="service_item_subgl" name="service_item_subgl" value="{{$ctrl.service_item_detail.sub_gl.ax_subgl}}">
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                </li>
+                            </ul><!-- Table Form List -->
+                        </div><!-- Column -->
+                        <div class="col-md-6">
+                            <ul class="table-form-list">
+
                                 <li>
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">UOM <span class="mandatory">*</span></label>
@@ -640,10 +635,6 @@
                                         </div><!-- Table Form List Control -->
                                     </div><!-- Table Form List Wrap -->
                                 </li>
-                            </ul><!-- Table Form List -->
-                        </div><!-- Column -->
-                        <div class="col-md-6">
-                            <ul class="table-form-list">
                                 <li>
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">Reference <span class="mandatory">*</span></label>
@@ -659,7 +650,7 @@
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">Quantity <span class="mandatory">*</span></label>
                                         <div class="table-form-list-control">
-                                            <input name="qty" ng-model="$ctrl.qty" type="text" class="form-control type-sm required" placeholder="Enter Quantity" ng-change="totalAmountCalc()" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');" />
+                                            <input name="qty" ng-model="$ctrl.qty" value = '1' type="text" class="form-control type-sm required" placeholder="Enter Quantity" ng-change="totalAmountCalc()" oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');" />
                                         </div>
                                     </div>
                                 </li>
