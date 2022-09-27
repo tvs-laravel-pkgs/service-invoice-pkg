@@ -655,6 +655,8 @@ class HondaServiceInvoiceController extends Controller
         $service_item->sac_code_id = $service_item->taxCode->id;
         if($request->service_item_subgl)
              $service_item->sub_gl = SubLedger::find($request->service_item_subgl);
+         else
+             $service_item->sub_gl = "";
 
         if (!$service_item) {
             return response()->json(['success' => false, 'error' => 'Service Item not found']);
@@ -779,12 +781,12 @@ class HondaServiceInvoiceController extends Controller
                 'branch_id' => [
                     'required:true',
                 ],
-                // 'sbu_id' => [
-                //     'required:true',
-                // ],
-                // 'category_id' => [
-                //     'required:true',
-                // ],
+                'sbu_id' => [
+                    'required:true',
+                ],
+                'category_id' => [
+                    'required:true',
+                ],
                 'address_id' => [
                     'required:true',
                 ],

@@ -8,7 +8,9 @@ class HondaServiceInvoiceItem extends Model {
 	protected $table = 'honda_service_invoice_items';
 	protected $fillable = [
 		'service_invoice_id',
-		'service_item_id',
+		'service_item_hsn_id',
+		'service_item_coa_id',
+		'service_item_subgl_id'
 		'e_invoice_uom_id',
 		'description',
 		'qty',
