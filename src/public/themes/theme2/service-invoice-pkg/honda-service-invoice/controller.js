@@ -1162,8 +1162,8 @@ $('#bt_attachments').on('click', () => {
 
           //SEARCH COA CODE
         self.searchCoaCodeFilter = function(query) {
-            $scope.searchSubGl = self.service_item_detail.service_item_subgl = null
-            self.sub_ledger_list = []
+            // $scope.searchSubGl = self.service_item_detail.service_item_subgl = null
+            // self.sub_ledger_list = []
             if (query) {
                 return new Promise(function(resolve, reject) {
                     $http
@@ -1183,7 +1183,7 @@ $('#bt_attachments').on('click', () => {
         }
 
         self.getSubGL = function(coa_code) {
-            $scope.searchSubGl = self.service_item_detail.service_item_subgl = null
+            // $scope.searchSubGl = self.service_item_detail.service_item_subgl = null
             // self.sub_ledger_list = []
             if (coa_code) {
                 $http.get(
@@ -1306,44 +1306,72 @@ $('#bt_attachments').on('click', () => {
             self.e_invoice_uom = {'id' : 1};
             // console.log(' == add btn ==');
             // console.log(self.service_item_detail);
+            $('#service_item_desc').val('')   // Description
+            // Category update
+            if (!self.service_invoice) {
+                self.service_invoice = { 'category_id' : null }   // Category
+            } else {
+                self.service_invoice.category_id = null    // Category
+            }
+            // Category update
         }
         //EDIT SERVICE INVOICE ITEM
-        $scope.editServiceItem = function (service_invoice_item_id, description, qty, rate, index, e_invoice_uom_id) {
-            console.log(service_invoice_item_id, description, qty, rate, index, e_invoice_uom_id);
-            if (service_invoice_item_id) {
-                self.enable_service_item_md_change = false;
-                self.add_service_action = false;
-                self.action_title = 'Update';
-                self.update_item_key = index;
-                $http.post(
-                    get_honda_service_item_info_url, {
-                    service_item_id: service_invoice_item_id,
-                    field_groups: self.service_invoice.service_invoice_items[index].field_groups,
-                    btn_action: 'edit',
-                    branch_id: self.service_invoice.branch.id,
-                    customer_id: self.service_invoice.customer.id,
-                    state_id: self.customer.state_id,
-                    gst_number: self.customer.gst_number,
-                }
-                ).then(function (response) {
-                    console.log(response);
-                    if (response.data.success) {
-                        self.service_item_detail = response.data.service_item;
-                        self.service_item = response.data.service_item;
-                        self.description = description;
-                        self.e_invoice_uom = { 'id': e_invoice_uom_id };
-                        self.qty = parseInt(qty);
-                        self.rate = rate;
-                        //AMOUNT CALCULATION
-                        $scope.totalAmountCalc();
+        // $scope.editServiceItem = function (service_invoice_item_id, description, qty, rate, index, e_invoice_uom_id) {
+        $scope.editServiceItem = async index => {
+            // console.log(service_invoice_item_id, description, qty, rate, index, e_invoice_uom_id);
+            const editServiceInvoiceItem = self.service_invoice.service_invoice_items[index]
+            self.enable_service_item_md_change = false;
+            self.add_service_action = false;
+            self.action_title = 'Update';
+            self.update_item_key = index;
 
-                        //MODAL OPEN
-                        $('#modal-cn-addnew').modal('toggle');
-                    } else {
-                        custom_noty('error', response.data.error);
-                    }
-                });
+            tax_id = editServiceInvoiceItem?.taxCode?.id
+
+            console.log({tax_id})
+            if (tax_id) {
+                await $http.post(
+                    get_honda_service_item_info_url, {
+                        hsn_sac_id: tax_id,
+                        btn_action: 'add',
+                        branch_id: self.service_invoice.branch.id,
+                        customer_id: self.service_invoice.customer.id,
+                        to_account_type_id: self.service_invoice.to_account_type_id,
+                        state_id: self.customer.state_id,
+                        gst_number: self.customer.gst_number,
+                    }).then(function (response) {
+                        if (response.data.success) {
+                            // self.service_item_detail.tax_code.taxes = response.data.taxes;
+                            self.coa_codes = response.data.coa_codes;
+                        } else {
+                            custom_noty('error', response.data.error);
+                        }
+                    });
             }
+
+            // self.service_item.desc = editServiceInvoiceItem?.desc       // Description
+            $timeout(() => {
+                self.service_item_detail = {
+                    'tax_code' : editServiceInvoiceItem?.taxCode,     // HSN/ SAC Codes
+                    'cao_code' : editServiceInvoiceItem?.coa_codes,   // COA CODES
+                    'service_item_subgl' : editServiceInvoiceItem?.sub_gl?.id   // Sub-GL value
+                };
+                // self.service_item = {
+                //     'desc' : editServiceInvoiceItem?.desc   // Description
+                // }
+                self.service_item = {}
+                $('#service_item_desc').val(editServiceInvoiceItem?.desc)   // Description
+                self.e_invoice_uom = { 'id': editServiceInvoiceItem?.e_invoice_uom?.id }    // EInvoice UOM
+                self.description = editServiceInvoiceItem?.description  // Reference
+                self.service_invoice.category_id = editServiceInvoiceItem?.category?.id     // Category
+                self.qty = parseInt(editServiceInvoiceItem?.qty)
+                self.rate = editServiceInvoiceItem?.rate
+
+                //AMOUNT CALCULATION
+                $scope.totalAmountCalc();
+
+                //MODAL OPEN
+                $('#modal-cn-addnew').modal('toggle');
+            }, 300)
         }
 
         //REMOVE SERVICE INVOICE ITEM
