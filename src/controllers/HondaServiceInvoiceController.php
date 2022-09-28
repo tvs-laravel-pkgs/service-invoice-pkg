@@ -51,7 +51,7 @@ use Yajra\Datatables\Datatables;
 use App\Honda\SaleInvoiceDetail;
 use Abs\TaxPkg\TaxCode;
 use Abs\CoaPkg\CoaCode;
-use SubLedger;
+use Abs\ServiceInvoicePkg\SubLedger;
 class HondaServiceInvoiceController extends Controller
 {
 

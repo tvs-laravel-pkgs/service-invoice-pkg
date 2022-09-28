@@ -592,7 +592,7 @@
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">COA Code<span class="mandatory">*</span></label>
                                         <div class="table-form-list-control">
-                                             <md-autocomplete class="type-sm type-2" md-items="option in $ctrl.searchCoaCodeFilter($ctrl.serviceItemCoaText)" md-selected-item="$ctrl.service_item_detail.cao_code" md-search-text="$ctrl.serviceItemCoaText" md-item-text="option.code" md-min-length="3" placeholder="COA Code" md-selected-item-change="$ctrl.getSubGL($ctrl.service_item_detail.cao_code.code)" md-no-cache="true">
+                                             <md-autocomplete class="type-sm type-2" md-items="option in $ctrl.searchCoaCodeFilter($ctrl.serviceItemCoaText)" md-selected-item="$ctrl.service_item_detail.cao_code" md-search-text="$ctrl.serviceItemCoaText" md-item-text="option.code" md-min-length="3" placeholder="COA Code" md-selected-item-change="$ctrl.getSubGL($ctrl.service_item_detail.cao_code.id)" md-no-cache="true">
                                                 <md-item-template>
                                                     <span>
                                                         {{option.code}}
@@ -610,7 +610,18 @@
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">GL-Sub</label>
                                         <div class="table-form-list-control">
-                                             <md-autocomplete class="type-sm type-2" md-items="option in $ctrl.sub_ledger_list" md-selected-item="$ctrl.service_item_detail.sub_gl" md-search-text="$ctrl.serviceItemSubglText" md-item-text="option.code" md-min-length="3" placeholder="SubGL Code" md-no-cache="true">
+                                            <md-select class="type-sm" 
+                                                ng-model="$ctrl.service_item_detail.service_item_subgl" placeholder="Select Sub GL"
+                                                data-md-container-class="selectdemoSelectHeader">
+                                                <md-select-header class="demo-select-header">
+                                                    <input ng-model="searchSubGl" type="search" placeholder="Search for a subgl.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                                </md-select-header>
+                                                <md-optgroup label="sub_ledger_li">
+                                                    <md-option ng-value="sub_ledger_li.id" ng-repeat="sub_ledger_li in $ctrl.sub_ledger_list | filter:searchSubGl">{{sub_ledger_li.code}}</md-option>
+                                                </md-optgroup>
+                                            </md-select>
+                                            <input type="hidden" name="service_item_subgl" id="service_item_subgl" value="{{$ctrl.service_item_detail.service_item_subgl}}">
+                                            <!--<md-autocomplete class="type-sm type-2" md-items="option in $ctrl.sub_ledger_list" md-selected-item="$ctrl.service_item_detail.sub_gl" md-search-text="$ctrl.serviceItemSubglText" md-item-text="option.code" md-min-length="3" placeholder="SubGL Code" md-no-cache="true">
                                                 <md-item-template>
                                                     <span>
                                                         {{option.code}}
@@ -620,9 +631,9 @@
                                                     No Items matching "{{$ctrl.serviceItemSubglText}}" were found.
                                                 </md-not-found>
                                             </md-autocomplete>
-                                            <input type="hidden" id="service_item_subgl" name="service_item_subgl" value="{{$ctrl.service_item_detail.sub_gl.ax_subgl}}">
-                                        </div><!-- Table Form List Control -->
-                                    </div><!-- Table Form List Wrap -->
+                                            <input type="hidden" id="service_item_subgl" name="service_item_subgl" value="{{$ctrl.service_item_detail.sub_gl.id}}">
+                                        </div>--><!-- Table Form List Control -->
+                                    <!--</div>--><!-- Table Form List Wrap -->
                                 </li>
                             </ul><!-- Table Form List -->
                         </div><!-- Column -->

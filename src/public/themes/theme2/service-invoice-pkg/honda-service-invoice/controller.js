@@ -1162,6 +1162,8 @@ $('#bt_attachments').on('click', () => {
 
           //SEARCH COA CODE
         self.searchCoaCodeFilter = function(query) {
+            $scope.searchSubGl = self.service_item_detail.service_item_subgl = null
+            self.sub_ledger_list = []
             if (query) {
                 return new Promise(function(resolve, reject) {
                     $http
@@ -1180,7 +1182,9 @@ $('#bt_attachments').on('click', () => {
             }
         }
 
-        $scope.getSubGL = function(coa_code) {
+        self.getSubGL = function(coa_code) {
+            $scope.searchSubGl = self.service_item_detail.service_item_subgl = null
+            // self.sub_ledger_list = []
             if (coa_code) {
                 $http.get(
                     get_sub_ledger_url + '/' + coa_code
@@ -1297,7 +1301,8 @@ $('#bt_attachments').on('click', () => {
             self.total = '';
             self.service_item = '';
             self.service_item_hsn = '';
-            self.service_item_detail = '';
+            // self.service_item_detail = '';
+            self.service_item_detail = {};
             self.e_invoice_uom = {'id' : 1};
             // console.log(' == add btn ==');
             // console.log(self.service_item_detail);
@@ -1991,7 +1996,6 @@ app.component('hondaServiceInvoiceView', {
             }
             $rootScope.loading = false;
         });
-                        custom_noty('error', res.data.error);
         $scope.cancelIRN = function () {
             $('#cancel_irn').button('loading');
             $id = $("#service_invoice_id").val();

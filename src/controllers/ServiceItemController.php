@@ -372,7 +372,7 @@ class ServiceItemController extends Controller {
 	}
 	public function getSubLedger($id) {
 		if ($id) {
-			$sub_ledger_list = collect(SubLedger::select('id', 'ax_subgl')->where('coa_code_id', $id)->get())->prepend(['id' => '', 'ax_subgl' => 'Select Sub Ledger']);
+			$sub_ledger_list = collect(SubLedger::select('id', 'ax_subgl as code')->where('coa_code_id', $id)->get())->prepend(['id' => '', 'code' => 'Select Sub Ledger']);
 			$this->data['sub_ledger_list'] = $sub_ledger_list;
 		} else {
 			return response()->json(['success' => false, 'error' => 'Ledger not found']);
