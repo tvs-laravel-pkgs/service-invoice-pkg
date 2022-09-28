@@ -582,7 +582,11 @@
                                                     <input ng-model="searchCategory" type="search" placeholder="Search for a category.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
                                                 </md-select-header>
                                                 <md-optgroup label="category">
-                                                    <md-option ng-value="category.id" ng-repeat="category in $ctrl.extras.category_list | filter:searchCategory" ng-selected="category.name == $ctrl.service_invoice.category_name" >{{category.name}}</md-option>
+                                                    <md-option ng-value="category.id" ng-repeat="category in $ctrl.extras.category_list | filter:searchCategory" ng-selected="category.name == $ctrl.service_invoice.category_name" >
+                                                        {{category.name}} 
+                                                        <span ng-if="category.id != '' ">-</span>
+                                                        {{category.dimension_value}}
+                                                    </md-option>
                                                 </md-optgroup>
                                             </md-select>
                                             <input type="hidden" name="category_id" id="category_id" value="{{$ctrl.service_invoice.category_id}}" class="required">

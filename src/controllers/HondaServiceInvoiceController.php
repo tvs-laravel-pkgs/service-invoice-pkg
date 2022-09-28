@@ -527,7 +527,13 @@ class HondaServiceInvoiceController extends Controller
             // 'sbu_list' => collect(Sbu::select('name', 'id')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Sbu']),
             'sbu_list' => [],
             'tax_list' => Tax::select('name', 'id')->where('company_id', 1)->orderBy('id', 'ASC')->get(),
-            'category_list' => collect(ServiceItemCategory::select('name', 'id')->where('type', 'honda')->where('company_id', Auth::user()->company_id)->get())->prepend(['id' => '', 'name' => 'Select Category']),
+            'category_list' => collect(
+                                ServiceItemCategory::join('honda_dept_dimension' , 'honda_dept_dimension.description','service_item_categories.name')
+                                ->select('service_item_categories.name', 'service_item_categories.id', 'honda_dept_dimension.dimension_value')
+                                ->where('service_item_categories.type', 'honda')
+                                ->where('type', 'honda')
+                                ->where('service_item_categories.company_id', Auth::user()->company_id)->get())
+                                ->prepend(['id' => '', 'name' => 'Select Category']),
             'sub_category_list' => [],
             'uom_list' => EInvoiceUom::getList(),
             'to_account_type_list' => Config::select('name', 'id')->where('config_type_id', 27)->whereIn('id', [1440, 1441])->get(), //ACCOUNT TYPES
