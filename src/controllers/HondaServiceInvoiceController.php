@@ -607,14 +607,25 @@ class HondaServiceInvoiceController extends Controller
     public function getServiceItemDetails(Request $request)
     {
         //dd($request->all());
-
         //GET TAXES BY CONDITIONS
         $taxes = $this->getTaxesBasedHSN($request->hsn_sac_id, $request->branch_id, $request->customer_id, $request->to_account_type_id, $request->state_id);
-        $taxes = TaxCode::find($request->hsn_sac_id)->taxes()->whereIn('tax_id', $taxes['tax_ids'])->get();
-        $sac_code_value = $request->hsn_sac_id;
-        $coa_codes = CoaCode::all();
-        session(['sac_code_value' => $sac_code_value]);
-        return response()->json(['success' => true, 'taxes' => $taxes , 'coa_codes' =>$coa_codes]);
+
+        if($request->btn_action == 'add'){
+            $taxes = TaxCode::find($request->hsn_sac_id)->taxes()->whereIn('tax_id', $taxes['tax_ids'])->get();
+            $sac_code_value = $request->hsn_sac_id;
+            session(['sac_code_value' => $sac_code_value]);
+            return response()->json(['success' => true, 'taxes' => $taxes]);
+        }else{
+            $service_invoice_item = HondaServiceInvoiceItem::with([
+                'taxCode',
+                'taxCode.taxes',
+            ])->find($request->service_invoice_item_id);
+            return response()->json([
+                'success' => true,
+                // 'service_item' => $service_item,
+                'service_invoice_item' => $service_invoice_item,
+            ]);
+        }
     }
 
     public function getSubgl($id)

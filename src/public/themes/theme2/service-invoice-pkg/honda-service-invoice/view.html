@@ -299,7 +299,7 @@
                                                 </td>
                                                 <td class="action">
                                                     <a href="javascript:void(0)" ng-click="editServiceItem(service_invoice_item.service_item_hsn_id, service_invoice_item.description,
-                                                     service_invoice_item.qty,  service_invoice_item.rate, index, service_invoice_item.e_invoice_uom_id,$ctrl.service_invoice.to_account_type_id)">
+                                                     service_invoice_item.qty,  service_invoice_item.rate, index, service_invoice_item.e_invoice_uom_id,$ctrl.service_invoice.to_account_type_id,service_invoice_item.id)">
                                                         <img class="img-responsive" src="./public/theme/img/table/cndn/view.svg" alt="View" />
                                                     </a>
                                                 </td>
@@ -448,9 +448,9 @@
                             <ul class="table-form-list">
                                 <li>
                                     <div class="table-form-list-wrap">
-                                        <label class="table-form-list-label">Item Code </label>
+                                        <label class="table-form-list-label">Description </label>
                                         <div class="table-form-list-control">
-                                            <input type="text" id="service_item_id" name="service_item_id" value="{{$ctrl.service_item_detail.code}}" class="form-control type-sm" readonly>
+                                            <input type="text" id="service_item_id" name="service_item_id" value="{{$ctrl.service_item_detail.description}}" class="form-control type-sm" readonly>
                                         </div><!-- Table Form List Control -->
                                     </div><!-- Table Form List Wrap -->
                                 </li>
