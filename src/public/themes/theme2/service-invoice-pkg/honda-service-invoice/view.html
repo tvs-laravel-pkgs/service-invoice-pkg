@@ -446,14 +446,14 @@
                     <div class="row">
                         <div class="col-md-6">
                             <ul class="table-form-list">
-                                <li>
+                                <!-- <li>
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">Description </label>
                                         <div class="table-form-list-control">
                                             <input type="text" value="{{$ctrl.service_item_detail.description}}" class="form-control type-sm" readonly>
-                                        </div><!-- Table Form List Control -->
-                                    </div><!-- Table Form List Wrap -->
-                                </li>
+                                        </div>
+                                    </div>
+                                </li> -->
                                 <li>
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">HSN/SAC Code</label>
@@ -486,6 +486,25 @@
                                         </div><!-- Table Form List Control -->
                                     </div><!-- Table Form List Wrap -->
                                 </li>
+                                <!-- <li>
+                                    <div class="table-form-list-wrap">
+                                        <label class="table-form-list-label">E-Invoice UOM </label>
+                                        <div class="table-form-list-control">
+                                            <md-select class="type-sm" ng-model="$ctrl.e_invoice_uom.id" placeholder="Select E-Invoice UOM" md-on-close="clearSearchUom()" data-md-container-class="selectdemoSelectHeader" ng-disabled="true">
+                                                <md-select-header class="demo-select-header">
+                                                    <input ng-model="searchUom" type="search" placeholder="Search for a E-Invoice UOM.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
+                                                </md-select-header>
+                                                <md-optgroup label="e_invoice_uom">
+                                                    <md-option ng-value="uom.id" ng-repeat="uom in $ctrl.extras.uom_list | filter:searchUom">{{uom.code}} / {{uom.description}}</md-option>
+                                                </md-optgroup>
+                                            </md-select>
+                                        </div>
+                                    </div>
+                                </li> -->
+                            </ul><!-- Table Form List -->
+                        </div><!-- Column -->
+                        <div class="col-md-6">
+                            <ul class="table-form-list">
                                 <li>
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">E-Invoice UOM </label>
@@ -498,13 +517,17 @@
                                                     <md-option ng-value="uom.id" ng-repeat="uom in $ctrl.extras.uom_list | filter:searchUom">{{uom.code}} / {{uom.description}}</md-option>
                                                 </md-optgroup>
                                             </md-select>
-                                        </div><!-- Table Form List Control -->
-                                    </div><!-- Table Form List Wrap -->
+                                        </div>
+                                    </div>
                                 </li>
-                            </ul><!-- Table Form List -->
-                        </div><!-- Column -->
-                        <div class="col-md-6">
-                            <ul class="table-form-list">
+                                <li>
+                                    <div class="table-form-list-wrap">
+                                        <label class="table-form-list-label">Description </label>
+                                        <div class="table-form-list-control">
+                                            <input type="text" value="{{$ctrl.service_item_detail.description}}" class="form-control type-sm" readonly>
+                                        </div>
+                                    </div>
+                                </li>
                                 <li>
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">Reference </label>
