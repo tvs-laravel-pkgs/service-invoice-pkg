@@ -305,7 +305,7 @@
                                                 </td>
                                                 <td>{{service_invoice_item.tax_code ? service_invoice_item.tax_code.code : ''}}</td>
                                                 <td>{{service_invoice_item.description}}
-                                                <td>{{service_invoice_item.category}}</td>
+                                                <td>{{service_invoice_item.category}} - {{service_invoice_item.category_dimension}}</td>
                                                 <td>{{service_invoice_item.e_invoice_uom.code}}</td>
                                                 <td class="text-right">{{$ctrl.parseInt(service_invoice_item.qty)}}</td>
                                                 <td class="text-right">{{service_invoice_item.rate | number : 2}}</td>

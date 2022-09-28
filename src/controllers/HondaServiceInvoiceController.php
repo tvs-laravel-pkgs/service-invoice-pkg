@@ -2210,6 +2210,12 @@ class HondaServiceInvoiceController extends Controller
                 }
                 $serviceInvoiceItem->total = round($serviceInvoiceItem->sub_total, 2) + round($gst_total, 2);
                 $serviceInvoiceItem->category = $serviceInvoiceItem->serviceItemCategory->name;
+                $serviceInvoiceItem->category_dimension = ServiceItemCategory::join('honda_dept_dimension' , 'honda_dept_dimension.description','service_item_categories.name')
+                                ->where('service_item_categories.type', 'honda')
+                                ->where('service_item_categories.id',$serviceInvoiceItem->service_item_category_id)
+                                ->where('service_item_categories.company_id', Auth::user()->company_id)
+                                ->pluck('honda_dept_dimension.dimension_value')
+                                ->first();
                 //$serviceInvoiceItem->name = $serviceInvoiceItem->serviceItem->name;
             }
         }
