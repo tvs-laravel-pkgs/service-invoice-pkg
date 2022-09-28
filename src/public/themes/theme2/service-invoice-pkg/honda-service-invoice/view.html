@@ -270,6 +270,7 @@
                                                 <th class="action">Action</th>
                                                 <th>Item</th>
                                                 <th>Reference</th>
+                                                <th>Category</th>
                                                 <th>UOM</th>
                                                 <th class="text-right">Quantity</th>
                                                 <th class="text-right">Rate</th>
@@ -302,8 +303,8 @@
                                                         <img class="img-responsive" src="./public/theme/img/table/cndn/view.svg" alt="View" />
                                                     </a>
                                                 </td>
-                                                <td>{{service_invoice_item.code}}</td>
-                                                <td>{{service_invoice_item.name}}</td>
+                                                <td>{{service_invoice_item.desc}}</td>
+                                                <td>{{service_invoice_item.category.description}}
                                                 <td>{{service_invoice_item.description}}</td>
                                                 <td>{{service_invoice_item.e_invoice_uom.code}}</td>
                                                 <td class="text-right">{{$ctrl.parseInt(service_invoice_item.qty)}}</td>

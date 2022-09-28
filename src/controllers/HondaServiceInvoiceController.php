@@ -611,7 +611,6 @@ class HondaServiceInvoiceController extends Controller
         //GET TAXES BY CONDITIONS
         $taxes = $this->getTaxesBasedHSN($request->hsn_sac_id, $request->branch_id, $request->customer_id, $request->to_account_type_id, $request->state_id);
         $taxes = TaxCode::find($request->hsn_sac_id)->taxes()->whereIn('tax_id', $taxes['tax_ids'])->get();
-
         $sac_code_value = $request->hsn_sac_id;
         $coa_codes = CoaCode::all();
         session(['sac_code_value' => $sac_code_value]);
@@ -730,7 +729,7 @@ class HondaServiceInvoiceController extends Controller
 
         $service_item = new ServiceItem();
         $service_item->taxCode = TaxCode::find($request->service_item_hsn);
-        $service_item->taxCode->taxes =  $service_item->taxCode->taxes()->get();
+        $service_item->taxCode->taxes=TaxCode::find($request->service_item_hsn)->taxes()->whereIn('tax_id', $taxes['tax_ids'])->get();
         $service_item->desc = $request->service_item_desc;
         $service_item->category = ServiceItemCategory::join('honda_dept_dimension' , 'honda_dept_dimension.description','service_item_categories.name')
                                 ->select('honda_dept_dimension.dimension_value','honda_dept_dimension.description', 'service_item_categories.id')
@@ -1423,11 +1422,11 @@ class HondaServiceInvoiceController extends Controller
                 }
 
                 if ($service_invoice->address) {
-                    if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->address_line1)) > 100) {
-                        $errors[] = 'Customer Address Maximum Allowed Length 100!';
+                    if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->address_line1)) > 250) {
+                        $errors[] = 'Customer Address Maximum Allowed Length 250!';
                         return [
                             'success' => false,
-                            'errors' => ['Customer Address Maximum Allowed Length 100!'],
+                            'errors' => ['Customer Address Maximum Allowed Length 250!'],
                         ];
                         // DB::commit();
                     }
@@ -1997,7 +1996,10 @@ class HondaServiceInvoiceController extends Controller
             $tcs_dn_details = HondaServiceInvoice::tcs_dn_details($service_invoice->invoice_number);
             $service_invoice->date = $tcs_dn_details->date;
             $service_invoice->invoice_number = $service_invoice->invoice_number;
-            $serviceInvoiceItem->description = "TCS Debit Note for ".$service_invoice->invoice_number .'. Dt- ' .$service_invoice->date;
+            $serviceInvoiceItem->description = "TCS DBN for Billno -".$service_invoice->invoice_number .'. Dt- ' .$service_invoice->date;
+            $serviceInvoiceItem->rate = $tcs_dn_details->on_road_price;
+            $tcs_dn_inv_no = $service_invoice->invoice_number;
+
         }
                 //dd($serviceInvoiceItem->field_groups);
         $this->data['service_invoice_pdf'] = $service_invoice;
@@ -2026,6 +2028,10 @@ class HondaServiceInvoiceController extends Controller
         //     'success' => true,
         // ];
         $r['api_logs'] = [];
+
+        if($service_invoice->type_id == 1063) {
+            $serviceInvoiceItem->description = "TCS DBN for Billno -".$tcs_dn_inv_no;
+        }
 
         //ENTRY IN AX_EXPORTS
         $r = $service_invoice->exportToAxapta();
@@ -2185,8 +2191,8 @@ class HondaServiceInvoiceController extends Controller
                     }
                 }
                 $serviceInvoiceItem->total = round($serviceInvoiceItem->sub_total, 2) + round($gst_total, 2);
-                $serviceInvoiceItem->code = $serviceInvoiceItem->serviceItem->code;
-                $serviceInvoiceItem->name = $serviceInvoiceItem->serviceItem->name;
+                $serviceInvoiceItem->category = $serviceInvoiceItem->serviceItemCategory->name;
+                //$serviceInvoiceItem->name = $serviceInvoiceItem->serviceItem->name;
             }
         }
         $service_invoice->ack_date = $service_invoice->ack_date ? date("d-m-Y H:i:s", strtotime($service_invoice->ack_date)) : null;
@@ -3164,24 +3170,25 @@ class HondaServiceInvoiceController extends Controller
         ]);
     }
 
-     public function searchCustomer(Request $r)
-    {   
+    public function searchCustomer(Request $r)
+    {
+        // return Customer::searchCustomer($r);
+        // dd(strlen($r->key));
         try {
             $key = $r->key;
             $axUrl = "GetCustMasterDetails_Honda";
             $this->soapWrapper->add('customer', function ($service) {
                 $service
-                    ->wsdl('https://tvsapp.tvs.in/OnGo/WebService.asmx?wsdl')
+                    ->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
                     ->trace(true);
             });
-            $params = ['ACCOUNTNUM' => $key];
+            $params = ['ACCOUNTNUM' => $r->key];
             $getResult = $this->soapWrapper->call('customer.'.$axUrl, [$params]);
             $customer_data = $getResult->GetCustMasterDetails_HondaResult;
             if (empty($customer_data)) {
                 return response()->json(['success' => false, 'error' => 'Customer Not Available!.']);
             }
-
-            // Convert xml string into an object
+             // Convert xml string into an object
             $xml_customer_data = simplexml_load_string($customer_data->any);
             // dd($xml_customer_data);
             // Convert into json
@@ -3189,23 +3196,28 @@ class HondaServiceInvoiceController extends Controller
 
             // Convert into associative array
             $customer_data = json_decode($customer_encode, true);
-            $api_customer_data = [$customer_data['Table']];
+
+            $api_customer_data = $customer_data['Table'];
             if (count($api_customer_data) == 0) {
                 return response()->json(['success' => false, 'error' => 'Customer Not Available!.']);
             }
-             $list = [];
+            $list = [];
+
             if (isset($api_customer_data)) {
-                 $data = [];
+                $data = [];
+               
                 $array_count = array_filter($api_customer_data, 'is_array');
-                 if (count($array_count) > 0) {
+                if (count($array_count) > 0 && isset($api_customer_data[0])) {
                     // if (count($api_customer_data) > 0) {
                     foreach ($api_customer_data as $key => $customer_data) {
                         $data['code'] = $customer_data['ACCOUNTNUM'];
                         $data['name'] = $customer_data['NAME'];
                         $data['mobile_no'] = isset($customer_data['LOCATOR']) && $customer_data['LOCATOR'] != 'Not available' ? $customer_data['LOCATOR'] : null;
                         $data['cust_group'] = isset($customer_data['CUSTGROUP']) && $customer_data['CUSTGROUP'] != 'Not available' ? $customer_data['CUSTGROUP'] : null;
-                        $data['pan_number'] = isset($customer_data['PANNO']) && $customer_data['PANNO'] != 'Not available' ? $customer_data['PANNO'] : '-';
-
+                          $data['pan_number'] = isset($customer_data['PAN']) && $customer_data['PAN'] != 'Not available' && $customer_data['PAN'] != [] ? $customer_data['PAN'] : null;
+                        $data['pincode'] = isset($customer_data['ZIPCODE']) && $customer_data['ZIPCODE'] != 'Not available' && $customer_data['ZIPCODE'] != [] ? $customer_data['ZIPCODE'] : null;
+                        $data['state'] = isset($customer_data['STATE']) && $customer_data['STATE'] != 'Not available' && $customer_data['STATE'] != [] ? $customer_data['STATE'] : null;
+                       
                         $list[] = $data;
                     }
                 } else {
@@ -3213,18 +3225,20 @@ class HondaServiceInvoiceController extends Controller
                     $data['name'] = $api_customer_data['NAME'];
                     $data['mobile_no'] = isset($api_customer_data['LOCATOR']) && $api_customer_data['LOCATOR'] != 'Not available' ? $api_customer_data['LOCATOR'] : null;
                     $data['cust_group'] = isset($api_customer_data['CUSTGROUP']) && $api_customer_data['CUSTGROUP'] != 'Not available' ? $api_customer_data['CUSTGROUP'] : null;
-                    $data['pan_number'] = isset($api_customer_data['PANNO']) && $api_customer_data['PANNO'] != 'Not available' ? $api_customer_data['PANNO'] : null;
-
+                    $data['pan_number'] = isset($api_customer_data['PAN']) && $api_customer_data['PAN'] != 'Not available'  && $api_customer_data['PAN'] != [] ? $api_customer_data['PAN'] : null;
+                    $data['pincode'] = isset($api_customer_data['ZIPCODE']) && $api_customer_data['ZIPCODE'] != 'Not available' && $api_customer_data['ZIPCODE'] != [] ? $api_customer_data['ZIPCODE'] : null;
+                    $data['state'] = isset($api_customer_data['STATE']) && $api_customer_data['STATE'] != 'Not available' && $api_customer_data['STATE'] != [] ? $api_customer_data['STATE'] : null;
                     $list[] = $data;
                 }
             }
             return response()->json($list);
         } catch (\SoapFault $e) {
-            return response()->json(['success' => false, 'error' => 'Somthing went worng in SOAP Service!']);
+              return response()->json([]);
+            //return response()->json(['success' => false, 'error' => 'Somthing went worng in SOAP Service!']);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'error' => 'Somthing went worng!']);
+            return response()->json([]);
+            //return response()->json(['success' => false, 'error' => 'Somthing went worng!']);
         }
-
     }
 
     public function customerImportNew($code, $job)
@@ -3277,7 +3291,7 @@ class HondaServiceInvoiceController extends Controller
                         $data['name'] = $customer_data['NAME'];
                         $data['mobile_no'] = isset($customer_data['LOCATOR']) && $customer_data['LOCATOR'] != 'Not available' ? $customer_data['LOCATOR'] : null;
                         $data['cust_group'] = isset($customer_data['CUSTGROUP']) && $customer_data['CUSTGROUP'] != 'Not available' ? $customer_data['CUSTGROUP'] : null;
-                        $data['pan_number'] = isset($customer_data['PANNO']) && $customer_data['PANNO'] != 'Not available' ? $customer_data['PANNO'] : null;
+                        $data['pan_number'] = isset($customer_data['PAN']) && $customer_data['PAN'] != 'Not available' ? $customer_data['PAN'] : null;
 
                         $search_list[] = $data;
                     }
@@ -3286,7 +3300,7 @@ class HondaServiceInvoiceController extends Controller
                     $data['name'] = $api_customer_data['NAME'];
                     $data['mobile_no'] = isset($api_customer_data['LOCATOR']) && $api_customer_data['LOCATOR'] != 'Not available' ? $api_customer_data['LOCATOR'] : null;
                     $data['cust_group'] = isset($api_customer_data['CUSTGROUP']) && $api_customer_data['CUSTGROUP'] != 'Not available' ? $api_customer_data['CUSTGROUP'] : null;
-                    $data['pan_number'] = isset($api_customer_data['PANNO']) && $api_customer_data['PANNO'] != 'Not available' ? $api_customer_data['PANNO'] : null;
+                    $data['pan_number'] = isset($api_customer_data['PAN']) && $api_customer_data['PAN'] != 'Not available' ? $api_customer_data['PAN'] : null;
 
                     $search_list[] = $data;
                 }
@@ -3301,7 +3315,7 @@ class HondaServiceInvoiceController extends Controller
                     }
                     $this->soapWrapper->add('address', function ($service) {
                         $service
-                            ->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
+                            ->wsdl('https://tvsapp.tvs.in/OnGo/WebService.asmx?wsdl')
                             ->trace(true);
                     });
                     $params = ['ACCOUNTNUM' => $code];
@@ -3504,6 +3518,12 @@ class HondaServiceInvoiceController extends Controller
                                 } else {
                                     $customer_dimension = null;
                                 }
+                                if ($state == null) {
+                                    return response()->json(['success' => false, 'error' => 'State data is missing for picked customer.So kindly contact AX team']);
+                                }
+                                if (empty($customer_data['ZIPCODE']) || $customer_data['ZIPCODE'] == 'Not available') {
+                                     return response()->json(['success' => false, 'error' => 'Pincode data is missing for picked customer.So kindly contact AX team']);
+                                }
                                 $locator =  !empty( $customer_data['LOCATOR'] ) ? $customer_data['LOCATOR'] : null;
                                 $customer->company_id = Auth::user()->company_id;
                                 $customer->name = $request->data['name'];
@@ -3592,7 +3612,7 @@ class HondaServiceInvoiceController extends Controller
             }
             $this->soapWrapper->add('vendor', function ($service) {
                 $service
-                    ->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
+                    ->wsdl('https://tvsapp.tvs.in/OnGo/WebService.asmx?wsdl')
                     ->trace(true);
             });
             $params = ['ACCOUNTNUM' => $r->key];
@@ -3632,7 +3652,7 @@ class HondaServiceInvoiceController extends Controller
                         $data['name'] = $vendor_data['NAME'];
                         $data['mobile_no'] = isset($vendor_data['LOCATOR']) && $vendor_data['LOCATOR'] != 'Not available' ? $vendor_data['LOCATOR'] : null;
                         $data['vendor_group'] = isset($vendor_data['VENDGROUP']) && $vendor_data['VENDGROUP'] != 'Not available' ? $vendor_data['VENDGROUP'] : null;
-                        $data['pan_number'] = isset($vendor_data['PANNO']) && $vendor_data['PANNO'] != 'Not available' ? $vendor_data['PANNO'] : null;
+                        $data['pan_number'] = isset($vendor_data['PAN']) && $vendor_data['PAN'] != 'Not available' ? $vendor_data['PAN'] : null;
 
                         $list[] = $data;
                     }
@@ -3641,7 +3661,7 @@ class HondaServiceInvoiceController extends Controller
                     $data['name'] = $api_vendor_data['NAME'];
                     $data['mobile_no'] = isset($api_vendor_data['LOCATOR']) && $api_vendor_data['LOCATOR'] != 'Not available' ? $api_vendor_data['LOCATOR'] : null;
                     $data['vendor_group'] = isset($api_vendor_data['VENDGROUP']) && $api_vendor_data['VENDGROUP'] != 'Not available' ? $api_vendor_data['VENDGROUP'] : null;
-                    $data['pan_number'] = isset($api_vendor_data['PANNO']) && $api_vendor_data['PANNO'] != 'Not available' ? $api_vendor_data['PANNO'] : null;
+                    $data['pan_number'] = isset($api_vendor_data['PAN']) && $api_vendor_data['PAN'] != 'Not available' ? $api_vendor_data['PAN'] : null;
 
                     $list[] = $data;
                 }
@@ -3665,7 +3685,7 @@ class HondaServiceInvoiceController extends Controller
             }
             $this->soapWrapper->add('vendor_address', function ($service) {
                 $service
-                    ->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
+                    ->wsdl('https://tvsapp.tvs.in/OnGo/WebService.asmx?wsdl')
                     ->trace(true);
             });
             $params = ['ACCOUNTNUM' => $request->data['code']];
@@ -3717,27 +3737,27 @@ class HondaServiceInvoiceController extends Controller
                         // dd('mu;l');
                         $address_count = 0;
                         foreach ($api_vendor_data as $key => $vendor_data) {
-                            if(isset($vendor_data['DATAAREAID']) && ($vendor_data['DATAAREAID'] == Auth::user()->company->ax_company_code)){
+                            if(isset($vendor_data['DATAAREAID']) && ($vendor_data['DATAAREAID'] != Auth::user()->company->ax_company_code)){
                                 $address_count = 1;
-                                $address = Address::firstOrNew(['entity_id' => $vendor->id, 'ax_id' => $vendor_data['RECID']]); //vendor
+                                $address = Address::firstOrNew(['entity_id' => $vendor->id, 'ax_id' => $vendor_data['ACCOUNTNUM']]); //vendor
                                 // dd($address);
                                 $address->company_id = Auth::user()->company_id;
                                 $address->entity_id = $vendor->id;
                                 $address->ax_id = $vendor_data['RECID'];
-                                $address->gst_number = isset($vendor_data['GST_NUMBER']) ? $vendor_data['GST_NUMBER'] : null;
+                                $address->gst_number =  !empty($vendor_data['GST_NUMBER']) ? $vendor_data['GST_NUMBER'] : null;
                                 $address->address_of_id = 21;
                                 $address->address_type_id = 40;
-                                $address->name = 'Primary Address_' . $vendor_data['RECID'];
+                                $address->name = 'Primary Address_' . $vendor_data['ACCOUNTNUM'];
                                 $address->address_line1 = str_replace('""', '', $vendor_data['ADDRESS']);
                                 $state = State::firstOrNew(['code' => $vendor_data['STATE']]);
-                                if ($state) {
+                                if ($state  && $vendor_data['CITY'] ) {
                                     $city = City::firstOrNew(['name' => $vendor_data['CITY'], 'state_id' => $state->id]);
                                     $city->save();
                                 }
                                 $address->country_id = $state ? $state->country_id : null;
                                 $address->state_id = $state ? $state->id : null;
-                                $address->city_id = $city ? $city->id : null;
-                                $address->pincode = $vendor_data['ZIPCODE'] == 'Not available' ? null : $vendor_data['ZIPCODE'];
+                                $address->city_id =  isset($city)  ? $city->id : null;
+                                $address->pincode =  !empty($vendor_data['ZIPCODE'] ) && $vendor_data['ZIPCODE'] == 'Not available' ? null : $vendor_data['ZIPCODE'];
                                 $address->save();
                                 $vendor_address[] = $address;
                             }
@@ -3746,19 +3766,19 @@ class HondaServiceInvoiceController extends Controller
                             $vendor_address = [];
                         }
                     } else {
-                        if(isset($api_vendor_data['DATAAREAID']) && ($api_vendor_data['DATAAREAID'] == Auth::user()->company->ax_company_code)){
+                        if(isset($api_vendor_data['DATAAREAID']) && ($api_vendor_data['DATAAREAID'] != Auth::user()->company->ax_company_code)){
                             // dd('sing');
-                            $address = Address::firstOrNew(['entity_id' => $vendor->id, 'ax_id' => $api_vendor_data['RECID']]); //vendor
+                            $address = Address::firstOrNew(['entity_id' => $vendor->id, 'ax_id' => $api_vendor_data['ACCOUNTNUM']]); //vendor
                             // dd($address);
                             $address->company_id = Auth::user()->company_id;
                             $address->entity_id = $vendor->id;
-                            $address->ax_id = $api_vendor_data['RECID'];
+                            $address->ax_id = $api_vendor_data['ACCOUNTNUM'];
                             // $address->gst_number = isset($api_vendor_data['GST_NUMBER']) ? $api_vendor_data['GST_NUMBER'] : NULL;
                             $address->gst_number = isset($api_vendor_data['GST_NUMBER']) && $api_vendor_data['GST_NUMBER'] != 'Not available' ? $api_vendor_data['GST_NUMBER'] : null;
 
                             $address->address_of_id = 21;
                             $address->address_type_id = 40;
-                            $address->name = 'Primary Address_' . $api_vendor_data['RECID'];
+                            $address->name = 'Primary Address_' . $api_vendor_data['ACCOUNTNUM'];
                             $address->address_line1 = str_replace('""', '', $api_vendor_data['ADDRESS']);
                             $state = State::firstOrNew(['code' => $api_vendor_data['STATE']]);
                             if ($state) {
@@ -4817,11 +4837,11 @@ class HondaServiceInvoiceController extends Controller
                 }
 
                 if ($service_invoice->address) {
-                    if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->address_line1)) > 100) {
-                        $errors[] = 'Customer Address Maximum Allowed Length 100!';
+                    if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->address_line1)) > 250) {
+                        $errors[] = 'Customer Address Maximum Allowed Length 250!';
                         return [
                             'success' => false,
-                            'errors' => ['Customer Address Maximum Allowed Length 100!'],
+                            'errors' => ['Customer Address Maximum Allowed Length 250!'],
                         ];
                         // DB::commit();
                     }
@@ -5076,10 +5096,12 @@ class HondaServiceInvoiceController extends Controller
         $list = DB::table('honda_sale_invoice_detail_requests')
                     ->join('honda_sale_invoice_details' , 'honda_sale_invoice_details.id' , 'honda_sale_invoice_detail_requests.sale_invoice_id')
                     ->select('honda_sale_invoice_details.number','honda_sale_invoice_details.id')
-                    ->where('honda_sale_invoice_detail_requests.on_road_price' , '>', '1000000');
-         
-        $list = $list->where(function ($q) use ($key) {
-                        $q->where('honda_sale_invoice_details.number', 'like', '%' . $key . '%');
+                    ->where('honda_sale_invoice_detail_requests.on_road_price' , '>', '1000000')
+                    ->where(function ($q) use ($r) {
+                        if(!empty($r->key))
+                            $q->where('honda_sale_invoice_details.number', 'like', '%' . $r->key . '%');
+                        if(!empty($r->pan_number))
+                            $q->where('honda_sale_invoice_details.contact_pan_number', 'like', '%' . $r->pan_number . '%');
                     })->get();
 
         return response()->json($list);

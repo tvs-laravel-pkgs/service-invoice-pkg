@@ -349,6 +349,7 @@
                                             <tr>
                                                 <th class="action">Action</th>
                                                 <th>Item Description</th>
+                                                <th>Department</th>
                                                 <th>Reference</th>
                                                 <th>UOM</th>
                                                 <th class="text-right">Quantity</th>
@@ -362,6 +363,10 @@
                                             <tr ng-repeat="(index, service_invoice_item) in $ctrl.service_invoice.service_invoice_items">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][id]" value="{{service_invoice_item.id}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][service_item_id]" value="{{service_invoice_item.service_item_id}}">
+                                                 <input type="hidden" name="service_invoice_items[{{index}}][service_item_hsn_id]" value="{{service_invoice_item.sac_code_id}}">
+                                                <input type="hidden" name="service_invoice_items[{{index}}][service_item_coa_id]" value="{{service_invoice_item.coa_codes.id}}">
+                                                <input type="hidden" name="service_invoice_items[{{index}}][service_item_subgl_id]" value="{{service_invoice_item.sub_gl.id}}">
+                                                 <input type="hidden" name="service_invoice_items[{{index}}][service_item_category_id]" value="{{service_invoice_item.category.id}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][description]" value="{{service_invoice_item.description}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][qty]" value="{{service_invoice_item.qty}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][rate]" value="{{service_invoice_item.rate}}">
@@ -386,6 +391,7 @@
                                                     </a>
                                                 </td>
                                                 <td>{{service_invoice_item.desc}}</td>
+                                                <td>{{service_invoice_item.category.description}}
                                                 <td>{{service_invoice_item.description}}</td>
                                                 <td>{{service_invoice_item.e_invoice_uom.code}}</td>
                                                 <td class="text-right">{{$ctrl.parseInt(service_invoice_item.qty)}}</td>
@@ -562,7 +568,7 @@
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">Is Service </label> 
                                         <div class="table-form-list-control is_service_error">
-                                                <input type="text" id="is_service" name="is_service" ng-model="$ctrl.service_invoice.is_service" value="{{$ctrl.service_item_detail.tax_code.name}}" class="form-control type-sm">
+                                                <input type="text" id="is_service" name="is_service" ng-model="$ctrl.service_item_detail.tax_code.name" class="form-control type-sm">
                                         </div><!-- Table Form List Control -->
                                     </div><!-- Table Form List Wrap -->
                                 </li>
@@ -586,7 +592,7 @@
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">COA Code<span class="mandatory">*</span></label>
                                         <div class="table-form-list-control">
-                                             <md-autocomplete class="type-sm type-2" md-items="option in $ctrl.searchCoaCodeFilter($ctrl.serviceItemCoaText)" md-selected-item="$ctrl.service_item_detail.cao_code" md-search-text="$ctrl.serviceItemCoaText" md-item-text="option.code" md-min-length="3" placeholder="COA Code" md-selected-item-change="$ctrl.getSubGL(option.code)" md-no-cache="true">
+                                             <md-autocomplete class="type-sm type-2" md-items="option in $ctrl.searchCoaCodeFilter($ctrl.serviceItemCoaText)" md-selected-item="$ctrl.service_item_detail.cao_code" md-search-text="$ctrl.serviceItemCoaText" md-item-text="option.code" md-min-length="3" placeholder="COA Code" md-selected-item-change="$ctrl.getSubGL($ctrl.service_item_detail.cao_code.code)" md-no-cache="true">
                                                 <md-item-template>
                                                     <span>
                                                         {{option.code}}
