@@ -450,27 +450,41 @@
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">Description </label>
                                         <div class="table-form-list-control">
-                                            <input type="text" id="service_item_id" name="service_item_id" value="{{$ctrl.service_item_detail.description}}" class="form-control type-sm" readonly>
+                                            <input type="text" value="{{$ctrl.service_item_detail.description}}" class="form-control type-sm" readonly>
                                         </div><!-- Table Form List Control -->
                                     </div><!-- Table Form List Wrap -->
                                 </li>
                                 <li>
-                                    <div class="table-form-view-wrap">
-                                        <ul class="table-form-view-list">
-                                            <li class="list-12 border-bottom">
-                                                <span class="table-form-view-label">Item Name</span>
-                                                <span class="table-form-view-value">{{$ctrl.service_item_detail.name}}</span>
-                                            </li>
-                                            <li class="list-6 border-right">
-                                                <span class="table-form-view-label">COA Code</span>
-                                                <span class="table-form-view-value">{{$ctrl.service_item_detail.coa_code.code}}</span>
-                                            </li>
-                                            <li class="list-6">
-                                                <span class="table-form-view-label">HSN/SAC Code</span>
-                                                <span class="table-form-view-value">{{$ctrl.service_item_detail.tax_code.code}}</span>
-                                            </li>
-                                        </ul>
-                                    </div>
+                                    <div class="table-form-list-wrap">
+                                        <label class="table-form-list-label">HSN/SAC Code</label>
+                                        <div class="table-form-list-control">
+                                            <input type="text" value="{{$ctrl.service_item_detail.tax_code.code}}" class="form-control type-sm" readonly>
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                </li>
+                                <li>
+                                    <div class="table-form-list-wrap">
+                                        <label class="table-form-list-label">Category</label>
+                                        <div class="table-form-list-control">
+                                            <input type="text" value="{{$ctrl.service_item_detail.service_item_category.name}}" class="form-control type-sm" readonly>
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                </li>
+                                <li>
+                                    <div class="table-form-list-wrap">
+                                        <label class="table-form-list-label">COA Code</label>
+                                        <div class="table-form-list-control">
+                                            <input type="text" value="{{$ctrl.service_item_detail.coa_code.name}}" class="form-control type-sm" readonly>
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                </li>
+                                <li>
+                                    <div class="table-form-list-wrap">
+                                        <label class="table-form-list-label">GL-Sub</label>
+                                        <div class="table-form-list-control">
+                                            <input type="text" value="{{$ctrl.service_item_detail.sub_gl ? $ctrl.service_item_detail.sub_gl.ax_subgl : ''}}" class="form-control type-sm" readonly>
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
                                 </li>
                                 <li>
                                     <div class="table-form-list-wrap">

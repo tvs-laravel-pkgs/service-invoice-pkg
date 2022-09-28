@@ -624,6 +624,9 @@ class HondaServiceInvoiceController extends Controller
         }else{
             $service_invoice_item = HondaServiceInvoiceItem::with([
                 'taxCode',
+                'serviceItemCategory',
+                'coaCode',
+                'sub_gl',
                 'taxCode.taxes',
             ])->find($request->service_invoice_item_id);
             return response()->json([

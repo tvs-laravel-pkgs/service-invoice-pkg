@@ -588,7 +588,7 @@ app.component('hondaServiceInvoiceApprovalView', {
         }
 
         //EDIT SERVICE INVOICE ITEM
-        $scope.editServiceItem = function (service_invoice_item_id, description, qty, rate, index, e_invoice_uom_id) {
+        $scope.editServiceItem = function (service_item_hsn_id, description, qty, rate, index, e_invoice_uom_id, service_invoice_item_id) {
             console.log(self.service_invoice);
             if (service_invoice_item_id) {
                 self.enable_service_item_md_change = false;
@@ -597,28 +597,29 @@ app.component('hondaServiceInvoiceApprovalView', {
                 self.update_item_key = index;
                 $http.post(
                     get_honda_service_item_info_url, {
-                    service_item_id: service_invoice_item_id,
+                    hsn_sac_id: service_item_hsn_id,
                     field_groups: self.service_invoice.service_invoice_items[index].field_groups,
-                    btn_action: 'edit',
+                    btn_action: 'view',
                     branch_id: self.service_invoice.branch.id,
                     customer_id: self.service_invoice.customer.id,
                     state_id: self.service_invoice.address.state_id,
                     gst_number: self.service_invoice.address.gst_number,
+                    service_invoice_item_id: service_invoice_item_id,
                 }
                 ).then(function (response) {
                     if (response.data.success) {
-                        self.service_item_detail = response.data.service_item;
-                        self.service_item = response.data.service_item;
-                        self.description = description;
+                        self.service_item_detail = response.data.service_invoice_item;
+                        // self.service_item = response.data.service_item;
+                        self.description = response.data.service_invoice_item.description;
                         self.e_invoice_uom = { 'id': e_invoice_uom_id };
                         self.qty = parseInt(qty);
                         self.rate = rate;
 
-                        //AMOUNT CALCULATION
+                        // //AMOUNT CALCULATION
                         $scope.totalAmountCalc();
 
-                        //MODAL OPEN
-                        $('#modal-cn-addnew').modal('toggle');
+                        // //MODAL OPEN
+                        $('#modal-cn-addnew').modal('toggle');                        
                     } else {
                         custom_noty('error', response.data.error);
                     }
