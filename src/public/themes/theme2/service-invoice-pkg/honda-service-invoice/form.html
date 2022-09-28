@@ -391,7 +391,7 @@
                                                     </a>
                                                 </td>
                                                 <td>{{service_invoice_item.desc}}</td>
-                                                <td>{{service_invoice_item.category.description}}
+                                                <td>{{service_invoice_item.category.description}} - {{service_invoice_item.category.dimension_value}}</td>
                                                 <td>{{service_invoice_item.description}}</td>
                                                 <td>{{service_invoice_item.e_invoice_uom.code}}</td>
                                                 <td class="text-right">{{$ctrl.parseInt(service_invoice_item.qty)}}</td>
@@ -658,12 +658,12 @@
                                 </li>
                                 <li>
                                     <div class="table-form-list-wrap">
-                                        <label class="table-form-list-label">Reference <span class="mandatory">*</span></label>
+                                        <label class="table-form-list-label">Reference</label>
                                         <div class="table-form-list-control" ng-if="$ctrl.action_title == 'Add'">
                                             <textarea name="description" ng-model="$ctrl.service_item_detail.default_reference" class="form-control type-sm required" rows="3" placeholder="Enter Reference"></textarea>
                                         </div>
                                         <div class="table-form-list-control" ng-if="$ctrl.action_title == 'Update'">
-                                            <textarea name="description" ng-model="$ctrl.description" class="form-control type-sm required" rows="3" placeholder="Enter Reference"></textarea>
+                                            <textarea name="description" ng-model="$ctrl.description" class="form-control type-sm" rows="3" placeholder="Enter Reference"></textarea>
                                         </div>
                                     </div><!-- Table Form List Wrap -->
                                 </li>

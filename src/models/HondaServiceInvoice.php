@@ -970,7 +970,7 @@ class HondaServiceInvoice extends Model
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
             $params['VatPercentage'] = '';
             $params['Qty'] = '';
-            $params['TVSSACCode'] = '';
+            $params['TVSSACCode'] = $invoice_item->taxCode->code;
             $params['TVSHSNCode'] = '';
             if ($amount_diff > 0) {
                 if ($this->type_id == 1061) {
