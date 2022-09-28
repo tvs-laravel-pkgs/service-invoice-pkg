@@ -563,7 +563,7 @@ app.component('hondaServiceInvoiceForm', {
             if($routeParams.type_id == 1063 )
                 self.service_invoice.category_name = "Vehicle";
             if (self.action == 'Edit') {
-                self.service_invoice.invoice_number.number = response.data.service_invoice.invoice_number
+                self.service_invoice.invoice_number = response.data.service_invoice.invoice_number
                 // $timeout(function() {
                 //     $scope.getServiceItemSubCategoryByServiceItemCategory(self.service_invoice.service_item_sub_category.category_id);
                 // }, 1000);
