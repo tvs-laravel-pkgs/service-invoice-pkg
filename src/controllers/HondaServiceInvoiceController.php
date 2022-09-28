@@ -739,7 +739,13 @@ class HondaServiceInvoiceController extends Controller
         }
 
         $service_item = new ServiceItem();
-        $service_item->taxCode = TaxCode::find($request->service_item_hsn);
+        // $service_item->taxCode = TaxCode::find($request->service_item_hsn);
+        $service_item->taxCode = TaxCode::select(
+            'tax_codes.*',
+            'configs.name'
+        )->join('configs', 'tax_codes.type_id', 'configs.id')
+        ->where('tax_codes.id', $request->service_item_hsn)->first();
+        
         $service_item->taxCode->taxes=TaxCode::find($request->service_item_hsn)->taxes()->whereIn('tax_id', $taxes['tax_ids'])->get();
         $service_item->desc = $request->service_item_desc;
         $service_item->category = ServiceItemCategory::join('honda_dept_dimension' , 'honda_dept_dimension.description','service_item_categories.name')

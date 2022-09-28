@@ -383,7 +383,8 @@
                                                     </span>
                                                 </td>
                                                 <td class="action">
-                                                    <a href="javascript:void(0)" ng-click="editServiceItem(service_invoice_item.service_item_id, service_invoice_item.description,  service_invoice_item.qty, service_invoice_item.rate,index,service_invoice_item.e_invoice_uom.id,$ctrl.service_invoice.to_account_type_id)">
+                                                    <a href="javascript:void(0)" 
+                                                        ng-click="editServiceItem(index)">
                                                         <img class="img-responsive" src="./public/theme/img/table/cndn/edit.svg" alt="Edit" />
                                                     </a>
                                                     <a href="javascript:void(0)" ng-click="removeServiceItem(service_invoice_item.id, index)">
