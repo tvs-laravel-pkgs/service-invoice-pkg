@@ -244,6 +244,7 @@ class HondaServiceInvoiceApprovalController extends Controller {
 			'serviceInvoiceItems.eavDatetimes',
 			'serviceInvoiceItems.taxes',
 			'serviceInvoiceItems.serviceItemCategory',
+			'serviceInvoiceItems.taxCode',
 			'serviceItemSubCategory',
 			'serviceItemSubCategory.serviceItemCategory',
 		])->find($id);

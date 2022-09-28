@@ -2064,6 +2064,7 @@ class HondaServiceInvoiceController extends Controller
             'serviceInvoiceItems.taxes',
             'serviceItemSubCategory',
             'serviceInvoiceItems.serviceItemCategory',
+            'serviceInvoiceItems.taxCode',
             'serviceItemSubCategory.serviceItemCategory',
         ])->find($id);
         $service_invoice->customer;
