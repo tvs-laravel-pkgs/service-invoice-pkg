@@ -4191,29 +4191,17 @@ class HondaServiceInvoiceController extends Controller
             //GET TAXES
             $state_id = $service_invoice->address ? $service_invoice->address->state_id ? $service_invoice->address->state_id : '' : '';
 
-            $taxes = Tax::getTaxes($serviceInvoiceItem->service_item_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id, $state_id);
+            $taxes = $this->getTaxesBasedHSN($serviceInvoiceItem->service_item_hsn_id, $service_invoice->branch_id, $service_invoice->customer_id, $service_invoice->to_account_type_id, $state_id);
+
             if (!$taxes['success']) {
                 $errors[] = $taxes['error'];
                 // return response()->json(['success' => false, 'error' => $taxes['error']]);
             }
 
-            $service_item = ServiceItem::with([
-                'coaCode',
-                'taxCode',
-                'taxCode.taxes' => function ($query) use ($taxes) {
-                    $query->whereIn('tax_id', $taxes['tax_ids']);
-                },
-            ])
-                ->find($serviceInvoiceItem->service_item_id);
-            if (!$service_item) {
-                $errors[] = 'Service Item not found';
-                // return response()->json(['success' => false, 'error' => 'Service Item not found']);
-            }
-
             //TAX CALC AND PUSH
-            if (!is_null($service_item->sac_code_id)) {
-                if (count($service_item->taxCode->taxes) > 0) {
-                    foreach ($service_item->taxCode->taxes as $key => $value) {
+            if (!is_null($serviceInvoiceItem->service_item_hsn_id)) {
+                if (count($serviceInvoiceItem->taxCode->taxes) > 0) {
+                    foreach ($serviceInvoiceItem->taxCode->taxes as $key => $value) {
                         //FOR CGST
                         if ($value->name == 'CGST') {
                             $cgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
@@ -4234,9 +4222,9 @@ class HondaServiceInvoiceController extends Controller
             } else {
                 return [
                     'success' => false,
-                    'errors' => 'Item Not Mapped with Tax code!. Item Code: ' . $service_item->code,
+                    'errors' => 'Tax Code is not avilable',
                 ];
-                $errors[] = 'Item Not Mapped with Tax code!. Item Code: ' . $service_item->code;
+                $errors[] = 'Tax Code is not avilable' . $serviceInvoiceItem->taxCode->code;
             }
 
             //FOR TCS TAX
