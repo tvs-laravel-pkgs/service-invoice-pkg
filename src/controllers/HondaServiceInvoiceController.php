@@ -493,10 +493,13 @@ class HondaServiceInvoiceController extends Controller
                     $serviceInvoiceItem->field_groups = $field_group_val;
 
                     //TAX CALC
+                    $taxIds = [];
                     if (count($serviceInvoiceItem->taxes) > 0) {
                         $gst_total = 0;
                         foreach ($serviceInvoiceItem->taxes as $key => $value) {
                             $gst_total += round($value->pivot->amount, 2);
+                            if (round($value->pivot->amount, 2) > 0)
+                                $taxIds[] = $value->pivot->tax_id;
                             $serviceInvoiceItem[$value->name] = [
                                 'amount' => round($value->pivot->amount, 2),
                                 'percentage' => round($value->pivot->percentage, 2),
@@ -504,11 +507,41 @@ class HondaServiceInvoiceController extends Controller
                         }
                     }
                     $serviceInvoiceItem->total = round($serviceInvoiceItem->sub_total, 2) + round($gst_total, 2);
-                    $serviceInvoiceItem->code = $serviceInvoiceItem->serviceItem->code;
-                    $serviceInvoiceItem->name = $serviceInvoiceItem->serviceItem->name;
-                    $serviceInvoiceItem->sac_code_value = $serviceInvoiceItem->serviceItem->sac_code_id;
+                    // $serviceInvoiceItem->code = $serviceInvoiceItem->serviceItem->code;
+                    // $serviceInvoiceItem->name = $serviceInvoiceItem->serviceItem->name;
+                    // $serviceInvoiceItem->sac_code_value = $serviceInvoiceItem->serviceItem->sac_code_id;
                     session(['sac_code_value' => $serviceInvoiceItem->sac_code_value]);
                     //dd($serviceInvoiceItem->sac_code_value);
+
+                    // UPDATED BY KARTHICK T ON 28-09-2022
+                    $serviceInvoiceItem->taxCode = TaxCode::select(
+                            'tax_codes.*',
+                            'configs.name'
+                        )->join('configs', 'tax_codes.type_id', 'configs.id')
+                        ->where('tax_codes.id', $serviceInvoiceItem->service_item_hsn_id)->first();
+                        
+                    $serviceInvoiceItem->taxCode->taxes = TaxCode::find($serviceInvoiceItem->service_item_hsn_id)
+                        ->taxes()->whereIn('tax_id', $taxIds)->get();
+                    // $serviceInvoiceItem->desc = $serviceInvoiceItem->description;
+                    $serviceInvoiceItem->category = ServiceItemCategory::join('honda_dept_dimension' , 'honda_dept_dimension.description','service_item_categories.name')
+                            ->select('honda_dept_dimension.dimension_value','honda_dept_dimension.description', 'service_item_categories.id')
+                            ->where('service_item_categories.type', 'honda')
+                            ->where('service_item_categories.id', $serviceInvoiceItem->service_item_category_id)
+                            ->first();
+                    
+                    $serviceInvoiceItem->coa_codes = CoaCode::find($serviceInvoiceItem->service_item_coa_id);
+                    $serviceInvoiceItem->sac_code_id = null;
+                    if (isset($serviceInvoiceItem->taxCode->id) && $serviceInvoiceItem->taxCode->id)
+                        $serviceInvoiceItem->sac_code_id = $serviceInvoiceItem->taxCode->id;
+                    $serviceInvoiceItem->sub_gl = "";
+                    if ($serviceInvoiceItem->service_item_subgl_id)
+                        $serviceInvoiceItem->sub_gl = SubLedger::find($serviceInvoiceItem->service_item_subgl_id);
+                    //GET E-INVOICE UOM
+                    $e_invoice_uom = EInvoiceUom::find($serviceInvoiceItem->e_invoice_uom_id);
+                    $serviceInvoiceItem->e_invoice_uom = '';
+                    if ($e_invoice_uom)
+                        $serviceInvoiceItem->e_invoice_uom = $e_invoice_uom;
+                    // UPDATED BY KARTHICK T ON 28-09-2022
                 }
             }
               // dd($service_invoice->cancel_irn);
