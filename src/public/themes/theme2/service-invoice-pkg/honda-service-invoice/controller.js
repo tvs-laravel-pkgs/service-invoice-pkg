@@ -1804,15 +1804,14 @@ $('#bt_attachments').on('click', () => {
                                 data: {
                                     to_account_type_id: '1440',
                                     hid_document_date: $("#doc_date").val(),
-                                    service_item_id: '615',
                                     e_invoice_uom_id: '1',
                                     description: self.service_invoice.invoice_number.number,
                                     qty: '1',
                                     amount: self.service_invoice.amount,
                                     action: 'add',
                                     customer_id: $("#customer_id").val(),
-                                    branch_id: '609',
-                                    state_id: '6',
+                                    branch_id: self.service_invoice.branch.id,
+                                    state_id: self.customer.state_id,
                                     gst_number: '',
                                     type_id: '1063',   //tcs dn  
                                     },headers: {

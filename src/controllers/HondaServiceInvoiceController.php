@@ -688,8 +688,8 @@ class HondaServiceInvoiceController extends Controller
     public static function getTaxesBasedHSN($hsn_id,$branch_id, $customer_id, $to_account_type_id = NULL, $state_id = NULL) {
         $response = array();
 
-        $serviceItem = TaxCode::find($hsn_id);
-        if (!$serviceItem) {
+        $taxCode = TaxCode::find($hsn_id);
+        if (!$taxCode) {
             $response['success'] = false;
             $response['error'] = 'TaxCode not found';
             return $response;
@@ -750,15 +750,15 @@ class HondaServiceInvoiceController extends Controller
                 $general_taxes = Tax::where('type_id', 1161)->pluck('id')->toArray();
             }
             $statespec_tax = Tax::where('type_id', 1162)->first();
-            if ($statespec_tax && $serviceItem) {
-                $state_specifi_tax = $serviceItem->taxes()->where('state_id', $customer_state_id)->pluck('tax_id')->toArray();
+            if ($statespec_tax && $taxCode) {
+                $state_specifi_tax = $taxCode->taxes()->where('state_id', $customer_state_id)->pluck('tax_id')->toArray();
             } else {
                 $state_specifi_tax = [];
             }
 
             $cess_taxes = Tax::where('type_id', 1164)->pluck('id')->toArray();
-            if ($cess_taxes && $serviceItem) {
-                $cess_taxes = $serviceItem->taxes()->whereIn('tax_id', $cess_taxes)->pluck('tax_id')->toArray();
+            if ($cess_taxes && $taxCode ) {
+                $cess_taxes = $taxCode ->taxes()->whereIn('tax_id', $cess_taxes)->pluck('tax_id')->toArray();
             } else {
                 $cess_taxes = [];
             }
@@ -1595,6 +1595,7 @@ class HondaServiceInvoiceController extends Controller
                                     $igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
                                     $igst_total += round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
                                 }
+
                             }
                         }
                     } else {
@@ -1620,10 +1621,17 @@ class HondaServiceInvoiceController extends Controller
                         $cess_on_gst_total += round(($serviceInvoiceItem->sub_total) * $service_item->cess_on_gst_percentage / 100, 2);
                     }
 
+
+
+                    $cess_amount = DB::table('honda_service_invoice_item_tax')->where('service_invoice_item_id', $serviceInvoiceItem->id)->where('tax_id', 6)->pluck('amount')->first();
+                    if ($cess_amount > 0) {
+                        $cess_on_gst_total += $cess_amount;
+                    }
+
                     $item['SlNo'] = $sno; //Statically assumed
                     $item['PrdDesc'] = $serviceInvoiceItem->description;
                     $item['IsServc'] = "Y"; //ALWAYS Y
-                    $item['HsnCd'] = $serviceInvoiceItem->taxCode ? $serviceInvoiceItem->taxCode : null;
+                    $item['HsnCd'] = $serviceInvoiceItem->taxCode ? $serviceInvoiceItem->taxCode->code : null;
 
                     //BchDtls
                     $item['BchDtls']["Nm"] = null;
