@@ -520,8 +520,12 @@ class HondaServiceInvoiceController extends Controller
                         )->join('configs', 'tax_codes.type_id', 'configs.id')
                         ->where('tax_codes.id', $serviceInvoiceItem->service_item_hsn_id)->first();
                         
-                    $serviceInvoiceItem->taxCode->taxes = TaxCode::find($serviceInvoiceItem->service_item_hsn_id)
+                    $taxCodeTaxes = TaxCode::find($serviceInvoiceItem->service_item_hsn_id)
                         ->taxes()->whereIn('tax_id', $taxIds)->get();
+                    $cessPercentage = TaxCode::find($serviceInvoiceItem->service_item_hsn_id)->pluck('cess')->first();
+                    if ($cessPercentage)
+                        $taxCodeTaxes[count($taxCodeTaxes)] = $this->getCessTax($cessPercentage);
+                    $serviceInvoiceItem->taxCode->taxes = $taxCodeTaxes;
                     // $serviceInvoiceItem->desc = $serviceInvoiceItem->description;
                     $serviceInvoiceItem->category = ServiceItemCategory::join('honda_dept_dimension' , 'honda_dept_dimension.description','service_item_categories.name')
                             ->select('honda_dept_dimension.dimension_value','honda_dept_dimension.description', 'service_item_categories.id')
@@ -651,6 +655,9 @@ class HondaServiceInvoiceController extends Controller
 
         if($request->btn_action == 'add'){
             $taxes = TaxCode::find($request->hsn_sac_id)->taxes()->whereIn('tax_id', $taxes['tax_ids'])->get();
+            $cessPercentage = TaxCode::find($request->hsn_sac_id)->pluck('cess')->first();
+            if ($cessPercentage)
+                $taxes[count($taxes)] = $this->getCessTax($cessPercentage);
             $sac_code_value = $request->hsn_sac_id;
             session(['sac_code_value' => $sac_code_value]);
             return response()->json(['success' => true, 'taxes' => $taxes]);
@@ -802,7 +809,11 @@ class HondaServiceInvoiceController extends Controller
         )->join('configs', 'tax_codes.type_id', 'configs.id')
         ->where('tax_codes.id', $request->service_item_hsn)->first();
         
-        $service_item->taxCode->taxes=TaxCode::find($request->service_item_hsn)->taxes()->whereIn('tax_id', $taxes['tax_ids'])->get();
+        $taxes = $service_item->taxCode->taxes=TaxCode::find($request->service_item_hsn)->taxes()->whereIn('tax_id', $taxes['tax_ids'])->get();
+        $cessPercentage = TaxCode::find($request->service_item_hsn)->pluck('cess')->first();
+        if ($cessPercentage)
+            $taxes[count($taxes)] = $this->getCessTax($cessPercentage);
+        $service_item->taxCode->taxes = $taxes;
         $service_item->desc = $request->service_item_desc;
         $service_item->category = ServiceItemCategory::join('honda_dept_dimension' , 'honda_dept_dimension.description','service_item_categories.name')
                                 ->select('honda_dept_dimension.dimension_value','honda_dept_dimension.description', 'service_item_categories.id')
@@ -5210,6 +5221,17 @@ class HondaServiceInvoiceController extends Controller
                     })->get();
         return response()->json($list);
     }
-    
+    public function getCessTax($cessPercentage) {
+        $cessTaxId = 6;
+        $cessTax = Tax::find($cessTaxId);
+        $cessTax->pivot = (object) [
+            'percentage' => $cessPercentage,
+            'state_id' => null,
+            'tax_code_id' => null,
+            'tax_id' => $cessTaxId
+        ];
+        return $cessTax;
+    }
+
 
 }
