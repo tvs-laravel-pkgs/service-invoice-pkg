@@ -348,9 +348,9 @@
                                         <thead>
                                             <tr>
                                                 <th class="action">Action</th>
-                                                <th>Item Description</th>
-                                                <th>Department</th>
-                                                <th>Reference</th>
+                                                <th>HSN</th>
+                                                <th>Description</th>
+                                                <th>Category</th>
                                                 <th>UOM</th>
                                                 <th class="text-right">Quantity</th>
                                                 <th class="text-right">Rate</th>
@@ -391,9 +391,9 @@
                                                         <img class="img-responsive" src="./public/theme/img/table/cndn/delete.svg" alt="Delete" />
                                                     </a>
                                                 </td>
-                                                <td>{{service_invoice_item.desc}}</td>
-                                                <td>{{service_invoice_item.category.description}} - {{service_invoice_item.category.dimension_value}}</td>
+                                                <td>{{service_invoice_item.taxCode.code}}</td>
                                                 <td>{{service_invoice_item.description}}</td>
+                                                <td>{{service_invoice_item.category.description}} - {{service_invoice_item.category.dimension_value}}</td>
                                                 <td>{{service_invoice_item.e_invoice_uom.code}}</td>
                                                 <td class="text-right">{{$ctrl.parseInt(service_invoice_item.qty)}}</td>
                                                 <td class="text-right">{{service_invoice_item.rate | number : 2}}</td>
@@ -539,14 +539,14 @@
                     <div class="row">
                         <div class="col-md-6">
                             <ul class="table-form-list">
-                                <li>
+                               <!--  <li>
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">Description <span class="mandatory">*</span></label>
                                         <div class="table-form-list-control">
                                             <input type="text" id="service_item_desc" name="service_item_desc" value="{{$ctrl.service_item.desc}}" class="form-control type-sm required">
-                                        </div><!-- Table Form List Control -->
-                                    </div><!-- Table Form List Wrap -->
-                                </li>
+                                        </div>
+                                    </div>
+                                </li> -->
                                 <li>
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">HSN/SAC Code<span class="mandatory">*</span></label>
@@ -663,7 +663,7 @@
                                 </li>
                                 <li>
                                     <div class="table-form-list-wrap">
-                                        <label class="table-form-list-label">Reference</label>
+                                        <label class="table-form-list-label">Description</label>
                                         <div class="table-form-list-control" ng-if="$ctrl.action_title == 'Add'">
                                             <textarea name="description" ng-model="$ctrl.service_item_detail.default_reference" class="form-control type-sm required" rows="3" placeholder="Enter Reference"></textarea>
                                         </div>
