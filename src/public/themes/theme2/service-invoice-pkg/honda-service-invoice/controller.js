@@ -1196,6 +1196,7 @@ $('#bt_attachments').on('click', () => {
 
         self.serviceItemChanged = function () {
             self.service_item_detail = {};
+            self.service_item_detail.is_tcs_applicable = 0;
         }
 
 
@@ -1303,6 +1304,7 @@ $('#bt_attachments').on('click', () => {
             self.service_item_hsn = '';
             // self.service_item_detail = '';
             self.service_item_detail = {};
+            self.service_item_detail.is_tcs_applicable = 0;
             self.e_invoice_uom = {'id' : 1};
             // console.log(' == add btn ==');
             // console.log(self.service_item_detail);
@@ -1416,6 +1418,7 @@ $('#bt_attachments').on('click', () => {
             self.tcs_total = 0;
             self.cess_gst_total = 0;
             self.gst_total = 0;
+            self.tcs_amt = 0;
             if (self.qty && self.rate) {
                 self.sub_total = self.qty * self.rate;
                 // self.sub_total = self.rate;
@@ -1437,7 +1440,7 @@ $('#bt_attachments').on('click', () => {
                 //FOR KFC TAX
                 if ($routeParams.type_id != 1060) {
                     console.log('in');
-                    if (self.service_invoice.branch.primary_address.state_id && self.customer.state_id) {
+                    if (self.service_invoice.branch.primary_address && self.service_invoice.branch.primary_address.state_id && self.customer.state_id) {
                         if (self.service_invoice.branch.primary_address.state_id == 3 && self.customer.state_id == 3) {
                             if (self.customer.gst_number == null) {
                                 if (self.service_item_detail.tax_code != null) {
@@ -1492,8 +1495,13 @@ $('#bt_attachments').on('click', () => {
                     self.cess_gst_total = $scope.percentage(self.sub_total, self.service_item_detail.cess_on_gst_percentage).toFixed(2);
                 }
 
+                if(self.service_item_detail.is_tcs_applicable == 1){
+                    let tcs_percent = 1;
+                    self.tcs_amt = $scope.percentage(self.sub_total, tcs_percent);
+                }
 
-                self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total) + parseFloat(self.tcs_total) + parseFloat(self.cess_gst_total);
+
+                self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total) + parseFloat(self.tcs_total) + parseFloat(self.cess_gst_total) + parseFloat(self.tcs_amt);
                 console.log(self.total);
             }
         };
@@ -1729,6 +1737,10 @@ $('#bt_attachments').on('click', () => {
                             }
                             if (res.add) {
                                 self.service_invoice.service_invoice_items.push(res.service_item);
+
+
+                                console.log("self.service_invoice.service_invoice_items")
+                                console.log(self.service_invoice.service_invoice_items)
                             } else {
                                 var edited_service_invoice_item_primary_id = self.service_invoice.service_invoice_items[self.update_item_key].id;
                                 self.service_invoice.service_invoice_items[self.update_item_key] = res.service_item;

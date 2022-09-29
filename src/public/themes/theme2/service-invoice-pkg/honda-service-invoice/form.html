@@ -640,6 +640,23 @@
                                         </div>--><!-- Table Form List Control -->
                                     <!--</div>--><!-- Table Form List Wrap -->
                                 </li>
+                                <li>
+                                    <div class="table-form-list-wrap" ng-show="$ctrl.type_id != 1063">
+                                        <label class="table-form-list-label">Is TCS Applicable </label>
+                                        <div class="table-form-list-control">
+                                            <div class="common-radio-button type-4">
+                                                <input type="radio" id="tcs_yes" name="is_tcs_applicable" ng-value="1" ng-change="totalAmountCalc()" value="1" ng-model="$ctrl.service_item_detail.is_tcs_applicable" ng-checked="$ctrl.service_item_detail.is_tcs_applicable == 1" class="is_tcs_applicable">
+                                                <label for="tcs_yes">
+                                                    Yes
+                                                </label>
+                                                <input type="radio" id="tcs_no" name="is_tcs_applicable" ng-value="0" ng-change="totalAmountCalc()" value="0" ng-model="$ctrl.service_item_detail.is_tcs_applicable" ng-checked="$ctrl.service_item_detail.is_tcs_applicable == 0" class="is_tcs_applicable">
+                                                <label for="tcs_no">
+                                                    No
+                                                </label>
+                                            </div>
+                                        </div><!-- Table Form List Control -->
+                                    </div><!-- Table Form List Wrap -->
+                                </li>
                             </ul><!-- Table Form List -->
                         </div><!-- Column -->
                         <div class="col-md-6">
