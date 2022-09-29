@@ -569,7 +569,7 @@
                                     <div class="table-form-list-wrap">
                                         <label class="table-form-list-label">Is Service </label> 
                                         <div class="table-form-list-control is_service_error">
-                                                <input type="text" id="is_service" name="is_service" ng-model="$ctrl.service_item_detail.tax_code.name" class="form-control type-sm">
+                                                <input type="text" id="is_service" name="is_service" ng-model="$ctrl.service_item_detail.tax_code.name" class="form-control type-sm" readonly>
                                         </div><!-- Table Form List Control -->
                                     </div><!-- Table Form List Wrap -->
                                 </li>
@@ -663,12 +663,12 @@
                                 </li>
                                 <li>
                                     <div class="table-form-list-wrap">
-                                        <label class="table-form-list-label">Description</label>
+                                        <label class="table-form-list-label">Description <span class="mandatory">*</span></label>
                                         <div class="table-form-list-control" ng-if="$ctrl.action_title == 'Add'">
-                                            <textarea name="description" ng-model="$ctrl.service_item_detail.default_reference" class="form-control type-sm required" rows="3" placeholder="Enter Reference"></textarea>
+                                            <textarea name="description" ng-model="$ctrl.service_item_detail.default_reference" class="form-control type-sm required" rows="3" placeholder="Enter Description"></textarea>
                                         </div>
                                         <div class="table-form-list-control" ng-if="$ctrl.action_title == 'Update'">
-                                            <textarea name="description" ng-model="$ctrl.description" class="form-control type-sm" rows="3" placeholder="Enter Reference"></textarea>
+                                            <textarea name="description" ng-model="$ctrl.description" class="form-control type-sm" rows="3" placeholder="Enter Description"></textarea>
                                         </div>
                                     </div><!-- Table Form List Wrap -->
                                 </li>

@@ -755,7 +755,14 @@ class HondaServiceInvoiceController extends Controller
             } else {
                 $state_specifi_tax = [];
             }
-            $taxes = array_unique(array_merge($general_taxes, $state_specifi_tax));
+
+            $cess_taxes = Tax::where('type_id', 1164)->pluck('id')->toArray();
+            if ($cess_taxes && $serviceItem) {
+                $cess_taxes = $serviceItem->taxes()->whereIn('tax_id', $cess_taxes)->pluck('tax_id')->toArray();
+            } else {
+                $cess_taxes = [];
+            }
+            $taxes = array_unique(array_merge($general_taxes, $state_specifi_tax, $cess_taxes));
             // $taxes = $general_taxes;
 
         } else {
@@ -769,6 +776,10 @@ class HondaServiceInvoiceController extends Controller
 
     public function getServiceItem(Request $request)
     {
+        if($request->type_id == 1063){
+            $request->service_item_hsn = Config::where('config_type_id','806')->first()->pluck('sac_code_id');
+        }
+
         //GET TAXES BY CONDITIONS
         $taxes = $this->getTaxesBasedHSN($request->service_item_hsn, $request->branch_id, $request->customer_id, $request->to_account_type_id, $request->state_id);
         if (!$taxes['success']) {
@@ -1611,7 +1622,7 @@ class HondaServiceInvoiceController extends Controller
                     $item['SlNo'] = $sno; //Statically assumed
                     $item['PrdDesc'] = $serviceInvoiceItem->description;
                     $item['IsServc'] = "Y"; //ALWAYS Y
-                    $item['HsnCd'] = $serviceInvoiceItem->taxCode ? $serviceInvoiceItem->code : null;
+                    $item['HsnCd'] = $serviceInvoiceItem->taxCode ? $serviceInvoiceItem->taxCode : null;
 
                     //BchDtls
                     $item['BchDtls']["Nm"] = null;
@@ -4288,9 +4299,9 @@ class HondaServiceInvoiceController extends Controller
             // }
 
             //FOR CESS on GST TAX
-            if ($service_item->cess_on_gst_percentage) {
-                $cess_on_gst_total += round(($serviceInvoiceItem->sub_total) * $service_item->cess_on_gst_percentage / 100, 2);
-            }
+            // if ($service_item->cess_on_gst_percentage) {
+            //     $cess_on_gst_total += round(($serviceInvoiceItem->sub_total) * $service_item->cess_on_gst_percentage / 100, 2);
+            // }
         }
 
         $qrPaymentApp = QRPaymentApp::where([
