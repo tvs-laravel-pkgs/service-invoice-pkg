@@ -1426,19 +1426,19 @@ class HondaServiceInvoiceController extends Controller
             $service_invoice->document_type = 'INV';
         }
 
-        $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdCN");
+        $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdHondaCN");
         if ($service_invoice->type_id == 1060) {
             $service_invoice->type = 'CRN';
-            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdCN");
+            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdHondaCN");
         } elseif ($service_invoice->type_id == 1061) {
             $service_invoice->type = 'DBN';
-            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdDN");
+            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdHondaDN");
         } elseif ($service_invoice->type_id == 1062) {
             $service_invoice->type = 'INV';
-            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdINV");
+            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdHondaINV");
         } elseif ($service_invoice->type_id == 1063) {
             $service_invoice->type = 'DBN';
-            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdDN");
+            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdHondaDN");
         }
 
         if ($service_invoice->total > $service_invoice->final_amount) {
