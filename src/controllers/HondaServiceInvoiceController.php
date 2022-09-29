@@ -812,11 +812,14 @@ class HondaServiceInvoiceController extends Controller
         
         $taxes = $service_item->taxCode->taxes=TaxCode::find($request->service_item_hsn)->taxes()->whereIn('tax_id', $taxes['tax_ids'])->get();
 
+        $service_item->is_tcs_applicable = $request->is_tcs_applicable;
         if($request->is_tcs_applicable == 1){
             $tcs_tax = Tax::where('name', 'TCS')->first();
             if ($tcs_tax){
                 $taxes[count($taxes)] = $this->getTcsTax($tcs_tax->id,1);
             }
+            $service_item->tcs_percentage = 1.00;
+            $service_item->is_tcs = 1;
         }
 
         $cessPercentage = TaxCode::find($request->service_item_hsn)->pluck('cess')->first();
@@ -854,7 +857,6 @@ class HondaServiceInvoiceController extends Controller
                 }
             }
         }
-        
         $KFC_tax_amount = 0;
         
         if ($request->type_id != 1060) {

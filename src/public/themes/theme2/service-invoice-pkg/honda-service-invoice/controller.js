@@ -1355,7 +1355,8 @@ $('#bt_attachments').on('click', () => {
                 self.service_item_detail = {
                     'tax_code' : editServiceInvoiceItem?.taxCode,     // HSN/ SAC Codes
                     'cao_code' : editServiceInvoiceItem?.coa_codes,   // COA CODES
-                    'service_item_subgl' : editServiceInvoiceItem?.sub_gl?.id   // Sub-GL value
+                    'service_item_subgl' : editServiceInvoiceItem?.sub_gl?.id,   // Sub-GL value
+                    'is_tcs_applicable' : editServiceInvoiceItem.is_tcs_applicable,   // Sub-GL value
                 };
                 // self.service_item = {
                 //     'desc' : editServiceInvoiceItem?.desc   // Description
