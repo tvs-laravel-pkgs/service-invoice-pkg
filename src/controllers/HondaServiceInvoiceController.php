@@ -661,6 +661,7 @@ class HondaServiceInvoiceController extends Controller
 
         if($request->btn_action == 'add'){
             $taxes = TaxCode::find($request->hsn_sac_id)->taxes()->whereIn('tax_id', $taxes['tax_ids'])->get();
+
             $tcs_tax = Tax::where('name', 'TCS')->first();
             if ($tcs_tax){
                 $taxes[count($taxes)] = $this->getTcsTax($tcs_tax->id,1);
@@ -678,14 +679,10 @@ class HondaServiceInvoiceController extends Controller
                 'serviceItemCategory',
                 'coaCode',
                 'sub_gl',
-                'taxes' => function ($query) use ($taxes) {
-                    $query->where('amount','!=','0.00');
+                'taxCode.taxes' => function ($query) use ($taxes) {
+                    $query->whereIn('tax_id', $taxes['tax_ids']);
                 },
-                // 'taxCode.taxes' => function ($query) use ($taxes) {
-                //     $query->whereIn('tax_id', $taxes['tax_ids']);
-                // },
             ])->find($request->service_invoice_item_id);
-            $service_invoice_item->taxCode->taxes = $service_invoice_item->taxes;
             return response()->json([
                 'success' => true,
                 // 'service_item' => $service_item,
@@ -1070,7 +1067,7 @@ class HondaServiceInvoiceController extends Controller
                     $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, null, null, null);
                 } else {
                     //STATE BUSINESS BASED CODE
-                    $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, null, null, $sbu->business_id);
+                    $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id,$branch->id, null,null);
                 }
                 // dd($generateNumber);
                 $generateNumber['service_invoice_id'] = $request->id;
