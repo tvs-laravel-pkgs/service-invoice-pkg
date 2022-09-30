@@ -646,11 +646,12 @@
                                         <label class="table-form-list-label">Is TCS Applicable </label>
                                         <div class="table-form-list-control">
                                             <div class="common-radio-button type-4">
-                                                <input type="radio" id="tcs_yes" name="is_tcs_applicable" ng-change="totalAmountCalc()" value="1" ng-model="$ctrl.service_item_detail.is_tcs_applicable" ng-checked="$ctrl.service_item_detail.is_tcs_applicable == 1" class="">
+                                                {{$ctrl.service_item_detail.is_tcs_applicable}}
+                                                <input type="radio" id="tcs_yes" name="is_tcs_applicable" ng-change="totalAmountCalc()" ng-value="1" ng-model="$ctrl.service_item_detail.is_tcs_applicable" ng-checked="$ctrl.service_item_detail.is_tcs_applicable == 1" class="">
                                                 <label for="tcs_yes">
                                                     Yes
                                                 </label>
-                                                <input type="radio" id="tcs_no" name="is_tcs_applicable" ng-change="totalAmountCalc()" value="0" ng-model="$ctrl.service_item_detail.is_tcs_applicable" ng-checked="$ctrl.service_item_detail.is_tcs_applicable == 0" class="">
+                                                <input type="radio" id="tcs_no" name="is_tcs_applicable" ng-change="totalAmountCalc()" ng-value="0" ng-model="$ctrl.service_item_detail.is_tcs_applicable" ng-checked="$ctrl.service_item_detail.is_tcs_applicable == 0" class="">
                                                 <label for="tcs_no">
                                                     No
                                                 </label>

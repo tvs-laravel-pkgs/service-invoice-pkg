@@ -1351,7 +1351,7 @@ $('#bt_attachments').on('click', () => {
             }
 
             // self.service_item.desc = editServiceInvoiceItem?.desc       // Description
-            $timeout(() => {
+            $timeout(() => { 
                 self.service_item_detail = {
                     'tax_code' : editServiceInvoiceItem?.taxCode,     // HSN/ SAC Codes
                     'cao_code' : editServiceInvoiceItem?.coa_codes,   // COA CODES
@@ -1369,6 +1369,7 @@ $('#bt_attachments').on('click', () => {
                 self.qty = parseInt(editServiceInvoiceItem?.qty)
                 self.rate = editServiceInvoiceItem?.rate
 
+                $scope.$apply();
                 //AMOUNT CALCULATION
                 $scope.totalAmountCalc();
 
