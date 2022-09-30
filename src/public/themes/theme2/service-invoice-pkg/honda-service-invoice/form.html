@@ -600,7 +600,7 @@
                                              <md-autocomplete class="type-sm type-2" md-items="option in $ctrl.searchCoaCodeFilter($ctrl.serviceItemCoaText)" md-selected-item="$ctrl.service_item_detail.cao_code" md-search-text="$ctrl.serviceItemCoaText" md-item-text="option.code" md-min-length="3" placeholder="COA Code" md-selected-item-change="$ctrl.getSubGL($ctrl.service_item_detail.cao_code.id)" md-no-cache="true">
                                                 <md-item-template>
                                                     <span>
-                                                        {{option.code}}
+                                                        {{option.code}} - {{option.name}}
                                                     </span>
                                                 </md-item-template>
                                                 <md-not-found>
@@ -622,7 +622,7 @@
                                                     <input ng-model="searchSubGl" type="search" placeholder="Search for a subgl.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
                                                 </md-select-header>
                                                 <md-optgroup label="sub_ledger_li">
-                                                    <md-option ng-value="sub_ledger_li.id" ng-repeat="sub_ledger_li in $ctrl.sub_ledger_list | filter:searchSubGl">{{sub_ledger_li.code}}</md-option>
+                                                    <md-option ng-value="sub_ledger_li.id" ng-repeat="sub_ledger_li in $ctrl.sub_ledger_list | filter:searchSubGl">{{sub_ledger_li.code}} - {{sub_ledger_li.desc}}</md-option>
                                                 </md-optgroup>
                                             </md-select>
                                             <input type="hidden" name="service_item_subgl" id="service_item_subgl" value="{{$ctrl.service_item_detail.service_item_subgl}}">
