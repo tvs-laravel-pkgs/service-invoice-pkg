@@ -863,11 +863,18 @@ class HondaServiceInvoiceController extends Controller
         if (!is_null($service_item->sac_code_id)) {
             if (count($service_item->taxCode->taxes) > 0) {
                 foreach ($service_item->taxCode->taxes as $key => $value) {
-                    $gst_total += round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2);
-                    $service_item[$value->name] = [
-                        'amount' => round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2),
-                        'percentage' => round($value->pivot->percentage, 2),
-                    ];
+                    // $gst_total += round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2);
+                    // $service_item[$value->name] = [
+                    //     'amount' => round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2),
+                    //     'percentage' => round($value->pivot->percentage, 2),
+                    // ];
+                    if($value->name != 'TCS'){
+                        $gst_total += round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2);
+                        $service_item[$value->name] = [
+                            'amount' => round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2),
+                            'percentage' => round($value->pivot->percentage, 2),
+                        ];
+                    }
                 }
             }
         }
@@ -932,6 +939,19 @@ class HondaServiceInvoiceController extends Controller
             }
         }
 
+        //TCS TAX
+        $tcs_tot_amount = 0;
+        if ($service_item) {
+            if ($service_item->is_tcs_applicable == 1) {
+                $amount_with_gst = round($request->qty * $request->amount, 2) + $gst_total; 
+                $tcs_tot_amount = round(($amount_with_gst) * 1 / 100, 2);
+                $service_item['TCS'] = [
+                    'percentage' => 1,
+                    'amount' => $tcs_tot_amount,
+                ];
+            }
+        }
+
         //GET E-INVOICE UOM
         $e_invoice_uom = EInvoiceUom::find($request->e_invoice_uom_id);
 
@@ -942,7 +962,8 @@ class HondaServiceInvoiceController extends Controller
         $service_item->e_invoice_uom = $e_invoice_uom;
         $service_item->rate = $request->amount;
         $service_item->sub_total = round(($request->qty * $request->amount), 2);
-        $service_item->total = round($request->qty * $request->amount, 2) + $gst_total + $tcs_total + $cess_gst_total;
+        // $service_item->total = round($request->qty * $request->amount, 2) + $gst_total + $tcs_total + $cess_gst_total;
+        $service_item->total = round($request->qty * $request->amount, 2) + $gst_total + $tcs_tot_amount + $cess_gst_total;
 
         if ($request->action == 'add') {
             $add = true;

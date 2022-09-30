@@ -1431,13 +1431,13 @@ $('#bt_attachments').on('click', () => {
                     if (self.service_item_detail.tax_code.taxes.length > 0) {
                         $(self.service_item_detail.tax_code.taxes).each(function (key, tax) {
                             if(tax.name == 'TCS'){
-                                if(self.service_item_detail.is_tcs_applicable == 1){
-                                    tax.pivot.amount = $scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2);
-                                    self.gst_total += parseFloat($scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2));
-                                }else{
-                                    tax.pivot.amount = 0.00;
-                                    self.gst_total += 0.00;
-                                }
+                                // if(self.service_item_detail.is_tcs_applicable == 1){
+                                //     tax.pivot.amount = $scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2);
+                                //     self.gst_total += parseFloat($scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2));
+                                // }else{
+                                //     tax.pivot.amount = 0.00;
+                                //     self.gst_total += 0.00;
+                                // }
                             }else{
                                 tax.pivot.amount = $scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2);
                                 self.gst_total += parseFloat($scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2));
@@ -1513,7 +1513,26 @@ $('#bt_attachments').on('click', () => {
                 }
 
 
-                self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total) + parseFloat(self.tcs_total) + parseFloat(self.cess_gst_total) + parseFloat(self.tcs_amt);
+                // self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total) + parseFloat(self.tcs_total) + parseFloat(self.cess_gst_total) + parseFloat(self.tcs_amt);
+                let tcs_tot_amt = 0
+                if (self.service_item_detail.tax_code != null) {
+                    if (self.service_item_detail.tax_code.taxes.length > 0) {
+                        let amount_with_gst = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total);
+                        $(self.service_item_detail.tax_code.taxes).each(function (key, tax) {
+                            if(tax.name == 'TCS'){
+                                if(self.service_item_detail.is_tcs_applicable == 1){
+                                    tax.pivot.amount = $scope.percentage(amount_with_gst, tax.pivot.percentage).toFixed(2);
+                                    tcs_tot_amt += tax.pivot.amount;
+                                }else{
+                                    tax.pivot.amount = 0.00;
+                                    tcs_tot_amt += tax.pivot.amount;
+                                }
+                            }
+                        });
+                    }
+                }
+
+                self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total) + parseFloat(self.cess_gst_total) + parseFloat(tcs_tot_amt);
                 console.log(self.total);
             }
         };
