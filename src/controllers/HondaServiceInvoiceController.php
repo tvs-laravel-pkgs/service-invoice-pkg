@@ -522,7 +522,8 @@ class HondaServiceInvoiceController extends Controller
                         
                     $taxCodeTaxes = TaxCode::find($serviceInvoiceItem->service_item_hsn_id)
                         ->taxes()->whereIn('tax_id', $taxIds)->get();
-                    $cessPercentage = TaxCode::find($serviceInvoiceItem->service_item_hsn_id)->pluck('cess')->first();
+
+                    $cessPercentage = TaxCode::where('id',$serviceInvoiceItem->service_item_hsn_id)->pluck('cess')->first();
                     if ($cessPercentage)
                         $taxCodeTaxes[count($taxCodeTaxes)] = $this->getCessTax($cessPercentage);
                     $serviceInvoiceItem->taxCode->taxes = $taxCodeTaxes;
@@ -661,7 +662,7 @@ class HondaServiceInvoiceController extends Controller
                 $taxes[count($taxes)] = $this->getTcsTax($tcs_tax->id,1);
             }
 
-            $cessPercentage = TaxCode::find($request->hsn_sac_id)->pluck('cess')->first();
+            $cessPercentage = TaxCode::where('id',$request->hsn_sac_id)->pluck('cess')->first();
             if ($cessPercentage)
                 $taxes[count($taxes)] = $this->getCessTax($cessPercentage);
             $sac_code_value = $request->hsn_sac_id;
@@ -828,7 +829,7 @@ class HondaServiceInvoiceController extends Controller
             // $service_item->is_tcs = 1;
         // }
 
-        $cessPercentage = TaxCode::find($request->service_item_hsn)->pluck('cess')->first();
+        $cessPercentage = TaxCode::where('id',$request->service_item_hsn)->pluck('cess')->first();
         if ($cessPercentage)
             $taxes[count($taxes)] = $this->getCessTax($cessPercentage);
         $service_item->taxCode->taxes = $taxes;
