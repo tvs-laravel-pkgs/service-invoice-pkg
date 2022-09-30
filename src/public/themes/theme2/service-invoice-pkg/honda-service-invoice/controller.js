@@ -2200,7 +2200,7 @@ app.component('hondaServiceInvoiceView', {
                 }
                 // FOR KFC TAX
                 if ($routeParams.type_id != 1060) {
-                    if (self.service_invoice.branch.primary_address.state_id && self.service_invoice.address.state_id) {
+                    if (self.service_invoice.branch.primary_address && self.service_invoice.branch.primary_address.state_id && self.service_invoice.address.state_id) {
                         console.log('in');
                         if (self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.address.state_id == 3) {
                             if (self.service_invoice.address.gst_number == null) {
