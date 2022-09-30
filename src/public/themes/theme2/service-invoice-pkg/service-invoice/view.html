@@ -19,6 +19,7 @@
     <form id="form" enctype="multipart-formdata" autocomplete="off">
         <input type="hidden" name="id" id="service_invoice_id" value="{{$ctrl.service_invoice.id}}">
         <input type="hidden" name="type_id" value="{{$ctrl.type_id}}">
+        <input type="hidden" name="legal_confirmation_accepted" value="{{$ctrl.legal_confirmation_accepted}}">
         <!-- Page Main Content -->
         <div class="page-main-content form-content type2">
             <div class="container">
@@ -352,7 +353,8 @@
                                     <div class="col-md-6">
                                         <a href="#!/service-invoice-pkg/service-invoice/list" class="btn btn-white my-tooltip" id="back_button" ng-shortcut="'meta+shift+b'" ng-shortcut-click data-title="ctrl+shift+b">Back</a>
                                        <!--  <a href="#!/service-invoice-pkg/service-invoice/edit/{{$ctrl.type_id}}/{{$ctrl.service_invoice.id}}" class="btn btn-primary my-tooltip" id="edit_button" ng-if="$ctrl.service_invoice.status_id != 4 && $ctrl.service_invoice.status_id !=7" ng-shortcut="'meta+shift+e'" ng-shortcut-click data-title="ctrl+shift+e">Edit</a> -->
-                                        <button type="submit" id="submit" class="btn btn-primary my-tooltip" ng-if="$ctrl.service_invoice.status_id == 1 || $ctrl.service_invoice.status_id == 5" ng-shortcut="'meta+shift+a'" ng-shortcut-click data-title="ctrl+shift+a">Send to Approval</button>
+                                        <!-- <button type="submit" id="submit" class="btn btn-primary my-tooltip" ng-if="$ctrl.service_invoice.status_id == 1 || $ctrl.service_invoice.status_id == 5" ng-shortcut="'meta+shift+a'" ng-shortcut-click data-title="ctrl+shift+a">Send to Approval</button> -->
+                                        <button type="submit" id="submit" class="btn btn-primary my-tooltip" ng-if="$ctrl.service_invoice.status_id == 1 || $ctrl.service_invoice.status_id == 5" ng-shortcut="'meta+shift+a'" ng-shortcut-click data-title="ctrl+shift+a" ng-click="sentToApprovalHandler()">Send to Approval</button>
                                         <a href="{{attachment_url}}/{{$ctrl.service_invoice.number}}.pdf" target="_blank"><button type="button" class="btn btn-primary my-tooltip" ng-if="$ctrl.service_invoice.status_id == 4">Download PDF</button></a>
 
                                         <!-- <a href="{{chola_attachment_url}}/{{$ctrl.service_invoice.number}}.pdf"> -->
@@ -623,4 +625,28 @@
     </div>
 </div>
 <!-- Modal -->
+
+<div class="modal modal-center fade" id="legal-accept-confirmation-modal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel">
+    <div class="modal-dialog modal-sm modal-green" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close ripple" data-dismiss="modal" aria-label="Close"><i class="icon ion-md-close"></i></button>
+                <h4 class="modal-title" id="myModalLabel">Information!</h4>
+                <div class="modal-icon">
+                </div><!-- Modal Icon -->
+            </div><!-- Modal Header -->
+            <div class="modal-body">
+                <h6>Ax Customer Legal Name : {{$ctrl.service_invoice.customer.name}}</h6>
+                <h6>Trade Name : {{$ctrl.service_invoice.customer.trade_name}}</h6>
+                <h6>Legal Name : {{$ctrl.service_invoice.customer.legal_name}}</h6>
+                <p><b>Invoice will be created in this Ax Customer Legal Name. Any change required please reach out to MDM Team.</b></p>
+            </div><!-- Modal Body -->
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" aria-label="Close" class="btn btn-primary btn-bordered">Cancel</button>
+                <button type="button" class="btn btn-default" ng-click="$ctrl.legal_confirmation_accepted = true; submitForm()" data-dismiss="modal">Confirm</button>
+            </div><!-- Modal Footer -->
+        </div><!-- Modal Content -->
+    </div><!-- Modal Dialog -->
+</div><!-- Modal Content -->
+
 <script src="./public/theme/js/imageuploadify.min.js"></script>
