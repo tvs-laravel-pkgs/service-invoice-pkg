@@ -839,11 +839,11 @@
                                         <span class="modal-footer-list-label">KFC (1%)</span>
                                         <span class="modal-footer-list-value">{{$ctrl.KFC_total | number : 2}}</span>
                                     </li>
-                                    <li ng-show="$ctrl.service_item_detail.tcs_percentage != NULL">
-                                        <!-- <span class="modal-footer-list-label">TCS ({{$ctrl.service_item_detail.tcs_percentage}}%)</span> -->
+                                    <!-- <li ng-show="$ctrl.service_item_detail.tcs_percentage != NULL">
+                                        
                                         <span class="modal-footer-list-label">TCS ({{ calculateTcsPercentage() }}%)</span>
                                         <span class="modal-footer-list-value">{{$ctrl.tcs_total | number : 2}}</span>
-                                    </li>
+                                    </li> -->
                                     <li ng-show="$ctrl.service_item_detail.cess_on_gst_percentage != NULL">
                                         <span class="modal-footer-list-label">CESS on GST ({{$ctrl.service_item_detail.cess_on_gst_percentage}}%)</span>
                                         <span class="modal-footer-list-value">{{$ctrl.cess_gst_total | number : 2}}</span>

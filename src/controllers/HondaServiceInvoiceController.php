@@ -649,12 +649,18 @@ class HondaServiceInvoiceController extends Controller
 
     public function getServiceItemDetails(Request $request)
     {
-        //dd($request->all());
+        // dd($request->all());
         //GET TAXES BY CONDITIONS
         $taxes = $this->getTaxesBasedHSN($request->hsn_sac_id, $request->branch_id, $request->customer_id, $request->to_account_type_id, $request->state_id);
 
         if($request->btn_action == 'add'){
             $taxes = TaxCode::find($request->hsn_sac_id)->taxes()->whereIn('tax_id', $taxes['tax_ids'])->get();
+
+            $tcs_tax = Tax::where('name', 'TCS')->first();
+            if ($tcs_tax){
+                $taxes[count($taxes)] = $this->getTcsTax($tcs_tax->id,1);
+            }
+
             $cessPercentage = TaxCode::find($request->hsn_sac_id)->pluck('cess')->first();
             if ($cessPercentage)
                 $taxes[count($taxes)] = $this->getCessTax($cessPercentage);
@@ -813,14 +819,14 @@ class HondaServiceInvoiceController extends Controller
         $taxes = $service_item->taxCode->taxes=TaxCode::find($request->service_item_hsn)->taxes()->whereIn('tax_id', $taxes['tax_ids'])->get();
 
         $service_item->is_tcs_applicable = $request->is_tcs_applicable;
-        if($request->is_tcs_applicable == 1){
+        // if($request->is_tcs_applicable == 1){
             $tcs_tax = Tax::where('name', 'TCS')->first();
             if ($tcs_tax){
                 $taxes[count($taxes)] = $this->getTcsTax($tcs_tax->id,1);
             }
-            $service_item->tcs_percentage = 1.00;
-            $service_item->is_tcs = 1;
-        }
+            // $service_item->tcs_percentage = 1.00;
+            // $service_item->is_tcs = 1;
+        // }
 
         $cessPercentage = TaxCode::find($request->service_item_hsn)->pluck('cess')->first();
         if ($cessPercentage)
