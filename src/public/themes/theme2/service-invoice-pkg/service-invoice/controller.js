@@ -1008,10 +1008,10 @@ app.component('serviceInvoiceForm', {
                                     setTimeout(function () {
                                         $noty.close();
                                     }, 15000);
-                                    custom_noty('error', 'Customer Name Not Matched!');
-                                    custom_noty('error', 'Not Allow To Add Invoives!');
-                                    $('#submit').hide();
-                                    $('.add_item_btn').hide();
+                                    // custom_noty('error', 'Customer Name Not Matched!');
+                                    // custom_noty('error', 'Not Allow To Add Invoives!');
+                                    // $('#submit').hide();
+                                    // $('.add_item_btn').hide();
 
                                     if(self.service_invoice.to_account_type_id == 1440 && self.customer){
                                         //CUSTOMER
