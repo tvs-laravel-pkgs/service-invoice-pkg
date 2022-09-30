@@ -17,6 +17,7 @@ class HondaServiceInvoiceItem extends Model {
 		'qty',
 		'rate',
 		'sub_total',
+		'is_tcs_applicable',
 	];
 
 	public $timestamps = false;

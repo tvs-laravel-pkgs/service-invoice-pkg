@@ -372,6 +372,7 @@
                                                 <input type="hidden" name="service_invoice_items[{{index}}][rate]" value="{{service_invoice_item.rate}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][sub_total]" value="{{service_invoice_item.sub_total}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][e_invoice_uom_id]" value="{{service_invoice_item.e_invoice_uom.id}}">
+                                                <input type="hidden" name="service_invoice_items[{{index}}][is_tcs_applicable]" value="{{service_invoice_item.is_tcs_applicable}}">
                                                 <!-- FIELD GROUPS -->
                                                 <td style="display: none;">
                                                     <span ng-repeat="(index_fg, field_group) in service_invoice_item.field_groups">
