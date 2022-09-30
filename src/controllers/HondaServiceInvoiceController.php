@@ -679,10 +679,12 @@ class HondaServiceInvoiceController extends Controller
                 'serviceItemCategory',
                 'coaCode',
                 'sub_gl',
-                'taxCode.taxes' => function ($query) use ($taxes) {
-                    $query->whereIn('tax_id', $taxes['tax_ids']);
+                'taxes' => function ($query) use ($taxes) {
+                    $query->where('amount','!=','0.00');
                 },
             ])->find($request->service_invoice_item_id);
+            
+            $service_invoice_item->taxCode->taxes = $service_invoice_item->taxes;
             return response()->json([
                 'success' => true,
                 // 'service_item' => $service_item,
