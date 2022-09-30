@@ -683,7 +683,7 @@ class HondaServiceInvoiceController extends Controller
                     $query->where('amount','!=','0.00');
                 },
             ])->find($request->service_invoice_item_id);
-            
+
             $service_invoice_item->taxCode->taxes = $service_invoice_item->taxes;
             return response()->json([
                 'success' => true,
@@ -1030,16 +1030,16 @@ class HondaServiceInvoiceController extends Controller
 
                 if ($request->type_id == 1061) {
                     //DN
-                    $serial_number_category = 189;
+                    $serial_number_category = 192;
                 } elseif ($request->type_id == 1060) {
                     //CN
-                    $serial_number_category = 190;
+                    $serial_number_category = 191;
                 } elseif ($request->type_id == 1062) {
                     //INV
-                    $serial_number_category = 191;
+                    $serial_number_category = 193;
                 } elseif ($request->type_id == 1063) {
                     //TCS DN
-                    $serial_number_category = 186;
+                    $serial_number_category = 194;
                 }
                 
                 $sbu = Sbu::find($request->sbu_id);
