@@ -523,6 +523,11 @@ class HondaServiceInvoiceController extends Controller
                     $taxCodeTaxes = TaxCode::find($serviceInvoiceItem->service_item_hsn_id)
                         ->taxes()->whereIn('tax_id', $taxIds)->get();
 
+                    $tcs_tax = Tax::where('name', 'TCS')->first();
+                    if ($tcs_tax){
+                        $taxCodeTaxes[count($taxCodeTaxes)] = $this->getTcsTax($tcs_tax->id,1);
+                    }
+
                     $cessPercentage = TaxCode::where('id',$serviceInvoiceItem->service_item_hsn_id)->pluck('cess')->first();
                     if ($cessPercentage)
                         $taxCodeTaxes[count($taxCodeTaxes)] = $this->getCessTax($cessPercentage);
@@ -656,7 +661,6 @@ class HondaServiceInvoiceController extends Controller
 
         if($request->btn_action == 'add'){
             $taxes = TaxCode::find($request->hsn_sac_id)->taxes()->whereIn('tax_id', $taxes['tax_ids'])->get();
-
             $tcs_tax = Tax::where('name', 'TCS')->first();
             if ($tcs_tax){
                 $taxes[count($taxes)] = $this->getTcsTax($tcs_tax->id,1);
@@ -674,10 +678,14 @@ class HondaServiceInvoiceController extends Controller
                 'serviceItemCategory',
                 'coaCode',
                 'sub_gl',
-                'taxCode.taxes' => function ($query) use ($taxes) {
-                    $query->whereIn('tax_id', $taxes['tax_ids']);
+                'taxes' => function ($query) use ($taxes) {
+                    $query->where('amount','!=','0.00');
                 },
+                // 'taxCode.taxes' => function ($query) use ($taxes) {
+                //     $query->whereIn('tax_id', $taxes['tax_ids']);
+                // },
             ])->find($request->service_invoice_item_id);
+            $service_invoice_item->taxCode->taxes = $service_invoice_item->taxes;
             return response()->json([
                 'success' => true,
                 // 'service_item' => $service_item,
