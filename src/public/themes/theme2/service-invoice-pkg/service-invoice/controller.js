@@ -92,7 +92,7 @@ app.component('serviceInvoiceList', {
         setTimeout(function () {
             var table_scroll;
             table_scroll = $('.page-main-content').height() - 37;
-            dataTable = $('#service-invoice-table').DataTable({
+            dataTable = $('#honda-service-invoice-table').DataTable({
                 "dom": cndn_dom_structure,
                 "language": {
                     // "search": "",
@@ -174,7 +174,7 @@ app.component('serviceInvoiceList', {
         });
 
         function RefreshTable() {
-            $('#service-invoice-table').DataTable().ajax.reload();
+            $('#honda-service-invoice-table').DataTable().ajax.reload();
         }
 
         $('#invoice_number').keyup(function () {
@@ -306,7 +306,7 @@ app.component('serviceInvoiceList', {
 
         $(".search_clear").on("click", function () {
             $('#search').val('');
-            $('#service-invoice-table').DataTable().search('').draw();
+            $('#honda-service-invoice-table').DataTable().search('').draw();
         });
 
         $("#search").on('keyup', function () {
@@ -334,7 +334,7 @@ app.component('serviceInvoiceList', {
                     if (response.data.success == true) {
                         custom_noty('success', response.data.message);
                         $timeout(function () {
-                            // $('#service-invoice-table').DataTable().ajax.reload();
+                            // $('#honda-service-invoice-table').DataTable().ajax.reload();
                             RefreshTable();
                             // $scope.$apply();
                         }, 1000);
@@ -474,7 +474,7 @@ app.component('serviceInvoiceList', {
                 $('#pace').addClass('pace-inactive');
                 if (response.data.success == true) {
                     custom_noty('success', response.data.message);
-                    $('#service-invoice-table').DataTable().ajax.reload();
+                    $('#honda-service-invoice-table').DataTable().ajax.reload();
                     $scope.$apply();
                 } else {
                     custom_noty('error', response.data.errors);
@@ -510,7 +510,7 @@ app.component('serviceInvoiceList', {
                 $('#pace').addClass('pace-inactive');
                 if (response.data.success == true) {
                     custom_noty('success', response.data.message);
-                    $('#service-invoice-table').DataTable().ajax.reload();
+                    $('#honda-service-invoice-table').DataTable().ajax.reload();
                     $scope.$apply();
                 } else {
                     custom_noty('error', response.data.errors);

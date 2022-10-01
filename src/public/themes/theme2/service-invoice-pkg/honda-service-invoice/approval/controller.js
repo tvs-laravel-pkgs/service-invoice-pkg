@@ -88,7 +88,7 @@ app.component('hondaServiceInvoiceApprovalList', {
                     { data: 'child_checkbox', searchable: false },
                     { data: 'action', searchable: false, class: 'action' },
                     { data: 'document_date', searchable: false },
-                    { data: 'number', name: 'service_invoices.number', searchable: true },
+                    { data: 'number', name: 'honda_service_invoices.number', searchable: true },
                     { data: 'type_name', name: 'configs.name', searchable: true },
                     { data: 'status', name: 'approval_type_statuses.status', searchable: false },
                     { data: 'branch', name: 'outlets.code', searchable: true },

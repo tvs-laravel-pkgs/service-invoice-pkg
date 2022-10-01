@@ -30,7 +30,7 @@ app.component('serviceInvoiceApprovalList', {
         setTimeout(function () {
             var table_scroll;
             table_scroll = $('.page-main-content').height() - 37;
-            dataTable = $('#cn-dn-approval-table').DataTable({
+            dataTable = $('#honda-cn-dn-approval-table').DataTable({
                 "dom": cndn_dom_structure,
                 "language": {
                     // "search": "",
@@ -115,7 +115,7 @@ app.component('serviceInvoiceApprovalList', {
         });
 
         function RefreshTable() {
-            $('#cn-dn-approval-table').DataTable().ajax.reload();
+            $('#honda-cn-dn-approval-table').DataTable().ajax.reload();
         }
 
         $('#invoice_number').keyup(function () {
@@ -209,7 +209,7 @@ app.component('serviceInvoiceApprovalList', {
 
         $(".search_clear").on("click", function () {
             $('#search').val('');
-            $('#cn-dn-approval-table').DataTable().search('').draw();
+            $('#honda-cn-dn-approval-table').DataTable().search('').draw();
         });
 
         $("#search").on('keyup', function () {
@@ -241,7 +241,7 @@ app.component('serviceInvoiceApprovalList', {
                         if (response.data.success == true) {
                             custom_noty('success', response.data.message);
                             $timeout(function () {
-                                // $('#cn-dn-approval-table').DataTable().ajax.reload();
+                                // $('#honda-cn-dn-approval-table').DataTable().ajax.reload();
                                 RefreshTable();
                                 bulk_approve = 0;
                                 // $('.bulk_approve').unbind('click', false);
@@ -414,7 +414,7 @@ app.component('serviceInvoiceApprovalList', {
                 $('#pace').addClass('pace-inactive');
                 if (response.data.success == true) {
                     custom_noty('success', 'CN/DN ' + response.data.message + ' Successfully');
-                    $('#cn-dn-approval-table').DataTable().ajax.reload();
+                    $('#honda-cn-dn-approval-table').DataTable().ajax.reload();
                     $scope.$apply();
                 } else {
                     new Noty({
@@ -763,7 +763,7 @@ app.component('serviceInvoiceApprovalView', {
                 $('#pace').addClass('pace-inactive');
                 if (response.data.success == true) {
                     custom_noty('success', 'CN/DN ' + response.data.message + ' Successfully');
-                    // $('#cn-dn-approval-table').DataTable().ajax.reload();
+                    // $('#honda-cn-dn-approval-table').DataTable().ajax.reload();
                     $timeout(function () {
                         $location.path('/service-invoice-pkg/cn-dn/approval/approval-level/' + $routeParams.approval_type_id + '/list/');
                     }, 900);

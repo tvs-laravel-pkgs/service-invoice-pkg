@@ -107,7 +107,7 @@ class HondaServiceInvoiceApprovalController extends Controller {
 			->where('honda_service_invoices.status_id', 2)
 			->where(function ($query) use ($first_date_this_month, $last_date_this_month) {
 				if (!empty($first_date_this_month) && !empty($last_date_this_month)) {
-					$query->whereRaw("DATE(service_invoices.document_date) BETWEEN '" . $first_date_this_month . "' AND '" . $last_date_this_month . "'");
+					$query->whereRaw("DATE(honda_service_invoices.document_date) BETWEEN '" . $first_date_this_month . "' AND '" . $last_date_this_month . "'");
 				}
 			})
 			->where(function ($query) use ($invoice_number_filter) {
