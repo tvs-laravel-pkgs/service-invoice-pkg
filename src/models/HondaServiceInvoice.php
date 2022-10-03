@@ -478,20 +478,21 @@ class HondaServiceInvoice extends Model
                         }
                     }
                 } 
-                // if ($invoice_item->serviceItem->tcs_percentage) {
-                    
-                //     $tcs_total['credit'] += $this->type_id == 1060 ? round(($kfc_amt['credit'] + $igst_amt['credit'] + $sgst_amt['credit'] + $cgst_amt['credit'] + $invoice_item->sub_total) * $tcs_percentage / 100, 2) : 0;
-                //     $tcs_total['debit'] += $this->type_id == 1061 ? round(($kfc_amt['debit'] + $igst_amt['debit'] + $sgst_amt['debit'] + $cgst_amt['debit'] + $invoice_item->sub_total) * $tcs_percentage / 100, 2) : 0;
-                //     $tcs_total['invoice'] += $this->type_id == 1062 ? round(($kfc_amt['invoice'] + $igst_amt['invoice'] + $sgst_amt['invoice'] + $cgst_amt['invoice'] + $invoice_item->sub_total) * $tcs_percentage / 100, 2) : 0;
+                if ($invoice_item->is_tcs_applicable == 1) { 
+                    $tcs_total['credit'] += $this->type_id == 1060 ? round(($kfc_amt['credit'] + $igst_amt['credit'] + $sgst_amt['credit'] + $cgst_amt['credit'] + $invoice_item->sub_total) * 1/ 100, 2) : 0;
+                    $tcs_total['debit'] += $this->type_id == 1061 ? round(($kfc_amt['debit'] + $igst_amt['debit'] + $sgst_amt['debit'] + $cgst_amt['debit'] + $invoice_item->sub_total) * 1/ 100, 2) : 0;
+                    $tcs_total['invoice'] += $this->type_id == 1062 ? round(($kfc_amt['invoice'] + $igst_amt['invoice'] + $sgst_amt['invoice'] + $cgst_amt['invoice'] + $invoice_item->sub_total) * 1/ 100, 2) : 0;
 
-                // }
+                }
                 //ONLY APPLICABLE FOR KL OUTLETS
-                // if ($invoice_item->serviceItem->cess_on_gst_percentage) {
-                //     $cess_on_gst_total['credit'] += $this->type_id == 1060 ? round(($invoice_item->sub_total) * $invoice_item->serviceItem->cess_on_gst_percentage / 100, 2) : 0;
-                //     $cess_on_gst_total['debit'] += $this->type_id == 1061 ? round(($invoice_item->sub_total) * $invoice_item->serviceItem->cess_on_gst_percentage / 100, 2) : 0;
+                  if ($invoice_item->cess != null) {
 
-                //     $cess_on_gst_total['invoice'] += $this->type_id == 1062 ? round(($invoice_item->sub_total) * $invoice_item->serviceItem->cess_on_gst_percentage / 100, 2) : 0;
-                // }
+                    $cess_on_gst_percentage = $invoice_item->cess;
+                    $cess_on_gst_total['credit'] += $this->type_id == 1060 ? round(($invoice_item->sub_total) * $icess_on_gst_percentage / 100, 2) : 0;
+                    $cess_on_gst_total['debit'] += $this->type_id == 1061 ? round(($invoice_item->sub_total) * $invoice_item->serviceItem->cess_on_gst_percentage / 100, 2) : 0;
+
+                    $cess_on_gst_total['invoice'] += $this->type_id == 1062 ? round(($invoice_item->sub_total) * $invoice_item->serviceItem->cess_on_gst_percentage / 100, 2) : 0;
+                }
             }
             //$item_codes[] = $invoice_item->serviceItem->code;
             $item_descriptions[] = $invoice_item->description;
@@ -808,7 +809,7 @@ class HondaServiceInvoice extends Model
                                     }
 
                                     $params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-                                    $params['LedgerDimension'] = $this->branch->primaryAddress->state->cgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
+                                    $params['LedgerDimension'] = '146050' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
                                     $params['LineNum'] = ++$line_number;
                                     // dump($params['LineNum']);
@@ -826,7 +827,7 @@ class HondaServiceInvoice extends Model
                                     $params['VatPercentage'] = $invoice_cgst_percentage;
                                     $this->exportRowToAxapta($params);
                                 }
-                                //FOR CGST
+                                //FOR SGST
                                 if ($tax->name == 'SGST' && $invoice_sgst_percentage != 0.00) {
                                     if ($this->type_id == 1061) {
                                         $params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
@@ -837,7 +838,7 @@ class HondaServiceInvoice extends Model
                                     }
 
                                     $params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-                                    $params['LedgerDimension'] = $this->branch->primaryAddress->state->sgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
+                                    $params['LedgerDimension'] = '146051' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
                                     $params['LineNum'] = ++$line_number;
                                     // dump($params['LineNum']);
@@ -865,7 +866,7 @@ class HondaServiceInvoice extends Model
                                     }
 
                                     $params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-                                    $params['LedgerDimension'] = $this->branch->primaryAddress->state->igst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
+                                    $params['LedgerDimension'] = '146053' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
                                     $params['LineNum'] = ++$line_number;
                                     // dump($params['LineNum']);
@@ -955,7 +956,7 @@ class HondaServiceInvoice extends Model
             $params['Sub_GL'] = isset($invoice_item->sub_gl->ax_subgl) ? $invoice_item->sub_gl->ax_subgl : '' ;
             $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
-           $params['VatPercentage'] = '';
+            $params['VatPercentage'] = '';
             $params['Qty'] = '';
             // dump($params);
             $this->exportRowToAxapta($params);
@@ -981,7 +982,7 @@ class HondaServiceInvoice extends Model
                     $params['AmountCurCredit'] = 0;
                 }
                 $params['AmountCurDebit'] = $this->type_id == 1060 ? $amount_diff : 0;
-                $params['LedgerDimension'] = '3198' . '-' . $this->branch->code . '-' . $this->sbu->name;
+                $params['LedgerDimension'] = '648069' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
                 $params['LineNum'] = ++$line_number;
                 // dump($params['LineNum']);
@@ -996,7 +997,7 @@ class HondaServiceInvoice extends Model
                     $params['AmountCurDebit'] = 0;
                 }
                 $params['AmountCurCredit'] = $this->type_id == 1060 ? ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : 0;
-                $params['LedgerDimension'] = '3198' . '-' . $this->branch->code . '-' . $this->sbu->name;
+                $params['LedgerDimension'] = '648069' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
                 $params['LineNum'] = ++$line_number;
                 // dump($params['LineNum']);
