@@ -827,14 +827,11 @@ class HondaServiceInvoiceController extends Controller
         $taxes = $service_item->taxCode->taxes=TaxCode::find($request->service_item_hsn)->taxes()->whereIn('tax_id', $taxes['tax_ids'])->get();
 
         $service_item->is_tcs_applicable = $request->is_tcs_applicable;
-        // if($request->is_tcs_applicable == 1){
-            $tcs_tax = Tax::where('name', 'TCS')->first();
-            if ($tcs_tax){
-                $taxes[count($taxes)] = $this->getTcsTax($tcs_tax->id,1);
-            }
-            // $service_item->tcs_percentage = 1.00;
-            // $service_item->is_tcs = 1;
-        // }
+        $tcs_tax = Tax::where('name', 'TCS')->first();
+        if ($tcs_tax){
+            $taxes[count($taxes)] = $this->getTcsTax($tcs_tax->id,1);
+        }
+            
 
         $cessPercentage = TaxCode::where('id',$request->service_item_hsn)->pluck('cess')->first();
         if ($cessPercentage)
@@ -860,15 +857,15 @@ class HondaServiceInvoiceController extends Controller
 
         //TAX CALC AND PUSH
         $gst_total = 0;
+        $gst_totalwithout_cess = 0;
         if (!is_null($service_item->sac_code_id)) {
             if (count($service_item->taxCode->taxes) > 0) {
                 foreach ($service_item->taxCode->taxes as $key => $value) {
-                    // $gst_total += round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2);
-                    // $service_item[$value->name] = [
-                    //     'amount' => round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2),
-                    //     'percentage' => round($value->pivot->percentage, 2),
-                    // ];
                     if($value->name != 'TCS'){
+                        if($value->name != 'CESS'){
+                              $gst_totalwithout_cess += round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2);
+                          }
+
                         $gst_total += round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2);
                         $service_item[$value->name] = [
                             'amount' => round(($value->pivot->percentage / 100) * ($request->qty * $request->amount), 2),
@@ -943,7 +940,7 @@ class HondaServiceInvoiceController extends Controller
         $tcs_tot_amount = 0;
         if ($service_item) {
             if ($service_item->is_tcs_applicable == 1) {
-                $amount_with_gst = round($request->qty * $request->amount, 2) + $gst_total; 
+                $amount_with_gst = round($request->qty * $request->amount, 2) + $gst_totalwithout_cess; 
                 $tcs_tot_amount = round(($amount_with_gst) * 1 / 100, 2);
                 $service_item['TCS'] = [
                     'percentage' => 1,

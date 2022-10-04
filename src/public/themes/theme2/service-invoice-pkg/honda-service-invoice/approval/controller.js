@@ -646,6 +646,9 @@ app.component('hondaServiceInvoiceApprovalView', {
                             if(tax.name != "TCS"){
                                 tax.pivot.amount = $scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2);
                                 self.gst_total += parseFloat($scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2));
+                             if(tax.name == 'CESS')
+                                self.cess_gst_total += parseFloat($scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2));
+
                             }
                         });
                     }
@@ -674,18 +677,12 @@ app.component('hondaServiceInvoiceApprovalView', {
                         }
                     }
                 }
-                // else{
-                //     if(self.service_invoice.branch.primary_address.state_id){
-                //         if(self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.customer.primary_address.state_id == 3){
-                //             self.KFC_total = self.sub_total/100;
-                //         }
-                //     }
-                // }
-                // self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total) + parseFloat(self.tcs_total) + parseFloat(self.cess_gst_total);
-
+                
                 let tcs_tot_amt = 0
                 if (self.service_item_detail.tax_code != null) {
                     if (self.service_item_detail.tax_code.taxes.length > 0) {
+                        
+                        self.gst_total = parseFloat(self.gst_total) - parseFloat(self.cess_gst_total)
                         let amount_with_gst = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total);
                         $(self.service_item_detail.tax_code.taxes).each(function (key, tax) {
                             if(tax.name == 'TCS'){

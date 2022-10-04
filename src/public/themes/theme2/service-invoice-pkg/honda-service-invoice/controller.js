@@ -1423,32 +1423,20 @@ $('#bt_attachments').on('click', () => {
             self.tcs_amt = 0;
             if (self.qty && self.rate) {
                 self.sub_total = self.qty * self.rate;
-                // self.sub_total = self.rate;
-                // console.log(self.sub_total);
-                // console.log(self.service_item_detail);
-                // console.log('in');
                 if (self.service_item_detail.tax_code != null) {
                     if (self.service_item_detail.tax_code.taxes.length > 0) {
                         $(self.service_item_detail.tax_code.taxes).each(function (key, tax) {
-                            if(tax.name == 'TCS'){
-                                // if(self.service_item_detail.is_tcs_applicable == 1){
-                                //     tax.pivot.amount = $scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2);
-                                //     self.gst_total += parseFloat($scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2));
-                                // }else{
-                                //     tax.pivot.amount = 0.00;
-                                //     self.gst_total += 0.00;
-                                // }
-                            }else{
+                            if(tax.name != 'TCS'){
                                 tax.pivot.amount = $scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2);
                                 self.gst_total += parseFloat($scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2));
+                             if(tax.name == 'CESS')
+                                self.cess_gst_total += parseFloat($scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2));
+
                             }
                         });
                     }
                 }
-                //FOR TCS TAX
-                // if (self.service_item_detail.tcs_percentage) {
-                //     self.tcs_total = $scope.percentage(self.sub_total, self.service_item_detail.tcs_percentage).toFixed(2);
-                // }
+                
                 //FOR KFC TAX
                 if ($routeParams.type_id != 1060) {
                     console.log('in');
@@ -1466,20 +1454,11 @@ $('#bt_attachments').on('click', () => {
                                     } else {
                                         self.KFC_total = self.sub_total / 100;
                                     }
-                                    // console.log(self.sub_total);
-                                    // console.log(self.KFC_total);
                                 }
                             }
                         }
                     }
                 }
-                // else{
-                //     if(self.service_invoice.branch.primary_address.state_id){
-                // if(self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.customer.primary_address.state_id == 3){
-                //             self.KFC_total = self.sub_total/100;
-                //         }
-                //     }
-                // }
                 //FOR TCS TAX
 
                 if (self.service_item_detail.tcs_percentage) {
@@ -1495,28 +1474,22 @@ $('#bt_attachments').on('click', () => {
                     if (d1 > d2) {
                         tcs_percentage = 1;
                     }
-                    // }
-
-                    // self.tcs_total = $scope.percentage(self.sub_total + self.gst_total + self.KFC_total, self.service_item_detail.tcs_percentage).toFixed(2);
-                    // self.tcs_total = $scope.percentage(self.sub_total + self.gst_total + self.KFC_total, tcs_percentage).toFixed(2);
                 }
 
                 //FOR CESS GST TAX
-                // console.log(self.service_invoice.branch.primary_address.state_id+ "state");
                 if (self.service_item_detail.cess_on_gst_percentage) {
                     self.cess_gst_total = $scope.percentage(self.sub_total, self.service_item_detail.cess_on_gst_percentage).toFixed(2);
                 }
 
                 if(self.service_item_detail.is_tcs_applicable == 1){
                     let tcs_percent = 1;
-                    // self.tcs_amt = $scope.percentage(self.sub_total, tcs_percent);
                 }
 
 
-                // self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total) + parseFloat(self.tcs_total) + parseFloat(self.cess_gst_total) + parseFloat(self.tcs_amt);
                 let tcs_tot_amt = 0
                 if (self.service_item_detail.tax_code != null) {
                     if (self.service_item_detail.tax_code.taxes.length > 0) {
+                        self.gst_total = parseFloat(self.gst_total) - parseFloat(self.cess_gst_total)
                         let amount_with_gst = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total);
                         $(self.service_item_detail.tax_code.taxes).each(function (key, tax) {
                             if(tax.name == 'TCS'){
@@ -2187,11 +2160,13 @@ app.component('hondaServiceInvoiceView', {
                 if (self.service_item_detail.tax_code != null) {
                     if (self.service_item_detail.tax_code.taxes.length > 0) {
                         $(self.service_item_detail.tax_code.taxes).each(function (key, tax) {
-                            // tax.pivot.amount = $scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2);
-                            // self.gst_total += parseFloat($scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2));
-                            if(tax.name != 'TCS'){
+                           if(tax.name != 'TCS'){
                                 tax.pivot.amount = $scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2);
                                 self.gst_total += parseFloat($scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2));
+                            if(tax.name == 'CESS')
+                                self.cess_gst_total += parseFloat($scope.percentage(self.sub_total, tax.pivot.percentage).toFixed(2));
+
+
                             }
                         });
                     }
@@ -2238,25 +2213,15 @@ app.component('hondaServiceInvoiceView', {
                                     } else {
                                         self.KFC_total = self.sub_total / 100;
                                     }
-                                    // console.log(self.sub_total);
-                                    // console.log(self.KFC_total);
                                 }
                             }
                         }
                     }
                 }
-                // else{
-                //     if(self.service_invoice.branch.primary_address.state_id){
-                //         if(self.service_invoice.branch.primary_address.state_id == 3 && self.service_invoice.customer.primary_address.state_id == 3){
-                //             self.KFC_total = self.sub_total/100;
-                //         }
-                //     }
-                // }
-                // self.total = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total) + parseFloat(self.tcs_total) + parseFloat(self.cess_gst_total);
-
                 let tcs_tot_amt = 0
                 if (self.service_item_detail.tax_code != null) {
                     if (self.service_item_detail.tax_code.taxes.length > 0) {
+                        self.gst_total = parseFloat(self.gst_total) - parseFloat(self.cess_gst_total)
                         let amount_with_gst = parseFloat(self.sub_total) + parseFloat(self.gst_total) + parseFloat(self.KFC_total);
                         $(self.service_item_detail.tax_code.taxes).each(function (key, tax) {
                             if(tax.name == 'TCS'){

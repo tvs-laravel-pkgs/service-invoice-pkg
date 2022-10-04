@@ -485,13 +485,13 @@ class HondaServiceInvoice extends Model
 
                 }
                 //ONLY APPLICABLE FOR KL OUTLETS
-                  if ($invoice_item->cess != null) {
+                  if ($invoice_item->taxCode->cess != null) {
 
-                    $cess_on_gst_percentage = $invoice_item->cess;
-                    $cess_on_gst_total['credit'] += $this->type_id == 1060 ? round(($invoice_item->sub_total) * $icess_on_gst_percentage / 100, 2) : 0;
-                    $cess_on_gst_total['debit'] += $this->type_id == 1061 ? round(($invoice_item->sub_total) * $invoice_item->serviceItem->cess_on_gst_percentage / 100, 2) : 0;
+                    $cess_on_gst_percentage = $invoice_item->taxCode->cess;
+                    $cess_on_gst_total['credit'] += $this->type_id == 1060 ? round(($invoice_item->sub_total) * $cess_on_gst_percentage / 100, 2) : 0;
+                    $cess_on_gst_total['debit'] += $this->type_id == 1061 ? round(($invoice_item->sub_total) * $cess_on_gst_percentage / 100, 2) : 0;
 
-                    $cess_on_gst_total['invoice'] += $this->type_id == 1062 ? round(($invoice_item->sub_total) * $invoice_item->serviceItem->cess_on_gst_percentage / 100, 2) : 0;
+                    $cess_on_gst_total['invoice'] += $this->type_id == 1062 ? round(($invoice_item->sub_total) * $cess_on_gst_percentage / 100, 2) : 0;
                 }
             }
             //$item_codes[] = $invoice_item->serviceItem->code;
@@ -905,7 +905,7 @@ class HondaServiceInvoice extends Model
                 $params['AmountCurCredit'] = 0;
             }
             $params['AmountCurDebit'] = $this->type_id == 1060 ? round($tcs_total['credit'], 2) : 0;
-            $params['LedgerDimension'] = '2269' . '-' . $this->branch->code . '-' . $this->sbu->name;
+            $params['LedgerDimension'] = '900680038' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
             $params['LineNum'] = ++$line_number;
             // dump($params['LineNum']);
