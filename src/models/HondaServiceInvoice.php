@@ -318,10 +318,8 @@ class HondaServiceInvoice extends Model
 
         $errors = [];
         $item_descriptions = [];
-
         if($this->type_id == '1063')
           $this->type_id = '1061';
-      
         foreach ($this->serviceInvoiceItems as $invoice_item) {
             $service_invoice = $invoice_item->serviceInvoice()->with([
                 'toAccountType',
@@ -942,14 +940,21 @@ class HondaServiceInvoice extends Model
                 $params['AmountCurCredit'] = 0;
             }
             $params['AmountCurDebit'] = $this->type_id == 1060 ? round($cess_on_gst_total['credit'], 2) : 0;
-            $params['LedgerDimension'] = $this->branch->primaryAddress->state->cess_on_gst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
+            $params['LedgerDimension'] = '146054' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
             $params['LineNum'] = ++$line_number;
             // dump($params['LineNum']);
             $line_number = $params['LineNum'];
             // dd($params);
             //REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
-            $params['TVSHSNCode'] = $params['TVSSACCode'] = null;
+            if ($invoice_item->taxCode->type_id == 1020) {
+                //HSN Code
+                $params['TVSHSNCode'] = $invoice_item->taxCode->code;
+                $params['TVSSACCode'] = '';
+            } else {
+                $params['TVSHSNCode'] = '';
+                $params['TVSSACCode'] = $invoice_item->taxCode->code;
+            }
             $params['PlantCode'] = $service_invoice->branch->al_plant_code;
             $params['Account'] = $service_invoice->customer->code;
             $params['Department'] = $invoice_item->serviceItemCategory->name;
@@ -1702,10 +1707,13 @@ class HondaServiceInvoice extends Model
         else 
             $export->ApplicationType = 'CNDN';
 
-        if($this->type_id != 1060)
-            $export->DocumentType = 136;
-        else
-            $export->DocumentType = 142;
+        if ($this->type_id == 1060) {
+            $export->DocumentType  = '155';
+        }elseif ($this->type_id == 1062) {
+            $export->DocumentType  = '142';
+        }elseif ($this->type_id == 1063) {
+            $export->DocumentType  = '163'; //TCS Debit Note (Rev)    157 C157_+Brsnch Code
+        }
 
         $export->CurrencyCode = 'INR';
         $export->JournalName = 'BPAS_NJV';
@@ -1770,6 +1778,7 @@ class HondaServiceInvoice extends Model
         $export->InvoiceDate = $this->invoice_date;
         $export->VatPercentage = ($params['VatPercentage'] > 0) ? $params['VatPercentage'] : '';
         $export->Qty =  $params['Qty'];
+        $export->GSTIN = $this->outlets->gst_number;
         $export->save();
         $this->importRowToAxaptaStaging($params);
 
