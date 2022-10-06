@@ -4618,7 +4618,7 @@ class HondaServiceInvoiceController extends Controller
 
     }
 
-     public function reprintInvoicePdf($service_invoice_id,$gst_number) {
+    public function reprintInvoicePdf($service_invoice_id,$gst_number) {
         $errors = [];
 
         $service_invoice = $service_invoice_pdf = HondaServiceInvoice::with([

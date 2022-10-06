@@ -190,13 +190,6 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 				'display_name' => 'CNDN Export',
 			],
 
-			3063 => [
-				'display_order' => 18,
-				'parent_id' => 3040,
-				'name' => 'service-invoice-irn-cancel',
-				'display_name' => 'Service Invoice IRN Cancelation',
-			],
-
 			3059 => [
 				'display_order' => 14,
 				'parent_id' => 3040,
@@ -378,6 +371,13 @@ class ServiceInvoicePermissionSeeder extends Seeder {
 				'name' => 'honda-create-tcs-dn',
 				'display_name' => 'Create TCS DN',
 			], 
+
+			3088 => [
+				'display_order' => 18,
+				'parent_id' => 3040,
+				'name' => 'service-invoice-irn-cancel',
+				'display_name' => 'Service Invoice IRN Cancelation',
+			],
 
 		];
 

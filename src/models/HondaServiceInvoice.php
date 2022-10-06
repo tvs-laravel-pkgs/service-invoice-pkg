@@ -625,7 +625,7 @@ class HondaServiceInvoice extends Model
 
         foreach ($this->serviceInvoiceItems as $invoice_item) {
             if (!$invoice_item->coaCode) {
-                $errors[] = 'COA Code not configured. Item Code : ' . $invoice_item->serviceItem->code;
+                $errors[] = 'COA Code not configured. Item Code : ' . $invoice_item->coaCode->code;
                 continue;
             }
         }
@@ -1163,7 +1163,7 @@ class HondaServiceInvoice extends Model
                         // }
                         // }
                     } else {
-                        if (!empty($invoice_item->serviceItem->taxCode)) {
+                        if (!empty($invoice_item->taxCode)) {
                             foreach ($invoice_item->taxCode->taxes as $tax) {
                                 if ($tax->name == 'CGST' && $invoice_cgst_percentage != 0.00) {
                                     $total_amount_with_gst_not_kfc['credit'] += $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
@@ -1233,22 +1233,25 @@ class HondaServiceInvoice extends Model
                         }
                     }
                 } 
-                // if ($invoice_item->serviceItem->tcs_percentage) {
-                //     $tcs_total['credit'] += $this->type_id == 1060 ? round(($kfc_amt['credit'] + $igst_amt['credit'] + $sgst_amt['credit'] + $cgst_amt['credit'] + $invoice_item->sub_total) * $tcs_percentage / 100, 2) : 0;
-                //     $tcs_total['debit'] += $this->type_id == 1061 ? round(($kfc_amt['debit'] + $igst_amt['debit'] + $sgst_amt['debit'] + $cgst_amt['debit'] + $invoice_item->sub_total) * $tcs_percentage / 100, 2) : 0;
+                
+                if ($invoice_item->is_tcs_applicable == 1) {
+                    $tcs_percentage = 1;
+                    $tcs_total['credit'] += $this->type_id == 1060 ? round(($kfc_amt['credit'] + $igst_amt['credit'] + $sgst_amt['credit'] + $cgst_amt['credit'] + $invoice_item->sub_total) * $tcs_percentage / 100, 2) : 0;
+                    $tcs_total['debit'] += $this->type_id == 1061 ? round(($kfc_amt['debit'] + $igst_amt['debit'] + $sgst_amt['debit'] + $cgst_amt['debit'] + $invoice_item->sub_total) * $tcs_percentage / 100, 2) : 0;
 
-                //     $tcs_total['invoice'] += $this->type_id == 1062 ? round(($kfc_amt['invoice'] + $igst_amt['invoice'] + $sgst_amt['invoice'] + $cgst_amt['invoice'] + $invoice_item->sub_total) * $tcs_percentage / 100, 2) : 0;
-                // }
+                    $tcs_total['invoice'] += $this->type_id == 1062 ? round(($kfc_amt['invoice'] + $igst_amt['invoice'] + $sgst_amt['invoice'] + $cgst_amt['invoice'] + $invoice_item->sub_total) * $tcs_percentage / 100, 2) : 0;
+                }
 
                 //ONLY APPLICABLE FOR KL OUTLETS
-                // if ($invoice_item->serviceItem->cess_on_gst_percentage) {
-                //     $cess_on_gst_total['credit'] += $this->type_id == 1060 ? round(($invoice_item->sub_total) * $invoice_item->serviceItem->cess_on_gst_percentage / 100, 2) : 0;
-                //     $cess_on_gst_total['debit'] += $this->type_id == 1061 ? round(($invoice_item->sub_total) * $invoice_item->serviceItem->cess_on_gst_percentage / 100, 2) : 0;
+               if ($invoice_item->taxCode->cess != null) {
 
-                //     $cess_on_gst_total['invoice'] += $this->type_id == 1062 ? round(($invoice_item->sub_total) * $invoice_item->serviceItem->cess_on_gst_percentage / 100, 2) : 0;
-                // }
+                    $cess_on_gst_total['credit'] += $this->type_id == 1060 ? round(($invoice_item->sub_total) * $invoice_item->taxCode->cess / 100, 2) : 0;
+                    $cess_on_gst_total['debit'] += $this->type_id == 1061 ? round(($invoice_item->sub_total) * $invoice_item->taxCode->cess / 100, 2) : 0;
+
+                    $cess_on_gst_total['invoice'] += $this->type_id == 1062 ? round(($invoice_item->sub_total) * $invoice_item->taxCode->cess / 100, 2) : 0;
+                }
             }
-            $item_codes[] = $invoice_item->serviceItem->code;
+            // $item_codes[] = $invoice_item->serviceItem->code;
             $item_descriptions[] = $invoice_item->description;
         }
         $Txt = implode(',', $item_descriptions);
@@ -1362,7 +1365,7 @@ class HondaServiceInvoice extends Model
 
         foreach ($this->serviceInvoiceItems as $invoice_item) {
             if (!$invoice_item->coaCode) {
-                $errors[] = 'COA Code not configured. Item Code : ' . $invoice_item->serviceItem->code;
+                $errors[] = 'COA Code not configured. Item Code : ' . $invoice_item->coaCode->code;
                 continue;
             }
         }
@@ -1379,7 +1382,7 @@ class HondaServiceInvoice extends Model
                 'Voucher' => 'D',
                 'AccountType' => 'Ledger',
                 'LedgerDimension' => $invoice_item->coaCode->code . '-' . $this->branch->code . '-' . $this->sbu->name,
-                'Txt' => $invoice_item->serviceItem->code . ' ' . $invoice_item->serviceItem->description . ' ' . $invoice_item->description . '-' . $this->number . '-' . $this->customer->code,
+                'Txt' => $invoice_item->description . '-' . $this->number . '-' . $this->customer->code,
                 'AmountCurCredit' => $this->type_id == 1060 ? $invoice_item->sub_total : 0,
                 // 'AmountCurCredit' => $this->type_id == 1061 ? $invoice_item->sub_total : 0,
                 'TaxGroup' => '',
@@ -1394,7 +1397,7 @@ class HondaServiceInvoice extends Model
                 $params['AmountCurDebit'] = 0;
             }
 
-            if ($invoice_item->serviceItem->taxCode && $KFC_IN == 0) {
+            if ($invoice_item->taxCode && $KFC_IN == 0) {
                 if ($invoice_item->taxCode->type_id == 1020) {
                     //HSN Code
                     $params['TVSHSNCode'] = $invoice_item->taxCode->code;
@@ -1448,7 +1451,7 @@ class HondaServiceInvoice extends Model
                         // if ($service_invoice->type_id != 1060) {
                         // if (empty($service_invoice->address->gst_number)) {
                         //FOR AXAPTA EXPORT WHILE GETING KFC ADD SEPERATE TAX LIKE CGST,SGST
-                        if (!empty($invoice_item->serviceItem->taxCode)) {
+                        if (!empty($invoice_item->taxCode)) {
                             foreach ($invoice_item->taxCode->taxes as $tax) {
                                 //FOR CGST
                                 if ($tax->name == 'CGST') {
@@ -1497,7 +1500,7 @@ class HondaServiceInvoice extends Model
                                 }
                             }
                             //FOR KFC
-                            if ($invoice_item->serviceItem->taxCode) {
+                            if ($invoice_item->taxCode) {
                                 if ($this->type_id == 1061) {
                                     $params['AmountCurDebit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
                                 } elseif ($this->type_id == 1062) {
@@ -1522,7 +1525,7 @@ class HondaServiceInvoice extends Model
                         // }
                         // }
                     } else {
-                        if (!empty($invoice_item->serviceItem->taxCode)) {
+                        if (!empty($invoice_item->taxCode)) {
                             foreach ($invoice_item->taxCode->taxes as $tax) {
                                 //FOR CGST
                                 if ($tax->name == 'CGST' && $invoice_cgst_percentage != 0.00) {
@@ -2726,10 +2729,10 @@ class HondaServiceInvoice extends Model
                 //PUSH TOTAL FIELD GROUPS
                 $serviceInvoiceItem->field_groups = $field_group_val;
 
-                if ($serviceInvoiceItem->serviceItem->subCategory->attachment) {
-                    $additional_image_name = $serviceInvoiceItem->serviceItem->subCategory->attachment->name;
-                    $additional_image_path = base_path('storage/app/public/honda-service-invoice/service-item-sub-category/attachments/');
-                }
+                // if ($serviceInvoiceItem->serviceItem->subCategory->attachment) {
+                //     $additional_image_name = $serviceInvoiceItem->serviceItem->subCategory->attachment->name;
+                //     $additional_image_path = base_path('storage/app/public/honda-service-invoice/service-item-sub-category/attachments/');
+                // }
             }
         }
         //dd($this->type_id);
@@ -2957,10 +2960,10 @@ class HondaServiceInvoice extends Model
                 //PUSH TOTAL FIELD GROUPS
                 $serviceInvoiceItem->field_groups = $field_group_val;
 
-                if ($serviceInvoiceItem->serviceItem->subCategory->attachment) {
-                    $additional_image_name = $serviceInvoiceItem->serviceItem->subCategory->attachment->name;
-                    $additional_image_path = base_path('storage/app/public/honda-service-invoice/service-item-sub-category/attachments/');
-                }
+                // if ($serviceInvoiceItem->serviceItem->subCategory->attachment) {
+                //     $additional_image_name = $serviceInvoiceItem->serviceItem->subCategory->attachment->name;
+                //     $additional_image_path = base_path('storage/app/public/honda-service-invoice/service-item-sub-category/attachments/');
+                // }
             }
         }
         //dd($this->type_id);
