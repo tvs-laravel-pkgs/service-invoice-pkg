@@ -2717,7 +2717,7 @@ class HondaServiceInvoiceController extends Controller
                             //TAX CALC AND PUSH
                             $service_invoice_item_taxs = DB::table('honda_service_invoice_item_tax')->where('service_invoice_item_id', $serviceInvoiceItem->id)->get();
                             // dd($service_invoice_item_taxs);
-                            if (!is_null($serviceInvoiceItem->hsn_sac_id)) {
+                            if (!is_null($serviceInvoiceItem->service_item_hsn_id)) {
                                 if (count($serviceInvoiceItem->taxCode->taxes) > 0) {
                                     // foreach ($serviceInvoiceItem->serviceItem->taxCode->taxes as $key => $value) {
                                     foreach ($service_invoice_item_taxs as $key => $tax) {
@@ -2748,7 +2748,7 @@ class HondaServiceInvoiceController extends Controller
                                                         //check customer state and outlet states are equal KL.  //add KFC tax
                                                         if (!$service_invoice->address->gst_number) {
                                                             //customer dont't have GST
-                                                            if (!is_null($serviceInvoiceItem->hsn_sac_id)) {
+                                                            if (!is_null($serviceInvoiceItem->service_item_hsn_id)) {
                                                                 $kfc_amt = $tax->amount;
                                                                 //customer have HSN and SAC Code
                                                                 // $kfc_amt = round($serviceInvoiceItem->sub_total * 1 / 100, 2);
@@ -2960,7 +2960,7 @@ class HondaServiceInvoiceController extends Controller
                             // dd($serviceInvoiceItem->serviceItem);
                             $service_invoice_item_taxs = DB::table('honda_service_invoice_item_tax')->where('service_invoice_item_id', $serviceInvoiceItem->id)->get();
                             //TAX CALC AND PUSH
-                            if (!is_null($serviceInvoiceItem->hsn_sac_id)) {
+                            if (!is_null($serviceInvoiceItem->service_item_hsn_id)) {
                                 if (count($serviceInvoiceItem->taxCode->taxes) > 0) {
                                     // foreach ($serviceInvoiceItem->serviceItem->taxCode->taxes as $key => $value) {
                                     foreach ($service_invoice_item_taxs as $key => $tax) {
@@ -2998,7 +2998,7 @@ class HondaServiceInvoiceController extends Controller
                                                             //check customer state and outlet states are equal KL.  //add KFC tax
                                                             if (!$service_invoice->address->gst_number) {
                                                                 //customer dont't have GST
-                                                                if (!is_null($serviceInvoiceItem->hsn_sac_id)) {
+                                                                if (!is_null($serviceInvoiceItem->service_item_hsn_id)) {
                                                                     $kfc_percentage = $tax->percentage;
                                                                     $kfc_amt = $tax->amount;
 
@@ -4838,7 +4838,7 @@ class HondaServiceInvoiceController extends Controller
                         ];
                     }
                 }
-                if ($serviceInvoiceItem->hsn_sac_id) {
+                if ($serviceInvoiceItem->service_item_hsn_id) {
                     $item_count_with_tax_code++;
                 }
                 //PUSH TOTAL FIELD GROUPS
