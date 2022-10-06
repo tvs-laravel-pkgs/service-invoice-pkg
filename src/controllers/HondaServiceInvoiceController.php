@@ -4344,27 +4344,6 @@ class HondaServiceInvoiceController extends Controller
             if ($tcs_amount > 0) {
                 $tcs_total += $tcs_amount;
             }
-            // if ($service_item->tcs_percentage) {
-            //     $document_date = (string) $service_invoice->document_date;
-            //     $date1 = Carbon::createFromFormat('d-m-Y', '31-03-2021');
-            //     $date2 = Carbon::createFromFormat('d-m-Y', $document_date);
-            //     $result = $date1->gte($date2);
-
-            //     $tcs_percentage = $service_item->tcs_percentage;
-            //     if (!$result) {
-            //         $tcs_percentage = 1;
-            //     }
-
-            //     $gst_total = 0;
-            //     $gst_total = $cgst_amt + $sgst_amt + $igst_amt;
-            //     // $tcs_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->tcs_percentage / 100, 2);
-            //     $tcs_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $tcs_percentage / 100, 2);
-            // }
-
-            //FOR CESS on GST TAX
-            // if ($service_item->cess_on_gst_percentage) {
-            //     $cess_on_gst_total += round(($serviceInvoiceItem->sub_total) * $service_item->cess_on_gst_percentage / 100, 2);
-            // }
         }
 
         $qrPaymentApp = QRPaymentApp::where([
@@ -4639,7 +4618,7 @@ class HondaServiceInvoiceController extends Controller
 
     }
 
-    public function reprintInvoicePdf($service_invoice_id,$gst_number) {
+     public function reprintInvoicePdf($service_invoice_id,$gst_number) {
         $errors = [];
 
         $service_invoice = $service_invoice_pdf = HondaServiceInvoice::with([
@@ -4866,7 +4845,7 @@ class HondaServiceInvoiceController extends Controller
                 $serviceInvoiceItem->field_groups = $field_group_val;
                 $item_count++;
 
-                if ($serviceInvoiceItem->serviceItem->subCategory->attachment) {
+                if (isset($serviceInvoiceItem->serviceItem->subCategory->attachment) && $serviceInvoiceItem->serviceItem->subCategory->attachment) {
                     $additional_image_name = $serviceInvoiceItem->serviceItem->subCategory->attachment->name;
                     $additional_image_path = base_path('storage/app/public/honda-service-invoice/service-item-sub-category/attachments/');
                 }
@@ -4891,16 +4870,19 @@ class HondaServiceInvoiceController extends Controller
             $service_invoice->document_type = 'INV';
         }
 
-        $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdCN");
+        $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdHondaCN");
         if ($service_invoice->type_id == 1060) {
             $service_invoice->type = 'CRN';
-            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdCN");
+            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdHondaCN");
         } elseif ($service_invoice->type_id == 1061) {
             $service_invoice->type = 'DBN';
-            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdDN");
+            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdHondaDN");
         } elseif ($service_invoice->type_id == 1062) {
             $service_invoice->type = 'INV';
-            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdINV");
+            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdHondaINV");
+        } elseif ($service_invoice->type_id == 1063) {
+            $service_invoice->type = 'DBN';
+            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdHondaDN");
         }
 
         if ($service_invoice->total > $service_invoice->final_amount) {
@@ -4910,17 +4892,6 @@ class HondaServiceInvoiceController extends Controller
         } else {
             $service_invoice->round_off_amount = 0;
         }
-        // dd($service_invoice->round_off_amount);
-
-        // if (strlen(preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->pincode))) {
-        //     $errors[] = 'Customer Pincode Required. Customer Pincode Not Found!';
-        //     return [
-        //         'success' => false,
-        //         'errors' => ['Customer Pincode Required. Customer Pincode Not Found!'],
-        //     ];
-        //     // DB::commit();
-
-        // }
 
         if (empty($service_invoice->address->state_id)) {
             $errors[] = 'Customer State Required. Customer State Not Found!';
@@ -5037,21 +5008,19 @@ class HondaServiceInvoiceController extends Controller
                         // return response()->json(['success' => false, 'error' => $taxes['error']]);
                     }
 
-                    $service_item = ServiceItem::with([
+                    $service_item = HondaServiceInvoiceItem::with([
                         'coaCode',
                         'taxCode',
-                        'taxCode.taxes' => function ($query) use ($taxes) {
-                            $query->whereIn('tax_id', $taxes['tax_ids']);
-                        },
                     ])
-                        ->find($serviceInvoiceItem->service_item_id);
+                        ->find($serviceInvoiceItem->id);
+                        $service_item->taxCode->taxes =  $service_item->taxCode->taxes()->get();
                     if (!$service_item) {
                         $errors[] = 'Service Item not found';
                         // return response()->json(['success' => false, 'error' => 'Service Item not found']);
                     }
 
                     //TAX CALC AND PUSH
-                    if (!is_null($service_item->sac_code_id)) {
+                    if (!is_null($service_item->service_item_hsn_id)) {
                         if (count($service_item->taxCode->taxes) > 0) {
                             foreach ($service_item->taxCode->taxes as $key => $value) {
                                 //FOR CGST
@@ -5086,8 +5055,11 @@ class HondaServiceInvoiceController extends Controller
                     }
                      
                     //FOR CESS on GST TAX
-                    if ($service_item->cess_on_gst_percentage) { 
-                        $cess_on_gst_total += round(($serviceInvoiceItem->sub_total) * $service_item->cess_on_gst_percentage / 100, 2);
+                    if ($service_item->cess_on_gst_percentage) {
+                        // $gst_total = 0;
+                        // $gst_total = $cgst_amt + $sgst_amt + $igst_amt;
+                        // $cess_on_gst_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->cess_on_gst_percentage / 100, 2);
+                       $cess_on_gst_total += round(($serviceInvoiceItem->sub_total) * $service_item->cess_on_gst_percentage / 100, 2);
                     } 
 
                     $sno++;
@@ -5172,9 +5144,17 @@ class HondaServiceInvoiceController extends Controller
         //----------// ENCRYPTION END //----------//
         $service_invoice['additional_image_name'] = $additional_image_name;
         $service_invoice['additional_image_path'] = $additional_image_path;
+        if($service_invoice->type_id == 1063) {
+            $tcs_dn_details = HondaServiceInvoice::tcs_dn_details($service_invoice->invoice_number);
+            $service_invoice->date = $tcs_dn_details->date;
+            $service_invoice->invoice_number = $service_invoice->invoice_number;
+            $serviceInvoiceItem->description = "TCS DBN for Billno -".$service_invoice->invoice_number .'. Dt- ' .$service_invoice->date;
+            $serviceInvoiceItem->rate = $tcs_dn_details->on_road_price;
+            $tcs_dn_inv_no = $service_invoice->invoice_number;
 
-        //dd($serviceInvoiceItem->field_groups);
-        $this->data['service_invoice_pdf'] = $service_invoice;
+        }
+                //dd($serviceInvoiceItem->field_groups);
+       $this->data['service_invoice_pdf'] = $service_invoice;
         $this->data['circular_detail'] = $circular_detail;
         // dd($this->data['service_invoice_pdf']);
 
@@ -5200,7 +5180,9 @@ class HondaServiceInvoiceController extends Controller
         //     'success' => true,
         // ];
         // $r['api_logs'] = [];
-
+        if($service_invoice->type_id == 1063) {  
+            $serviceInvoiceItem->description = "TCS DBN for Billno -".$tcs_dn_inv_no;   
+        }
         //ENTRY IN AX_EXPORTS
         $axaptaExportsCheck = HondaAxaptaExport::where([
             'DocumentNum' => $service_invoice->number,
@@ -5216,6 +5198,7 @@ class HondaServiceInvoiceController extends Controller
             'file_name_path' => url('storage/app/public/honda-service-invoice-pdf') . '/' . $service_invoice->number . '.pdf',
         ]);
     }
+
 
     public function searchHondaSaleInvoiceTCS(Request $r)
     {
