@@ -1003,7 +1003,7 @@ $('#bt_attachments').on('click', () => {
                                         $noty.close();
                                     }, 15000);
                                     custom_noty('error', 'Customer Name Not Matched!');
-                                    custom_noty('error', 'Not Allow To Add Invoives!');
+                                    //custom_noty('error', 'Not Allow To Add Invoives!');
                                     if( self.customer.pan_number != null || self.customer.pan_number != '' || self.customer.pan_number != '-') {
                                         $('#submit').show();
                                         $('.add_item_btn').show(); 

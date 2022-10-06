@@ -2388,30 +2388,30 @@ class HondaServiceInvoiceController extends Controller
             $send_approval->customer;
             if ($send_approval->e_invoice_registration == 1) {
                 if ($send_approval->address) {
-                    if ($send_approval->address->gst_number) {
-                        $customer_trande_name_check = Customer::getGstDetail($send_approval->address ? $send_approval->address->gst_number : null);
-                        if ($customer_trande_name_check->original['success'] == false) {
-                            return response()->json(['success' => false, 'errors' => [$customer_trande_name_check->original['error']]]);
-                        }
-                        // dump(trim(strtolower($customer_trande_name_check->original['trade_name'])), trim(strtolower($send_approval->customer->name)));
-                        if (trim(strtolower($customer_trande_name_check->original['legal_name'])) != trim(strtolower($send_approval->customer->name))) {
-                            // return response()->json(['success' => false, 'errors' => ['Customer Name Not Matched with GSTIN Registration!']]);
-                            if (trim(strtolower($customer_trande_name_check->original['trade_name'])) != trim(strtolower($send_approval->customer->name))) {
-                                return response()->json(['success' => false, 'errors' => ['Customer Name Not Matched with GSTIN Registration!']]);
-                            }
-                        }
+                    // if ($send_approval->address->gst_number) {
+                    //     $customer_trande_name_check = Customer::getGstDetail($send_approval->address ? $send_approval->address->gst_number : null);
+                    //     if ($customer_trande_name_check->original['success'] == false) {
+                    //         return response()->json(['success' => false, 'errors' => [$customer_trande_name_check->original['error']]]);
+                    //     }
+                    //     // dump(trim(strtolower($customer_trande_name_check->original['trade_name'])), trim(strtolower($send_approval->customer->name)));
+                    //     if (trim(strtolower($customer_trande_name_check->original['legal_name'])) != trim(strtolower($send_approval->customer->name))) {
+                    //         // return response()->json(['success' => false, 'errors' => ['Customer Name Not Matched with GSTIN Registration!']]);
+                    //         if (trim(strtolower($customer_trande_name_check->original['trade_name'])) != trim(strtolower($send_approval->customer->name))) {
+                    //             return response()->json(['success' => false, 'errors' => ['Customer Name Not Matched with GSTIN Registration!']]);
+                    //         }
+                    //     }
+                    //     $send_approval->status_id = 2; //$request->send_to_approval;
+                    //     $send_approval->updated_by_id = Auth()->user()->id;
+                    //     $send_approval->updated_at = date("Y-m-d H:i:s");
+                    //     $message = 'Approval status updated successfully';
+                    //     $send_approval->save();
+                    // } else {
                         $send_approval->status_id = 2; //$request->send_to_approval;
                         $send_approval->updated_by_id = Auth()->user()->id;
                         $send_approval->updated_at = date("Y-m-d H:i:s");
                         $message = 'Approval status updated successfully';
                         $send_approval->save();
-                    } else {
-                        $send_approval->status_id = 2; //$request->send_to_approval;
-                        $send_approval->updated_by_id = Auth()->user()->id;
-                        $send_approval->updated_at = date("Y-m-d H:i:s");
-                        $message = 'Approval status updated successfully';
-                        $send_approval->save();
-                    }
+                    // }
                 }
             } else {
                 $send_approval->status_id = 2; //$request->send_to_approval;
@@ -2717,8 +2717,8 @@ class HondaServiceInvoiceController extends Controller
                             //TAX CALC AND PUSH
                             $service_invoice_item_taxs = DB::table('honda_service_invoice_item_tax')->where('service_invoice_item_id', $serviceInvoiceItem->id)->get();
                             // dd($service_invoice_item_taxs);
-                            if (!is_null($serviceInvoiceItem->serviceItem->sac_code_id)) {
-                                if (count($serviceInvoiceItem->serviceItem->taxCode->taxes) > 0) {
+                            if (!is_null($serviceInvoiceItem->hsn_sac_id)) {
+                                if (count($serviceInvoiceItem->taxCode->taxes) > 0) {
                                     // foreach ($serviceInvoiceItem->serviceItem->taxCode->taxes as $key => $value) {
                                     foreach ($service_invoice_item_taxs as $key => $tax) {
                                         // dump($tax);
@@ -2748,7 +2748,7 @@ class HondaServiceInvoiceController extends Controller
                                                         //check customer state and outlet states are equal KL.  //add KFC tax
                                                         if (!$service_invoice->address->gst_number) {
                                                             //customer dont't have GST
-                                                            if (!is_null($serviceInvoiceItem->serviceItem->sac_code_id)) {
+                                                            if (!is_null($serviceInvoiceItem->hsn_sac_id)) {
                                                                 $kfc_amt = $tax->amount;
                                                                 //customer have HSN and SAC Code
                                                                 // $kfc_amt = round($serviceInvoiceItem->sub_total * 1 / 100, 2);
@@ -2960,8 +2960,8 @@ class HondaServiceInvoiceController extends Controller
                             // dd($serviceInvoiceItem->serviceItem);
                             $service_invoice_item_taxs = DB::table('honda_service_invoice_item_tax')->where('service_invoice_item_id', $serviceInvoiceItem->id)->get();
                             //TAX CALC AND PUSH
-                            if (!is_null($serviceInvoiceItem->serviceItem->sac_code_id)) {
-                                if (count($serviceInvoiceItem->serviceItem->taxCode->taxes) > 0) {
+                            if (!is_null($serviceInvoiceItem->hsn_sac_id)) {
+                                if (count($serviceInvoiceItem->taxCode->taxes) > 0) {
                                     // foreach ($serviceInvoiceItem->serviceItem->taxCode->taxes as $key => $value) {
                                     foreach ($service_invoice_item_taxs as $key => $tax) {
 
@@ -2998,7 +2998,7 @@ class HondaServiceInvoiceController extends Controller
                                                             //check customer state and outlet states are equal KL.  //add KFC tax
                                                             if (!$service_invoice->address->gst_number) {
                                                                 //customer dont't have GST
-                                                                if (!is_null($serviceInvoiceItem->serviceItem->sac_code_id)) {
+                                                                if (!is_null($serviceInvoiceItem->hsn_sac_id)) {
                                                                     $kfc_percentage = $tax->percentage;
                                                                     $kfc_amt = $tax->amount;
 
@@ -3083,7 +3083,7 @@ class HondaServiceInvoiceController extends Controller
                                     $service_invoice->address->gst_number,
                                     $service_invoice->address->address_line1 . ',' . $service_invoice->address->address_line2,
                                     ($service_invoice->type_id == 1060 ? '-' : '') . ($serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt + $tcs_total + $cess_on_gst_total),
-                                    $serviceInvoiceItem->serviceItem->taxCode->code,
+                                    $serviceInvoiceItem->taxCode->code,
                                     $serviceInvoiceItem->eInvoiceUom->code,
                                     $serviceInvoiceItem->qty,
                                     ($service_invoice->type_id == 1060 ? '-' : '') . (float) ($serviceInvoiceItem->sub_total / $serviceInvoiceItem->qty),
@@ -4838,7 +4838,7 @@ class HondaServiceInvoiceController extends Controller
                         ];
                     }
                 }
-                if ($serviceInvoiceItem->serviceItem->sac_code_id) {
+                if ($serviceInvoiceItem->hsn_sac_id) {
                     $item_count_with_tax_code++;
                 }
                 //PUSH TOTAL FIELD GROUPS
