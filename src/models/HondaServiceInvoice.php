@@ -1072,6 +1072,10 @@ class HondaServiceInvoice extends Model
         $kfc_amt['invoice'] = 0;
 
         $errors = [];
+
+        if($this->type_id == '1063')    
+          $this->type_id = '1061';
+
         foreach ($this->serviceInvoiceItems as $invoice_item) {
             $service_invoice = $invoice_item->serviceInvoice()->with([
                 'toAccountType',
@@ -1253,6 +1257,14 @@ class HondaServiceInvoice extends Model
             }
             // $item_codes[] = $invoice_item->serviceItem->code;
             $item_descriptions[] = $invoice_item->description;
+            $params['PlantCode'] = $service_invoice->branch->al_plant_code;
+            $params['Account'] = $service_invoice->customer->code;
+            $params['Department'] = $invoice_item->serviceItemCategory->name;
+            $params['Sub_GL'] = isset($invoice_item->sub_gl->ax_subgl) ? $invoice_item->sub_gl->ax_subgl : '' ;
+            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
+            $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
+            $params['VatPercentage'] = '';
+            $params['Qty'] = $invoice_item->qty;
         }
         $Txt = implode(',', $item_descriptions);
         if ($this->type_id == 1060) {
@@ -1361,6 +1373,15 @@ class HondaServiceInvoice extends Model
         // dump($params);
         // dd(1);
 
+        $params['PlantCode'] = $service_invoice->branch->al_plant_code;
+        $params['Account'] = $service_invoice->customer->code;
+        $params['Department'] = $invoice_item->serviceItemCategory->name;
+        $params['Sub_GL'] = isset($invoice_item->sub_gl->ax_subgl) ? $invoice_item->sub_gl->ax_subgl : '' ;
+        $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
+        $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
+        $params['VatPercentage'] = "";
+        $params['Qty'] = "";
+
         $this->exportRowToAxapta($params);
 
         foreach ($this->serviceInvoiceItems as $invoice_item) {
@@ -1410,6 +1431,14 @@ class HondaServiceInvoice extends Model
                 $params['TVSHSNCode'] = $params['TVSSACCode'] = null;
             }
             // dump($params);
+            $params['PlantCode'] = $service_invoice->branch->al_plant_code;
+            $params['Account'] = $service_invoice->customer->code;
+            $params['Department'] = $invoice_item->serviceItemCategory->name;
+            $params['Sub_GL'] = isset($invoice_item->sub_gl->ax_subgl) ? $invoice_item->sub_gl->ax_subgl : '' ;
+            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
+            $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
+            $params['VatPercentage'] = "";
+            $params['Qty'] = $invoice_item->qty;
             $this->exportRowToAxapta($params);
 
             $service_invoice = $invoice_item->serviceInvoice()->with([
@@ -1447,6 +1476,14 @@ class HondaServiceInvoice extends Model
             if (!empty($service_invoice)) {
 
                 if ($service_invoice->address->state_id) {
+                    $params['PlantCode'] = $service_invoice->branch->al_plant_code;
+                    $params['Account'] = $service_invoice->customer->code;
+                    $params['Department'] = $invoice_item->serviceItemCategory->name;
+                    $params['Sub_GL'] = isset($invoice_item->sub_gl->ax_subgl) ? $invoice_item->sub_gl->ax_subgl : '' ;
+                    $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
+                    $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
+                    $params['VatPercentage'] = "";
+                    $params['Qty'] = '';
                     if ($service_invoice->address->state_id == 3 && $service_invoice->branch->primaryAddress->state_id == 3 && empty($service_invoice->address->gst_number) && $service_invoice->type_id != 1060 && $kfc_result) {
                         // if ($service_invoice->type_id != 1060) {
                         // if (empty($service_invoice->address->gst_number)) {
@@ -1472,6 +1509,7 @@ class HondaServiceInvoice extends Model
 
                                     //REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
                                     $params['TVSHSNCode'] = $params['TVSSACCode'] = null;
+                                    $params['VatPercentage'] = $invoice_cgst_percentage;
                                     // dump($params);
                                     $this->exportRowToAxapta($params);
                                 }
@@ -1494,6 +1532,7 @@ class HondaServiceInvoice extends Model
 
                                     //REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
                                     $params['TVSHSNCode'] = $params['TVSSACCode'] = null;
+                                    $params['VatPercentage'] = $invoice_sgst_percentage;
 
                                     // dump($params);
                                     $this->exportRowToAxapta($params);
@@ -1517,6 +1556,7 @@ class HondaServiceInvoice extends Model
 
                                 //REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
                                 $params['TVSHSNCode'] = $params['TVSSACCode'] = null;
+                                $params['VatPercentage'] = $invoice_kfc_percentage;
                                 // dump($params);
                                 $this->exportRowToAxapta($params);
                             }
@@ -1538,7 +1578,7 @@ class HondaServiceInvoice extends Model
                                     }
 
                                     $params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-                                    $params['LedgerDimension'] = $this->branch->primaryAddress->state->cgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
+                                    $params['LedgerDimension'] = "146050" . '-' . $this->branch->code . '-' . $this->sbu->name;
 
                                     $params['LineNum'] = ++$line_number;
                                     // dump($params['LineNum']);
@@ -1546,6 +1586,8 @@ class HondaServiceInvoice extends Model
 
                                     //REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
                                     $params['TVSHSNCode'] = $params['TVSSACCode'] = null;
+                                    $params['VatPercentage'] = $invoice_cgst_percentage;
+
                                     // dump($params);
                                     $this->exportRowToAxapta($params);
                                 }
@@ -1560,7 +1602,7 @@ class HondaServiceInvoice extends Model
                                     }
 
                                     $params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-                                    $params['LedgerDimension'] = $this->branch->primaryAddress->state->sgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
+                                    $params['LedgerDimension'] = '146051'  . '-' . $this->branch->code . '-' . $this->sbu->name;
 
                                     $params['LineNum'] = ++$line_number;
                                     // dump($params['LineNum']);
@@ -1568,7 +1610,7 @@ class HondaServiceInvoice extends Model
 
                                     //REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
                                     $params['TVSHSNCode'] = $params['TVSSACCode'] = null;
-
+                                    $params['VatPercentage'] = $invoice_sgst_percentage;
                                     // dump($params);
                                     $this->exportRowToAxapta($params);
                                 }
@@ -1583,7 +1625,7 @@ class HondaServiceInvoice extends Model
                                     }
 
                                     $params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
-                                    $params['LedgerDimension'] = $this->branch->primaryAddress->state->igst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
+                                    $params['LedgerDimension'] = '146053' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
                                     $params['LineNum'] = ++$line_number;
                                     // dump($params['LineNum']);
@@ -1591,7 +1633,7 @@ class HondaServiceInvoice extends Model
 
                                     //REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
                                     $params['TVSHSNCode'] = $params['TVSSACCode'] = null;
-
+                                    $params['VatPercentage'] = $invoice_igst_percentage;
                                     // dump($params);
                                     $this->exportRowToAxapta($params);
                                 }
@@ -1615,7 +1657,7 @@ class HondaServiceInvoice extends Model
                 $params['AmountCurDebit'] = 0;
             }
             $params['AmountCurCredit'] = $this->type_id == 1060 ? round($tcs_total['credit'], 2) : 0;
-            $params['LedgerDimension'] = '2269' . '-' . $this->branch->code . '-' . $this->sbu->name;
+            $params['LedgerDimension'] = '900680038' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
             $params['LineNum'] = ++$line_number;
             // dump($params['LineNum']);
@@ -1623,6 +1665,14 @@ class HondaServiceInvoice extends Model
 
             //REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
             $params['TVSHSNCode'] = $params['TVSSACCode'] = null;
+            $params['PlantCode'] = $service_invoice->branch->al_plant_code;
+            $params['Account'] = $service_invoice->customer->code;
+            $params['Department'] = $invoice_item->serviceItemCategory->name;
+            $params['Sub_GL'] = isset($invoice_item->sub_gl->ax_subgl) ? $invoice_item->sub_gl->ax_subgl : '' ;
+            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
+            $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
+            $params['VatPercentage'] = $tcs_percentage;
+            $params['Qty'] = '';
             // dump($params);
             $this->exportRowToAxapta($params);
         }
@@ -1639,7 +1689,7 @@ class HondaServiceInvoice extends Model
                 $params['AmountCurDebit'] = 0;
             }
             $params['AmountCurCredit'] = $this->type_id == 1060 ? round($cess_on_gst_total['credit'], 2) : 0;
-            $params['LedgerDimension'] = $this->branch->primaryAddress->state->cess_on_gst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
+            $params['LedgerDimension'] = '146054' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
             $params['LineNum'] = ++$line_number;
             // dump($params['LineNum']);
@@ -1647,11 +1697,29 @@ class HondaServiceInvoice extends Model
 
             //REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
             $params['TVSHSNCode'] = $params['TVSSACCode'] = null;
+            $params['PlantCode'] = $service_invoice->branch->al_plant_code;
+            $params['Account'] = $service_invoice->customer->code;
+            $params['Department'] = $invoice_item->serviceItemCategory->name;
+            $params['Sub_GL'] = isset($invoice_item->sub_gl->ax_subgl) ? $invoice_item->sub_gl->ax_subgl : '' ;
+            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
+            $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
+            $params['VatPercentage'] = '';
+            $params['Qty'] = '';
             // dump($params);
             $this->exportRowToAxapta($params);
         }
 
         if (!empty($service_invoice->round_off_amount) && $service_invoice->round_off_amount != '0.00') {
+            $params['PlantCode'] = $service_invoice->branch->al_plant_code;
+            $params['Account'] = $service_invoice->customer->code;
+            $params['Department'] = $invoice_item->serviceItemCategory->name;
+            $params['Sub_GL'] = isset($invoice_item->sub_gl->ax_subgl) ? $invoice_item->sub_gl->ax_subgl : '' ;
+            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
+            $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
+            $params['VatPercentage'] = '';
+            $params['Qty'] = '';
+            $params['TVSSACCode'] = $invoice_item->taxCode->code;
+            $params['TVSHSNCode'] = '';
             if ($amount_diff > 0) {
                 if ($this->type_id == 1061) {
                     $params['AmountCurDebit'] = $this->type_id == 1061 ? $amount_diff : 0;
@@ -1661,7 +1729,7 @@ class HondaServiceInvoice extends Model
                     $params['AmountCurDebit'] = 0;
                 }
                 $params['AmountCurCredit'] = $this->type_id == 1060 ? $amount_diff : "";
-                $params['LedgerDimension'] = '3198' . '-' . $this->branch->code . '-' . $this->sbu->name;
+                $params['LedgerDimension'] = '648069' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
                 $params['LineNum'] = ++$line_number;
                 // dump($params['LineNum']);
@@ -1678,7 +1746,7 @@ class HondaServiceInvoice extends Model
                     $params['AmountCurCredit'] = 0;
                 }
                 $params['AmountCurDebit'] = $this->type_id == 1060 ? ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : 0;
-                $params['LedgerDimension'] = '3198' . '-' . $this->branch->code . '-' . $this->sbu->name;
+                $params['LedgerDimension'] = '648069' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
                 $params['LineNum'] = ++$line_number;
                 // dump($params['LineNum']);
