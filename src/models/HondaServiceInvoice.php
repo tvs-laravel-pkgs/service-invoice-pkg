@@ -1839,11 +1839,17 @@ class HondaServiceInvoice extends Model
 
         if($params['AccountType'] != 'Customer') {
             $coa_code = explode('-' , $params['LedgerDimension'])[0];
-            $sub_gl = DB::table('sub_ledger')->join('coa_codes','coa_codes.id','sub_ledger.coa_code_id')->where('coa_codes.code',$coa_code )->select('ax_subgl')->first();
-            if(empty($sub_gl))
-                $sub_gl = '';
-            else
-                $sub_gl = $sub_gl->ax_subgl;
+
+            $if( empty($params['Sub_GL'] ) ||  $params['Sub_GL']  == "" ) {
+                
+                $sub_gl = DB::table('sub_ledger')->join('coa_codes','coa_codes.id','sub_ledger.coa_code_id')->where('coa_codes.code',$coa_code )->select('ax_subgl')->first();
+                if(empty($sub_gl))
+                    $sub_gl = '';
+                else
+                    $sub_gl = $sub_gl->ax_subgl;
+            }else
+                 $export->Sub_GL = $params['Sub_GL'];
+
             $export->Sub_GL = $sub_gl;
         }
         $export->InvoiceDate = $this->invoice_date;
