@@ -1837,8 +1837,9 @@ $('#bt_attachments').on('click', () => {
                                     customer_id: $("#customer_id").val(),
                                     branch_id: self.service_invoice.branch.id,
                                     state_id: self.customer.state_id,
-                                    gst_number: '',
+                                    gst_number: self.customer.gst_number,
                                     type_id: '1063',   //tcs dn  
+                                    is_tcs_applicable:1,
                                     },headers: {
                                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                                     },
@@ -1852,7 +1853,6 @@ $('#bt_attachments').on('click', () => {
                                         }
                                         custom_noty('error', errors);
                                     } else {
-                                        console.log(res.service_item);
 
                                         self.service_invoice.service_invoice_items = [];
                                         if (res.add) {

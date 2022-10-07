@@ -798,10 +798,8 @@ class HondaServiceInvoiceController extends Controller
     public function getServiceItem(Request $request)
     {
         // dd($request->all());
-        if($request->type_id == 1063){
-            $tcs_item_id = Config::where('config_type_id','806')->first()->pluck('name');
-            $service_item  = ServiceItem::find( $tcs_item_id)->pluck('sac_code_id');
-        }
+        if($request->type_id == 1063)
+            $request->service_item_hsn = Config::where('config_type_id','806')->pluck('name')->first();
 
         //GET TAXES BY CONDITIONS
         $taxes = $this->getTaxesBasedHSN($request->service_item_hsn, $request->branch_id, $request->customer_id, $request->to_account_type_id, $request->state_id);
