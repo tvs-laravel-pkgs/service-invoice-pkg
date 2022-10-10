@@ -498,7 +498,7 @@ class HondaServiceInvoice extends Model
             $params['Account'] = $service_invoice->customer->code;
             $params['Department'] = $invoice_item->serviceItemCategory->name;
             $params['Sub_GL'] = isset($invoice_item->sub_gl->ax_subgl) ? $invoice_item->sub_gl->ax_subgl : '' ;
-            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
+            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCS') ? 'TCS' : '';
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
             $params['VatPercentage'] = '';
             $params['Qty'] = $invoice_item->qty;
@@ -615,7 +615,7 @@ class HondaServiceInvoice extends Model
         $params['Account'] = $service_invoice->customer->code;
         $params['Department'] = $invoice_item->serviceItemCategory->name;
         $params['Sub_GL'] = isset($invoice_item->sub_gl->ax_subgl) ? $invoice_item->sub_gl->ax_subgl : '' ;
-        $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
+        $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCS') ? 'TCS' : '';
         $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
         $params['VatPercentage'] = "";
         $params['Qty'] = "";
@@ -625,7 +625,7 @@ class HondaServiceInvoice extends Model
 
         foreach ($this->serviceInvoiceItems as $invoice_item) {
             if (!$invoice_item->coaCode) {
-                $errors[] = 'COA Code not configured. Item Code : ' . $invoice_item->coaCode->code;
+                $errors[] = 'COA Code not configured.';
                 continue;
             }
         }
@@ -673,7 +673,7 @@ class HondaServiceInvoice extends Model
             $params['Account'] = $service_invoice->customer->code;
             $params['Department'] = $invoice_item->serviceItemCategory->name;
             $params['Sub_GL'] = isset($invoice_item->sub_gl->ax_subgl) ? $invoice_item->sub_gl->ax_subgl : '' ;
-            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
+            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCS') ? 'TCS' : '';
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
             $params['VatPercentage'] = '';
             $params['Qty'] = $invoice_item->qty;
@@ -715,7 +715,7 @@ class HondaServiceInvoice extends Model
                     $params['Account'] = $service_invoice->customer->code;
                     $params['Department'] = $invoice_item->serviceItemCategory->name;
                     $params['Sub_GL'] = '';
-                    $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
+                    $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCS') ? 'TCS' : '';
                     $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
                    $params['VatPercentage'] = '';
                     $params['Qty'] = '';
@@ -920,7 +920,7 @@ class HondaServiceInvoice extends Model
             $params['Account'] = $service_invoice->customer->code;
             $params['Department'] = $invoice_item->serviceItemCategory->name;
             $params['Sub_GL'] = '';
-            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
+            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCS') ? 'TCS' : '';
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
             $params['VatPercentage'] = $tcs_percentage;
             $params['Qty'] = '';
@@ -959,7 +959,7 @@ class HondaServiceInvoice extends Model
             $params['Account'] = $service_invoice->customer->code;
             $params['Department'] = $invoice_item->serviceItemCategory->name;
             $params['Sub_GL'] = '';
-            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
+            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCS') ? 'TCS' : '';
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
             $params['VatPercentage'] = $invoice_item->taxCode->cess;
             $params['Qty'] = '';
@@ -972,7 +972,7 @@ class HondaServiceInvoice extends Model
             $params['Account'] = $service_invoice->customer->code;
             $params['Department'] = $invoice_item->serviceItemCategory->name;
             $params['Sub_GL'] = '';
-            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
+            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCS') ? 'TCS' : '';
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
             $params['VatPercentage'] = '';
             $params['Qty'] = '';
@@ -1267,7 +1267,7 @@ class HondaServiceInvoice extends Model
             $params['Account'] = $service_invoice->customer->code;
             $params['Department'] = $invoice_item->serviceItemCategory->name;
             $params['Sub_GL'] = isset($invoice_item->sub_gl->ax_subgl) ? $invoice_item->sub_gl->ax_subgl : '' ;
-            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
+            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCS') ? 'TCS' : '';
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
             $params['VatPercentage'] = '';
             $params['Qty'] = $invoice_item->qty;
@@ -1383,7 +1383,7 @@ class HondaServiceInvoice extends Model
         $params['Account'] = $service_invoice->customer->code;
         $params['Department'] = $invoice_item->serviceItemCategory->name;
         $params['Sub_GL'] = isset($invoice_item->sub_gl->ax_subgl) ? $invoice_item->sub_gl->ax_subgl : '' ;
-        $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
+        $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCS') ? 'TCS' : '';
         $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
         $params['VatPercentage'] = "";
         $params['Qty'] = "";
@@ -1441,7 +1441,7 @@ class HondaServiceInvoice extends Model
             $params['Account'] = $service_invoice->customer->code;
             $params['Department'] = $invoice_item->serviceItemCategory->name;
             $params['Sub_GL'] = isset($invoice_item->sub_gl->ax_subgl) ? $invoice_item->sub_gl->ax_subgl : '' ;
-            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
+            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCS') ? 'TCS' : '';
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
             $params['VatPercentage'] = "";
             $params['Qty'] = $invoice_item->qty;
@@ -1486,7 +1486,7 @@ class HondaServiceInvoice extends Model
                     $params['Account'] = $service_invoice->customer->code;
                     $params['Department'] = $invoice_item->serviceItemCategory->name;
                     $params['Sub_GL'] = '';
-                    $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
+                    $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCS') ? 'TCS' : '';
                     $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
                     $params['VatPercentage'] = "";
                     $params['Qty'] = '';
@@ -1724,7 +1724,7 @@ class HondaServiceInvoice extends Model
             $params['Account'] = $service_invoice->customer->code;
             $params['Department'] = $invoice_item->serviceItemCategory->name;
             $params['Sub_GL'] = '';
-            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
+            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCS') ? 'TCS' : '';
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
             $params['VatPercentage'] = $tcs_percentage;
             $params['Qty'] = '';
@@ -1763,7 +1763,7 @@ class HondaServiceInvoice extends Model
             $params['Account'] = $service_invoice->customer->code;
             $params['Department'] = $invoice_item->serviceItemCategory->name;
             $params['Sub_GL'] = '';
-            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
+            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCS') ? 'TCS' : '';
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
             $params['VatPercentage'] = $invoice_item->taxCode->cess;
             $params['Qty'] = '';
@@ -1776,7 +1776,7 @@ class HondaServiceInvoice extends Model
             $params['Account'] = $service_invoice->customer->code;
             $params['Department'] = $invoice_item->serviceItemCategory->name;
             $params['Sub_GL'] = '';
-            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCSDN') ? 'TCSDN' : '';
+            $params['ApplicationType'] = Str::contains($service_invoice->number, 'TCS') ? 'TCS' : '';
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
             $params['VatPercentage'] = '';
             $params['Qty'] = '';
@@ -1841,8 +1841,8 @@ class HondaServiceInvoice extends Model
 
         $params['TVSHSNCode'] = isset($params['TVSHSNCode']) ? $params['TVSHSNCode'] : '';
         $export->Application = 'HONDA';
-        if(isset($params['ApplicationType']) && ($params['ApplicationType'] =='TCSDN'))
-            $export->ApplicationType = 'TCSDN';
+        if(isset($params['ApplicationType']) && ($params['ApplicationType'] =='TCS'))
+            $export->ApplicationType = 'TCS';
         else 
             $export->ApplicationType = 'CNDN';
 
@@ -1901,7 +1901,7 @@ class HondaServiceInvoice extends Model
 
         if($params['Department']){
             $dept = DB::table('honda_dept_dimension')->where('description',$params['Department'])->first();
-            $export->Department = $dept->dimension_value;
+            $export->Department = !empty($dept) ? $dept->dimension_value : '';
         }else
             $export->Department = '';
 
@@ -3231,17 +3231,20 @@ class HondaServiceInvoice extends Model
         }elseif($params['AccountType'] == 'Bank') {
             $fa_journaltype_vc = 6;
         }
+
         if ($this->type_id == 1060) {
             $jounral = '155';
         }elseif ($this->type_id == 1062) {
             $jounral = '142';
+        }elseif ($this->type_id == 1061) {
+            $jounral = '163'; //TCS Debit Note (Rev)    157 C157_+Brsnch Code
         }elseif ($this->type_id == 1063) {
             $jounral = '163'; //TCS Debit Note (Rev)    157 C157_+Brsnch Code
         }
 
         if($params['Department']){
             $dept = DB::table('honda_dept_dimension')->where('description',$params['Department'])->first();
-            $fa_department_vc = $dept->dimension_value;
+            $fa_department_vc = !empty($dept) ? $dept->dimension_value : '';
         }else
            $fa_department_vc = ''; 
 

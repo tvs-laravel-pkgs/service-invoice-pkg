@@ -168,11 +168,6 @@ class HondaServiceInvoiceController extends Controller
                     $query->where('honda_service_invoices.category_id', $request->category_id);
                 }
             })
-        // ->where(function ($query) use ($request) {
-        //     if (!empty($request->sub_category_id)) {
-        //         $query->where('honda_service_invoices.sub_category_id', $request->sub_category_id);
-        //     }
-        // })
             ->where(function ($query) use ($request) {
                 if (!empty($request->customer_id)) {
                     $query->where('honda_service_invoices.customer_id', $request->customer_id);
@@ -185,9 +180,9 @@ class HondaServiceInvoiceController extends Controller
             })
             ->where(function ($query) use ($request) {
                 if ($request->dn_type == 'tcsdn') {
-                    $query->where('honda_service_invoices.number', 'LIKE', '%TCSDN%');
+                    $query->where('honda_service_invoices.number', 'LIKE', '%TCS%');
                 }else
-                    $query->where('honda_service_invoices.number', 'NOT LIKE', '%TCSDN%');
+                    $query->where('honda_service_invoices.number', 'NOT LIKE', '%TCS%');
             })
             ->groupBy('honda_service_invoices.id')
             ->orderBy('honda_service_invoices.id', 'Desc');
@@ -1139,8 +1134,10 @@ class HondaServiceInvoiceController extends Controller
             }
             $service_invoice->type_id = $request->type_id;
             $service_invoice->fill($request->all());
-            if($request->type_id == '1063')
+            if($request->type_id == '1063'){
                 $service_invoice->is_service = 0;
+                $service_invoice->invoice_number = $request->invoice_number->number;
+            }
             $service_invoice->round_off_amount = abs($request->round_off_amount);
             // $service_invoice->invoice_date = date('Y-m-d H:i:s');
             $service_invoice->company_id = Auth::user()->company_id;
