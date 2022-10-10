@@ -86,22 +86,7 @@
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
-                                            <!-- <li>
-                                                <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Sub Category <span class="mandatory">*</span></label>
-                                                    <div class="table-form-list-control">
-                                                        <md-select class="type-sm" ng-model="$ctrl.service_invoice.sub_category_id" placeholder="Select sub category" md-on-close="clearSearchSubCategory()" data-md-container-class="selectdemoSelectHeader">
-                                                            <md-select-header class="demo-select-header">
-                                                                <input ng-model="searchSubCategory" type="search" placeholder="Search for a sub category.." class="demo-header-searchbox md-text" ng-keydown="$event.stopPropagation()">
-                                                            </md-select-header>
-                                                            <md-optgroup label="sub_category">
-                                                                <md-option ng-value="sub_category.id" ng-repeat="sub_category in $ctrl.extras.sub_category_list | filter:searchSubCategory">{{sub_category.name}}</md-option>
-                                                            </md-optgroup>
-                                                        </md-select>
-                                                        <input type="hidden" name="sub_category_id" id="sub_category_id" value="{{$ctrl.service_invoice.sub_category_id}}" class="required">
-                                                    </div>
-                                                </div>
-                                            </li> -->
+                                           
                                             <li>
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">PO Reference # </label>
@@ -201,17 +186,7 @@
                                                             </md-not-found>
                                                         </md-autocomplete>
                                                         <input type="hidden" name="customer_id"  id="customer_id" value="{{$ctrl.service_invoice.customer.id}}" class="required">
-                                                        <!-- <md-autocomplete class="type-sm" md-items="option in $ctrl.searchCustomer($ctrl.customerSearchText)" md-selected-item="$ctrl.service_invoice.customer" md-search-text="$ctrl.customerSearchText" md-item-text="option.code" md-min-length="3" placeholder="Customer code / name" md-selected-item-change="$ctrl.getCustomerDetails()" md-search-text-change="$ctrl.customerChanged()">
-                                                            <md-item-template>
-                                                                <span>
-                                                                    {{option.name}} - {{option.code}}
-                                                                </span>
-                                                            </md-item-template>
-                                                            <md-not-found>
-                                                                No Customers matching "{{$ctrl.customerSearchText}}" were found.
-                                                            </md-not-found>
-                                                        </md-autocomplete>
-                                                        <input type="hidden" name="customer_id" value="{{$ctrl.service_invoice.customer.id}}" class="required"> -->
+                                                        
                                                     </div>
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
@@ -463,6 +438,7 @@
                                                 <input type="hidden" name="service_invoice_items[{{index}}][rate]" value="{{service_invoice_item['TCS'].amount}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][sub_total]" value="{{service_invoice_item['TCS'].amount}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][e_invoice_uom_id]" value="{{service_invoice_item.e_invoice_uom.id}}">
+                                                <input type="hidden" ng-model="$ctrl.service_invoice.round_off_amount" name="round_off_amount" value="{{$ctrl.service_invoice.round_off_amount}}">
                                                 <!-- FIELD GROUPS -->
                                                 <td style="display: none;">
                                                     <span ng-repeat="(index_fg, field_group) in service_invoice_item.field_groups">
@@ -477,7 +453,10 @@
                                                 <td class="text-right">{{service_invoice_item.rate | number : 2}}</td>
                                                 <td class="text-right">{{service_invoice_item['TCS'].amount  | number : 2}}</td>
                                                 <td class="text-right">{{$ctrl.service_invoice.round_off_amount | number : 2}}</td>
-                                                <td class="text-right">{{$ctrl.service_invoice.final_amount | number : 2}}</td>
+                                                <td class="text-right">
+                                                    {{$ctrl.service_invoice.final_amount | number : 2}}
+                                                    <input type="hidden" ng-model="$ctrl.service_invoice.final_amount" name="final_amount" value="{{$ctrl.service_invoice.final_amount}}">
+                                                </td>
                                             </tr>
                                         </tbody>
                                         

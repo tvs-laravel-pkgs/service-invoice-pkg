@@ -153,9 +153,9 @@ class HondaServiceInvoiceApprovalController extends Controller {
 			})
 			->where(function ($query) use ($request) {
                 if ($request->dn_type == 'tcsdn') {
-                    $query->where('honda_service_invoices.number', 'LIKE', '%TCSDN%');
+                    $query->where('honda_service_invoices.number', 'LIKE', '%TCS%');
                 }else
-                    $query->where('honda_service_invoices.number', 'NOT LIKE', '%TCSDN%');
+                    $query->where('honda_service_invoices.number', 'NOT LIKE', '%TCS%');
             })
 			->groupBy('honda_service_invoices.id')
 			->orderBy('honda_service_invoices.id', 'Desc');

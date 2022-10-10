@@ -56,42 +56,7 @@
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
-                                            <!-- <li>
-                                                <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Category</label>
-                                                    <div class="table-form-list-control">
-                                                        <input type="text" class="form-control" name="category_id" id="category_id" value="{{$ctrl.service_invoice.service_item_category.name}}" readonly>
-                                                    </div>
-                                                </div>
-                                            </li> -->
-                                            <!-- <li>
-                                                <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Sub Category</label>
-                                                    <div class="table-form-list-control">
-                                                        <input type="text" class="form-control" name="sub_category_id" id="sub_category_id" value="{{$ctrl.service_invoice.service_item_sub_category.name}}" readonly>
-                                                    </div>
-                                                </div>
-                                            </li> -->
-                                            <!-- <li  ng-show="$ctrl.type_id != 1063">
-                                                <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Is Service </label>
-                                                    <div class="table-form-list-control type-sm" style="min-width:130px !important;">
-                                                        <span class="type-sm"> {{$ctrl.service_invoice.is_service == 1 ? 'Yes' : ''}}
-                                                        {{$ctrl.service_invoice.is_service == 0 ? 'No' : ''}}
-                                                        {{$ctrl.service_invoice.is_service == 2 ? 'Non-Taxable' : ''}}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </li> -->
-                                            <!-- <li ng-show="$ctrl.type_id != 1063">
-                                                <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Reverse Charge Applicability </label>
-                                                    <div class="table-form-list-control type-sm" style="min-width:130px !important;">
-                                                        <span class="type-sm"> {{$ctrl.service_invoice.is_reverse_charge_applicable == 1 ? 'Yes' : 'No'}}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                            </li> -->
+                                           
                                             <li>
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">PO Reference # </label>
@@ -164,14 +129,6 @@
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
-                                            <!-- <li>
-                                                <div class="table-form-list-wrap">
-                                                    <label class="table-form-list-label">Round Off amount <span class="mandatory">*</span></label>
-                                                    <div class="table-form-list-control">
-                                                        <input type="text" ng-model="$ctrl.service_invoice.e_round_off_amount" name="e_round_off_amount" class="type-sm form-control required" placeholder="Enter Round Off amount" readonly>
-                                                    </div>
-                                                </div>
-                                            </li> -->
                                             <li ng-if="$ctrl.type_id != 1063">
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">Ref. Invoice Date </label>
@@ -351,9 +308,7 @@
                                     <table class="table">
                                         <thead>
                                             <tr>
-                                                <th>Item Code</th>
-                                                <th>Item Name</th>
-                                                <th>Reference</th>
+                                                <th>Invoice Number</th>
                                                 <th class="text-right">Invoice Amount</th>
                                                 <th class="text-right">Tcs</th>
                                                 <th class="text-right">Round Off</th>
@@ -378,8 +333,6 @@
                                                         </span>
                                                     </span>
                                                 </td>
-                                                <td>{{service_invoice_item.code}}</td>
-                                                <td>{{service_invoice_item.name}}</td>
                                                 <td>{{service_invoice_item.description}}</td>
                                                 <td class="text-right">{{$ctrl.service_invoice.amount | number : 2}}</td>
                                                 <td class="text-right">{{service_invoice_item.total | number : 2}}</td>

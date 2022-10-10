@@ -1820,6 +1820,7 @@ $('#bt_attachments').on('click', () => {
                             self.service_invoice.vin_number = response.data.list.vin_number
                             self.service_invoice.amount = response.data.list.on_road_price
                             self.service_invoice.inv_person = response.data.list.customer_name_id
+                            self.service_invoice.invoice_number = self.service_invoice.invoice_number.number
                            
                         }); 
                          setTimeout(function () {
@@ -1867,10 +1868,10 @@ $('#bt_attachments').on('click', () => {
                                         //SERVICE INVOICE ITEMS TABLE CALC
                                         $scope.serviceInvoiceItemCalc();
                                         self.tcs_amt = self.service_invoice.service_invoice_items[0]['TCS'].amount;
-                                        self.service_invoice.table_total = parseFloat(self.tcs_amt).toFixed(2);
-                                        self.service_invoice.table_sub_total = parseFloat(self.tcs_amt).toFixed(2);
-                                        self.service_invoice.final_amount = Math.round(self.service_invoice.table_total).toFixed(2);
-                                        self.service_invoice.round_off_amount = parseFloat(self.service_invoice.final_amount - self.service_invoice.table_total ).toFixed(2);
+                                        self.table_total = parseFloat(self.tcs_amt).toFixed(2);
+                                        self.table_sub_total = parseFloat(self.tcs_amt).toFixed(2);
+                                        self.service_invoice.final_amount = Math.round(self.table_total).toFixed(2);
+                                        self.service_invoice.round_off_amount = parseFloat(self.service_invoice.final_amount - self.table_total ).toFixed(2);
                                         $("#total_tcs_amt").html(self.service_invoice.final_amount);
                                         $scope.$apply()
 
