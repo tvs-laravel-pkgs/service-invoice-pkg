@@ -1864,9 +1864,10 @@ class HondaServiceInvoice extends Model
         $export->Approved = 1;
         $export->TransDate = date("Y-m-d", strtotime($this->document_date));
         //dd($ledger_dimention);
+        $coa_code = explode('-' , $params['LedgerDimension'])[0];
         if($params['AccountType'] == 'Customer'){
             $export->AccountType = 1;
-        }elseif ($params['AccountType'] == 'Vendor') {
+        }elseif ($params['AccountType'] == 'Vendor' || $coa_code  == '900680038') {
             $export->AccountType = 2;
         }else
             $export->AccountType = 0;
@@ -1906,8 +1907,6 @@ class HondaServiceInvoice extends Model
             $export->Department = '';
 
         if($params['AccountType'] != 'Customer') {
-            $coa_code = explode('-' , $params['LedgerDimension'])[0];
-
             if( empty($params['Sub_GL'] ) ||  $params['Sub_GL']  == "" ) {
 
                 $sub_gl = DB::table('sub_ledger')->join('coa_codes','coa_codes.id','sub_ledger.coa_code_id')->where('coa_codes.code',$coa_code )->select('ax_subgl')->first();
