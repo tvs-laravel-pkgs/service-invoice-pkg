@@ -1809,13 +1809,11 @@ class HondaServiceInvoiceController extends Controller
                             // "Gstin" => "32ATAPM8948G1ZK", //for TN TESTING
                             "LglNm" => $service_invoice->customer ? $service_invoice->customer->name : 'N/A',
                             "TrdNm" => $service_invoice->customer ? $service_invoice->customer->name : null,
-                            // "Pos" => $service_invoice->customer->primaryAddress ? ($service_invoice->customer->primaryAddress->state ? $service_invoice->customer->primaryAddress->state->e_invoice_state_code : 'N/A') : 'N/A',
-                            // "Loc" => $service_invoice->customer->primaryAddress ? ($service_invoice->customer->primaryAddress->state ? $service_invoice->customer->primaryAddress->state->name : 'N/A') : 'N/A',
                             "Pos" => $service_invoice->address ? ($service_invoice->address->state ? $service_invoice->address->state->e_invoice_state_code : 'N/A') : 'N/A',
                             // "Pos" => "27",
                             "Loc" => $service_invoice->address ? ($service_invoice->address->state ? $service_invoice->address->state->name : 'N/A') : 'N/A',
 
-                            "Addr1" => $service_invoice->address ? preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->address_line1) : 'N/A',
+                            "Addr1" => $service_invoice->address ? preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->street) : 'N/A',
                             "Addr2" => $service_invoice->address ? preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->address_line2) : null,
                             "Stcd" => $service_invoice->address ? ($service_invoice->address->state ? $service_invoice->address->state->e_invoice_state_code : null) : null,
                             "Pin" => $service_invoice->address ? $service_invoice->address->pincode : null,
@@ -3711,7 +3709,7 @@ class HondaServiceInvoiceController extends Controller
                                 }
 
                                 $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
-                              
+                                $address->street = str_replace('""', '', $customer_data['STREET']);
                                 $address->country_id = $state ? $state->country_id : null;
                                 $address->state_id = $state ? $state->id : null;
                                 $address->city_id = $city ? $city->id : null;
