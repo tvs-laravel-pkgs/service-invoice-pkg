@@ -1217,6 +1217,8 @@ $('#bt_attachments').on('click', () => {
                             }).show();
                         } else {
                             self.extras.sbu_list = res.sbu_list;
+                             if ($routeParams.type_id != 1063)
+                                self.service_invoice.sbu_id ='206';
                             $scope.$apply()
                         }
                     })

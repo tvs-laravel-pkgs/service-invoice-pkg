@@ -323,7 +323,7 @@
                                                 <input type="hidden" name="service_invoice_items[{{index}}][rate]" value="{{service_invoice_item.rate}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][sub_total]" value="{{service_invoice_item.sub_total}}">
                                                 <!-- FIELD GROUPS -->
-                                                <td style="display: none;">
+                                                <!-- <td style="display: none;">
                                                     <span ng-repeat="(index_fg, field_group) in service_invoice_item.field_groups">
                                                         <input type="hidden" name="service_invoice_items[{{index}}][field_groups][{{index_fg}}][id]" value="{{field_group.id}}">
                                                         <span ng-repeat="(index_fd, field) in field_group.fields">
@@ -331,7 +331,7 @@
                                                             <input type="hidden" name="service_invoice_items[{{index}}][field_groups][{{index_fg}}][fields][{{index_fd}}][value]" value="{{field.value}}">
                                                         </span>
                                                     </span>
-                                                </td>                                           
+                                                </td>      -->                                      
                                                 <td class="text-right">{{$ctrl.service_invoice.amount | number : 2}}</td>
                                                 <td class="text-right">{{service_invoice_item.total | number : 2}}</td>
                                                 <td class="text-right">{{$ctrl.service_invoice.round_off_amount | number : 2}}</td>
