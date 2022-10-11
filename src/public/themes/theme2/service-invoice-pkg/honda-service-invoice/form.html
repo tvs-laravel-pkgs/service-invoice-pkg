@@ -418,7 +418,6 @@
                                     <table class="table">
                                         <thead>
                                             <tr>
-                                                <th>Invoice No</th>
                                                 <th class="text-right">Invoice Amount</th>
                                                 <th class="text-right">TCS</th>
                                                 <th class="text-right">Round Off</th>
@@ -439,6 +438,7 @@
                                                 <input type="hidden" name="service_invoice_items[{{index}}][sub_total]" value="{{service_invoice_item['TCS'].amount}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][e_invoice_uom_id]" value="{{service_invoice_item.e_invoice_uom.id}}">
                                                 <input type="hidden" ng-model="$ctrl.service_invoice.round_off_amount" name="round_off_amount" value="{{$ctrl.service_invoice.round_off_amount}}">
+                                                <input type="hidden" id="tcs_yes" name="is_tcs_applicable" value="1" ng-model="$ctrl.service_item_detail.is_tcs_applicable">
                                                 <!-- FIELD GROUPS -->
                                                 <td style="display: none;">
                                                     <span ng-repeat="(index_fg, field_group) in service_invoice_item.field_groups">
@@ -449,7 +449,6 @@
                                                         </span>
                                                     </span>
                                                 </td>
-                                                <td>{{service_invoice_item.description}}</td>
                                                 <td class="text-right">{{service_invoice_item.rate | number : 2}}</td>
                                                 <td class="text-right">{{service_invoice_item['TCS'].amount  | number : 2}}</td>
                                                 <td class="text-right">{{$ctrl.service_invoice.round_off_amount | number : 2}}</td>

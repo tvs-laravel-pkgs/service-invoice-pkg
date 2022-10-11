@@ -1139,7 +1139,7 @@ class HondaServiceInvoiceController extends Controller
             $service_invoice->fill($request->all());
             if($request->type_id == '1063'){
                 $service_invoice->is_service = 0;
-                $service_invoice->invoice_number = $request->invoice_number->number;
+                //$service_invoice->invoice_number = $request->invoice_number->number;
             }
             $service_invoice->round_off_amount = abs($request->round_off_amount);
             // $service_invoice->invoice_date = date('Y-m-d H:i:s');

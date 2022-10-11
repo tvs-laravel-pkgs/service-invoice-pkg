@@ -357,7 +357,6 @@
                                     <table class="table">
                                         <thead>
                                             <tr>
-                                                <th>Invoice No</th>
                                                 <th class="text-right">Invoice Amount</th>
                                                 <th class="text-right">TCS</th>
                                                 <th class="text-right">Round Off</th>
@@ -382,10 +381,6 @@
                                                         </span>
                                                     </span>
                                                 </td>
-                                                
-                                                <td>{{service_invoice_item.code}}</td>
-                                                <td>{{service_invoice_item.name}}</td>
-                                                <td>{{service_invoice_item.description}}</td>
                                                 <td class="text-right">{{$ctrl.service_invoice.amount}}</td>
                                                 <td class="text-right">{{service_invoice_item.total  | number : 2}}</td>
                                                 <td class="text-right">{{$ctrl.service_invoice.round_off_amount | number : 2}}</td>
