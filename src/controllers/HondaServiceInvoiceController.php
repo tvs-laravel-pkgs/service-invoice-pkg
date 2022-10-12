@@ -1181,6 +1181,8 @@ class HondaServiceInvoiceController extends Controller
                             'id' => $val['id'],
                         ]);
                         $service_invoice_item->fill($val);
+                        if($request->type_id == '1063')
+                            $service_invoice_item->service_item_category_id ='32';
                         $service_invoice_item->service_invoice_id = $service_invoice->id;
                         $service_invoice_item->save();
 
