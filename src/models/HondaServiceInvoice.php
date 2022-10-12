@@ -908,14 +908,8 @@ class HondaServiceInvoice extends Model
             $params['LineNum'] = ++$line_number;
             // dump($params['LineNum']);
             $line_number = $params['LineNum'];
-            if ($invoice_item->taxCode->type_id == 1020) {
-                //HSN Code
-                $params['TVSHSNCode'] = $invoice_item->taxCode->code;
-                $params['TVSSACCode'] = '';
-            } else {
-                $params['TVSHSNCode'] = '';
-                $params['TVSSACCode'] = $invoice_item->taxCode->code;
-            }
+            $params['TVSSACCode'] = '';
+            $params['TVSHSNCode'] = '';
             $params['PlantCode'] = $service_invoice->branch->al_plant_code;
             $params['Account'] = $service_invoice->customer->code;
             $params['Department'] = $invoice_item->serviceItemCategory->name;
@@ -976,14 +970,8 @@ class HondaServiceInvoice extends Model
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
             $params['VatPercentage'] = '';
             $params['Qty'] = '';
-            if ($invoice_item->taxCode->type_id == 1020) {
-                //HSN Code
-                $params['TVSHSNCode'] = $invoice_item->taxCode->code;
-                $params['TVSSACCode'] = '';
-            } else {
-                $params['TVSHSNCode'] = '';
-                $params['TVSSACCode'] = $invoice_item->taxCode->code;
-            }
+            $params['TVSSACCode'] = '';
+            $params['TVSHSNCode'] = '';
             if ($amount_diff > 0) {
                 if ($this->type_id == 1061) {
                     $params['AmountCurCredit'] = $this->type_id == 1061 ? $amount_diff : 0;
@@ -1710,16 +1698,8 @@ class HondaServiceInvoice extends Model
             $params['LineNum'] = ++$line_number;
             // dump($params['LineNum']);
             $line_number = $params['LineNum'];
-
-            //REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
-            if ($invoice_item->taxCode->type_id == 1020) {
-                //HSN Code
-                $params['TVSHSNCode'] = $invoice_item->taxCode->code;
-                $params['TVSSACCode'] = '';
-            } else {
-                $params['TVSHSNCode'] = '';
-                $params['TVSSACCode'] = $invoice_item->taxCode->code;
-            }
+            $params['TVSSACCode'] = '';
+            $params['TVSHSNCode'] = '';
             $params['PlantCode'] = $service_invoice->branch->al_plant_code;
             $params['Account'] = $service_invoice->customer->code;
             $params['Department'] = $invoice_item->serviceItemCategory->name;
@@ -1780,14 +1760,8 @@ class HondaServiceInvoice extends Model
             $params['InvoiceDate'] = isset($service_invoice->invoice_date) ? $service_invoice->invoice_date : '';
             $params['VatPercentage'] = '';
             $params['Qty'] = '';
-            if ($invoice_item->taxCode->type_id == 1020) {
-                //HSN Code
-                $params['TVSHSNCode'] = $invoice_item->taxCode->code;
-                $params['TVSSACCode'] = '';
-            } else {
-                $params['TVSHSNCode'] = '';
-                $params['TVSSACCode'] = $invoice_item->taxCode->code;
-            }
+            $params['TVSHSNCode'] = '';
+            $params['TVSSACCode'] = '';
             if ($amount_diff > 0) {
                 if ($this->type_id == 1061) {
                     $params['AmountCurDebit'] = $this->type_id == 1061 ? $amount_diff : 0;
@@ -1850,7 +1824,7 @@ class HondaServiceInvoice extends Model
             $export->DocumentType  = '155';
         }elseif ($this->type_id == 1062) {
             $export->DocumentType  = '142';
-        }elseif ($this->type_id == 1063) {
+        }elseif ($params['ApplicationType'] =='TCS') {
             $export->DocumentType  = '163'; //TCS Debit Note (Rev)    157 C157_+Brsnch Code
         }
 
@@ -1889,8 +1863,8 @@ class HondaServiceInvoice extends Model
         $export->LogisticsLocation_LocationId = ($this->company_id == 1)?'000127079':'001342712';
         $export->Due = '';
         $export->PaymReference = '';
-        $export->TVSHSNCode = if($this->type_id == 1063) ? "" : $params['TVSHSNCode'];
-        $export->TVSSACCode = if($this->type_id == 1063) ? "" : $params['TVSSACCode'];
+        $export->TVSHSNCode = ($params['ApplicationType'] =='TCS' ||  $export->AccountType != 0) ? "" : $params['TVSHSNCode'];
+        $export->TVSSACCode = ($params['ApplicationType'] =='TCS' ||  $export->AccountType != 0) ? "" : $params['TVSSACCode'];
         $export->TVSVendorLocationID = '';
         // $export->TVSCustomerLocationID = $params['TVSHSNCode'] || $params['TVSSACCode'] ? $this->customer->axapta_location_id : ''; //SINGLE ADDRESS
         $export->TVSCustomerLocationID = $params['TVSHSNCode'] || $params['TVSSACCode'] ? $this->address->ax_customer_location_id : ''; //AFTER CHANGE MULTIPLE ADDRESS
@@ -1926,7 +1900,7 @@ class HondaServiceInvoice extends Model
         $export->VatPercentage = ($params['VatPercentage'] > 0) ? $params['VatPercentage'] : '';
         $export->Qty =  $params['Qty'];
         $export->GSTIN = $this->outlets->gst_number;
-        $export->VIN = if($this->type_id == 1063) ? $this->vin_number : "";
+        $export->VIN = ($params['ApplicationType'] =='TCS') ? $this->vin_number : "";
         $export->save();
         $this->importRowToAxaptaStaging($params);
 

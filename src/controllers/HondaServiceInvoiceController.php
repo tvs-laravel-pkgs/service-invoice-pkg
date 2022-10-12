@@ -2129,7 +2129,8 @@ class HondaServiceInvoiceController extends Controller
             $tcs_dn_details = HondaServiceInvoice::tcs_dn_details($service_invoice->invoice_number);
             $service_invoice->date = $tcs_dn_details->date;
             $service_invoice->invoice_number = $service_invoice->invoice_number;
-            $serviceInvoiceItem->description = "TCS DBN for Billno -".$service_invoice->invoice_number .'. Dt- ' .$service_invoice->date.'VIN- '.$tcs_dn_details->vin_number;
+            $service_invoice->vin_number = $tcs_dn_details->vin_number;
+            $serviceInvoiceItem->description = "TCS DBN for Billno -".$service_invoice->invoice_number .'. Dt- ' .$service_invoice->date.' VIN- '.$tcs_dn_details->vin_number;
             $serviceInvoiceItem->rate = $tcs_dn_details->ex_showroom_price;
             $tcs_dn_inv_no = $service_invoice->invoice_number;
 
@@ -5149,7 +5150,7 @@ class HondaServiceInvoiceController extends Controller
             $service_invoice->date = $tcs_dn_details->date;
             $service_invoice->invoice_number = $service_invoice->invoice_number;
             $service_invoice->vin_number = $tcs_dn_details->vin_number;
-            $serviceInvoiceItem->description = "TCS DBN for Billno -".$service_invoice->invoice_number .'. Dt- ' .$service_invoice->date.'VIN- '.$service_invoice->vin_number;
+            $serviceInvoiceItem->description = "TCS DBN for Billno -".$service_invoice->invoice_number .'. Dt- ' .$service_invoice->date.' VIN- '.$service_invoice->vin_number;
             $serviceInvoiceItem->rate = $tcs_dn_details->ex_showroom_price;
             $tcs_dn_inv_no = $service_invoice->invoice_number;
 
