@@ -554,7 +554,7 @@ class HondaServiceInvoiceController extends Controller
                 $tcs_dn_inv = HondaServiceInvoice::tcs_dn_details($service_invoice->invoice_number);
                 $service_invoice->vin_number = $tcs_dn_inv->vin_number;
                 $service_invoice->invoice_date = $tcs_dn_inv->date;
-                $service_invoice->amount = $tcs_dn_inv->on_road_price;
+                $service_invoice->amount = $tcs_dn_inv->ex_showroom_price;
                 $service_invoice->inv_person = $tcs_dn_inv->customer_name_id;
             }
             $this->data['action'] = 'Edit';
@@ -2127,8 +2127,8 @@ class HondaServiceInvoiceController extends Controller
             $tcs_dn_details = HondaServiceInvoice::tcs_dn_details($service_invoice->invoice_number);
             $service_invoice->date = $tcs_dn_details->date;
             $service_invoice->invoice_number = $service_invoice->invoice_number;
-            $serviceInvoiceItem->description = "TCS DBN for Billno -".$service_invoice->invoice_number .'. Dt- ' .$service_invoice->date;
-            $serviceInvoiceItem->rate = $tcs_dn_details->on_road_price;
+            $serviceInvoiceItem->description = "TCS DBN for Billno -".$service_invoice->invoice_number .'. Dt- ' .$service_invoice->date.'VIN- '.$tcs_dn_details->vin_number;
+            $serviceInvoiceItem->rate = $tcs_dn_details->ex_showroom_price;
             $tcs_dn_inv_no = $service_invoice->invoice_number;
 
         }
@@ -2355,7 +2355,7 @@ class HondaServiceInvoiceController extends Controller
             $tcs_dn_inv = HondaServiceInvoice::tcs_dn_details($service_invoice->invoice_number);
             $service_invoice->vin_number = $tcs_dn_inv->vin_number;
             $service_invoice->invoice_date = $tcs_dn_inv->date;
-            $service_invoice->amount = $tcs_dn_inv->on_road_price;
+            $service_invoice->amount = $tcs_dn_inv->ex_showroom_price;
             $service_invoice->inv_person = $tcs_dn_inv->customer_name_id;
         }
 
@@ -3293,6 +3293,8 @@ class HondaServiceInvoiceController extends Controller
             $service_invoice->type = 'DEBIT NOTE(DBN)';
         } elseif ($service_invoice->type_id == 1062) {
             $service_invoice->type = 'INVOICE(INV)';
+        }elseif ($service_invoice->type_id == 1063) {
+            $service_invoice->type = 'TCS (DBN)';
         }
 
         //CANCEL ENTRY IN AX_EXPORTS
@@ -5144,8 +5146,9 @@ class HondaServiceInvoiceController extends Controller
             $tcs_dn_details = HondaServiceInvoice::tcs_dn_details($service_invoice->invoice_number);
             $service_invoice->date = $tcs_dn_details->date;
             $service_invoice->invoice_number = $service_invoice->invoice_number;
-            $serviceInvoiceItem->description = "TCS DBN for Billno -".$service_invoice->invoice_number .'. Dt- ' .$service_invoice->date;
-            $serviceInvoiceItem->rate = $tcs_dn_details->on_road_price;
+            $service_invoice->vin_number = $tcs_dn_details->vin_number;
+            $serviceInvoiceItem->description = "TCS DBN for Billno -".$service_invoice->invoice_number .'. Dt- ' .$service_invoice->date.'VIN- '.$service_invoice->vin_number;
+            $serviceInvoiceItem->rate = $tcs_dn_details->ex_showroom_price;
             $tcs_dn_inv_no = $service_invoice->invoice_number;
 
         }
@@ -5205,7 +5208,7 @@ class HondaServiceInvoiceController extends Controller
         $list = DB::table('honda_sale_invoice_detail_requests')
                     ->join('honda_sale_invoice_details' , 'honda_sale_invoice_details.id' , 'honda_sale_invoice_detail_requests.sale_invoice_id')
                     ->select('honda_sale_invoice_details.number','honda_sale_invoice_details.id')
-                    ->where('honda_sale_invoice_detail_requests.on_road_price' , '>', '1000000')
+                    ->where('honda_sale_invoice_detail_requests.ex_showroom_price' , '>', '1000000')
                     ->where(function ($q) use ($r) {
                         if(!empty($r->key))
                             $q->where('honda_sale_invoice_details.number', 'like', '%' . $r->key . '%');
@@ -5222,7 +5225,7 @@ class HondaServiceInvoiceController extends Controller
         $data['list'] = DB::table('honda_sale_invoice_detail_requests')
                     ->join('honda_sale_invoice_details' , 'honda_sale_invoice_details.id' , 'honda_sale_invoice_detail_requests.sale_invoice_id')
                      ->join('honda_vehicle_details' , 'honda_vehicle_details.id' , 'honda_sale_invoice_details.vehicle_id')
-                    ->select('honda_sale_invoice_details.id','honda_vehicle_details.vin_number','honda_sale_invoice_details.date','honda_sale_invoice_detail_requests.on_road_price','honda_sale_invoice_detail_requests.customer_name_id')
+                    ->select('honda_sale_invoice_details.id','honda_vehicle_details.vin_number','honda_sale_invoice_details.date','honda_sale_invoice_detail_requests.ex_showroom_price','honda_sale_invoice_detail_requests.customer_name_id')
                     ->where('honda_sale_invoice_details.id' , $key)
                     ->first();
         $data['item'] = DB::table('service_items')->where('code','tcs_dn')->first();

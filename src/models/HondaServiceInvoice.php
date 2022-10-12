@@ -1889,8 +1889,8 @@ class HondaServiceInvoice extends Model
         $export->LogisticsLocation_LocationId = ($this->company_id == 1)?'000127079':'001342712';
         $export->Due = '';
         $export->PaymReference = '';
-        $export->TVSHSNCode = $params['TVSHSNCode'];
-        $export->TVSSACCode = $params['TVSSACCode'];
+        $export->TVSHSNCode = if($this->type_id == 1063) ? "" : $params['TVSHSNCode'];
+        $export->TVSSACCode = if($this->type_id == 1063) ? "" : $params['TVSSACCode'];
         $export->TVSVendorLocationID = '';
         // $export->TVSCustomerLocationID = $params['TVSHSNCode'] || $params['TVSSACCode'] ? $this->customer->axapta_location_id : ''; //SINGLE ADDRESS
         $export->TVSCustomerLocationID = $params['TVSHSNCode'] || $params['TVSSACCode'] ? $this->address->ax_customer_location_id : ''; //AFTER CHANGE MULTIPLE ADDRESS
@@ -1906,7 +1906,7 @@ class HondaServiceInvoice extends Model
         }else
             $export->Department = '';
 
-        if($params['AccountType'] != 'Customer') {
+        if( $export->AccountType == 0) {
             if( empty($params['Sub_GL'] ) ||  $params['Sub_GL']  == "" ) {
 
                 $sub_gl = DB::table('sub_ledger')->join('coa_codes','coa_codes.id','sub_ledger.coa_code_id')->where('coa_codes.code',$coa_code )->select('ax_subgl')->first();
@@ -1920,11 +1920,13 @@ class HondaServiceInvoice extends Model
             $params['Sub_GL'] = "";
 
             $export->Sub_GL = $sub_gl;
-        }
+        }else
+            $export->Sub_GL = "";
         $export->InvoiceDate = $this->invoice_date;
         $export->VatPercentage = ($params['VatPercentage'] > 0) ? $params['VatPercentage'] : '';
         $export->Qty =  $params['Qty'];
         $export->GSTIN = $this->outlets->gst_number;
+        $export->VIN = if($this->type_id == 1063) ? $this->vin_number : "";
         $export->save();
         $this->importRowToAxaptaStaging($params);
 
@@ -2746,7 +2748,7 @@ class HondaServiceInvoice extends Model
                 $type = $serviceInvoiceItem->serviceItem;
                 if($this->type_id == 1063){
                     $tcs_dn_inv = HondaServiceInvoice::tcs_dn_details($serviceInvoiceItem->serviceItem->Invoice);
-                    $serviceInvoiceItem->rate = $tcs_dn_inv->on_road_price;
+                    $serviceInvoiceItem->rate = $tcs_dn_inv->ex_showroom_price;
                     $serviceInvoiceItem['TCS']->pivot->amount = $serviceInvoiceItem->sub_total;
                 }
 
@@ -3213,7 +3215,7 @@ class HondaServiceInvoice extends Model
         return DB::table('honda_sale_invoice_detail_requests')
                     ->join('honda_sale_invoice_details' , 'honda_sale_invoice_details.id' , 'honda_sale_invoice_detail_requests.sale_invoice_id')
                     ->join('honda_vehicle_details' , 'honda_vehicle_details.id' , 'honda_sale_invoice_details.vehicle_id')
-                    ->select('honda_sale_invoice_details.id','honda_vehicle_details.vin_number','honda_sale_invoice_details.date','honda_sale_invoice_detail_requests.on_road_price','honda_sale_invoice_detail_requests.customer_name_id')
+                    ->select('honda_sale_invoice_details.id','honda_vehicle_details.vin_number','honda_sale_invoice_details.date','honda_sale_invoice_detail_requests.ex_showroom_price','honda_sale_invoice_detail_requests.customer_name_id')
                     ->where('honda_sale_invoice_details.number' , $inv_no)
                     ->first();
     }

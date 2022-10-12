@@ -388,7 +388,7 @@ class HondaServiceInvoiceApprovalController extends Controller {
             $tcs_dn_inv = HondaServiceInvoice::tcs_dn_details($service_invoice->invoice_number);
             $service_invoice->vin_number = $tcs_dn_inv->vin_number;
             $service_invoice->invoice_date = $tcs_dn_inv->date;
-            $service_invoice->amount = $tcs_dn_inv->on_road_price;
+            $service_invoice->amount = $tcs_dn_inv->ex_showroom_price;
             $service_invoice->inv_person = $tcs_dn_inv->customer_name_id;
         }		
 		$this->data['extras'] = [
@@ -430,6 +430,7 @@ class HondaServiceInvoiceApprovalController extends Controller {
 				$approval_status->comments = $request->comments;
 				$message = 'Rejected';
 			}
+			$approval_status->document_date = date("Y-m-d");
 			$approval_status->updated_by_id = Auth()->user()->id;
 			$approval_status->updated_at = date("Y-m-d H:i:s");
 			$approval_status->save();

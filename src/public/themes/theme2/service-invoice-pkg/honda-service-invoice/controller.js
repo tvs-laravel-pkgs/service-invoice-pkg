@@ -1821,7 +1821,7 @@ $('#bt_attachments').on('click', () => {
                             //resolve(response.data);
                             self.service_invoice.invoice_date = response.data.list.date
                             self.service_invoice.vin_number = response.data.list.vin_number
-                            self.service_invoice.amount = response.data.list.on_road_price
+                            self.service_invoice.amount = response.data.list.ex_showroom_price
                             self.service_invoice.inv_person = response.data.list.customer_name_id
                             self.service_invoice.invoice_number = self.service_invoice.invoice_number.number
                            
