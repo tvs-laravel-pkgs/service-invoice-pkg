@@ -606,6 +606,30 @@ app.component('hondaServiceInvoiceForm', {
                         $('.imageuploadify-images-list').append(design);
                     });
                 }
+                $timeout(async () => {
+                    const tcsRateUpdate = () => {
+                        let tcsAmt = 0
+                        $(self.service_invoice.service_invoice_items).each((index, item) => {
+                            var tcs_tax_values = {}
+                            tcs_tax_values['amount'] = item.sub_total
+                            tcs_tax_values['percentage'] = item.tcs_percentage
+                            
+                            self.service_invoice.service_invoice_items[index].rate = self.service_invoice.invoice_amount
+                            self.service_invoice.service_invoice_items[index].TCS = tcs_tax_values
+
+                            tcsAmt += item.sub_total
+                        })
+
+                        self.tcs_amt = tcsAmt
+                        self.table_total = parseFloat(self.tcs_amt).toFixed(2)
+                        self.table_sub_total = parseFloat(self.tcs_amt).toFixed(2)
+                        self.service_invoice.final_amount = Math.round(self.table_total).toFixed(2)
+                        self.service_invoice.round_off_amount = parseFloat(self.service_invoice.final_amount - self.table_total ).toFixed(2)
+                        $("#total_tcs_amt").html(self.service_invoice.final_amount)
+                    }
+                    await tcsRateUpdate()
+                    $scope.$apply()
+                }, 200)
             } else {
                 //CURRENT DATE SELECTED IN DOC DATE
                 var d = new Date();

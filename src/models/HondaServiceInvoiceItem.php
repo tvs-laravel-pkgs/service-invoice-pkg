@@ -14,6 +14,7 @@ class HondaServiceInvoiceItem extends Model {
 		'service_item_category_id',
 		'e_invoice_uom_id',
 		'description',
+        'tcs_percentage',
 		'qty',
 		'rate',
 		'sub_total',

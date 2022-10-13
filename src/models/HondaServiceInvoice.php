@@ -59,6 +59,7 @@ class HondaServiceInvoice extends Model
         'is_reverse_charge_applicable',
         'po_reference_number',
         'invoice_number',
+        'invoice_amount',
         'round_off_amount',
         'final_amount',
         'final_amount',

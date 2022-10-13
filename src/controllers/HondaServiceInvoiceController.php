@@ -1170,6 +1170,13 @@ class HondaServiceInvoiceController extends Controller
             //SAVE SERVICE INVOICE ITEMS
             if ($request->service_invoice_items) {
                 if (!empty($request->service_invoice_items)) {
+                    if ($request->type_id == '1063') {  // Remove existing items for TCS
+                        $existingItemIds = array_column($request->service_invoice_items, 'id');
+                        $existingItemIds = array_unique(array_filter($existingItemIds));
+                        $deleteExistingItems = HondaServiceInvoiceItem::whereNotIn('id', $existingItemIds)
+                            ->where('service_invoice_id', $service_invoice->id)
+                            ->delete();
+                    }
                     //VALIDATE UNIQUE
                     $service_invoice_items = collect($request->service_invoice_items)->pluck('service_item_id')->toArray();
                     // $service_invoice_items_unique = array_unique($service_invoice_items);
