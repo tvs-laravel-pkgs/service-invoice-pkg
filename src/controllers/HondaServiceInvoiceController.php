@@ -3749,23 +3749,15 @@ class HondaServiceInvoiceController extends Controller
         // dd(strlen($r->key));
         try {
             $key = $r->key;
-            $axUrl = "GetNewVendMasterDetails_Search";
-            if(Auth::user()->company_id == 1){
-                $axUrl = "GetNewVendMasterDetails_Search_TVS";
-            }
+            $axUrl = "GetVendMasterDetails_Honda";
             $this->soapWrapper->add('vendor', function ($service) {
                 $service
-                    ->wsdl('https://tvsapp.tvs.in/OnGo/WebService.asmx?wsdl')
+                    ->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
                     ->trace(true);
             });
             $params = ['ACCOUNTNUM' => $r->key];
             $getResult = $this->soapWrapper->call('vendor.'.$axUrl, [$params]);
-            if(Auth::user()->company_id == 1){
-                $vendor_data = $getResult->GetNewVendMasterDetails_Search_TVSResult;
-            }
-            else{
-                $vendor_data = $getResult->GetNewVendMasterDetails_SearchResult;
-            }
+            $vendor_data = $getResult->GetVendMasterDetails_HondaResult;
             if (empty($vendor_data)) {
                 return response()->json(['success' => false, 'error' => 'Vendor Not Available!.']);
             }
@@ -3783,7 +3775,6 @@ class HondaServiceInvoiceController extends Controller
             if (count($api_vendor_data) == 0) {
                 return response()->json(['success' => false, 'error' => 'Vendor Not Available!.']);
             }
-            // dd($api_vendor_data);
             $list = [];
             if (isset($api_vendor_data)) {
                 $data = [];
@@ -3795,7 +3786,8 @@ class HondaServiceInvoiceController extends Controller
                         $data['name'] = $vendor_data['NAME'];
                         $data['mobile_no'] = isset($vendor_data['LOCATOR']) && $vendor_data['LOCATOR'] != 'Not available' ? $vendor_data['LOCATOR'] : null;
                         $data['vendor_group'] = isset($vendor_data['VENDGROUP']) && $vendor_data['VENDGROUP'] != 'Not available' ? $vendor_data['VENDGROUP'] : null;
-                        $data['pan_number'] = isset($vendor_data['PAN']) && $vendor_data['PAN'] != 'Not available' ? $vendor_data['PAN'] : null;
+                        $data['pan_number'] = isset($vendor_data['PAN']) && $vendor_data['PAN'] != 'Not available' && $vendor_data['PAN'] != '[]' ? $vendor_data['PAN'] : null;
+                        $data['gst_number'] = isset($vendor_data['GST_NUMBER']) && $vendor_data['GST_NUMBER'] != 'Not available' && $vendor_data['GST_NUMBER'] != '[]' ? $vendor_data['GST_NUMBER'] : null;
 
                         $list[] = $data;
                     }
@@ -3804,7 +3796,8 @@ class HondaServiceInvoiceController extends Controller
                     $data['name'] = $api_vendor_data['NAME'];
                     $data['mobile_no'] = isset($api_vendor_data['LOCATOR']) && $api_vendor_data['LOCATOR'] != 'Not available' ? $api_vendor_data['LOCATOR'] : null;
                     $data['vendor_group'] = isset($api_vendor_data['VENDGROUP']) && $api_vendor_data['VENDGROUP'] != 'Not available' ? $api_vendor_data['VENDGROUP'] : null;
-                    $data['pan_number'] = isset($api_vendor_data['PAN']) && $api_vendor_data['PAN'] != 'Not available' ? $api_vendor_data['PAN'] : null;
+                    $data['pan_number'] = isset($api_vendor_data['PAN']) && $api_vendor_data['PAN'] != 'Not available' && $api_vendor_data['PAN'] != '[]' ? $api_vendor_data['PAN'] : null;
+                    $data['gst_number'] = isset($api_vendor_data['GST_NUMBER']) && $api_vendor_data['GST_NUMBER'] != 'Not available' && $api_vendor_data['GST_NUMBER'] != '[]' ? $api_vendor_data['GST_NUMBER'] : null;
 
                     $list[] = $data;
                 }
@@ -3822,23 +3815,15 @@ class HondaServiceInvoiceController extends Controller
     {
         // dd($request->all());
         try {
-            $axUrl = "GetNewVendorAddress_Search";
-            if(Auth::user()->company_id == 1){
-                $axUrl = "GetNewVendorAddress_Search_TVS";
-            }
+            $axUrl = "GetVendMasterDetails_Honda"; 
             $this->soapWrapper->add('vendor_address', function ($service) {
                 $service
-                    ->wsdl('https://tvsapp.tvs.in/OnGo/WebService.asmx?wsdl')
+                    ->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
                     ->trace(true);
             });
             $params = ['ACCOUNTNUM' => $request->data['code']];
             $getResult = $this->soapWrapper->call('vendor_address.'.$axUrl, [$params]);
-            if(Auth::user()->company_id == 1){
-                $vendor_data = $getResult->GetNewVendorAddress_Search_TVSResult;
-            }
-            else{
-                $vendor_data = $getResult->GetNewVendorAddress_SearchResult;
-            }
+            $vendor_data = $getResult->GetVendMasterDetails_HondaResult;    
             if (empty($vendor_data)) {
                 return response()->json(['success' => false, 'error' => 'Address Not Available!.']);
             }
@@ -3858,7 +3843,7 @@ class HondaServiceInvoiceController extends Controller
             if (count($api_vendor_data) == 0) {
                 return response()->json(['success' => false, 'error' => 'Address Not Available!.']);
             }
-
+             
             $vendor = Vendor::firstOrNew(['code' => $request->data['code']]);
             $vendor->company_id = Auth::user()->company_id;
             $vendor->portal_id = 1; //BPAS
@@ -3870,37 +3855,57 @@ class HondaServiceInvoiceController extends Controller
             $vendor->created_by = Auth::user()->id;
             $vendor->created_at = Carbon::now();
             $vendor->save();
-            // dd($api_vendor_data);
+            $api_vendor_data = [$api_vendor_data];
             $list = [];
             if ($api_vendor_data) {
                 $data = [];
                 if (isset($api_vendor_data)) {
                     $array_count = array_filter($api_vendor_data, 'is_array');
-                    if (count($array_count) > 0) {
-                        // dd('mu;l');
-                        $address_count = 0;
+                     if (count($array_count) > 0) {
+                         $address_count = 0;
                         foreach ($api_vendor_data as $key => $vendor_data) {
+
                             if(isset($vendor_data['DATAAREAID']) && ($vendor_data['DATAAREAID'] != Auth::user()->company->ax_company_code)){
                                 $address_count = 1;
+
                                 $address = Address::firstOrNew(['entity_id' => $vendor->id, 'ax_id' => $vendor_data['ACCOUNTNUM']]); //vendor
-                                // dd($address);
+                                if($vendor_data['CITY'])
+                                    $city = City::where('name', $vendor_data['CITY'])->first();
+                                else 
+                                    $city = null;
+                                if($vendor_data['STATE'])
+                                    $state = State::where('code', $vendor_data['STATE'])->first();
+                                else 
+                                    $state = null;
+                                if ($state == null) {
+                                    return response()->json(['success' => false, 'error' => 'State data is missing for picked customer.So kindly contact AX team']);
+                                }
+                                if (empty($vendor_data['ZIPCODE']) || $vendor_data['ZIPCODE'] == 'Not available') {
+                                     return response()->json(['success' => false, 'error' => 'Pincode data is missing for picked vendor.So kindly contact AX team']);
+                                }
+                                 $customer->created_at = Carbon::now();
+                                $customer->save();
+
+                                $locator =  !empty( $vendor_data['LOCATOR'] ) ? $vendor_data['LOCATOR'] : null;
+
                                 $address->company_id = Auth::user()->company_id;
                                 $address->entity_id = $vendor->id;
-                                $address->ax_id = $vendor_data['RECID'];
-                                $address->gst_number =  !empty($vendor_data['GST_NUMBER']) ? $vendor_data['GST_NUMBER'] : null;
+                                $address->ax_id = $vendor_data['ACCOUNTNUM'];
+                                $address->gst_number = !empty($vendor_data['GST_NUMBER']) ? $vendor_data['GST_NUMBER'] : null;
                                 $address->address_of_id = 21;
                                 $address->address_type_id = 40;
                                 $address->name = 'Primary Address_' . $vendor_data['ACCOUNTNUM'];
                                 $address->address_line1 = str_replace('""', '', $vendor_data['ADDRESS']);
+
                                 $state = State::firstOrNew(['code' => $vendor_data['STATE']]);
-                                if ($state  && $vendor_data['CITY'] ) {
+                                if ($state && $vendor_data['CITY']) {
                                     $city = City::firstOrNew(['name' => $vendor_data['CITY'], 'state_id' => $state->id]);
                                     $city->save();
                                 }
                                 $address->country_id = $state ? $state->country_id : null;
                                 $address->state_id = $state ? $state->id : null;
-                                $address->city_id =  isset($city)  ? $city->id : null;
-                                $address->pincode =  !empty($vendor_data['ZIPCODE'] ) && $vendor_data['ZIPCODE'] == 'Not available' ? null : $vendor_data['ZIPCODE'];
+                                $address->city_id = isset($city) ? $city->id : null;
+                                $address->pincode = !empty($vendor_data['ZIPCODE'] ) && $vendor_data['ZIPCODE'] == 'Not available' ? null : $vendor_data['ZIPCODE'];
                                 $address->save();
                                 $vendor_address[] = $address;
                             }
@@ -3955,7 +3960,6 @@ class HondaServiceInvoiceController extends Controller
             return response()->json(['success' => false, 'error' => 'Somthing went worng!']);
         }
     }
-
     public function getGstDetails($gstin)
     {
         return Customer::getGstDetail($gstin);
