@@ -365,7 +365,7 @@
                                         </ul>
                                     </div>
                                     <div class="col-md-6">
-                                        <a href="#!/service-invoice-pkg/honda-service-invoice/list" class="btn btn-white my-tooltip" id="back_button" ng-shortcut="'meta+shift+b'" ng-shortcut-click data-title="ctrl+shift+b">Back</a>
+                                        <a href="{{$ctrl.list_url}}" class="btn btn-white my-tooltip" id="back_button" ng-shortcut="'meta+shift+b'" ng-shortcut-click data-title="ctrl+shift+b">Back</a>
                                        <!--  <a href="#!/service-invoice-pkg/service-invoice/edit/{{$ctrl.type_id}}/{{$ctrl.service_invoice.id}}" class="btn btn-primary my-tooltip" id="edit_button" ng-if="$ctrl.service_invoice.status_id != 4 && $ctrl.service_invoice.status_id !=7" ng-shortcut="'meta+shift+e'" ng-shortcut-click data-title="ctrl+shift+e">Edit</a> -->
                                         <button type="submit" id="submit" class="btn btn-primary my-tooltip" ng-if="$ctrl.service_invoice.status_id == 1 || $ctrl.service_invoice.status_id == 5" ng-shortcut="'meta+shift+a'" ng-shortcut-click data-title="ctrl+shift+a">Send to Approval</button>
                                         <a href="{{attachment_url}}/{{$ctrl.service_invoice.number}}.pdf" target="_blank"><button type="button" class="btn btn-primary my-tooltip" ng-if="$ctrl.service_invoice.status_id == 4">Download PDF</button></a>
