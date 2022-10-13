@@ -847,6 +847,11 @@ $('#bt_attachments').on('click', () => {
         //GET BRANCH DETAILS
         self.getBranchDetails = function () {
             if (self.service_invoice.branch == null) {
+                if (self.type_id == 1063) {
+                    self.service_invoice.invoice_number = null
+                    self.service_invoice.vin_number = null
+                    $("#total_tcs_amt").html(' ')
+                }
                 return
             }
             $scope.getSbuByBranch(self.service_invoice.branch.id);
