@@ -1498,8 +1498,8 @@ class HondaServiceInvoiceController extends Controller
             $service_invoice->type = 'INV';
             $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdHondaINV");
         } elseif ($service_invoice->type_id == 1063) {
-            $service_invoice->type = 'TCS';
-            $eInvoiceConfigId = config("service-invoice-pkg.eInvoiceConfigIdHondaTCS");
+            $service_invoice->type = 'DBN';
+            $eInvoiceConfigId = 10065;
         }
 
         if ($service_invoice->total > $service_invoice->final_amount) {
