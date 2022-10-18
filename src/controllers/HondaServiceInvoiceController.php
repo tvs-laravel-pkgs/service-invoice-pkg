@@ -3684,7 +3684,7 @@ class HondaServiceInvoiceController extends Controller
                                 $customer->mobile_no = empty($request->data['mobile_no']) ? null : $request->data['mobile_no'];
                                 $customer->address = str_replace('""', '', $customer_data['ADDRESS']);;
                                 $customer->city = !empty($city) ? $city->id : null; //$customer_data['CITY'];
-                                $customer->zipcode = empty($customer_data['ZIPCODE']) || $customer_data['ZIPCODE'] == 'Not available' ? null : ltrim($customer_data['ZIPCODE']);
+                                $customer->zipcode = empty($customer_data['ZIPCODE']) || $customer_data['ZIPCODE'] == 'Not available' ? null : trim($customer_data['ZIPCODE']);
                                 $customer->dimension = $customer_dimension;
                                 $customer->created_at = Carbon::now();
                                 $customer->save();
@@ -3723,7 +3723,7 @@ class HondaServiceInvoiceController extends Controller
                                 $address->country_id = $state ? $state->country_id : null;
                                 $address->state_id = $state ? $state->id : null;
                                 $address->city_id = $city ? $city->id : null;
-                                $address->pincode = empty($customer_data['ZIPCODE']) || $customer_data['ZIPCODE'] == 'Not available' ? null : ltrim($customer_data['ZIPCODE']);
+                                $address->pincode = empty($customer_data['ZIPCODE']) || $customer_data['ZIPCODE'] == 'Not available' ? null : trim($customer_data['ZIPCODE']);
                                 $address->is_primary = isset($customer_data['ISPRIMARY']) ? $customer_data['ISPRIMARY'] : 0;
                                 $address->save();
                                 $address->pan_number = $request->data['pan_number'];
