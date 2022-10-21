@@ -3638,6 +3638,13 @@ class HondaServiceInvoiceController extends Controller
                     if (count($array_count) > 0) { 
                         $address_count = 0;
                         foreach ($api_customer_data as $key => $customer_data) {
+                            if (!isset($customer_data['ACCOUNTNUM'])) {
+                                foreach ($customer_data as $customerDataKey => $newCustomerData) {
+                                    if (isset($newCustomerData['ACCOUNTNUM']) && $newCustomerData['ACCOUNTNUM'] == $request->data['code']) {
+                                        $customer_data = $newCustomerData;
+                                    }
+                                }
+                            }
                              if(isset($customer_data['DATAAREAID']) && ($customer_data['DATAAREAID'] != Auth::user()->company->ax_company_code)){
 
                                 $customer = Customer::firstOrNew(['code' => $request->data['code'],'company_id'=>Auth::user()->company_id]);
