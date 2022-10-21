@@ -1820,7 +1820,7 @@ class HondaServiceInvoiceController extends Controller
                             // "Pos" => "27",
                             "Loc" => $service_invoice->address ? ($service_invoice->address->state ? $service_invoice->address->state->name : 'N/A') : 'N/A',
 
-                            "Addr1" => $service_invoice->address ? preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->street) : 'N/A',
+                            "Addr1" => $service_invoice->address ? preg_replace('/\r|\n|:|"/', ",", substr($service_invoice->address->street, 0, 98)) : 'N/A',
                             "Addr2" => $service_invoice->address ? preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->address_line2) : null,
                             "Stcd" => $service_invoice->address ? ($service_invoice->address->state ? $service_invoice->address->state->e_invoice_state_code : null) : null,
                             "Pin" => $service_invoice->address ? $service_invoice->address->pincode : null,
