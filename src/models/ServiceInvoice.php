@@ -1826,6 +1826,25 @@ class ServiceInvoice extends Model
                             $status['errors'][] = 'Invalid Date Format';
                         } else {
                             $doc_date = $record['Doc Date'];
+                            // Minimum and maximum date validation
+                            $minOffSet = Entity::where('company_id', $job->company_id)
+                                ->where('entity_type_id', 15)
+                                ->orderBy('id', 'DESC')
+                                ->pluck('name')->first();
+                            $minDate = $minOffSet ? date('Y-m-d', strtotime('-' . $minOffSet . ' days')) : date('Y-m-d');
+                            
+                            $maxOffSet = Entity::where('company_id', $job->company_id)
+                                ->where('entity_type_id', 16)
+                                ->orderBy('id', 'DESC')
+                                ->pluck('name')->first();
+                            $maxDate = $maxOffSet ? date('Y-m-d', strtotime('-' . $maxOffSet . ' days')) : date('Y-m-d');
+
+                            $minOffSetDate = strtotime($minDate);
+                            $maxOffSetDate = strtotime($maxDate);
+                            $docOffSetDate = strtotime(date('Y-m-d', PHPExcel_Shared_Date::ExcelToPHP($doc_date)));
+                            if ($minOffSetDate > $docOffSetDate || $maxOffSetDate < $docOffSetDate)
+                                $status['errors'][] = 'Doc date should be match with minimum ' . $minDate . ' and maximum of ' . $maxDate;
+                            // Minimum and maximum date validation
                         }
                     }
 
