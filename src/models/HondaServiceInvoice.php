@@ -1842,7 +1842,7 @@ class HondaServiceInvoice extends Model
         $coa_code = explode('-' , $params['LedgerDimension'])[0];
         if($params['AccountType'] == 'Customer'){
             $export->AccountType = 1;
-        }elseif ($params['AccountType'] == 'Vendor' || $coa_code  == '900680038') {
+        }elseif ($params['AccountType'] == 'Vendor' || $coa_code  == '900680038' || $coa_code  == '900680040') {
             $export->AccountType = 2;
         }else
             $export->AccountType = 0;
