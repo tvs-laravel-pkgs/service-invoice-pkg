@@ -1837,7 +1837,7 @@ class ServiceInvoice extends Model
                                 ->where('entity_type_id', 16)
                                 ->orderBy('id', 'DESC')
                                 ->pluck('name')->first();
-                            $maxDate = $maxOffSet ? date('Y-m-d', strtotime('-' . $maxOffSet . ' days')) : date('Y-m-d');
+                            $maxDate = $maxOffSet ? date('Y-m-d', strtotime('+' . $maxOffSet . ' days')) : date('Y-m-d');
 
                             $minOffSetDate = strtotime($minDate);
                             $maxOffSetDate = strtotime($maxDate);
