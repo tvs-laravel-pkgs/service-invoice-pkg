@@ -1750,7 +1750,7 @@ $('#bt_attachments').on('click', () => {
                 },
                 'qty': {
                     required: true,
-                    digits: true,
+                    // digits: true,
                 },
                 'amount': {
                     required: true,
