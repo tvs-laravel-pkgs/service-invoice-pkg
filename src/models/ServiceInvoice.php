@@ -2320,7 +2320,16 @@ class ServiceInvoice extends Model
                                 $service_invoice->address_id = $to_account_type_id == 1440 ? ($customer_address ? $customer_address->id : null) : ($vendor_address ? $vendor_address->id : null);
                                 $message = 'Service invoice added successfully';
                                 $service_invoice->items_count = 1;
-                                $service_invoice->e_invoice_registration = 0; //FOR ONLY B2C CUSTOMERS
+                                $eInvoiceRegistration = 0;
+                                if (
+                                    ($to_account_type_id == 1440 && isset($customer_address->gst_number) && $customer_address->gst_number)
+                                    ||
+                                    ($to_account_type_id != 1440 && isset($vendor_address->gst_number) && $vendor_address->gst_number)
+                                )
+                                    $eInvoiceRegistration = 1;
+                                if ($vendor_address->gst_number)
+                                // $service_invoice->e_invoice_registration = 0; //FOR ONLY B2C CUSTOMERS
+                                $service_invoice->e_invoice_registration = $eInvoiceRegistration;
                                 $service_invoice->status_id = $status_id;
                                 $service_invoice->created_by_id = $job->created_by_id;
                                 $service_invoice->updated_at = null;
