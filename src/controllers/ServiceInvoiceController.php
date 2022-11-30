@@ -3838,6 +3838,8 @@ class ServiceInvoiceController extends Controller
                                         $address->address_type_id = 40;
                                         $address->name = 'Primary Address_' . $customer_data['RECID'];
                                         $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
+                                        if (isset($customer_data['STREET']) && $customer_data['STREET'])
+                                            $address->street = str_replace('""', '', $customer_data['STREET']);
                                         $city = City::where('name', $customer_data['CITY'])->first();
                                         $state = State::where('code', $customer_data['STATE'])->first();
                                         $address->country_id = $state ? $state->country_id : null;
@@ -3870,6 +3872,8 @@ class ServiceInvoiceController extends Controller
                                     $address->address_type_id = 40;
                                     $address->name = 'Primary Address_' . $api_customer_data['RECID'];
                                     $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
+                                    if (isset($api_customer_data['STREET']) && $api_customer_data['STREET'])
+                                        $address->street = str_replace('""', '', $api_customer_data['STREET']);
                                     $city = City::where('name', $api_customer_data['CITY'])->first();
                                     // if ($city) {
                                     $state = State::where('code', $api_customer_data['STATE'])->first();
@@ -4032,6 +4036,8 @@ class ServiceInvoiceController extends Controller
                                 //     $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
                                 // }
                                 $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
+                                if (isset($customer_data['STREET']) && $customer_data['STREET'])
+                                    $address->street = str_replace('""', '', $customer_data['STREET']);
 
                                 $city = City::where('name', $customer_data['CITY'])->first();
                                 $state = State::where('code', $customer_data['STATE'])->first();
@@ -4101,7 +4107,8 @@ class ServiceInvoiceController extends Controller
                             //     $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
                             // }
                             $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
-                            $address->street = str_replace('""', '', $api_customer_data['STREET']);
+                            if (isset($api_customer_data['STREET']) && $api_customer_data['STREET'])
+                                $address->street = str_replace('""', '', $api_customer_data['STREET']);
 
                             $city = City::where('name', $api_customer_data['CITY'])->first();
                             // if ($city) {
@@ -4628,6 +4635,8 @@ class ServiceInvoiceController extends Controller
                                 $address->address_type_id = 40;
                                 $address->name = 'Primary Address_' . $customer_data['RECID'];
                                 $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
+                                if (isset($customer_data['STREET']) && $customer_data['STREET'])
+                                    $address->street = str_replace('""', '', $customer_data['STREET']);
                                 $city = City::where('name', $customer_data['CITY'])->first();
                                 $state = State::where('code', $customer_data['STATE'])->first();
                                 $address->country_id = $state ? $state->country_id : null;
@@ -4660,6 +4669,8 @@ class ServiceInvoiceController extends Controller
                             $address->address_type_id = 40;
                             $address->name = 'Primary Address_' . $api_customer_data['RECID'];
                             $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
+                            if (isset($api_customer_data['STREET']) && $api_customer_data['STREET'])
+                                $address->street = str_replace('""', '', $api_customer_data['STREET']);
                             $city = City::where('name', $api_customer_data['CITY'])->first();
                             // if ($city) {
                             $state = State::where('code', $api_customer_data['STATE'])->first();
@@ -4985,6 +4996,8 @@ class ServiceInvoiceController extends Controller
                                         $address->address_type_id = 40;
                                         $address->name = 'Primary Address_' . $customer_data['RECID'];
                                         $address->address_line1 = str_replace('""', '', $customer_data['ADDRESS']);
+                                        if (isset($customer_data['STREET']) && $customer_data['STREET'])
+                                            $address->street = str_replace('""', '', $customer_data['STREET']);
                                         $city = City::where('name', $customer_data['CITY'])->first();
                                         $state = State::where('code', $customer_data['STATE'])->first();
                                         $address->country_id = $state ? $state->country_id : null;
@@ -5017,6 +5030,8 @@ class ServiceInvoiceController extends Controller
                                     $address->address_type_id = 40;
                                     $address->name = 'Primary Address_' . $api_customer_data['RECID'];
                                     $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
+                                    if (isset($api_customer_data['STREET']) && $api_customer_data['STREET'])
+                                        $address->street = str_replace('""', '', $api_customer_data['STREET']);
                                     $city = City::where('name', $api_customer_data['CITY'])->first();
                                     // if ($city) {
                                     $state = State::where('code', $api_customer_data['STATE'])->first();
