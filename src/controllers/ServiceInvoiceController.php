@@ -2630,7 +2630,8 @@ class ServiceInvoiceController extends Controller
                                 if (trim(strtolower($customer_trande_name_check->original['legal_name'])) != trim(strtolower($send_approval->customer->name))) {
                                     // return response()->json(['success' => false, 'errors' => ['Customer Name Not Matched with GSTIN Registration!']]);
                                     if (trim(strtolower($customer_trande_name_check->original['trade_name'])) != trim(strtolower($send_approval->customer->name))) {
-                                        return response()->json(['success' => false, 'errors' => ['Customer Name Not Matched with GSTIN Registration!']]);
+                                        // return response()->json(['success' => false, 'errors' => ['Customer Name Not Matched with GSTIN Registration!']]);
+                                        return response()->json(['success' => false, 'errors' => ['Customer Name Not Matched with GSTIN Registration for the Customer ' . $send_approval->customer->name]]);
                                     }
                                 }
 
