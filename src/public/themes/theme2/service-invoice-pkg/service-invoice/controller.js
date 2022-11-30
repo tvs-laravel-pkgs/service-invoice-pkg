@@ -932,6 +932,25 @@ app.component('serviceInvoiceForm', {
                 }
             }
         }
+        $scope.selectedShipAddress = shipAddress => {
+            console.log(shipAddress);
+            // self.service_invoice.service_invoice_items = [];
+            if ($('.ship_address:checked').length > 1) {
+                custom_noty('error', 'Already one ship address selected!');
+                return;
+            }
+            
+            // self.customer.state_id = shipAddress.state_id;
+            // self.customer.gst_number = shipAddress.gst_number;
+            // console.log(self.customer);
+            // if (shipAddress.gst_number) {
+            //     if ($('.ship_address').is(":checked") == true) {
+            //         setTimeout(function () {
+            //             $scope.checkCustomerGSTIN(shipAddress.gst_number, self.customer.name);
+            //         }, 1000);
+            //     }
+            // }
+        }
 
         $scope.checkCustomerGSTIN = function (gstin, customer) {
             // console.log(gstin);

@@ -72,6 +72,7 @@ class ServiceInvoice extends Model
         'created_by_id',
         'updated_by_id',
         'deleted_by_id',
+        'ship_address_id',
     ];
 
     private $lineNumber;
@@ -151,6 +152,9 @@ class ServiceInvoice extends Model
     public function address()
     {
         return $this->belongsTo('App\Address', 'address_id', 'id');
+    }
+    public function shipAddress() {
+        return $this->belongsTo('App\Address', 'ship_address_id', 'id');
     }
 
     public function sbu()
@@ -2318,6 +2322,7 @@ class ServiceInvoice extends Model
                                 $service_invoice->to_account_type_id = $to_account_type_id;
                                 $service_invoice->customer_id = $customer->id;
                                 $service_invoice->address_id = $to_account_type_id == 1440 ? ($customer_address ? $customer_address->id : null) : ($vendor_address ? $vendor_address->id : null);
+                                $service_invoice->ship_address_id = $service_invoice->address_id;
                                 $message = 'Service invoice added successfully';
                                 $service_invoice->items_count = 1;
                                 $eInvoiceRegistration = 0;

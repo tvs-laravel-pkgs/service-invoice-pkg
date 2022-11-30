@@ -235,6 +235,7 @@ class ServiceInvoiceApprovalController extends Controller {
 			// 'customer',
 			'toAccountType',
 			'address',
+			'shipAddress',
 			'branch',
 			'branch.primaryAddress',
 			'sbu',

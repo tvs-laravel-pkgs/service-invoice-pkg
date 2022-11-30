@@ -302,6 +302,7 @@
                             </div><!-- Flex Wrap -->
                             <div class="row" ng-if="$ctrl.single_address">
                                 <input type="hidden" name="address_id" value="{{$ctrl.customer_address.id}}">
+                                <input type="hidden" name="ship_address_id" value="{{$ctrl.customer_address.id}}">
                             </div>
                             <div class="row" ng-if="$ctrl.multiple_address">
                                 <div class="col-md-12">
@@ -320,6 +321,26 @@
                                                     </div><!-- Table Form List Wrap -->
                                                     <!-- </li> -->
                                                     <!-- </ul> -->
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row" ng-if="$ctrl.multiple_address">
+                                <div class="col-md-12">
+                                    <div class="page-form pb-80">
+                                        <p class="info-content color-red"><b>Ship To</b></p>
+                                        <div class="flex-wrap">
+                                            <ul class="flex-list bordered">
+                                                <li class="flex-md-4" ng-repeat="(key,address) in $ctrl.customer_addresses">
+                                                    <div class="table-form-list-wrap">
+                                                        <input type="checkbox" name="ship_address_id" id="{{address.id}}" class="ship_address" value="{{address.id}}" ng-click="selectedShipAddress(address)" ng-checked="$ctrl.service_invoice.ship_address_id == address.id">
+                                                        <div class="table-form-list-control">
+                                                            Address: {{address.address_line1}}
+                                                            GSTIN: {{address.gst_number}}
+                                                        </div><!-- Table Form List Control -->
+                                                    </div><!-- Table Form List Wrap -->
                                                 </li>
                                             </ul>
                                         </div>

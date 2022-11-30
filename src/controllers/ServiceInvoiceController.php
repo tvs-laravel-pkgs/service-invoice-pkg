@@ -1017,6 +1017,7 @@ class ServiceInvoiceController extends Controller
                 // 'invoice_number.required_if' => 'Invoice Number is required',
                 // 'invoice_date.required' => 'Invoice Date is required',
                 // 'round_off_amount.required' => 'Round Off Amount is required',
+                'ship_address_id.required' => 'Ship address is required',
             ];
 
             $validator = Validator::make($request->all(), [
@@ -1030,6 +1031,9 @@ class ServiceInvoiceController extends Controller
                     'required:true',
                 ],
                 'address_id' => [
+                    'required:true',
+                ],
+                'ship_address_id' => [
                     'required:true',
                 ],
                 // 'sub_category_id' => [
@@ -1340,6 +1344,7 @@ class ServiceInvoiceController extends Controller
             // 'customer',
             'toAccountType',
             'address',
+            'shipAddress',
             'outlets',
             'outlets.primaryAddress',
             'outlets.region',
@@ -2333,6 +2338,7 @@ class ServiceInvoiceController extends Controller
             // 'customer',
             'toAccountType',
             'address',
+            'shipAddress',
             'branch',
             'branch.primaryAddress',
             'sbu',
