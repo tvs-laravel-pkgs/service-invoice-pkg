@@ -1922,7 +1922,8 @@ class ServiceInvoiceController extends Controller
                             // "Pos" => "27",
                             "Loc" => $service_invoice->address ? ($service_invoice->address->state ? $service_invoice->address->state->name : 'N/A') : 'N/A',
 
-                            "Addr1" => $service_invoice->address ? preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->address_line1) : 'N/A',
+                            "Addr1" => $service_invoice->address ? preg_replace('/\r|\n|:|"/', ",", substr($service_invoice->address->street, 0, 98)) : 'N/A',
+                            // "Addr1" => $service_invoice->address ? preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->address_line1) : 'N/A',
                             "Addr2" => $service_invoice->address ? preg_replace('/\r|\n|:|"/', ",", $service_invoice->address->address_line2) : null,
                             "Stcd" => $service_invoice->address ? ($service_invoice->address->state ? $service_invoice->address->state->e_invoice_state_code : null) : null,
                             "Pin" => $service_invoice->address ? $service_invoice->address->pincode : null,
@@ -4037,7 +4038,7 @@ class ServiceInvoiceController extends Controller
                                 $address->country_id = $state ? $state->country_id : null;
                                 $address->state_id = $state ? $state->id : null;
                                 $address->city_id = $city ? $city->id : null;
-                                $address->pincode = $customer_data['ZIPCODE'] == 'Not available' ? null : $customer_data['ZIPCODE'];
+                                $address->pincode = $customer_data['ZIPCODE'] == 'Not available' ? null : trim($customer_data['ZIPCODE']);
                                 $address->is_primary = isset($customer_data['ISPRIMARY']) ? $customer_data['ISPRIMARY'] : 0;
 
                                 $address->save();
@@ -4100,6 +4101,7 @@ class ServiceInvoiceController extends Controller
                             //     $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
                             // }
                             $address->address_line1 = str_replace('""', '', $api_customer_data['ADDRESS']);
+                            $address->street = str_replace('""', '', $api_customer_data['STREET']);
 
                             $city = City::where('name', $api_customer_data['CITY'])->first();
                             // if ($city) {
@@ -4108,7 +4110,7 @@ class ServiceInvoiceController extends Controller
                             $address->state_id = $state ? $state->id : null;
                             // }
                             $address->city_id = $city ? $city->id : null;
-                            $address->pincode = $api_customer_data['ZIPCODE'] == 'Not available' ? null : $api_customer_data['ZIPCODE'];
+                            $address->pincode = $api_customer_data['ZIPCODE'] == 'Not available' ? null : trim($api_customer_data['ZIPCODE']);
                             $address->is_primary = isset($api_customer_data['ISPRIMARY']) ? $api_customer_data['ISPRIMARY'] : null;
                             $address->save();
                             // dd($address);
