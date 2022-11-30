@@ -2332,7 +2332,6 @@ class ServiceInvoice extends Model
                                     ($to_account_type_id != 1440 && isset($vendor_address->gst_number) && $vendor_address->gst_number)
                                 )
                                     $eInvoiceRegistration = 1;
-                                if ($vendor_address->gst_number)
                                 // $service_invoice->e_invoice_registration = 0; //FOR ONLY B2C CUSTOMERS
                                 $service_invoice->e_invoice_registration = $eInvoiceRegistration;
                                 $service_invoice->status_id = $status_id;
