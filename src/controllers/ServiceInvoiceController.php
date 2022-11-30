@@ -4297,6 +4297,8 @@ class ServiceInvoiceController extends Controller
                                 $address->address_type_id = 40;
                                 $address->name = 'Primary Address_' . $vendor_data['RECID'];
                                 $address->address_line1 = str_replace('""', '', $vendor_data['ADDRESS']);
+                                if (isset($vendor_data['STREET']) && $vendor_data['STREET'])
+                                    $address->street = str_replace('""', '', $vendor_data['STREET']);
                                 $state = State::firstOrNew(['code' => $vendor_data['STATE']]);
                                 if ($state) {
                                     $city = City::firstOrNew(['name' => $vendor_data['CITY'], 'state_id' => $state->id]);
@@ -4328,6 +4330,8 @@ class ServiceInvoiceController extends Controller
                             $address->address_type_id = 40;
                             $address->name = 'Primary Address_' . $api_vendor_data['RECID'];
                             $address->address_line1 = str_replace('""', '', $api_vendor_data['ADDRESS']);
+                            if (isset($api_vendor_data['STREET']) && $api_vendor_data['STREET'])
+                                $address->street = str_replace('""', '', $api_vendor_data['STREET']);
                             $state = State::firstOrNew(['code' => $api_vendor_data['STATE']]);
                             if ($state) {
                                 $city = City::firstOrNew(['name' => $api_vendor_data['CITY'], 'state_id' => $state->id]);
