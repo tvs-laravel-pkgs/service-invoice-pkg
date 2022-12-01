@@ -223,6 +223,7 @@
                                             <p class="info-content-small italic">{{$ctrl.service_invoice.to_account_type_id == 1440 ? 'Customer': ''}}{{$ctrl.service_invoice.to_account_type_id == 1441 ? 'Vendor': ''}}{{$ctrl.service_invoice.to_account_type_id == 1442 ? 'Ledger': ''}} Code : {{$ctrl.service_invoice.customer.code}}</p>
                                         </div><!-- Info Wrap -->
                                         <div class="info-wrap">
+                                            <p class="info-content color-red"><b>Bill To</b></p>
                                             <p class="info-content"><b>{{$ctrl.customer.mobile_no}}</b></p>
                                             <p class="info-content">{{$ctrl.service_invoice.address.address_line1}}</p>
                                             <div class="info-space"></div>
