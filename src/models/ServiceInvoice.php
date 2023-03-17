@@ -3181,6 +3181,7 @@ class ServiceInvoice extends Model
                 $itemRecords[$hsnId]['cgst_amount'] = 0;
                 $itemRecords[$hsnId]['sgst_amount'] = 0;
                 $itemRecords[$hsnId]['igst_amount'] = 0;
+                $itemRecords[$hsnId]['kfc_amount'] = 0;
                 $itemRecords[$hsnId]['tcs_amount'] = 0;
                 $itemRecords[$hsnId]['cess_amount'] = 0;
             }
@@ -3192,10 +3193,11 @@ class ServiceInvoice extends Model
             $itemRecords[$hsnId]['sgst_amount'] += $itemDetail->taxes()->where('tax_id', 2)->pluck('amount')->first();
             $itemRecords[$hsnId]['igst_amount'] += $itemDetail->taxes()->where('tax_id', 3)->pluck('amount')->first();
             $itemRecords[$hsnId]['kfc_amount'] += $itemDetail->taxes()->where('tax_id', 4)->pluck('amount')->first();
-            $itemRecords[$hsnId]['tcs_amount'] += $itemDetail->taxes->where('tax_id', 5)->pluck('amount')->first();
+            $itemRecords[$hsnId]['tcs_amount'] += $itemDetail->taxes()->where('tax_id', 5)->pluck('amount')->first();
             $itemRecords[$hsnId]['cess_amount'] += $itemDetail->taxes()->where('tax_id', 6)->pluck('amount')->first();
         }
 
+        // dd($itemRecords);
         if (count($itemRecords) > 0) {
             foreach ($itemRecords as $itemRecord) {
                 // Item Save

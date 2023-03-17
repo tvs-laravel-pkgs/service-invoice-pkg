@@ -2326,7 +2326,7 @@ class ServiceInvoiceController extends Controller
             return $r;
         }
 
-        $r = $service_invoice->generateVimsCnDnAndTvsoneOracleAxapta();
+        $r = $service_invoice->generateVimsCnDnOracleAxapta();
         if (!$r['success']) {
             return $r;
         }
