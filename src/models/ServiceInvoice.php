@@ -3087,8 +3087,13 @@ class ServiceInvoice extends Model
             return $res;
         }
 
-        $businessUnitName = $companyName;
         $transactionClass = 'Invoice';
+        if($this->type_id == 1060 || $this->type_id == 1061){
+            $transactionClass = $this->type->name.' Memo';
+        }
+
+        $businessUnitName = $companyName;
+        // $transactionClass = 'Invoice';
         $transactionBatchName = 'VIMS';
         $transactionTypeName = 'VIMS-Invoice';
         $transactionNumber = $this->number;
@@ -3113,8 +3118,6 @@ class ServiceInvoice extends Model
         $cashVehicleNumber = $cashInvoiceNumber = null;
         $accountingClass = 'REV';
         $company = $this->company ? $this->company->oracle_code : null;
-        // $costCentre = null;
-        // $naturalAccount = $customerCode;
         $sbu = $this->sbu; 
         $lob = $costCentre = $naturalAccount = null;
         if ($sbu) {
@@ -3184,17 +3187,48 @@ class ServiceInvoice extends Model
                 $itemRecords[$hsnId]['kfc_amount'] = 0;
                 $itemRecords[$hsnId]['tcs_amount'] = 0;
                 $itemRecords[$hsnId]['cess_amount'] = 0;
+                $itemRecords[$hsnId]['tax_percentage'] = 0;
             }
 
             //Without tax amount
             $itemRecords[$hsnId]['amount'] += $itemDetail->sub_total;
             // For item tax
-            $itemRecords[$hsnId]['cgst_amount'] += $itemDetail->taxes()->where('tax_id', 1)->pluck('amount')->first();
-            $itemRecords[$hsnId]['sgst_amount'] += $itemDetail->taxes()->where('tax_id', 2)->pluck('amount')->first();
-            $itemRecords[$hsnId]['igst_amount'] += $itemDetail->taxes()->where('tax_id', 3)->pluck('amount')->first();
-            $itemRecords[$hsnId]['kfc_amount'] += $itemDetail->taxes()->where('tax_id', 4)->pluck('amount')->first();
-            $itemRecords[$hsnId]['tcs_amount'] += $itemDetail->taxes()->where('tax_id', 5)->pluck('amount')->first();
-            $itemRecords[$hsnId]['cess_amount'] += $itemDetail->taxes()->where('tax_id', 6)->pluck('amount')->first();
+            $cgstDetail = $itemDetail->taxes()->where('tax_id', 1)->select('amount','percentage')->first();
+            $sgstDetail = $itemDetail->taxes()->where('tax_id', 2)->select('amount','percentage')->first();
+            $igstDetail = $itemDetail->taxes()->where('tax_id', 3)->select('amount','percentage')->first();
+            $kfcDetail = $itemDetail->taxes()->where('tax_id', 4)->select('amount','percentage')->first();
+            $tcsDetail = $itemDetail->taxes()->where('tax_id', 5)->select('amount','percentage')->first();
+            $cessDetail = $itemDetail->taxes()->where('tax_id', 6)->select('amount','percentage')->first();
+
+            if(isset($cgstDetail->amount) && $cgstDetail->amount > 0){
+                $itemRecords[$hsnId]['cgst_amount'] += $cgstDetail->amount;
+                $itemRecords[$hsnId]['tax_percentage'] += $cgstDetail->percentage;
+            }
+
+            if(isset($sgstDetail->amount) && $sgstDetail->amount > 0){
+                $itemRecords[$hsnId]['sgst_amount'] += $sgstDetail->amount;
+                $itemRecords[$hsnId]['tax_percentage'] += $sgstDetail->percentage;
+            }
+
+            if(isset($igstDetail->amount) && $igstDetail->amount > 0){
+                $itemRecords[$hsnId]['igst_amount'] += $igstDetail->amount;
+                $itemRecords[$hsnId]['tax_percentage'] += $igstDetail->percentage;
+            }
+
+            if(isset($kfcDetail->amount) && $kfcDetail->amount > 0){
+                $itemRecords[$hsnId]['kfc_amount'] += $kfcDetail->amount;
+                $itemRecords[$hsnId]['tax_percentage'] += $kfcDetail->percentage;
+            }
+
+            if(isset($tcsDetail->amount) && $tcsDetail->amount > 0){
+                $itemRecords[$hsnId]['tcs_amount'] += $tcsDetail->amount;
+                $itemRecords[$hsnId]['tax_percentage'] += $tcsDetail->percentage;
+            }
+
+            if(isset($cessDetail->amount) && $cessDetail->amount > 0){
+                $itemRecords[$hsnId]['cess_amount'] += $itemDetail->amount;
+                $itemRecords[$hsnId]['tax_percentage'] += $itemDetail->percentage;
+            }
         }
 
         // dd($itemRecords);
