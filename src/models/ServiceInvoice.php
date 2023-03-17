@@ -3062,12 +3062,22 @@ class ServiceInvoice extends Model
         return $api_log;
     }
 
-    public function generateVimsCnDnAndTvsoneOracleAxapta() {
+    public function generateVimsCnDnOracleAxapta() {
+        if($this->to_account_type_id == 1440){
+            //CUSTOMER
+            return self::generateVimsCnDnCustomerOracleAxapta();
+        }elseif($this->to_account_type_id == 1441){
+            return self::generateVimsCnDnCustomerOracleAxapta();
+        }
+    }
+
+    public function generateVimsCnDnCustomerOracleAxapta(){
+        //CUSTOMER
         $res = [];
         $res['success'] = false;
         $res['errors'] = [];
 
-        $companyName = $this->company ? $this->company->name : '';
+        $companyName = $this->company ? $this->company->oem_business_unit : '';
         $arInvoiceExports = ArInvoiceExport::where([
             'transaction_number' => $this->number,
             'business_unit' => $companyName,
@@ -3081,11 +3091,10 @@ class ServiceInvoice extends Model
         $transactionClass = 'Invoice';
         $transactionBatchName = 'VIMS';
         $transactionTypeName = 'VIMS-Invoice';
-        $paymentTerm = null;
         $transactionNumber = $this->number;
         $invoiceDate = $this->document_date ? date("Y-m-d", strtotime($this->document_date)) : null;
         $customerCode = $this->customer ? $this->customer->code : null;
-        $customerSiteNumber = $this->outlet ? $this->outlet->oracle_code_l2 : null;
+        $customerSiteNumber = null;
         $jobCardNumber = TVSOneOrder::where('invoice_number', $this->number)->pluck('number')->first();
         $outletCode = $this->outlet ? $this->outlet->oracle_code_l2 : null;
         $vehicleNumber = null;
@@ -3094,19 +3103,26 @@ class ServiceInvoice extends Model
         $shipToCustomerAccount = $customerCode;
         $shipToCustomerSite = null;
         $description = null;
-        $revenueType = $quantity = $uom = $unitPrice = null;
-        $amount = $this->final_amount;
+        $revenueType = $uom = $unitPrice = null;
+        $quantity = 1;
+        $amount = null;
         $taxClassification = null;
         $hsnCode = null;
         $cashJobCardNumber = null;
-        $cashOutlet = $outletCode;
+        $cashOutlet = null;
         $cashVehicleNumber = $cashInvoiceNumber = null;
-        $accountingClass = 'REC';
+        $accountingClass = 'REV';
         $company = $this->company ? $this->company->oracle_code : null;
-        $lob = $this->sbu ? $this->sbu->oracle_code : null;
+        // $costCentre = null;
+        // $naturalAccount = $customerCode;
+        $sbu = $this->sbu; 
+        $lob = $costCentre = $naturalAccount = null;
+        if ($sbu) {
+            $lob = $sbu->oracle_code ? $sbu->oracle_code : null;
+            $costCentre = $sbu->oracle_cost_centre ? $sbu->oracle_cost_centre : null;
+            $naturalAccount = $sbu->oracle_natural_account ? $sbu->oracle_natural_account : null;
+        }
         $location = $outletCode;
-        $costCentre = null;
-        $naturalAccount = $customerCode;
         $productSegment = $customerSegment = $interCompany = $future1 = $future2 = null;
 
         $export_record = [];
@@ -3114,10 +3130,8 @@ class ServiceInvoice extends Model
         $export_record['transaction_class'] = $transactionClass;
         $export_record['transaction_batch_source_name'] = $transactionBatchName;
         $export_record['transaction_type_name'] = $transactionTypeName;
-        $export_record['payment_term'] = $paymentTerm;
         $export_record['transaction_number'] = $transactionNumber;
         $export_record['transaction_date'] = $invoiceDate;
-        $export_record['accounting_date'] = $invoiceDate;
         $export_record['customer_account_number'] = $customerCode;
         $export_record['bill_to_customer_site_number'] = $customerSiteNumber;
         $export_record['credit_job_card_number'] = $jobCardNumber;
@@ -3126,8 +3140,6 @@ class ServiceInvoice extends Model
         $export_record['credit_irn_number'] = $irnNumber;
         $export_record['credit_lr_number'] = $lrNumber;
         $export_record['credit_lr_date'] = $lrDate;
-        $export_record['ship_to_customer_account_number'] = $shipToCustomerAccount;
-        $export_record['ship_to_customer_site_number'] = $shipToCustomerSite;
         $export_record['description'] = $description;
         $export_record['revenue_type'] = $revenueType;
         $export_record['quantity'] = $quantity;
@@ -3135,6 +3147,12 @@ class ServiceInvoice extends Model
         $export_record['unit_price'] = $unitPrice;
         $export_record['amount'] = $amount;
         $export_record['tax_classification'] = $taxClassification;
+        $export_record['cgst'] = null;
+        $export_record['sgst'] = null;
+        $export_record['igst'] = null;
+        $export_record['tcs'] = null;
+        $export_record['cess'] = null;
+        $export_record['ugst'] = null;
         $export_record['hsn_code'] = $hsnCode;
         $export_record['cash_job_card_number'] = $cashJobCardNumber;
         $export_record['cash_outlet'] = $cashOutlet;
@@ -3152,144 +3170,61 @@ class ServiceInvoice extends Model
         $export_record['future_1'] = $future1;
         $export_record['future_2'] = $future2;
 
-        $export_records = [];
-        $export_records[] = $export_record;
-        // With item, tax and round off value -> Final amount
-        $storeInOracleTable = ArInvoiceExport::store($export_record);
-
         // Item based
         $itemRecords = [];
         foreach ($this->serviceInvoiceItems as $itemDetail) {
-            if(isset($itemDetail->serviceItem->sac_code_id)){
-                if (!isset($itemRecords[$itemDetail->serviceItem->sac_code_id]) || !$itemRecords[$itemDetail->serviceItem->sac_code_id]) {
-                    $itemRecords[$itemDetail->serviceItem->sac_code_id] = [];
-                    $itemRecords[$itemDetail->serviceItem->sac_code_id]['amount'] = 0;
-                    $itemRecords[$itemDetail->serviceItem->sac_code_id]['hsn_code'] = isset($itemDetail->serviceItem->taxCode) ? $itemDetail->serviceItem->taxCode->code : '';
-                    $itemRecords[$itemDetail->serviceItem->sac_code_id]['cgst_amount'] = 0;
-                    $itemRecords[$itemDetail->serviceItem->sac_code_id]['sgst_amount'] = 0;
-                    $itemRecords[$itemDetail->serviceItem->sac_code_id]['igst_amount'] = 0;
-                    $itemRecords[$itemDetail->serviceItem->sac_code_id]['tcs_amount'] = 0;
-                    $itemRecords[$itemDetail->serviceItem->sac_code_id]['cess_amount'] = 0;
-                }
-
-                //Without tax amount
-                $itemRecords[$itemDetail->serviceItem->sac_code_id]['amount'] += $itemDetail->sub_total;
-                // For item tax
-                $itemRecords[$itemDetail->serviceItem->sac_code_id]['cgst_amount'] += $itemDetail->taxes()->where('tax_id', 1)->pluck('amount')->first();
-                $itemRecords[$itemDetail->serviceItem->sac_code_id]['sgst_amount'] += $itemDetail->taxes()->where('tax_id', 2)->pluck('amount')->first();
-                $itemRecords[$itemDetail->serviceItem->sac_code_id]['igst_amount'] += $itemDetail->taxes()->where('tax_id', 3)->pluck('amount')->first();
-                $itemRecords[$itemDetail->serviceItem->sac_code_id]['kfc_amount'] += $itemDetail->taxes()->where('tax_id', 4)->pluck('amount')->first();
-                $itemRecords[$itemDetail->serviceItem->sac_code_id]['tcs_amount'] += $itemDetail->taxes->where('tax_id', 5)->pluck('amount')->first();
-                $itemRecords[$itemDetail->serviceItem->sac_code_id]['cess_amount'] += $itemDetail->taxes()->where('tax_id', 6)->pluck('amount')->first();
-            }else{
-
-                //ITEM WITHOUT TAX
-                $export_record['amount'] = $itemDetail->sub_total;
-                $export_record['hsn_code'] = null;
-                $export_records[] = $export_record;
-                $storeInOracleTable = ArInvoiceExport::store($export_record);
-
-                //TAX
-                foreach ($itemDetail->taxes() as $taxDetail) {
-                    $export_record['accounting_class'] = 'TAX';
-                    $export_record['amount'] = $taxDetail->amount;
-                    $export_record['hsn_code'] = null;
-                    if($taxDetail->tax_id == 1 && $taxDetail->amount > 0){
-                        $export_record['tax_classification'] = 'CGST';
-                        $export_records[] = $export_record;
-                        $storeInOracleTable = ArInvoiceExport::store($export_record);
-                    }
-
-                    if($taxDetail->tax_id == 2 && $taxDetail->amount > 0){
-                        $export_record['tax_classification'] = 'SGST';
-                        $export_records[] = $export_record;
-                        $storeInOracleTable = ArInvoiceExport::store($export_record);
-                    }
-
-                    if($taxDetail->tax_id == 3 && $taxDetail->amount > 0){
-                        $export_record['tax_classification'] = 'IGST';
-                        $export_records[] = $export_record;
-                        $storeInOracleTable = ArInvoiceExport::store($export_record);
-                    }
-
-                    if($taxDetail->tax_id == 4 && $taxDetail->amount > 0){
-                        $export_record['tax_classification'] = 'KFC';
-                        $export_records[] = $export_record;
-                        $storeInOracleTable = ArInvoiceExport::store($export_record);
-                    }
-
-                    if($taxDetail->tax_id == 5 && $taxDetail->amount > 0){
-                        $export_record['tax_classification'] = 'TCS';
-                        $export_records[] = $export_record;
-                        $storeInOracleTable = ArInvoiceExport::store($export_record);
-                    }
-
-                    if($taxDetail->tax_id == 6 && $taxDetail->amount > 0){
-                        $export_record['tax_classification'] = 'CESS';
-                        $export_records[] = $export_record;
-                        $storeInOracleTable = ArInvoiceExport::store($export_record);
-                    }
-
-                }
+            $hsnId = isset($itemDetail->serviceItem->sac_code_id) ? $itemDetail->serviceItem->sac_code_id : 0;
+            if (!isset($itemRecords[$hsnId]) || !$itemRecords[$hsnId]) {
+                $itemRecords[$hsnId] = [];
+                $itemRecords[$hsnId]['amount'] = 0;
+                $itemRecords[$hsnId]['hsn_code'] = isset($itemDetail->serviceItem->taxCode) ? $itemDetail->serviceItem->taxCode->code : '';
+                $itemRecords[$hsnId]['cgst_amount'] = 0;
+                $itemRecords[$hsnId]['sgst_amount'] = 0;
+                $itemRecords[$hsnId]['igst_amount'] = 0;
+                $itemRecords[$hsnId]['tcs_amount'] = 0;
+                $itemRecords[$hsnId]['cess_amount'] = 0;
             }
+
+            //Without tax amount
+            $itemRecords[$hsnId]['amount'] += $itemDetail->sub_total;
+            // For item tax
+            $itemRecords[$hsnId]['cgst_amount'] += $itemDetail->taxes()->where('tax_id', 1)->pluck('amount')->first();
+            $itemRecords[$hsnId]['sgst_amount'] += $itemDetail->taxes()->where('tax_id', 2)->pluck('amount')->first();
+            $itemRecords[$hsnId]['igst_amount'] += $itemDetail->taxes()->where('tax_id', 3)->pluck('amount')->first();
+            $itemRecords[$hsnId]['kfc_amount'] += $itemDetail->taxes()->where('tax_id', 4)->pluck('amount')->first();
+            $itemRecords[$hsnId]['tcs_amount'] += $itemDetail->taxes->where('tax_id', 5)->pluck('amount')->first();
+            $itemRecords[$hsnId]['cess_amount'] += $itemDetail->taxes()->where('tax_id', 6)->pluck('amount')->first();
         }
 
         if (count($itemRecords) > 0) {
             foreach ($itemRecords as $itemRecord) {
                 // Item Save
+                $export_record['unit_price'] = $itemRecord['amount'];
                 $export_record['amount'] = $itemRecord['amount'];
                 $export_record['hsn_code'] = $itemRecord['hsn_code'];
+                $export_record['cgst'] = $itemRecord['cgst_amount'];
+                $export_record['sgst'] = $itemRecord['sgst_amount'];
+                $export_record['igst'] = $itemRecord['igst_amount'];
+                $export_record['kfc'] = $itemRecord['kfc_amount'];
+                $export_record['tcs'] = $itemRecord['tcs_amount'];
+                $export_record['cess'] = $itemRecord['cess_amount'];
                 $export_records[] = $export_record;
                 $storeInOracleTable = ArInvoiceExport::store($export_record);
-                
-                // Item Tax Save
-                $export_record['accounting_class'] = 'TAX';
-                if($itemRecord['cgst_amount'] > 0 && $itemRecord['sgst_amount'] > 0){
-                    $export_record['amount'] = $itemRecord['cgst_amount'] + $itemRecord['sgst_amount'];
-                    $export_record['tax_classification'] = 'CGST + SGST';
-                    $export_record['hsn_code'] = null;
-                    $export_records[] = $export_record;
-                    $storeInOracleTable = ArInvoiceExport::store($export_record);
-                }
-
-                if($itemRecord['igst_amount'] > 0){
-                    $export_record['amount'] = $itemRecord['igst_amount'];
-                    $export_record['tax_classification'] = 'IGST';
-                    $export_record['hsn_code'] = null;
-                    $export_records[] = $export_record;
-                    $storeInOracleTable = ArInvoiceExport::store($export_record);
-                }
-
-                if($itemRecord['kfc_amount'] > 0){
-                    $export_record['amount'] = $itemRecord['kfc_amount'];
-                    $export_record['tax_classification'] = 'KFC';
-                    $export_record['hsn_code'] = null;
-                    $export_records[] = $export_record;
-                    $storeInOracleTable = ArInvoiceExport::store($export_record);
-                }
-
-                if($itemRecord['tcs_amount'] > 0){
-                    $export_record['amount'] = $itemRecord['tcs_amount'];
-                    $export_record['tax_classification'] = 'TCS';
-                    $export_record['hsn_code'] = null;
-                    $export_records[] = $export_record;
-                    $storeInOracleTable = ArInvoiceExport::store($export_record);
-                }
-
-                if($itemRecord['cess_amount'] > 0){
-                    $export_record['amount'] = $itemRecord['cess_amount'];
-                    $export_record['tax_classification'] = 'CESS';
-                    $export_record['hsn_code'] = null;
-                    $export_records[] = $export_record;
-                    $storeInOracleTable = ArInvoiceExport::store($export_record);
-                }
             }
         }
 
         // Round Off
         if (!empty($this->round_off_amount) && $this->round_off_amount != '0.00') {
+            $itemAccount = '648069';    // Round Off
+            $export_record['unit_price'] = $this->round_off_amount;
             $export_record['amount'] = $this->round_off_amount;
             $export_record['tax_classification'] = null;
+            $export_record['cgst'] = null;
+            $export_record['sgst'] = null;
+            $export_record['igst'] = null;
+            $export_record['kfc'] = null;
+            $export_record['tcs'] = null;
+            $export_record['cess'] = null;
             $export_record['hsn_code'] = null;
             $export_record['accounting_class'] = 'ROUND OFF';
             $export_records[] = $export_record;
