@@ -3093,7 +3093,6 @@ class ServiceInvoice extends Model
         }
 
         $businessUnitName = $companyName;
-        // $transactionClass = 'Invoice';
         $transactionBatchName = 'VIMS';
         $transactionTypeName = 'VIMS-Invoice';
         $transactionNumber = $this->number;
@@ -3123,7 +3122,7 @@ class ServiceInvoice extends Model
         if ($sbu) {
             $lob = $sbu->oracle_code ? $sbu->oracle_code : null;
             $costCentre = $sbu->oracle_cost_centre ? $sbu->oracle_cost_centre : null;
-            $naturalAccount = $sbu->oracle_natural_account ? $sbu->oracle_natural_account : null;
+            // $naturalAccount = $sbu->oracle_natural_account ? $sbu->oracle_natural_account : null;
         }
         $location = $outletCode;
         $productSegment = $customerSegment = $interCompany = $future1 = $future2 = null;
@@ -3173,7 +3172,7 @@ class ServiceInvoice extends Model
         $export_record['future_1'] = $future1;
         $export_record['future_2'] = $future2;
 
-        // Item based
+        //ITEM BASED ON HSN
         $itemRecords = [];
         foreach ($this->serviceInvoiceItems as $itemDetail) {
             $hsnId = isset($itemDetail->serviceItem->sac_code_id) ? $itemDetail->serviceItem->sac_code_id : 0;
@@ -3181,91 +3180,147 @@ class ServiceInvoice extends Model
                 $itemRecords[$hsnId] = [];
                 $itemRecords[$hsnId]['amount'] = 0;
                 $itemRecords[$hsnId]['hsn_code'] = isset($itemDetail->serviceItem->taxCode) ? $itemDetail->serviceItem->taxCode->code : '';
+                $itemRecords[$hsnId]['coa_code'] = isset($itemDetail->serviceItem->coaCode) ? $itemDetail->serviceItem->coaCode->oracle_code : '';
                 $itemRecords[$hsnId]['cgst_amount'] = 0;
                 $itemRecords[$hsnId]['sgst_amount'] = 0;
                 $itemRecords[$hsnId]['igst_amount'] = 0;
                 $itemRecords[$hsnId]['kfc_amount'] = 0;
                 $itemRecords[$hsnId]['tcs_amount'] = 0;
                 $itemRecords[$hsnId]['cess_amount'] = 0;
-                $itemRecords[$hsnId]['tax_percentage'] = 0;
+                $itemRecords[$hsnId]['ugst_amount'] = 0;
+                $itemRecords[$hsnId]['cgst_percentage'] = 0;
+                $itemRecords[$hsnId]['sgst_percentage'] = 0;
+                $itemRecords[$hsnId]['igst_percentage'] = 0;
+                $itemRecords[$hsnId]['ugst_percentage'] = 0;
+                $itemRecords[$hsnId]['kfc_percentage'] = 0;
+                $itemRecords[$hsnId]['tcs_percentage'] = 0;
+                $itemRecords[$hsnId]['cess_percentage'] = 0;
             }
 
-            //Without tax amount
+            //WITHOUT TAX AMOUNT
             $itemRecords[$hsnId]['amount'] += $itemDetail->sub_total;
-            // For item tax
+            //TAXES
             $cgstDetail = $itemDetail->taxes()->where('tax_id', 1)->select('amount','percentage')->first();
             $sgstDetail = $itemDetail->taxes()->where('tax_id', 2)->select('amount','percentage')->first();
             $igstDetail = $itemDetail->taxes()->where('tax_id', 3)->select('amount','percentage')->first();
+            $ugstDetail = $itemDetail->taxes()->where('tax_id', 7)->select('amount','percentage')->first();
             $kfcDetail = $itemDetail->taxes()->where('tax_id', 4)->select('amount','percentage')->first();
             $tcsDetail = $itemDetail->taxes()->where('tax_id', 5)->select('amount','percentage')->first();
             $cessDetail = $itemDetail->taxes()->where('tax_id', 6)->select('amount','percentage')->first();
 
             if(isset($cgstDetail->amount) && $cgstDetail->amount > 0){
                 $itemRecords[$hsnId]['cgst_amount'] += $cgstDetail->amount;
-                $itemRecords[$hsnId]['tax_percentage'] += $cgstDetail->percentage;
+                $itemRecords[$hsnId]['cgst_percentage'] += $cgstDetail->percentage;
             }
 
             if(isset($sgstDetail->amount) && $sgstDetail->amount > 0){
                 $itemRecords[$hsnId]['sgst_amount'] += $sgstDetail->amount;
-                $itemRecords[$hsnId]['tax_percentage'] += $sgstDetail->percentage;
+                $itemRecords[$hsnId]['sgst_percentage'] += $sgstDetail->percentage;
             }
 
             if(isset($igstDetail->amount) && $igstDetail->amount > 0){
                 $itemRecords[$hsnId]['igst_amount'] += $igstDetail->amount;
-                $itemRecords[$hsnId]['tax_percentage'] += $igstDetail->percentage;
+                $itemRecords[$hsnId]['igst_percentage'] += $igstDetail->percentage;
+            }
+
+            if(isset($ugstDetail->amount) && $ugstDetail->amount > 0){
+                $itemRecords[$hsnId]['ugst_amount'] += $ugstDetail->amount;
+                $itemRecords[$hsnId]['ugst_percentage'] += $ugstDetail->percentage;
             }
 
             if(isset($kfcDetail->amount) && $kfcDetail->amount > 0){
                 $itemRecords[$hsnId]['kfc_amount'] += $kfcDetail->amount;
-                $itemRecords[$hsnId]['tax_percentage'] += $kfcDetail->percentage;
+                $itemRecords[$hsnId]['kfc_percentage'] += $kfcDetail->percentage;
             }
 
             if(isset($tcsDetail->amount) && $tcsDetail->amount > 0){
                 $itemRecords[$hsnId]['tcs_amount'] += $tcsDetail->amount;
-                $itemRecords[$hsnId]['tax_percentage'] += $tcsDetail->percentage;
+                $itemRecords[$hsnId]['tcs_percentage'] += $tcsDetail->percentage;
             }
 
             if(isset($cessDetail->amount) && $cessDetail->amount > 0){
-                $itemRecords[$hsnId]['cess_amount'] += $itemDetail->amount;
-                $itemRecords[$hsnId]['tax_percentage'] += $itemDetail->percentage;
+                $itemRecords[$hsnId]['cess_amount'] += $cessDetail->amount;
+                $itemRecords[$hsnId]['cess_percentage'] += $cessDetail->percentage;
             }
         }
 
-        // dd($itemRecords);
+        //ITEM SAVE
+        $showRoundOff = true;
         if (count($itemRecords) > 0) {
-            foreach ($itemRecords as $itemRecord) {
-                // Item Save
+            foreach ($itemRecords as $key => $itemRecord) {
                 $export_record['unit_price'] = $itemRecord['amount'];
                 $export_record['amount'] = $itemRecord['amount'];
                 $export_record['hsn_code'] = $itemRecord['hsn_code'];
+                $export_record['natural_account'] = $itemRecord['coa_code'];
                 $export_record['cgst'] = $itemRecord['cgst_amount'];
                 $export_record['sgst'] = $itemRecord['sgst_amount'];
                 $export_record['igst'] = $itemRecord['igst_amount'];
+                $export_record['ugst'] = $itemRecord['ugst_amount'];
                 $export_record['kfc'] = $itemRecord['kfc_amount'];
                 $export_record['tcs'] = $itemRecord['tcs_amount'];
                 $export_record['cess'] = $itemRecord['cess_amount'];
+
+                if ($showRoundOff == true && !empty($this->round_off_amount) && $this->round_off_amount != '0.00') {
+                    $export_record['round_off_amount'] = $this->round_off_amount;
+                }
+
+                $taxClassifications = '';
+                if($itemRecord['cgst_amount'] > 0 && $itemRecord['sgst_amount'] > 0){
+                    $taxClassifications .= 'CGST + SGST + '. ($itemRecord['cgst_percentage'] + $itemRecord['sgst_percentage']);
+                }
+
+                if($itemRecord['igst_amount'] > 0){
+                    $taxClassifications .= 'IGST + '. ($itemRecord['igst_percentage']);
+                }
+
+                if($itemRecord['ugst_amount'] > 0){
+                    if(!empty($taxClassifications)){
+                        $taxClassifications .= ' + UGST + '. ($itemRecord['ugst_percentage']);
+                    }else{
+                        $taxClassifications .= 'UGST + '. ($itemRecord['ugst_percentage']);
+                    }
+                }
+
+                if($itemRecord['tcs_amount'] > 0){
+                    if(!empty($taxClassifications)){
+                        $taxClassifications .= ' + TCS + '. ($itemRecord['tcs_percentage']);
+                    }else{
+                        $taxClassifications .= 'TCS + '. ($itemRecord['tcs_percentage']);
+                    }
+                }
+
+                if($itemRecord['cess_amount'] > 0){
+                    if(!empty($taxClassifications)){
+                        $taxClassifications .= ' + CESS + '. ($itemRecord['cess_percentage']);
+                    }else{
+                        $taxClassifications .= 'CESS + '. ($itemRecord['cess_percentage']);
+                    }
+                }
+                $export_record['tax_classification'] = $taxClassifications;
+
                 $export_records[] = $export_record;
                 $storeInOracleTable = ArInvoiceExport::store($export_record);
+                $showRoundOff = false;
             }
         }
 
-        // Round Off
-        if (!empty($this->round_off_amount) && $this->round_off_amount != '0.00') {
-            $itemAccount = '648069';    // Round Off
-            $export_record['unit_price'] = $this->round_off_amount;
-            $export_record['amount'] = $this->round_off_amount;
-            $export_record['tax_classification'] = null;
-            $export_record['cgst'] = null;
-            $export_record['sgst'] = null;
-            $export_record['igst'] = null;
-            $export_record['kfc'] = null;
-            $export_record['tcs'] = null;
-            $export_record['cess'] = null;
-            $export_record['hsn_code'] = null;
-            $export_record['accounting_class'] = 'ROUND OFF';
-            $export_records[] = $export_record;
-            $storeInOracleTable = ArInvoiceExport::store($export_record);
-        }
+        //ROUND OFF
+        // if (!empty($this->round_off_amount) && $this->round_off_amount != '0.00') {
+        //     $itemAccount = '648069';
+        //     $export_record['unit_price'] = $this->round_off_amount;
+        //     $export_record['amount'] = $this->round_off_amount;
+        //     $export_record['tax_classification'] = null;
+        //     $export_record['cgst'] = null;
+        //     $export_record['sgst'] = null;
+        //     $export_record['igst'] = null;
+        //     $export_record['kfc'] = null;
+        //     $export_record['tcs'] = null;
+        //     $export_record['cess'] = null;
+        //     $export_record['hsn_code'] = null;
+        //     $export_record['accounting_class'] = 'ROUND OFF';
+        //     $export_records[] = $export_record;
+        //     $storeInOracleTable = ArInvoiceExport::store($export_record);
+        // }
         // dd($export_records);
         $res['success'] = true;
         return $res;
