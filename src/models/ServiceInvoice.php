@@ -3203,7 +3203,7 @@ class ServiceInvoice extends Model
             }
 
             //WITHOUT TAX AMOUNT
-            $itemRecords[$hsnId]['amount'] += $itemDetail->sub_total;
+            $itemRecords[$hsnId]['amount'] += floatval($itemDetail->sub_total);
             //TAXES
             $cgstDetail = $itemDetail->taxes()->where('tax_id', 1)->select('amount','percentage')->first();
             $sgstDetail = $itemDetail->taxes()->where('tax_id', 2)->select('amount','percentage')->first();
@@ -3213,42 +3213,42 @@ class ServiceInvoice extends Model
             $tcsDetail = $itemDetail->taxes()->where('tax_id', 5)->select('amount','percentage')->first();
             $cessDetail = $itemDetail->taxes()->where('tax_id', 6)->select('amount','percentage')->first();
 
-            if(isset($cgstDetail->amount) && $cgstDetail->amount > 0){
-                $itemRecords[$hsnId]['cgst_amount'] += $cgstDetail->amount;
+            if(isset($cgstDetail->amount) && floatval($cgstDetail->amount) > 0){
+                $itemRecords[$hsnId]['cgst_amount'] += floatval($cgstDetail->amount);
                 $itemRecords[$hsnId]['cgst_percentage'] = $cgstDetail->percentage;
             }
 
-            if(isset($sgstDetail->amount) && $sgstDetail->amount > 0){
-                $itemRecords[$hsnId]['sgst_amount'] += $sgstDetail->amount;
+            if(isset($sgstDetail->amount) && floatval($sgstDetail->amount) > 0){
+                $itemRecords[$hsnId]['sgst_amount'] += floatval($sgstDetail->amount);
                 $itemRecords[$hsnId]['sgst_percentage'] = $sgstDetail->percentage;
             }
 
-            if(isset($igstDetail->amount) && $igstDetail->amount > 0){
-                $itemRecords[$hsnId]['igst_amount'] += $igstDetail->amount;
+            if(isset($igstDetail->amount) && floatval($igstDetail->amount) > 0){
+                $itemRecords[$hsnId]['igst_amount'] += floatval($igstDetail->amount);
                 $itemRecords[$hsnId]['igst_percentage'] = $igstDetail->percentage;
             }
 
-            if(isset($ugstDetail->amount) && $ugstDetail->amount > 0){
-                $itemRecords[$hsnId]['ugst_amount'] += $ugstDetail->amount;
+            if(isset($ugstDetail->amount) && floatval($ugstDetail->amount) > 0){
+                $itemRecords[$hsnId]['ugst_amount'] += floatval($ugstDetail->amount);
                 $itemRecords[$hsnId]['ugst_percentage'] = $ugstDetail->percentage;
             }
 
-            if(isset($kfcDetail->amount) && $kfcDetail->amount > 0){
-                $itemRecords[$hsnId]['kfc_amount'] += $kfcDetail->amount;
+            if(isset($kfcDetail->amount) && floatval($kfcDetail->amount) > 0){
+                $itemRecords[$hsnId]['kfc_amount'] += floatval($kfcDetail->amount);
                 $itemRecords[$hsnId]['kfc_percentage'] = $kfcDetail->percentage;
             }
 
-            if(isset($tcsDetail->amount) && $tcsDetail->amount > 0){
-                $itemRecords[$hsnId]['tcs_amount'] += $tcsDetail->amount;
+            if(isset($tcsDetail->amount) && floatval($tcsDetail->amount) > 0){
+                $itemRecords[$hsnId]['tcs_amount'] += floatval($tcsDetail->amount);
                 $itemRecords[$hsnId]['tcs_percentage'] = $tcsDetail->percentage;
             }
 
-            if(isset($cessDetail->amount) && $cessDetail->amount > 0){
-                $itemRecords[$hsnId]['cess_amount'] += $cessDetail->amount;
+            if(isset($cessDetail->amount) && floatval($cessDetail->amount) > 0){
+                $itemRecords[$hsnId]['cess_amount'] += floatval($cessDetail->amount);
                 $itemRecords[$hsnId]['cess_percentage'] = $cessDetail->percentage;
             }
 
-            // Natural account from service item coa code
+            //Natural account from service item coa code
             if(empty($itemRecords[$hsnId]['natural_account'])){
                 if(!empty($itemDetail->serviceItem->coaCode->oracle_code)){
                     $itemRecords[$hsnId]['natural_account'] = $itemDetail->serviceItem->coaCode->oracle_code;
@@ -3281,15 +3281,15 @@ class ServiceInvoice extends Model
                 }
 
                 $taxClassifications = '';
-                if($itemRecord['cgst_amount'] > 0 && $itemRecord['sgst_amount'] > 0){
-                    $taxClassifications .= 'CGST + SGST + '. ($itemRecord['cgst_percentage'] + $itemRecord['sgst_percentage']);
+                if(floatval($itemRecord['cgst_amount']) > 0 && floatval($itemRecord['sgst_amount']) > 0){
+                    $taxClassifications .= 'CGST + SGST + '. (floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage']));
                 }
 
-                if($itemRecord['igst_amount'] > 0){
+                if(floatval($itemRecord['igst_amount']) > 0){
                     $taxClassifications .= 'IGST + '. ($itemRecord['igst_percentage']);
                 }
 
-                if($itemRecord['ugst_amount'] > 0){
+                if(floatval($itemRecord['ugst_amount']) > 0){
                     if(!empty($taxClassifications)){
                         $taxClassifications .= ' + UGST + '. ($itemRecord['ugst_percentage']);
                     }else{
@@ -3297,7 +3297,7 @@ class ServiceInvoice extends Model
                     }
                 }
 
-                if($itemRecord['tcs_amount'] > 0){
+                if(floatval($itemRecord['tcs_amount']) > 0){
                     if(!empty($taxClassifications)){
                         $taxClassifications .= ' + TCS + '. ($itemRecord['tcs_percentage']);
                     }else{
@@ -3305,7 +3305,7 @@ class ServiceInvoice extends Model
                     }
                 }
 
-                if($itemRecord['cess_amount'] > 0){
+                if(floatval($itemRecord['cess_amount']) > 0){
                     if(!empty($taxClassifications)){
                         $taxClassifications .= ' + CESS + '. ($itemRecord['cess_percentage']);
                     }else{
