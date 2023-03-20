@@ -3261,6 +3261,7 @@ class ServiceInvoice extends Model
         $showRoundOff = true;
         if (count($itemRecords) > 0) {
             foreach ($itemRecords as $itemRecord) {
+                $export_record['round_off_amount'] = null;
                 $export_record['unit_price'] = $itemRecord['amount'];
                 $export_record['amount'] = $itemRecord['amount'];
                 $export_record['hsn_code'] = $itemRecord['hsn_code'];
@@ -3284,8 +3285,6 @@ class ServiceInvoice extends Model
                 if ($showRoundOff == true && $amountDiff && $amountDiff != '0.00') {
                     // $export_record['round_off_amount'] = $this->round_off_amount;
                     $export_record['round_off_amount'] = $amountDiff;
-                }else{
-                    $export_record['round_off_amount'] = null;
                 }
 
                 $taxClassifications = '';
@@ -3559,7 +3558,7 @@ class ServiceInvoice extends Model
 
         $showRoundOff = true;
         if (count($itemRecords) > 0) {
-            foreach ($itemRecords as $key => $itemRecord) {
+            foreach ($itemRecords as $itemRecord) {
                 $export_record['round_off_amount'] = null;
 
                 // ITEM SAVE
@@ -3619,8 +3618,6 @@ class ServiceInvoice extends Model
 
                 if ($showRoundOff == true && $amountDiff && $amountDiff != '0.00') {
                     $export_record['round_off_amount'] = $amountDiff;
-                }else{
-                    $export_record['round_off_amount'] = null;
                 }
 
                 $export_records[] = $export_record;
@@ -3628,7 +3625,6 @@ class ServiceInvoice extends Model
                 $showRoundOff = false;
             }
         }
-        // dd($export_records);
         $res['success'] = true;
         return $res;
     }
