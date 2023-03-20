@@ -431,6 +431,7 @@ class ServiceInvoiceApprovalController extends Controller {
 				$approval_status->comments = $request->comments;
 				$message = 'Rejected';
 			}
+			$approval_status->document_date = date("Y-m-d");
 			$approval_status->updated_by_id = Auth()->user()->id;
 			$approval_status->updated_at = date("Y-m-d H:i:s");
 			$approval_status->save();
