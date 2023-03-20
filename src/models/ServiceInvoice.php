@@ -3274,8 +3274,15 @@ class ServiceInvoice extends Model
                 $export_record['tcs'] = $itemRecord['tcs_amount'];
                 $export_record['cess'] = $itemRecord['cess_amount'];
 
-                if ($showRoundOff == true && !empty($this->round_off_amount) && $this->round_off_amount != '0.00') {
-                    $export_record['round_off_amount'] = $this->round_off_amount;
+                $amountDiff = 0;
+                if (!empty($this->final_amount) && !empty($this->total)) {
+                    $amountDiff = number_format(($this->final_amount - $this->total), 2);
+                }
+
+                // if ($showRoundOff == true && !empty($this->round_off_amount) && $this->round_off_amount != '0.00') {
+                if ($showRoundOff == true && $amountDiff && $amountDiff != '0.00') {
+                    // $export_record['round_off_amount'] = $this->round_off_amount;
+                    $export_record['round_off_amount'] = $amountDiff;
                 }else{
                     $export_record['round_off_amount'] = null;
                 }
