@@ -3090,15 +3090,30 @@ class ServiceInvoice extends Model
             return $res;
         }
 
-        $transactionClass = 'Invoice';
-        if($this->type_id == 1060 || $this->type_id == 1061){
-            $transactionClass = $this->type->name.' Memo';
-        }
-
         $businessUnitName = $companyName;
+        $transactionClass = 'Invoice';
         $transactionBatchName = 'VIMS';
         $transactionTypeName = 'VIMS-Invoice';
         $transactionNumber = $this->number;
+
+        if($this->type_id == 1060){
+            //CN
+            $transactionDetail = $this->company ? $this->company->vimsCreditNoteTransaction() : null;
+        }elseif($this->type_id == 1061){
+            //DN
+            $transactionDetail = $this->company ? $this->company->vimsDebitNoteTransaction() : null;
+        }elseif($this->type_id == 1062){
+            //INV
+            $transactionDetail = $this->company ? $this->company->vimsInvoiceNoteTransaction() : null;
+        }else{
+            $transactionDetail = null;
+        }
+
+        if(!empty($transactionDetail)){
+            $transactionClass = $transactionDetail->class ? $transactionDetail->class : $transactionClass;
+            $transactionBatchName = $transactionDetail->batch ? $transactionDetail->batch : $transactionBatchName;
+            $transactionTypeName = $transactionDetail->type ? $transactionDetail->type : $transactionTypeName;
+        }
         $invoiceDate = $this->document_date ? date("Y-m-d", strtotime($this->document_date)) : null;
         $customerCode = $this->customer ? $this->customer->code : null;
         $customerSiteNumber = null;
@@ -3119,7 +3134,6 @@ class ServiceInvoice extends Model
         $cashOutlet = null;
         $cashVehicleNumber = $cashInvoiceNumber = null;
         $accountingClass = 'REV';
-        // $company = $this->company ? $this->company->oracle_code : null;
         $sbu = $this->sbu; 
         $lob = $costCentre = $naturalAccount = null;
         if ($sbu) {
@@ -3130,6 +3144,7 @@ class ServiceInvoice extends Model
         $productSegment = $customerSegment = $interCompany = $future1 = $future2 = null;
 
         $export_record = [];
+        $export_record['company_id'] = $this->company_id;
         $export_record['business_unit'] = $businessUnitName;
         $export_record['transaction_class'] = $transactionClass;
         $export_record['transaction_batch_source_name'] = $transactionBatchName;
@@ -3177,6 +3192,7 @@ class ServiceInvoice extends Model
         $export_record['inter_company'] = $interCompany;
         $export_record['future_1'] = $future1;
         $export_record['future_2'] = $future2;
+        $export_record['created_by_id'] = (isset(Auth::user()->id) && Auth::user()->id) ? Auth::user()->id : $this->updated_by_id;
 
         //ITEM BASED ON HSN
         $itemRecords = [];
@@ -3281,9 +3297,7 @@ class ServiceInvoice extends Model
                     $amountDiff = number_format(($this->final_amount - $this->total), 2);
                 }
 
-                // if ($showRoundOff == true && !empty($this->round_off_amount) && $this->round_off_amount != '0.00') {
                 if ($showRoundOff == true && $amountDiff && $amountDiff != '0.00') {
-                    // $export_record['round_off_amount'] = $this->round_off_amount;
                     $export_record['round_off_amount'] = $amountDiff;
                 }
 
@@ -3320,31 +3334,11 @@ class ServiceInvoice extends Model
                     }
                 }
                 $export_record['tax_classification'] = $taxClassifications;
-
                 $export_records[] = $export_record;
                 $storeInOracleTable = ArInvoiceExport::store($export_record);
                 $showRoundOff = false;
             }
         }
-
-        //ROUND OFF
-        // if (!empty($this->round_off_amount) && $this->round_off_amount != '0.00') {
-        //     $itemAccount = '648069';
-        //     $export_record['unit_price'] = $this->round_off_amount;
-        //     $export_record['amount'] = $this->round_off_amount;
-        //     $export_record['tax_classification'] = null;
-        //     $export_record['cgst'] = null;
-        //     $export_record['sgst'] = null;
-        //     $export_record['igst'] = null;
-        //     $export_record['kfc'] = null;
-        //     $export_record['tcs'] = null;
-        //     $export_record['cess'] = null;
-        //     $export_record['hsn_code'] = null;
-        //     $export_record['accounting_class'] = 'ROUND OFF';
-        //     $export_records[] = $export_record;
-        //     $storeInOracleTable = ArInvoiceExport::store($export_record);
-        // }
-        // dd($export_records);
         $res['success'] = true;
         return $res;
     }
@@ -3365,7 +3359,21 @@ class ServiceInvoice extends Model
         }
 
         $businessUnit = $companyName;
-        $invoiceSource = '';
+        if($this->type_id == 1060){
+            $transactionDetail = $this->company ? $this->company->vimsCreditNoteTransaction() : null;
+        }elseif($this->type_id == 1061){
+            $transactionDetail = $this->company ? $this->company->vimsDebitNoteTransaction() : null;
+        }elseif($this->type_id == 1062){
+            $transactionDetail = $this->company ? $this->company->vimsInvoiceNoteTransaction() : null;
+        }else{
+           $transactionDetail = null; 
+        }
+
+        $invoiceSource = 'VIMS-Invoice';
+        if ($transactionDetail){
+            $invoiceSource = $transactionDetail->type ? $transactionDetail->type : $invoiceSource;
+        }
+
         $invoiceNumber = $this->number;
         $invoiceAmount = $this->final_amount;
         $invoiceDate = isset($this->document_date) ? date("Y-m-d", strtotime($this->document_date)) : '';
@@ -3414,6 +3422,7 @@ class ServiceInvoice extends Model
         $lineInfo1 =  $lineInfo2 = $lineInfo3 = '';
 
         $export_record = [];
+        $export_record['company_id'] = $this->company_id;
         $export_record['business_unit'] = $businessUnit;
         $export_record['invoice_source'] = $invoiceSource;
         $export_record['invoice_number'] = $invoiceNumber;
@@ -3476,6 +3485,7 @@ class ServiceInvoice extends Model
         $export_record['info_1'] = $lineInfo1;
         $export_record['info_2'] = $lineInfo2;
         $export_record['info_3'] = $lineInfo3;
+        $export_record['created_by_id'] = (isset(Auth::user()->id) && Auth::user()->id) ? Auth::user()->id : $this->updated_by_id;
 
         // Item based
         $itemRecords = [];
@@ -3500,6 +3510,7 @@ class ServiceInvoice extends Model
                 $itemRecords[$hsnId]['tcs_percentage'] = 0;
                 $itemRecords[$hsnId]['cess_percentage'] = 0;
                 $itemRecords[$hsnId]['natural_account'] = null;
+                $itemRecords[$hsnId]['invoice_description'] = null;
             }
 
             //WITHOUT TAX AMOUNT
@@ -3554,6 +3565,13 @@ class ServiceInvoice extends Model
                     $itemRecords[$hsnId]['natural_account'] = $itemDetail->serviceItem->coaCode->oracle_code;
                 }
             }
+
+            // Invoice Description from item commodity master
+            if (empty($itemRecords[$hsnId]['invoice_description'])) {
+                if(!empty($itemDetail->serviceItem->coaCode->name)){
+                    $itemRecords[$hsnId]['invoice_description'] = $itemDetail->serviceItem->coaCode->name;
+                }
+            }
         }
 
         $showRoundOff = true;
@@ -3566,6 +3584,7 @@ class ServiceInvoice extends Model
                 $export_record['hsn_code'] = $itemRecord['hsn_code'];
                 $export_record['accounting_class'] = 'Purchase/Expense';
                 $export_record['natural_account'] = $itemRecord['natural_account'];
+                $export_record['invoice_description'] = $itemRecord['invoice_description'];
 
                 //FOR TAX
                 $export_record['cgst'] = $itemRecord['cgst_amount'];
