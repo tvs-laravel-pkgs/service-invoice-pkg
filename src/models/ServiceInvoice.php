@@ -3360,10 +3360,13 @@ class ServiceInvoice extends Model
 
         $businessUnit = $companyName;
         if($this->type_id == 1060){
+            //CN
             $transactionDetail = $this->company ? $this->company->vimsCreditNoteTransaction() : null;
         }elseif($this->type_id == 1061){
+            //DN
             $transactionDetail = $this->company ? $this->company->vimsDebitNoteTransaction() : null;
         }elseif($this->type_id == 1062){
+            //INV
             $transactionDetail = $this->company ? $this->company->vimsInvoiceNoteTransaction() : null;
         }else{
            $transactionDetail = null; 
