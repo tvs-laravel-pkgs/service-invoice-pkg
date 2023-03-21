@@ -441,6 +441,22 @@ class ServiceInvoiceApprovalController extends Controller {
 			// dd($approval_levels);
 			if ($approval_levels != '') {
 				if ($approval_status->status_id == $approval_levels->name) {
+					// Doc date validation based on min and max offser from entities table
+					$minDate = intval(Entity::where('company_id', Auth::user()->company_id)->where('entity_type_id', 15)->pluck('name')->first());
+					if ($minDate) {
+						$minDate = $minDate * -1;
+						$startDate = date('d-m-Y', strtotime($minDate . 'days'));
+						$endDate = date('d-m-Y');
+
+						$document_date = $approval_status->document_date;
+
+						$minOffSetDate = strtotime($startDate);
+						$maxOffSetDate = strtotime($endDate);
+						$docOffSetDate = strtotime($document_date);
+						if ($minOffSetDate > $docOffSetDate || $maxOffSetDate < $docOffSetDate)
+							return response()->json(['success' => false, 'errors' => ['Doc date should be match with minimum ' . $startDate . ' and maximum of ' . $endDate]]);
+					}
+					// Doc date validation based on min and max offser from entities table
 					$r = $approved_status->createPdf($approval_status->id);
 					if (!$r['success']) {
 						DB::rollBack();
@@ -496,6 +512,7 @@ class ServiceInvoiceApprovalController extends Controller {
 	}
 
 	public function updateMultipleApproval(Request $request) {
+		// dd($request->all());
 		$send_for_approvals = ServiceInvoice::whereIn('id', $request->send_for_approval)->where('status_id', 2)->pluck('id')->toArray();
 		// $next_status = 3; //ADDED FOR QUEUE
 		$next_status = 4; //ApprovalLevel::where('approval_type_id', 1)->pluck('next_status_id')->first();
@@ -535,6 +552,22 @@ class ServiceInvoiceApprovalController extends Controller {
 					$approval_levels = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 19)->first(); //ENTITIES ALSO CHANGES FOR 3; FOR QUEUE PROCESS
 					if ($approval_levels != '') {
 						if ($send_approval->status_id == $approval_levels->name) {
+							// Doc date validation based on min and max offser from entities table
+							$minDate = intval(Entity::where('company_id', Auth::user()->company_id)->where('entity_type_id', 15)->pluck('name')->first());
+							if ($minDate) {
+								$minDate = $minDate * -1;
+								$startDate = date('d-m-Y', strtotime($minDate . 'days'));
+								$endDate = date('d-m-Y');
+
+								$document_date = $send_approval->document_date;
+
+								$minOffSetDate = strtotime($startDate);
+								$maxOffSetDate = strtotime($endDate);
+								$docOffSetDate = strtotime($document_date);
+								if ($minOffSetDate > $docOffSetDate || $maxOffSetDate < $docOffSetDate)
+									return response()->json(['success' => false, 'errors' => ['Doc date should be match with minimum ' . $startDate . ' and maximum of ' . $endDate . ' for the invoice ' . $send_approval->number]]);
+							}
+							// Doc date validation based on min and max offser from entities table
 							$r = $approved_status->createPdf($send_approval->id);
 							if (!$r['success']) {
 								DB::rollBack();
