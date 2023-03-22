@@ -33,6 +33,7 @@ use File;
 use App\Oracle\ArInvoiceExport;
 use App\Oracle\ApInvoiceExport;
 use App\TVSOneOrder;
+use App\CustomerMembership;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use PHPExcel_IOFactory;
@@ -132,7 +133,7 @@ class ServiceInvoice extends Model
     {
         if ($this->to_account_type_id == 1440) {
             //customer
-            return $this->belongsTo('Abs\CustomerPkg\Customer', 'customer_id');
+            return $this->belongsTo('Abs\CustomerPkg\Customer', 'customer_id')->withTrashed();
         } elseif ($this->to_account_type_id == 1441) {
             //vendor
             return $this->belongsTo('App\Vendor', 'customer_id');
@@ -162,7 +163,7 @@ class ServiceInvoice extends Model
 
     public function sbu()
     {
-        return $this->belongsTo('App\Sbu', 'sbu_id', 'id');
+        return $this->belongsTo('App\Sbu', 'sbu_id', 'id')->withTrashed();
     }
 
     public function type()
@@ -206,7 +207,7 @@ class ServiceInvoice extends Model
 
     public function outlet()
     {
-        return $this->belongsTo('App\Outlet', 'branch_id', 'id');
+        return $this->belongsTo('App\Outlet', 'branch_id', 'id')->withTrashed();
     }
 
     public function company()
@@ -3173,7 +3174,9 @@ class ServiceInvoice extends Model
         $export_record['cgst'] = null;
         $export_record['sgst'] = null;
         $export_record['igst'] = null;
+        $export_record['tcs_tax_classification'] = null;
         $export_record['tcs'] = null;
+        $export_record['cess_tax_classification'] = null;
         $export_record['cess'] = null;
         $export_record['ugst'] = null;
         $export_record['hsn_code'] = $hsnCode;
@@ -3217,6 +3220,7 @@ class ServiceInvoice extends Model
                 $itemRecords[$hsnId]['tcs_percentage'] = 0;
                 $itemRecords[$hsnId]['cess_percentage'] = 0;
                 $itemRecords[$hsnId]['natural_account'] = null;
+                $itemRecords[$hsnId]['chassis_number'] = null;
             }
 
             //WITHOUT TAX AMOUNT
@@ -3271,6 +3275,14 @@ class ServiceInvoice extends Model
                     $itemRecords[$hsnId]['natural_account'] = $itemDetail->serviceItem->coaCode->oracle_code;
                 }
             }
+
+            // if($itemDetail->tvsone_order_item_id && empty($itemRecords[$hsnId]['chassis_number'])){
+            //     $customerMembership = CustomerMembership::where('tvs_one_order_id', $itemDetail->tvsone_order_item_id)->first();
+            //     if($customerMembership && count($customerMembership->membershipVehicles) > 0){
+            //         $membershipVehicle = $customerMembership->membershipVehicles()->where('status_id', 12230)->first();
+            //         $itemRecords[$hsnId]['chassis_number'] = !empty($membershipVehicle->vehicle->chassis_number) ? $membershipVehicle->vehicle->chassis_number : null;
+            //     }
+            // }
         }
 
         //ITEM SAVE
@@ -3282,6 +3294,7 @@ class ServiceInvoice extends Model
                 $export_record['amount'] = $itemRecord['amount'];
                 $export_record['hsn_code'] = $itemRecord['hsn_code'];
                 $export_record['natural_account'] = $itemRecord['natural_account'];
+                $export_record['chassis_number'] = $itemRecord['chassis_number'];
 
                 // FOR TAX
                 $export_record['cgst'] = $itemRecord['cgst_amount'];
@@ -3318,21 +3331,28 @@ class ServiceInvoice extends Model
                     }
                 }
 
+                $tcsTaxClassification = '';
                 if(floatval($itemRecord['tcs_amount']) > 0){
-                    if(!empty($taxClassifications)){
-                        $taxClassifications .= ' + TCS + '. ($itemRecord['tcs_percentage']);
-                    }else{
-                        $taxClassifications .= 'TCS + '. ($itemRecord['tcs_percentage']);
-                    }
+                    // if(!empty($taxClassifications)){
+                    //     $taxClassifications .= ' + TCS + '. ($itemRecord['tcs_percentage']);
+                    // }else{
+                    //     $taxClassifications .= 'TCS + '. ($itemRecord['tcs_percentage']);
+                    // }
+                    $tcsTaxClassification = 'TCS - '. ($itemRecord['tcs_percentage']);
                 }
+                $export_record['tcs_tax_classification'] = $tcsTaxClassification;
 
+                $cessTaxClassification = '';
                 if(floatval($itemRecord['cess_amount']) > 0){
-                    if(!empty($taxClassifications)){
-                        $taxClassifications .= ' + CESS + '. ($itemRecord['cess_percentage']);
-                    }else{
-                        $taxClassifications .= 'CESS + '. ($itemRecord['cess_percentage']);
-                    }
+                    // if(!empty($taxClassifications)){
+                    //     $taxClassifications .= ' + CESS + '. ($itemRecord['cess_percentage']);
+                    // }else{
+                    //     $taxClassifications .= 'CESS + '. ($itemRecord['cess_percentage']);
+                    // }
+                    $cessTaxClassification = 'CESS - '. ($itemRecord['cess_percentage']); 
                 }
+                $export_record['cess_tax_classification'] = $cessTaxClassification;
+
                 $export_record['tax_classification'] = $taxClassifications;
                 $export_records[] = $export_record;
                 $storeInOracleTable = ArInvoiceExport::store($export_record);
@@ -3395,7 +3415,8 @@ class ServiceInvoice extends Model
         $remitPaymentMethod = null;
         $bankAccount = null;
         // $info1 = $info2 = $info3 = null;
-        $dmsGrnNumber = $this->number;
+        // $dmsGrnNumber = $this->number;
+        $dmsGrnNumber = null;
         $outletCode = $this->outlet ? $this->outlet->oracle_code_l2 : '';
         $documentType = '';
         // $poNumber = $this->po_number;
@@ -3465,7 +3486,9 @@ class ServiceInvoice extends Model
         $export_record['cgst'] = null;
         $export_record['sgst'] = null;
         $export_record['igst'] = null;
+        $export_record['tcs_tax_classification'] = null;
         $export_record['tcs'] = null;
+        $export_record['cess_tax_classification'] = null;
         $export_record['cess'] = null;
         $export_record['ugst'] = null;
         $export_record['round_off_amount'] = null;
@@ -3620,21 +3643,28 @@ class ServiceInvoice extends Model
                     }
                 }
 
+                $tcsTaxClassification = '';
                 if(floatval($itemRecord['tcs_amount']) > 0){
-                    if(!empty($taxClassifications)){
-                        $taxClassifications .= ' + TCS + '. ($itemRecord['tcs_percentage']);
-                    }else{
-                        $taxClassifications .= 'TCS + '. ($itemRecord['tcs_percentage']);
-                    }
+                    // if(!empty($taxClassifications)){
+                    //     $taxClassifications .= ' + TCS + '. ($itemRecord['tcs_percentage']);
+                    // }else{
+                    //     $taxClassifications .= 'TCS + '. ($itemRecord['tcs_percentage']);
+                    // }
+                    $tcsTaxClassification = 'TCS - '. ($itemRecord['tcs_percentage']);
                 }
+                $export_record['tcs_tax_classification'] = $tcsTaxClassification;
 
+                $cessTaxClassification = '';
                 if(floatval($itemRecord['cess_amount']) > 0){
-                    if(!empty($taxClassifications)){
-                        $taxClassifications .= ' + CESS + '. ($itemRecord['cess_percentage']);
-                    }else{
-                        $taxClassifications .= 'CESS + '. ($itemRecord['cess_percentage']);
-                    }
+                    // if(!empty($taxClassifications)){
+                    //     $taxClassifications .= ' + CESS + '. ($itemRecord['cess_percentage']);
+                    // }else{
+                    //     $taxClassifications .= 'CESS + '. ($itemRecord['cess_percentage']);
+                    // }
+                    $cessTaxClassification = 'CESS - '. ($itemRecord['cess_percentage']);
                 }
+                $export_record['cess_tax_classification'] = $cessTaxClassification;
+
                 $export_record['tax_classification'] = $taxClassifications;
                 $export_record['tax_amount'] = floatval($itemRecord['cgst_amount']) + floatval($itemRecord['sgst_amount']) + floatval($itemRecord['igst_amount']) + floatval($itemRecord['ugst_amount']) + floatval($itemRecord['kfc_amount']) + floatval($itemRecord['tcs_amount']) + floatval($itemRecord['cess_amount']);
 

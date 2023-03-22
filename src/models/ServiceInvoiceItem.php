@@ -14,6 +14,7 @@ class ServiceInvoiceItem extends Model {
 		'qty',
 		'rate',
 		'sub_total',
+		'tvsone_order_item_id',
 	];
 
 	public $timestamps = false;

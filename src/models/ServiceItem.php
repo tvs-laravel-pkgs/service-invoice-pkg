@@ -24,7 +24,7 @@ class ServiceItem extends Model {
 	}
 
 	public function coaCode() {
-		return $this->belongsTo('Abs\CoaPkg\CoaCode', 'coa_code_id', 'id');
+		return $this->belongsTo('Abs\CoaPkg\CoaCode', 'coa_code_id', 'id')->withTrashed();
 	}
 
 	public function subLedger() {
@@ -32,7 +32,7 @@ class ServiceItem extends Model {
 	}
 
 	public function taxCode() {
-		return $this->belongsTo('Abs\TaxPkg\TaxCode', 'sac_code_id', 'id');
+		return $this->belongsTo('Abs\TaxPkg\TaxCode', 'sac_code_id', 'id')->withTrashed();
 	}
 	public function subCategory() {
 		return $this->belongsTo('Abs\ServiceInvoicePkg\ServiceItemSubCategory', 'sub_category_id', 'id');

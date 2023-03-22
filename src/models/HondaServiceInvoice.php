@@ -34,6 +34,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use PHPExcel_IOFactory;
 use PHPExcel_Shared_Date;
 use Illuminate\Support\Str;
+use App\Oracle\ArInvoiceExport;
 
 class HondaServiceInvoice extends Model
 {
@@ -123,7 +124,7 @@ class HondaServiceInvoice extends Model
     {
         if ($this->to_account_type_id == 1440) {
             //customer
-            return $this->belongsTo('Abs\CustomerPkg\Customer', 'customer_id');
+            return $this->belongsTo('Abs\CustomerPkg\Customer', 'customer_id')->withTrashed();
         } elseif ($this->to_account_type_id == 1441) {
             //vendor
             return $this->belongsTo('App\Vendor', 'customer_id');
@@ -150,7 +151,7 @@ class HondaServiceInvoice extends Model
 
     public function sbu()
     {
-        return $this->belongsTo('App\Sbu', 'sbu_id', 'id');
+        return $this->belongsTo('App\Sbu', 'sbu_id', 'id')->withTrashed();
     }
 
     public function type()
@@ -194,7 +195,7 @@ class HondaServiceInvoice extends Model
 
     public function outlet()
     {
-        return $this->belongsTo('App\Outlet', 'branch_id', 'id');
+        return $this->belongsTo('App\Outlet', 'branch_id', 'id')->withTrashed();
     }
 
     public function company()
@@ -3284,5 +3285,106 @@ class HondaServiceInvoice extends Model
             'fa_shippingadd_vc' =>''
     ]);
 
+    }
+
+    public function generateOracleAxapta(){
+        //CUSTOMER
+        $res = [];
+        $res['success'] = false;
+        $res['errors'] = [];
+
+        $companyName = isset($this->company->oem_business_unit->name) ? $this->company->oem_business_unit->name : null;
+        $companyCode = isset($this->company->oem_business_unit->code) ? $this->company->oem_business_unit->code : null;
+        $arInvoiceExports = ArInvoiceExport::where([
+            'transaction_number' => $this->number,
+            'business_unit' => $companyName,
+        ])->get();
+        if (count($arInvoiceExports) > 0) {
+            $res['errors'] = ['Already exported to oracle table'];
+            return $res;
+        }
+
+        $businessUnitName = $companyName;
+        $transactionClass = '';
+        $transactionBatchName = 'HONDA';
+        $transactionTypeName = 'Honda - TCS DN';
+        $transactionDetail = $this->company ? $this->company->hondaTcsDnTransaction() : null;
+        if(!empty($transactionDetail)){
+            $transactionClass = $transactionDetail->class ? $transactionDetail->class : $transactionClass;
+            $transactionBatchName = $transactionDetail->batch ? $transactionDetail->batch : $transactionBatchName;
+            $transactionTypeName = $transactionDetail->type ? $transactionDetail->type : $transactionTypeName;
+        }
+
+        $transactionNumber = $this->number;
+        $invoiceDate = $this->document_date ? date("Y-m-d", strtotime($this->document_date)) : null;
+        $customerCode = $this->customer ? $this->customer->code : null;
+        $outletCode = $this->outlet ? $this->outlet->oracle_code_l2 : null;
+        $customerSiteNumber = $outletCode;
+        $irnNumber = $this->irn_number ? $this->irn_number : null;
+        $shipToCustomerAccount = $customerCode;
+        $description = 'TCS DN';
+        $quantity = 1;
+        $accountingClass = 'REV';
+        $sbu = $this->sbu; 
+        $lob = $costCentre = null;
+        if ($sbu) {
+            $lob = $sbu->oracle_code ? $sbu->oracle_code : null;
+            $costCentre = $sbu->oracle_cost_centre ? $sbu->oracle_cost_centre : null;
+        }
+        $location = $outletCode;
+
+        $export_record = [];
+        $export_record['company_id'] = $this->company_id;
+        $export_record['business_unit'] = $businessUnitName;
+        $export_record['transaction_class'] = $transactionClass;
+        $export_record['transaction_batch_source_name'] = $transactionBatchName;
+        $export_record['transaction_type_name'] = $transactionTypeName;
+        $export_record['transaction_number'] = $transactionNumber;
+        $export_record['transaction_date'] = $invoiceDate;
+        $export_record['customer_account_number'] = $customerCode;
+        $export_record['bill_to_customer_site_number'] = $customerSiteNumber;
+        $export_record['credit_outlet'] = $outletCode;
+        $export_record['credit_irn_number'] = $irnNumber;
+        $export_record['description'] = $description;
+        $export_record['quantity'] = $quantity;
+        $export_record['accounting_class'] = $accountingClass;
+        $export_record['company'] = $companyCode;
+        $export_record['lob'] = $lob;
+        $export_record['location'] = $location;
+        $export_record['cost_centre'] = $costCentre;
+        $export_record['created_by_id'] = (isset(Auth::user()->id) && Auth::user()->id) ? Auth::user()->id : $this->updated_by_id;
+
+        //INVOICE ITEM SAVE
+        $showRoundOff = true;
+        $tcsDnInvoice = self::tcs_dn_details($this->invoice_number);
+        foreach ($this->serviceInvoiceItems as $itemDetail) {
+            $export_record['round_off_amount'] = null;
+            $export_record['unit_price'] = $tcsDnInvoice ? $tcsDnInvoice->ex_showroom_price : null;
+            $export_record['amount'] = $tcsDnInvoice ? $tcsDnInvoice->ex_showroom_price : null;
+            $export_record['hsn_code'] = $itemDetail->taxCode ? $itemDetail->taxCode->code : null;
+            $export_record['natural_account'] = $itemDetail->coaCode ? $itemDetail->coaCode->code : null;
+            $export_record['chassis_number'] = $tcsDnInvoice ? $tcsDnInvoice->vin_number : null;
+
+            $amountDiff = 0;
+            if (!empty($this->final_amount) && !empty($this->total)) {
+                $amountDiff = number_format(($this->final_amount - $this->total), 2);
+            }
+            if ($showRoundOff == true && $amountDiff && $amountDiff != '0.00') {
+                $export_record['round_off_amount'] = $amountDiff;
+            }
+
+            // FOR TAX
+            $taxClassifications = '';
+            if(floatval($itemDetail->tcs_percentage) > 0){
+                $taxClassifications .= 'TCS - '. ($itemDetail->tcs_percentage);
+            }
+            $export_record['tcs_tax_classification'] = $taxClassifications;
+            $export_record['tcs'] = $itemDetail->sub_total;
+
+            $storeInOracleTable = ArInvoiceExport::store($export_record);
+            $showRoundOff = false;
+        }
+        $res['success'] = true;
+        return $res;
     }
 }
