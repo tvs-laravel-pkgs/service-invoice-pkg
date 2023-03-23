@@ -2180,6 +2180,14 @@ class HondaServiceInvoiceController extends Controller
             return $r;
         }
 
+        if($service_invoice->type_id == 1063){
+            //TCS DN
+            $r = $service_invoice->generateOracleAxapta();
+            if (!$r['success']) {
+                return $r;
+            }
+        }
+
         return $r;
         // } catch (Exception $e) {
         //     return response()->json(['success' => false, 'errors' => ['Exception Error' => $e->getMessage()]]);
