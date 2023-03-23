@@ -2174,12 +2174,7 @@ class HondaServiceInvoiceController extends Controller
             $serviceInvoiceItem->description = "TCS DBN for Billno -".$tcs_dn_inv_no;
         }
 
-        //ENTRY IN AX_EXPORTS
-        $r = $service_invoice->exportToAxapta();
-        if (!$r['success']) {
-            return $r;
-        }
-
+        // ENTRY IN ORACLE EXPORTS
         if($service_invoice->type_id == 1063){
             //TCS DN
             $r = $service_invoice->generateOracleAxapta();
@@ -2187,6 +2182,20 @@ class HondaServiceInvoiceController extends Controller
                 return $r;
             }
         }
+
+        //ENTRY IN AX_EXPORTS
+        $r = $service_invoice->exportToAxapta();
+        if (!$r['success']) {
+            return $r;
+        }
+
+        // if($service_invoice->type_id == 1063){
+        //     //TCS DN
+        //     $r = $service_invoice->generateOracleAxapta();
+        //     if (!$r['success']) {
+        //         return $r;
+        //     }
+        // }
 
         return $r;
         // } catch (Exception $e) {
