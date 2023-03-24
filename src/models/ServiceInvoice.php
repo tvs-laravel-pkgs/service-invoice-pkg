@@ -3480,7 +3480,7 @@ class ServiceInvoice extends Model
         $export_record['po_number'] = $poNumber;
         $export_record['po_date'] = $poDate;
         $export_record['line_type'] = $invoiceLineType;
-        $export_record['amount'] = $invoiceLineAmount;
+        // $export_record['amount'] = $invoiceLineAmount;
         $export_record['invoice_description'] = $invoiceLineDescription;
         $export_record['tax_classification'] = $taxClassification;
         $export_record['cgst'] = null;
