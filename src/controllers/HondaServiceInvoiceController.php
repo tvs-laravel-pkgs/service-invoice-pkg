@@ -5289,5 +5289,16 @@ class HondaServiceInvoiceController extends Controller
         ];
         return $tax;
     }
+    public function reprintAxapta($id) {
+        $serviceInvoice = HondaServiceInvoice::where('id', $id)->first();
+        if (!$serviceInvoice)
+            dd('Honda service invoice not found!!');
+
+        $r = $serviceInvoice->exportToAxapta();
+        if (!$r['success']) {
+            dd($r);
+        }
+        dd('Completed');
+    }
 
 }

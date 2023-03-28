@@ -102,5 +102,6 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 	Route::post('honda-service-invoice/searchhsn','HondaServiceInvoiceController@searchhsn')->name('searchhsn');
 	Route::post('honda-service-invoice/getSubgl','HondaServiceInvoiceController@getSubgl')->name('getSubgl');
 	Route::get('/honda-service-invoice/reprint-pdf/{id}/{gst_in}', 'HondaServiceInvoiceController@reprintInvoicePdf')->name('hondaReprintInvoicePdf');
+	Route::get('/honda-service-invoice/axapta/{id}', 'HondaServiceInvoiceController@reprintAxapta')->name('hondaReprintAxaptaInvoice');
 
 });
