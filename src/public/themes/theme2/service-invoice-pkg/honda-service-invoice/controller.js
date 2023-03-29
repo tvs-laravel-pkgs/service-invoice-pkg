@@ -757,13 +757,13 @@ $('#bt_attachments').on('click', () => {
         setTimeout(function () {
             if (self.config_values != '') {
                 $.each(self.config_values, function (index, value) {
-                    if (value.entity_type_id == '15' && value.name != '') {
+                    if (value.entity_type_id == '40' && value.name != '') {
                         min_offset = '-' + value.name + 'd';
-                    } else if (value.entity_type_id == '15' && value.name == '') {
+                    } else if (value.entity_type_id == '40' && value.name == '') {
                         min_offset = '';
-                    } else if (value.entity_type_id == '16' && value.name != '') {
+                    } else if (value.entity_type_id == '41' && value.name != '') {
                         max_offset = '+' + value.name + 'd';
-                    } else if (value.entity_type_id == '16' && value.name == '') {
+                    } else if (value.entity_type_id == '41' && value.name == '') {
                         max_offset = 'today';
                     }
                 });

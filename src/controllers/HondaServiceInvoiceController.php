@@ -582,7 +582,7 @@ class HondaServiceInvoiceController extends Controller
             ])->get(), //ACCOUNT TYPES
             // 'sub_category_list' => [],
         ];
-        $this->data['config_values'] = Entity::where('company_id', Auth::user()->company_id)->whereIn('entity_type_id', [15, 16])->get();
+        $this->data['config_values'] = Entity::where('company_id', Auth::user()->company_id)->whereIn('entity_type_id', [40, 41])->get();
         $this->data['service_invoice'] = $service_invoice;
         $this->data['tcs_limit'] = Entity::where('entity_type_id', 38)->where('company_id', Auth::user()->company_id)->pluck('name')->first();
         $this->data['success'] = true;
