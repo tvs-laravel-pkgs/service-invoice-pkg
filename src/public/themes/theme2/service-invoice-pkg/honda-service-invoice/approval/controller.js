@@ -236,7 +236,7 @@ app.component('hondaServiceInvoiceApprovalList', {
                     // console.log(send_for_approval);
                     // $('.bulk_approve').bind('click', false);
                     $http.post(
-                        laravel_routes['updateMultipleApproval'], {
+                        laravel_routes['hondaUpdateMultipleApproval'], {
                         send_for_approval: send_for_approval,
                     }
                     ).then(function (response) {

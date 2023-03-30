@@ -95,6 +95,8 @@ Route::group(['namespace' => 'Abs\ServiceInvoicePkg', 'middleware' => ['web', 'a
 	Route::post('/honda-service-invoice/customer/get-address', 'HondaServiceInvoiceController@getHondaCustomerAddress')->name('getHondaCustomerAddressServiceInvoice');
 	Route::get('/honda-service-invoice/create-pdf/{id?}', 'HondaServiceInvoiceController@createPdf')->name('createHondaServicePdf');
 
+	Route::post('/honda-service-invoice/update-multiple-approvals', 'HondaServiceInvoiceApprovalController@updateMultipleApproval')->name('hondaUpdateMultipleApproval');
+
 	Route::post('/honda-service-invoice/saleInvoiceTCSDetails', 'HondaServiceInvoiceController@searchHondaSaleInvoiceTCS')->name('searchHondaSaleInvoiceTCS');
 	Route::post('/honda-service-invoice/fetchTcsInvoiceDetails', 'HondaServiceInvoiceController@hondaFetchTcsInvoiceDetails')->name('hondaFetchTcsInvoiceDetails');
 	Route::post('/honda-service-invoice/searchVendor', 'HondaServiceInvoiceController@searchVendor')->name('searchHondaVendorServiceInvoice');
