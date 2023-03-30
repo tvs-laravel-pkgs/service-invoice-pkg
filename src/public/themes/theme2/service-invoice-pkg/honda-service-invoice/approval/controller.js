@@ -253,6 +253,7 @@ app.component('hondaServiceInvoiceApprovalList', {
                                 // $scope.$apply();
                             }, 1000);
                         } else {
+                            bulk_approve = 0;
                             new Noty({
                                 type: 'error',
                                 layout: 'topRight',
