@@ -3198,6 +3198,12 @@ class ServiceInvoice extends Model
         $export_record['created_by_id'] = (isset(Auth::user()->id) && Auth::user()->id) ? Auth::user()->id : $this->updated_by_id;
 
         //ITEM BASED ON HSN
+
+        if (count($this->serviceInvoiceItems) == 0) {
+            $res['errors'] = ['Invoice item details not found'];
+            return $res;
+        }
+
         $itemRecords = [];
         foreach ($this->serviceInvoiceItems as $itemDetail) {
             $hsnId = isset($itemDetail->serviceItem->sac_code_id) ? $itemDetail->serviceItem->sac_code_id : 0;
@@ -3316,18 +3322,18 @@ class ServiceInvoice extends Model
 
                 $taxClassifications = '';
                 if(floatval($itemRecord['cgst_amount']) > 0 && floatval($itemRecord['sgst_amount']) > 0){
-                    $taxClassifications .= 'CGST + SGST + '. (floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage']));
+                    $taxClassifications .= 'CGST + SGST + '. (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
                 }
 
                 if(floatval($itemRecord['igst_amount']) > 0){
-                    $taxClassifications .= 'IGST + '. ($itemRecord['igst_percentage']);
+                    $taxClassifications .= 'IGST + '. (round($itemRecord['igst_percentage']));
                 }
 
                 if(floatval($itemRecord['ugst_amount']) > 0){
                     if(!empty($taxClassifications)){
-                        $taxClassifications .= ' + UGST + '. ($itemRecord['ugst_percentage']);
+                        $taxClassifications .= ' + UGST + '. (round($itemRecord['ugst_percentage']));
                     }else{
-                        $taxClassifications .= 'UGST + '. ($itemRecord['ugst_percentage']);
+                        $taxClassifications .= 'UGST + '. (round($itemRecord['ugst_percentage']));
                     }
                 }
 
@@ -3338,7 +3344,7 @@ class ServiceInvoice extends Model
                     // }else{
                     //     $taxClassifications .= 'TCS + '. ($itemRecord['tcs_percentage']);
                     // }
-                    $tcsTaxClassification = 'TCS - '. ($itemRecord['tcs_percentage']);
+                    $tcsTaxClassification = 'TCS - '. (round($itemRecord['tcs_percentage']));
                 }
                 $export_record['tcs_tax_classification'] = $tcsTaxClassification;
 
@@ -3349,7 +3355,7 @@ class ServiceInvoice extends Model
                     // }else{
                     //     $taxClassifications .= 'CESS + '. ($itemRecord['cess_percentage']);
                     // }
-                    $cessTaxClassification = 'CESS - '. ($itemRecord['cess_percentage']); 
+                    $cessTaxClassification = 'CESS - '. (round($itemRecord['cess_percentage'])); 
                 }
                 $export_record['cess_tax_classification'] = $cessTaxClassification;
 
@@ -3514,6 +3520,10 @@ class ServiceInvoice extends Model
         $export_record['created_by_id'] = (isset(Auth::user()->id) && Auth::user()->id) ? Auth::user()->id : $this->updated_by_id;
 
         // Item based
+        if (count($this->serviceInvoiceItems) == 0) {
+            $res['errors'] = ['Invoice item details not found'];
+            return $res;
+        }
         $itemRecords = [];
         foreach ($this->serviceInvoiceItems as $itemDetail) {
             $hsnId = isset($itemDetail->serviceItem->sac_code_id) ? $itemDetail->serviceItem->sac_code_id : 0;
@@ -3628,18 +3638,18 @@ class ServiceInvoice extends Model
 
                 $taxClassifications = '';
                 if(floatval($itemRecord['cgst_amount']) > 0 && floatval($itemRecord['sgst_amount']) > 0){
-                    $taxClassifications .= 'CGST + SGST + '. (floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage']));
+                    $taxClassifications .= 'CGST + SGST + '. (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
                 }
 
                 if(floatval($itemRecord['igst_amount']) > 0){
-                    $taxClassifications .= 'IGST + '. ($itemRecord['igst_percentage']);
+                    $taxClassifications .= 'IGST + '. (round($itemRecord['igst_percentage']));
                 }
 
                 if(floatval($itemRecord['ugst_amount']) > 0){
                     if(!empty($taxClassifications)){
-                        $taxClassifications .= ' + UGST + '. ($itemRecord['ugst_percentage']);
+                        $taxClassifications .= ' + UGST + '. (round($itemRecord['ugst_percentage']));
                     }else{
-                        $taxClassifications .= 'UGST + '. ($itemRecord['ugst_percentage']);
+                        $taxClassifications .= 'UGST + '. (round($itemRecord['ugst_percentage']));
                     }
                 }
 
@@ -3650,7 +3660,7 @@ class ServiceInvoice extends Model
                     // }else{
                     //     $taxClassifications .= 'TCS + '. ($itemRecord['tcs_percentage']);
                     // }
-                    $tcsTaxClassification = 'TCS - '. ($itemRecord['tcs_percentage']);
+                    $tcsTaxClassification = 'TCS - '. (round($itemRecord['tcs_percentage']));
                 }
                 $export_record['tcs_tax_classification'] = $tcsTaxClassification;
 
@@ -3661,7 +3671,7 @@ class ServiceInvoice extends Model
                     // }else{
                     //     $taxClassifications .= 'CESS + '. ($itemRecord['cess_percentage']);
                     // }
-                    $cessTaxClassification = 'CESS - '. ($itemRecord['cess_percentage']);
+                    $cessTaxClassification = 'CESS - '. (round($itemRecord['cess_percentage']));
                 }
                 $export_record['cess_tax_classification'] = $cessTaxClassification;
 

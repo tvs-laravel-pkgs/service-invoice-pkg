@@ -3357,6 +3357,11 @@ class HondaServiceInvoice extends Model
         //INVOICE ITEM SAVE
         $showRoundOff = true;
         $tcsDnInvoice = self::tcs_dn_details($this->invoice_number);
+
+        if(count($this->serviceInvoiceItems) == 0){
+            $res['errors'] = ['Invoice item details not found'];
+            return $res;
+        }
         foreach ($this->serviceInvoiceItems as $itemDetail) {
             $export_record['round_off_amount'] = null;
             $export_record['unit_price'] = $tcsDnInvoice ? $tcsDnInvoice->ex_showroom_price : null;
@@ -3376,7 +3381,7 @@ class HondaServiceInvoice extends Model
             // FOR TAX
             $taxClassifications = '';
             if(floatval($itemDetail->tcs_percentage) > 0){
-                $taxClassifications .= 'TCS - '. ($itemDetail->tcs_percentage);
+                $taxClassifications .= 'TCS - '. (round($itemDetail->tcs_percentage));
             }
             $export_record['tcs_tax_classification'] = $taxClassifications;
             $export_record['tcs'] = $itemDetail->sub_total;
