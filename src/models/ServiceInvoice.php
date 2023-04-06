@@ -3105,7 +3105,13 @@ class ServiceInvoice extends Model
             $transactionDetail = $this->company ? $this->company->vimsDebitNoteTransaction() : null;
         }elseif($this->type_id == 1062){
             //INV
-            $transactionDetail = $this->company ? $this->company->vimsInvoiceNoteTransaction() : null;
+            // $transactionDetail = $this->company ? $this->company->vimsInvoiceNoteTransaction() : null;
+            if($this->category_id == 7){
+                //TVSONE
+                $transactionDetail = $this->company ? $this->company->tvsoneTransaction() : null;
+            }else{
+                $transactionDetail = $this->company ? $this->company->vimsInvoiceNoteTransaction() : null;
+            }
         }else{
             $transactionDetail = null;
         }
@@ -3293,9 +3299,11 @@ class ServiceInvoice extends Model
 
         //ITEM SAVE
         $showRoundOff = true;
+        $showInvoiceAmount = true;
         if (count($itemRecords) > 0) {
             foreach ($itemRecords as $itemRecord) {
                 $export_record['round_off_amount'] = null;
+                $export_record['invoice_amount'] = null;
                 $export_record['unit_price'] = $itemRecord['amount'];
                 $export_record['amount'] = $itemRecord['amount'];
                 $export_record['hsn_code'] = $itemRecord['hsn_code'];
@@ -3360,9 +3368,13 @@ class ServiceInvoice extends Model
                 $export_record['cess_tax_classification'] = $cessTaxClassification;
 
                 $export_record['tax_classification'] = $taxClassifications;
+                if($showInvoiceAmount == true){
+                    $export_record['invoice_amount'] = $this->final_amount;
+                }
                 $export_records[] = $export_record;
                 $storeInOracleTable = ArInvoiceExport::store($export_record);
                 $showRoundOff = false;
+                $showInvoiceAmount = false;
             }
         }
         $res['success'] = true;
@@ -3611,9 +3623,11 @@ class ServiceInvoice extends Model
         }
 
         $showRoundOff = true;
+        $showInvoiceAmount = true;
         if (count($itemRecords) > 0) {
             foreach ($itemRecords as $itemRecord) {
                 $export_record['round_off_amount'] = null;
+                $export_record['invoice_amount'] = null;
 
                 // ITEM SAVE
                 $export_record['amount'] = $itemRecord['amount'];
@@ -3682,9 +3696,13 @@ class ServiceInvoice extends Model
                     $export_record['round_off_amount'] = $amountDiff;
                 }
 
+                if($showInvoiceAmount == true){
+                    $export_record['invoice_amount'] = $this->final_amount;
+                }
                 $export_records[] = $export_record;
                 $storeInOracleTable = ApInvoiceExport::store($export_record);
                 $showRoundOff = false;
+                $showInvoiceAmount = false;
             }
         }
         $res['success'] = true;

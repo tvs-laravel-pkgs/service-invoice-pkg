@@ -3356,6 +3356,7 @@ class HondaServiceInvoice extends Model
 
         //INVOICE ITEM SAVE
         $showRoundOff = true;
+        $showInvoiceAmount = true;
         $tcsDnInvoice = self::tcs_dn_details($this->invoice_number);
 
         if(count($this->serviceInvoiceItems) == 0){
@@ -3364,6 +3365,7 @@ class HondaServiceInvoice extends Model
         }
         foreach ($this->serviceInvoiceItems as $itemDetail) {
             $export_record['round_off_amount'] = null;
+            $export_record['invoice_amount'] = null;
             $export_record['unit_price'] = $tcsDnInvoice ? $tcsDnInvoice->ex_showroom_price : null;
             $export_record['amount'] = $tcsDnInvoice ? $tcsDnInvoice->ex_showroom_price : null;
             $export_record['hsn_code'] = $itemDetail->taxCode ? $itemDetail->taxCode->code : null;
@@ -3385,9 +3387,12 @@ class HondaServiceInvoice extends Model
             }
             $export_record['tcs_tax_classification'] = $taxClassifications;
             $export_record['tcs'] = $itemDetail->sub_total;
-
+            if($showInvoiceAmount == true){
+                $export_record['invoice_amount'] = $this->final_amount;
+            }
             $storeInOracleTable = ArInvoiceExport::store($export_record);
             $showRoundOff = false;
+            $showInvoiceAmount = false;
         }
         $res['success'] = true;
         return $res;
