@@ -181,6 +181,7 @@ class ServiceInvoiceController extends Controller
                     $query->where('service_invoices.status_id', $request->status_id);
                 }
             })
+            ->whereNull('service_invoices.deleted_at')
             ->groupBy('service_invoices.id')
             ->orderBy('service_invoices.id', 'Desc');
         // ->get();
