@@ -23,6 +23,7 @@ use App\Entity;
 use App\FinancialYear;
 use App\Oracle\ApInvoiceExport;
 use App\Oracle\ArInvoiceExport;
+use App\Oracle\OtherTypeDetail;
 use App\Outlet;
 use App\Sbu;
 use App\State;
@@ -3182,6 +3183,17 @@ class ServiceInvoice extends Model {
 			return $res;
 		}
 
+		//CHECK SAC CODE
+		$sacCodes = [];
+		foreach ($this->serviceInvoiceItems as $invoiceItem) {
+			$sacCodeId = !empty($invoiceItem->serviceItem->sac_code_id) ? $invoiceItem->serviceItem->sac_code_id : 0;
+			$sacCodes[] = $sacCodeId;
+		}
+		if (in_array(0, $sacCodes)) {
+			$res['errors'] = ['Kindly map the SAC Code for the invoice items'];
+			return $res;
+		}
+
 		$itemRecords = [];
 		foreach ($this->serviceInvoiceItems as $itemDetail) {
 			$hsnId = isset($itemDetail->serviceItem->sac_code_id) ? $itemDetail->serviceItem->sac_code_id : 0;
@@ -3270,7 +3282,7 @@ class ServiceInvoice extends Model {
 		}
 
 		//ITEM SAVE
-		$showRoundOff = true;
+		// $showRoundOff = true;
 		$showInvoiceAmount = true;
 		if (count($itemRecords) > 0) {
 			foreach ($itemRecords as $itemRecord) {
@@ -3291,22 +3303,24 @@ class ServiceInvoice extends Model {
 				$export_record['tcs'] = $itemRecord['tcs_amount'];
 				$export_record['cess'] = $itemRecord['cess_amount'];
 
-				$amountDiff = 0;
-				if (!empty($this->final_amount) && !empty($this->total)) {
-					$amountDiff = number_format(($this->final_amount - $this->total), 2);
-				}
+				// $amountDiff = 0;
+				// if (!empty($this->final_amount) && !empty($this->total)) {
+				// 	$amountDiff = number_format(($this->final_amount - $this->total), 2);
+				// }
 
-				if ($showRoundOff == true && $amountDiff && $amountDiff != '0.00') {
-					$export_record['round_off_amount'] = $amountDiff;
-				}
+				// if ($showRoundOff == true && $amountDiff && $amountDiff != '0.00') {
+				// 	$export_record['round_off_amount'] = $amountDiff;
+				// }
 
 				$taxClassifications = '';
 				if (floatval($itemRecord['cgst_amount']) > 0 && floatval($itemRecord['sgst_amount']) > 0) {
-					$taxClassifications .= 'CGST + SGST + ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
+					// $taxClassifications .= 'CGST + SGST + ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
+					$taxClassifications .= 'CGST+SGST REC ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
 				}
 
 				if (floatval($itemRecord['igst_amount']) > 0) {
-					$taxClassifications .= 'IGST + ' . (round($itemRecord['igst_percentage']));
+					// $taxClassifications .= 'IGST + ' . (round($itemRecord['igst_percentage']));
+					$taxClassifications .= 'IGST REC ' . (round($itemRecord['igst_percentage']));
 				}
 
 				if (floatval($itemRecord['ugst_amount']) > 0) {
@@ -3324,7 +3338,8 @@ class ServiceInvoice extends Model {
 					// }else{
 					//     $taxClassifications .= 'TCS + '. ($itemRecord['tcs_percentage']);
 					// }
-					$tcsTaxClassification = 'TCS - ' . (round($itemRecord['tcs_percentage']));
+					// $tcsTaxClassification = 'TCS - ' . (round($itemRecord['tcs_percentage']));
+					$tcsTaxClassification = 'TCS REC ' . (round($itemRecord['tcs_percentage']));
 				}
 				$export_record['tcs_tax_classification'] = $tcsTaxClassification;
 
@@ -3335,7 +3350,8 @@ class ServiceInvoice extends Model {
 					// }else{
 					//     $taxClassifications .= 'CESS + '. ($itemRecord['cess_percentage']);
 					// }
-					$cessTaxClassification = 'CESS - ' . (round($itemRecord['cess_percentage']));
+					// $cessTaxClassification = 'CESS - ' . (round($itemRecord['cess_percentage']));
+					$cessTaxClassification = 'CESS REC ' . (round($itemRecord['cess_percentage']));
 				}
 				$export_record['cess_tax_classification'] = $cessTaxClassification;
 
@@ -3345,8 +3361,38 @@ class ServiceInvoice extends Model {
 				}
 				$export_records[] = $export_record;
 				$storeInOracleTable = ArInvoiceExport::store($export_record);
-				$showRoundOff = false;
+				// $showRoundOff = false;
 				$showInvoiceAmount = false;
+			}
+
+			//ROUND OFF ENTRY
+			$roundOffTransaction = OtherTypeDetail::arRoundOffTransaction();
+			$amountDiff = 0;
+			if (!empty($this->final_amount) && !empty($this->total)) {
+				$amountDiff = number_format(($this->final_amount - $this->total), 2);
+			}
+			if ($amountDiff && $amountDiff != '0.00') {
+				$export_record['round_off_amount'] = null;
+				$export_record['invoice_amount'] = null;
+				$export_record['description'] = $roundOffTransaction ? $roundOffTransaction->name : null;
+				$export_record['unit_price'] = $amountDiff;
+				$export_record['amount'] = $amountDiff;
+				$export_record['hsn_code'] = null;
+				$export_record['natural_account'] = null;
+				$export_record['chassis_number'] = null;
+				$export_record['cgst'] = null;
+				$export_record['sgst'] = null;
+				$export_record['igst'] = null;
+				$export_record['ugst'] = null;
+				$export_record['kfc'] = null;
+				$export_record['tcs'] = null;
+				$export_record['cess'] = null;
+				$export_record['tcs_tax_classification'] = null;
+				$export_record['cess_tax_classification'] = null;
+				$export_record['tax_classification'] = null;
+				$export_record['accounting_class'] = $roundOffTransaction ? $roundOffTransaction->accounting_class : null;
+				$export_record['natural_account'] = $roundOffTransaction ? $roundOffTransaction->natural_account : null;
+				$storeInOracleTable = ArInvoiceExport::store($export_record);
 			}
 		}
 		$res['success'] = true;
@@ -3509,6 +3555,18 @@ class ServiceInvoice extends Model {
 			$res['errors'] = ['Invoice item details not found'];
 			return $res;
 		}
+
+		//CHECK SAC CODE
+		$sacCodes = [];
+		foreach ($this->serviceInvoiceItems as $invoiceItem) {
+			$sacCodeId = !empty($invoiceItem->serviceItem->sac_code_id) ? $invoiceItem->serviceItem->sac_code_id : 0;
+			$sacCodes[] = $sacCodeId;
+		}
+		if (in_array(0, $sacCodes)) {
+			$res['errors'] = ['Kindly map the SAC Code for the invoice items'];
+			return $res;
+		}
+
 		$itemRecords = [];
 		foreach ($this->serviceInvoiceItems as $itemDetail) {
 			$hsnId = isset($itemDetail->serviceItem->sac_code_id) ? $itemDetail->serviceItem->sac_code_id : 0;
@@ -3595,7 +3653,7 @@ class ServiceInvoice extends Model {
 			}
 		}
 
-		$showRoundOff = true;
+		// $showRoundOff = true;
 		$showInvoiceAmount = true;
 		if (count($itemRecords) > 0) {
 			foreach ($itemRecords as $itemRecord) {
@@ -3618,18 +3676,20 @@ class ServiceInvoice extends Model {
 				$export_record['tcs'] = $itemRecord['tcs_amount'];
 				$export_record['cess'] = $itemRecord['cess_amount'];
 
-				$amountDiff = 0;
-				if (!empty($this->final_amount) && !empty($this->total)) {
-					$amountDiff = number_format(($this->final_amount - $this->total), 2);
-				}
+				// $amountDiff = 0;
+				// if (!empty($this->final_amount) && !empty($this->total)) {
+				// 	$amountDiff = number_format(($this->final_amount - $this->total), 2);
+				// }
 
 				$taxClassifications = '';
 				if (floatval($itemRecord['cgst_amount']) > 0 && floatval($itemRecord['sgst_amount']) > 0) {
-					$taxClassifications .= 'CGST + SGST + ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
+					// $taxClassifications .= 'CGST + SGST + ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
+					$taxClassifications .= 'CGST+SGST REC ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
 				}
 
 				if (floatval($itemRecord['igst_amount']) > 0) {
-					$taxClassifications .= 'IGST + ' . (round($itemRecord['igst_percentage']));
+					// $taxClassifications .= 'IGST + ' . (round($itemRecord['igst_percentage']));
+					$taxClassifications .= 'IGST REC ' . (round($itemRecord['igst_percentage']));
 				}
 
 				if (floatval($itemRecord['ugst_amount']) > 0) {
@@ -3647,7 +3707,8 @@ class ServiceInvoice extends Model {
 					// }else{
 					//     $taxClassifications .= 'TCS + '. ($itemRecord['tcs_percentage']);
 					// }
-					$tcsTaxClassification = 'TCS - ' . (round($itemRecord['tcs_percentage']));
+					// $tcsTaxClassification = 'TCS - ' . (round($itemRecord['tcs_percentage']));
+					$tcsTaxClassification = 'TCS REC ' . (round($itemRecord['tcs_percentage']));
 				}
 				$export_record['tcs_tax_classification'] = $tcsTaxClassification;
 
@@ -3658,24 +3719,54 @@ class ServiceInvoice extends Model {
 					// }else{
 					//     $taxClassifications .= 'CESS + '. ($itemRecord['cess_percentage']);
 					// }
-					$cessTaxClassification = 'CESS - ' . (round($itemRecord['cess_percentage']));
+					// $cessTaxClassification = 'CESS - ' . (round($itemRecord['cess_percentage']));
+					$cessTaxClassification = 'CESS REC ' . (round($itemRecord['cess_percentage']));
 				}
 				$export_record['cess_tax_classification'] = $cessTaxClassification;
 
 				$export_record['tax_classification'] = $taxClassifications;
 				$export_record['tax_amount'] = floatval($itemRecord['cgst_amount']) + floatval($itemRecord['sgst_amount']) + floatval($itemRecord['igst_amount']) + floatval($itemRecord['ugst_amount']) + floatval($itemRecord['kfc_amount']) + floatval($itemRecord['tcs_amount']) + floatval($itemRecord['cess_amount']);
 
-				if ($showRoundOff == true && $amountDiff && $amountDiff != '0.00') {
-					$export_record['round_off_amount'] = $amountDiff;
-				}
+				// if ($showRoundOff == true && $amountDiff && $amountDiff != '0.00') {
+				// 	$export_record['round_off_amount'] = $amountDiff;
+				// }
 
 				if ($showInvoiceAmount == true) {
 					$export_record['invoice_amount'] = $this->final_amount;
 				}
 				$export_records[] = $export_record;
 				$storeInOracleTable = ApInvoiceExport::store($export_record);
-				$showRoundOff = false;
+				// $showRoundOff = false;
 				$showInvoiceAmount = false;
+			}
+
+			//ROUNDOFF ENTRY
+			$roundOffTransaction = OtherTypeDetail::apRoundOffTransaction();
+			$amountDiff = 0;
+			if (!empty($this->final_amount) && !empty($this->total)) {
+				$amountDiff = number_format(($this->final_amount - $this->total), 2);
+			}
+			if ($amountDiff && $amountDiff != '0.00') {
+				$export_record['round_off_amount'] = null;
+				$export_record['invoice_amount'] = null;
+				$export_record['description'] = $roundOffTransaction ? $roundOffTransaction->name : null;
+				$export_record['amount'] = $amountDiff;
+				$export_record['accounting_class'] = $roundOffTransaction ? $roundOffTransaction->accounting_class : null;
+				$export_record['hsn_code'] = null;
+				$export_record['natural_account'] = $roundOffTransaction ? $roundOffTransaction->natural_account : null;
+				$export_record['invoice_description'] = null;
+				$export_record['cgst'] = null;
+				$export_record['sgst'] = null;
+				$export_record['igst'] = null;
+				$export_record['ugst'] = null;
+				$export_record['kfc'] = null;
+				$export_record['tcs'] = null;
+				$export_record['cess'] = null;
+				$export_record['tcs_tax_classification'] = null;
+				$export_record['cess_tax_classification'] = null;
+				$export_record['tax_amount'] = null;
+				$export_record['tax_classification'] = null;
+				$storeInOracleTable = ApInvoiceExport::store($export_record);
 			}
 		}
 		$res['success'] = true;
