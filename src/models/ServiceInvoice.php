@@ -3378,7 +3378,6 @@ class ServiceInvoice extends Model {
 				$export_record['unit_price'] = $amountDiff;
 				$export_record['amount'] = $amountDiff;
 				$export_record['hsn_code'] = null;
-				$export_record['natural_account'] = null;
 				$export_record['chassis_number'] = null;
 				$export_record['cgst'] = null;
 				$export_record['sgst'] = null;
