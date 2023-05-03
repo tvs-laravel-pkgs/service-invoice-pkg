@@ -3394,16 +3394,8 @@ class HondaServiceInvoice extends Model {
 			$export_record['amount'] = $amountDiff;
 			$export_record['hsn_code'] = null;
 			$export_record['chassis_number'] = null;
-			$export_record['cgst'] = null;
-			$export_record['sgst'] = null;
-			$export_record['igst'] = null;
-			$export_record['ugst'] = null;
-			$export_record['kfc'] = null;
 			$export_record['tcs'] = null;
-			$export_record['cess'] = null;
 			$export_record['tcs_tax_classification'] = null;
-			$export_record['cess_tax_classification'] = null;
-			$export_record['tax_classification'] = null;
 			$export_record['accounting_class'] = $roundOffTransaction ? $roundOffTransaction->accounting_class : null;
 			$export_record['natural_account'] = $roundOffTransaction ? $roundOffTransaction->natural_account : null;
 			$storeInOracleTable = ArInvoiceExport::store($export_record);
