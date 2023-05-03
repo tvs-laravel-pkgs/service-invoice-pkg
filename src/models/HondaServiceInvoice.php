@@ -3398,7 +3398,7 @@ class HondaServiceInvoice extends Model {
 			$export_record['unit_price'] = $amountDiff;
 			$export_record['amount'] = $amountDiff;
 			$export_record['hsn_code'] = null;
-			$export_record['chassis_number'] = null;
+			// $export_record['chassis_number'] = null;
 			$export_record['tcs'] = null;
 			$export_record['tcs_tax_classification'] = null;
 			$export_record['accounting_class'] = $roundOffTransaction ? $roundOffTransaction->accounting_class : null;
