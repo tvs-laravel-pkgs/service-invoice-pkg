@@ -3342,6 +3342,10 @@ class HondaServiceInvoice extends Model {
 		// $showRoundOff = true;
 		$showInvoiceAmount = true;
 		$tcsDnInvoice = self::tcs_dn_details($this->invoice_number);
+		if (empty($tcsDnInvoice)) {
+			$res['errors'] = ['Invoice sale details not found'];
+			return $res;
+		}
 
 		if (count($this->serviceInvoiceItems) == 0) {
 			$res['errors'] = ['Invoice item details not found'];
@@ -3373,7 +3377,8 @@ class HondaServiceInvoice extends Model {
 			$export_record['tcs_tax_classification'] = $taxClassifications;
 			$export_record['tcs'] = $itemDetail->sub_total;
 			if ($showInvoiceAmount == true) {
-				$export_record['invoice_amount'] = $this->final_amount;
+				// $export_record['invoice_amount'] = $this->final_amount;
+				$export_record['invoice_amount'] = round(floatval($export_record['amount']) + floatval($export_record['tcs']));
 			}
 			$storeInOracleTable = ArInvoiceExport::store($export_record);
 			// $showRoundOff = false;
