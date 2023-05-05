@@ -3728,7 +3728,7 @@ class ServiceInvoice extends Model {
 				// ITEM SAVE
 				$export_record['amount'] = $itemRecord['amount'];
 				$export_record['hsn_code'] = $itemRecord['hsn_code'];
-				$export_record['accounting_class'] = 'Purchase/Expense';
+				// $export_record['accounting_class'] = 'Purchase/Expense';
 				$export_record['natural_account'] = $itemRecord['natural_account'];
 				$export_record['invoice_description'] = $itemRecord['invoice_description'];
 
