@@ -3312,48 +3312,114 @@ class ServiceInvoice extends Model {
 				// 	$export_record['round_off_amount'] = $amountDiff;
 				// }
 
-				$taxClassifications = '';
+				// $taxClassifications = '';
+				// if (floatval($itemRecord['cgst_amount']) > 0 && floatval($itemRecord['sgst_amount']) > 0) {
+				// 	// $taxClassifications .= 'CGST + SGST + ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
+				// 	$taxClassifications .= 'CGST+SGST REC ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
+				// }
+
+				// if (floatval($itemRecord['igst_amount']) > 0) {
+				// 	// $taxClassifications .= 'IGST + ' . (round($itemRecord['igst_percentage']));
+				// 	$taxClassifications .= 'IGST REC ' . (round($itemRecord['igst_percentage']));
+				// }
+
+				// if (floatval($itemRecord['ugst_amount']) > 0) {
+				// 	if (!empty($taxClassifications)) {
+				// 		$taxClassifications .= ' + UGST + ' . (round($itemRecord['ugst_percentage']));
+				// 	} else {
+				// 		$taxClassifications .= 'UGST + ' . (round($itemRecord['ugst_percentage']));
+				// 	}
+				// }
+
+				// $tcsTaxClassification = '';
+				// if (floatval($itemRecord['tcs_amount']) > 0) {
+				// 	// if(!empty($taxClassifications)){
+				// 	//     $taxClassifications .= ' + TCS + '. ($itemRecord['tcs_percentage']);
+				// 	// }else{
+				// 	//     $taxClassifications .= 'TCS + '. ($itemRecord['tcs_percentage']);
+				// 	// }
+				// 	// $tcsTaxClassification = 'TCS - ' . (round($itemRecord['tcs_percentage']));
+				// 	$tcsTaxClassification = 'TCS REC ' . (round($itemRecord['tcs_percentage']));
+				// }
+				// $export_record['tcs_tax_classification'] = $tcsTaxClassification;
+
+				// $cessTaxClassification = '';
+				// if (floatval($itemRecord['cess_amount']) > 0) {
+				// 	// if(!empty($taxClassifications)){
+				// 	//     $taxClassifications .= ' + CESS + '. ($itemRecord['cess_percentage']);
+				// 	// }else{
+				// 	//     $taxClassifications .= 'CESS + '. ($itemRecord['cess_percentage']);
+				// 	// }
+				// 	// $cessTaxClassification = 'CESS - ' . (round($itemRecord['cess_percentage']));
+				// 	$cessTaxClassification = 'CESS REC ' . (round($itemRecord['cess_percentage']));
+				// }
+				// $export_record['cess_tax_classification'] = $cessTaxClassification;
+
+				//TAX CLASSIFICATIONS
+				$taxNames = '';
+				$taxPercentages = '';
 				if (floatval($itemRecord['cgst_amount']) > 0 && floatval($itemRecord['sgst_amount']) > 0) {
-					// $taxClassifications .= 'CGST + SGST + ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
-					$taxClassifications .= 'CGST+SGST REC ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
+					$taxNames = 'CGST+SGST';
+
+					$taxPercentages = ' ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
 				}
 
 				if (floatval($itemRecord['igst_amount']) > 0) {
-					// $taxClassifications .= 'IGST + ' . (round($itemRecord['igst_percentage']));
-					$taxClassifications .= 'IGST REC ' . (round($itemRecord['igst_percentage']));
-				}
-
-				if (floatval($itemRecord['ugst_amount']) > 0) {
-					if (!empty($taxClassifications)) {
-						$taxClassifications .= ' + UGST + ' . (round($itemRecord['ugst_percentage']));
+					if (!empty($taxNames)) {
+						$taxNames .= '+IGST';
 					} else {
-						$taxClassifications .= 'UGST + ' . (round($itemRecord['ugst_percentage']));
+						$taxNames .= 'IGST';
+					}
+
+					if (!empty($taxPercentages)) {
+						$taxPercentages .= '+' . (round(floatval($itemRecord['igst_percentage'])));
+					} else {
+						$taxPercentages .= ' ' . (round(floatval($itemRecord['igst_percentage'])));
 					}
 				}
 
-				$tcsTaxClassification = '';
-				if (floatval($itemRecord['tcs_amount']) > 0) {
-					// if(!empty($taxClassifications)){
-					//     $taxClassifications .= ' + TCS + '. ($itemRecord['tcs_percentage']);
-					// }else{
-					//     $taxClassifications .= 'TCS + '. ($itemRecord['tcs_percentage']);
-					// }
-					// $tcsTaxClassification = 'TCS - ' . (round($itemRecord['tcs_percentage']));
-					$tcsTaxClassification = 'TCS REC ' . (round($itemRecord['tcs_percentage']));
-				}
-				$export_record['tcs_tax_classification'] = $tcsTaxClassification;
+				if (floatval($itemRecord['ugst_amount']) > 0) {
+					if (!empty($taxNames)) {
+						$taxNames .= '+UGST';
+					} else {
+						$taxNames .= 'UGST';
+					}
 
-				$cessTaxClassification = '';
-				if (floatval($itemRecord['cess_amount']) > 0) {
-					// if(!empty($taxClassifications)){
-					//     $taxClassifications .= ' + CESS + '. ($itemRecord['cess_percentage']);
-					// }else{
-					//     $taxClassifications .= 'CESS + '. ($itemRecord['cess_percentage']);
-					// }
-					// $cessTaxClassification = 'CESS - ' . (round($itemRecord['cess_percentage']));
-					$cessTaxClassification = 'CESS REC ' . (round($itemRecord['cess_percentage']));
+					if (!empty($taxPercentages)) {
+						$taxPercentages .= '+' . (round(floatval($itemRecord['ugst_percentage'])));
+					} else {
+						$taxPercentages .= ' ' . (round(floatval($itemRecord['ugst_percentage'])));
+					}
 				}
-				$export_record['cess_tax_classification'] = $cessTaxClassification;
+
+				if (floatval($itemRecord['tcs_amount']) > 0) {
+					if (!empty($taxNames)) {
+						$taxNames .= '+TCS';
+					} else {
+						$taxNames .= 'TCS';
+					}
+
+					if (!empty($taxPercentages)) {
+						$taxPercentages .= '+' . (round(floatval($itemRecord['tcs_percentage'])));
+					} else {
+						$taxPercentages .= ' ' . (round(floatval($itemRecord['tcs_percentage'])));
+					}
+				}
+
+				if (floatval($itemRecord['cess_amount']) > 0) {
+					if (!empty($taxNames)) {
+						$taxNames .= '+CESS';
+					} else {
+						$taxNames .= 'CESS';
+					}
+
+					if (!empty($taxPercentages)) {
+						$taxPercentages .= '+' . (round(floatval($itemRecord['cess_percentage'])));
+					} else {
+						$taxPercentages .= ' ' . (round(floatval($itemRecord['cess_percentage'])));
+					}
+				}
+				$taxClassifications = $taxNames . $taxPercentages;
 
 				$export_record['tax_classification'] = $taxClassifications;
 				if ($showInvoiceAmount == true) {
@@ -3680,48 +3746,114 @@ class ServiceInvoice extends Model {
 				// 	$amountDiff = number_format(($this->final_amount - $this->total), 2);
 				// }
 
-				$taxClassifications = '';
+				// $taxClassifications = '';
+				// if (floatval($itemRecord['cgst_amount']) > 0 && floatval($itemRecord['sgst_amount']) > 0) {
+				// 	// $taxClassifications .= 'CGST + SGST + ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
+				// 	$taxClassifications .= 'CGST+SGST REC ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
+				// }
+
+				// if (floatval($itemRecord['igst_amount']) > 0) {
+				// 	// $taxClassifications .= 'IGST + ' . (round($itemRecord['igst_percentage']));
+				// 	$taxClassifications .= 'IGST REC ' . (round($itemRecord['igst_percentage']));
+				// }
+
+				// if (floatval($itemRecord['ugst_amount']) > 0) {
+				// 	if (!empty($taxClassifications)) {
+				// 		$taxClassifications .= ' + UGST + ' . (round($itemRecord['ugst_percentage']));
+				// 	} else {
+				// 		$taxClassifications .= 'UGST + ' . (round($itemRecord['ugst_percentage']));
+				// 	}
+				// }
+
+				// $tcsTaxClassification = '';
+				// if (floatval($itemRecord['tcs_amount']) > 0) {
+				// 	// if(!empty($taxClassifications)){
+				// 	//     $taxClassifications .= ' + TCS + '. ($itemRecord['tcs_percentage']);
+				// 	// }else{
+				// 	//     $taxClassifications .= 'TCS + '. ($itemRecord['tcs_percentage']);
+				// 	// }
+				// 	// $tcsTaxClassification = 'TCS - ' . (round($itemRecord['tcs_percentage']));
+				// 	$tcsTaxClassification = 'TCS REC ' . (round($itemRecord['tcs_percentage']));
+				// }
+				// $export_record['tcs_tax_classification'] = $tcsTaxClassification;
+
+				// $cessTaxClassification = '';
+				// if (floatval($itemRecord['cess_amount']) > 0) {
+				// 	// if(!empty($taxClassifications)){
+				// 	//     $taxClassifications .= ' + CESS + '. ($itemRecord['cess_percentage']);
+				// 	// }else{
+				// 	//     $taxClassifications .= 'CESS + '. ($itemRecord['cess_percentage']);
+				// 	// }
+				// 	// $cessTaxClassification = 'CESS - ' . (round($itemRecord['cess_percentage']));
+				// 	$cessTaxClassification = 'CESS REC ' . (round($itemRecord['cess_percentage']));
+				// }
+				// $export_record['cess_tax_classification'] = $cessTaxClassification;
+
+				//TAX CLASSIFICATIONS
+				$taxNames = '';
+				$taxPercentages = '';
 				if (floatval($itemRecord['cgst_amount']) > 0 && floatval($itemRecord['sgst_amount']) > 0) {
-					// $taxClassifications .= 'CGST + SGST + ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
-					$taxClassifications .= 'CGST+SGST REC ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
+					$taxNames = 'CGST+SGST';
+
+					$taxPercentages = ' ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
 				}
 
 				if (floatval($itemRecord['igst_amount']) > 0) {
-					// $taxClassifications .= 'IGST + ' . (round($itemRecord['igst_percentage']));
-					$taxClassifications .= 'IGST REC ' . (round($itemRecord['igst_percentage']));
-				}
-
-				if (floatval($itemRecord['ugst_amount']) > 0) {
-					if (!empty($taxClassifications)) {
-						$taxClassifications .= ' + UGST + ' . (round($itemRecord['ugst_percentage']));
+					if (!empty($taxNames)) {
+						$taxNames .= '+IGST';
 					} else {
-						$taxClassifications .= 'UGST + ' . (round($itemRecord['ugst_percentage']));
+						$taxNames .= 'IGST';
+					}
+
+					if (!empty($taxPercentages)) {
+						$taxPercentages .= '+' . (round(floatval($itemRecord['igst_percentage'])));
+					} else {
+						$taxPercentages .= ' ' . (round(floatval($itemRecord['igst_percentage'])));
 					}
 				}
 
-				$tcsTaxClassification = '';
-				if (floatval($itemRecord['tcs_amount']) > 0) {
-					// if(!empty($taxClassifications)){
-					//     $taxClassifications .= ' + TCS + '. ($itemRecord['tcs_percentage']);
-					// }else{
-					//     $taxClassifications .= 'TCS + '. ($itemRecord['tcs_percentage']);
-					// }
-					// $tcsTaxClassification = 'TCS - ' . (round($itemRecord['tcs_percentage']));
-					$tcsTaxClassification = 'TCS REC ' . (round($itemRecord['tcs_percentage']));
-				}
-				$export_record['tcs_tax_classification'] = $tcsTaxClassification;
+				if (floatval($itemRecord['ugst_amount']) > 0) {
+					if (!empty($taxNames)) {
+						$taxNames .= '+UGST';
+					} else {
+						$taxNames .= 'UGST';
+					}
 
-				$cessTaxClassification = '';
-				if (floatval($itemRecord['cess_amount']) > 0) {
-					// if(!empty($taxClassifications)){
-					//     $taxClassifications .= ' + CESS + '. ($itemRecord['cess_percentage']);
-					// }else{
-					//     $taxClassifications .= 'CESS + '. ($itemRecord['cess_percentage']);
-					// }
-					// $cessTaxClassification = 'CESS - ' . (round($itemRecord['cess_percentage']));
-					$cessTaxClassification = 'CESS REC ' . (round($itemRecord['cess_percentage']));
+					if (!empty($taxPercentages)) {
+						$taxPercentages .= '+' . (round(floatval($itemRecord['ugst_percentage'])));
+					} else {
+						$taxPercentages .= ' ' . (round(floatval($itemRecord['ugst_percentage'])));
+					}
 				}
-				$export_record['cess_tax_classification'] = $cessTaxClassification;
+
+				if (floatval($itemRecord['tcs_amount']) > 0) {
+					if (!empty($taxNames)) {
+						$taxNames .= '+TCS';
+					} else {
+						$taxNames .= 'TCS';
+					}
+
+					if (!empty($taxPercentages)) {
+						$taxPercentages .= '+' . (round(floatval($itemRecord['tcs_percentage'])));
+					} else {
+						$taxPercentages .= ' ' . (round(floatval($itemRecord['tcs_percentage'])));
+					}
+				}
+
+				if (floatval($itemRecord['cess_amount']) > 0) {
+					if (!empty($taxNames)) {
+						$taxNames .= '+CESS';
+					} else {
+						$taxNames .= 'CESS';
+					}
+
+					if (!empty($taxPercentages)) {
+						$taxPercentages .= '+' . (round(floatval($itemRecord['cess_percentage'])));
+					} else {
+						$taxPercentages .= ' ' . (round(floatval($itemRecord['cess_percentage'])));
+					}
+				}
+				$taxClassifications = $taxNames . $taxPercentages;
 
 				$export_record['tax_classification'] = $taxClassifications;
 				$export_record['tax_amount'] = floatval($itemRecord['cgst_amount']) + floatval($itemRecord['sgst_amount']) + floatval($itemRecord['igst_amount']) + floatval($itemRecord['ugst_amount']) + floatval($itemRecord['kfc_amount']) + floatval($itemRecord['tcs_amount']) + floatval($itemRecord['cess_amount']);
