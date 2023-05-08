@@ -3357,7 +3357,7 @@ class HondaServiceInvoice extends Model {
 			$export_record['unit_price'] = $tcsDnInvoice ? $tcsDnInvoice->ex_showroom_price : null;
 			$export_record['amount'] = $tcsDnInvoice ? $tcsDnInvoice->ex_showroom_price : null;
 			$export_record['hsn_code'] = $itemDetail->taxCode ? $itemDetail->taxCode->code : null;
-			$export_record['natural_account'] = $itemDetail->coaCode ? $itemDetail->coaCode->code : null;
+			$export_record['natural_account'] = $itemDetail->coaCode ? $itemDetail->coaCode->oracle_code : null;
 			$export_record['chassis_number'] = $tcsDnInvoice ? $tcsDnInvoice->vin_number : null;
 
 			// $amountDiff = 0;
@@ -3374,7 +3374,8 @@ class HondaServiceInvoice extends Model {
 				// $taxClassifications .= 'TCS - '. (round($itemDetail->tcs_percentage));
 				$taxClassifications .= 'TCS REC ' . (round($itemDetail->tcs_percentage));
 			}
-			$export_record['tcs_tax_classification'] = $taxClassifications;
+			// $export_record['tcs_tax_classification'] = $taxClassifications;
+			$export_record['tax_classification'] = $taxClassifications;
 			$export_record['tcs'] = $itemDetail->sub_total;
 			if ($showInvoiceAmount == true) {
 				// $export_record['invoice_amount'] = $this->final_amount;
@@ -3400,7 +3401,8 @@ class HondaServiceInvoice extends Model {
 			$export_record['hsn_code'] = null;
 			// $export_record['chassis_number'] = null;
 			$export_record['tcs'] = null;
-			$export_record['tcs_tax_classification'] = null;
+			// $export_record['tcs_tax_classification'] = null;
+			$export_record['tax_classification'] = null;
 			$export_record['accounting_class'] = $roundOffTransaction ? $roundOffTransaction->accounting_class : null;
 			$export_record['natural_account'] = $roundOffTransaction ? $roundOffTransaction->natural_account : null;
 			$storeInOracleTable = ArInvoiceExport::store($export_record);
