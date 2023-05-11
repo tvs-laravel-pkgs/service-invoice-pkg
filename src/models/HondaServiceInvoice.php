@@ -3302,11 +3302,13 @@ class HondaServiceInvoice extends Model {
 		$transactionNumber = $this->number;
 		$invoiceDate = $this->document_date ? date("Y-m-d", strtotime($this->document_date)) : null;
 		$customerCode = $this->customer ? $this->customer->code : null;
+		$customerName = $this->customer ? $this->customer->name : null;
 		$outletCode = $this->outlet ? $this->outlet->oracle_code_l2 : null;
 		$customerSiteNumber = $outletCode;
 		$irnNumber = $this->irn_number ? $this->irn_number : null;
 		$shipToCustomerAccount = $customerCode;
-		$description = 'TCS DN';
+		// $description = 'TCS DN';
+		$description = 'TCS DN' . ' - ' . $transactionNumber . ' - ' . $customerName;
 		$quantity = 1;
 		$accountingClass = 'REV';
 		$sbu = $this->sbu;
@@ -3326,7 +3328,7 @@ class HondaServiceInvoice extends Model {
 		$export_record['transaction_number'] = $transactionNumber;
 		$export_record['transaction_date'] = $invoiceDate;
 		$export_record['customer_account_number'] = $customerCode;
-		$export_record['bill_to_customer_site_number'] = $customerSiteNumber;
+		// $export_record['bill_to_customer_site_number'] = $customerSiteNumber;
 		$export_record['credit_outlet'] = $outletCode;
 		$export_record['credit_irn_number'] = $irnNumber;
 		$export_record['description'] = $description;
