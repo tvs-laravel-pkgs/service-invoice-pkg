@@ -3353,6 +3353,7 @@ class HondaServiceInvoice extends Model {
 			$res['errors'] = ['Invoice item details not found'];
 			return $res;
 		}
+		$amountDiff = 0;
 		foreach ($this->serviceInvoiceItems as $itemDetail) {
 			$export_record['round_off_amount'] = null;
 			$export_record['invoice_amount'] = null;
@@ -3380,6 +3381,12 @@ class HondaServiceInvoice extends Model {
 			$export_record['tax_classification'] = $taxClassifications;
 			$export_record['tcs'] = $itemDetail->sub_total;
 			if ($showInvoiceAmount == true) {
+				$invoiceAmount = floatval($export_record['amount']) + floatval($export_record['tcs']);
+				if (empty($invoiceAmount) || $invoiceAmount == '0.00') {
+					$res['errors'] = ['The invoice total amount is 0'];
+					return $res;
+				}
+				$amountDiff = number_format((round($invoiceAmount) - $invoiceAmount), 2);
 				// $export_record['invoice_amount'] = $this->final_amount;
 				$export_record['invoice_amount'] = round(floatval($export_record['amount']) + floatval($export_record['tcs']));
 			}
@@ -3390,10 +3397,10 @@ class HondaServiceInvoice extends Model {
 
 		//ROUNDOFF ENTRY
 		$roundOffTransaction = OtherTypeDetail::arRoundOffTransaction();
-		$amountDiff = 0;
-		if (!empty($this->final_amount) && !empty($this->total)) {
-			$amountDiff = number_format(($this->final_amount - $this->total), 2);
-		}
+		// $amountDiff = 0;
+		// if (!empty($this->final_amount) && !empty($this->total)) {
+		// 	$amountDiff = number_format(($this->final_amount - $this->total), 2);
+		// }
 		if ($amountDiff && $amountDiff != '0.00') {
 			$export_record['round_off_amount'] = null;
 			$export_record['invoice_amount'] = null;

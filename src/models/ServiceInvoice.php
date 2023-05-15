@@ -3063,6 +3063,11 @@ class ServiceInvoice extends Model {
 			return $res;
 		}
 
+		if (empty($this->final_amount) || $this->final_amount == '0.00') {
+			$res['errors'] = ['The invoice total amount is 0'];
+			return $res;
+		}
+
 		$businessUnitName = $companyName;
 		$transactionClass = 'Invoice';
 		$transactionBatchName = 'VIMS';
@@ -3482,6 +3487,11 @@ class ServiceInvoice extends Model {
 		])->get();
 		if (count($apInvoiceExports) > 0) {
 			$res['errors'] = ['Already exported to oracle table'];
+			return $res;
+		}
+
+		if (empty($this->final_amount) || $this->final_amount == '0.00') {
+			$res['errors'] = ['The invoice total amount is 0'];
 			return $res;
 		}
 
