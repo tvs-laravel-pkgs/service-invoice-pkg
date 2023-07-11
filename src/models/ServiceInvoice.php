@@ -749,6 +749,8 @@ class ServiceInvoice extends Model
                 $params['AmountCurCredit'] = $discount_item_without_tax_amt + $total_amount_with_gst_not_kfc['invoice_discount_item_tax_amt'] + $tcs_total['invoice_discount_item_tax_amt'] + $cess_on_gst_total['invoice_discount_item_tax_amt'];
             }else if ($total_amount_with_gst['invoice_discount_item_tax_amt'] > 0) {
                 $params['AmountCurCredit'] = $discount_item_without_tax_amt + $total_amount_with_gst['invoice_discount_item_tax_amt'] + $tcs_total['invoice_discount_item_tax_amt'] + $cess_on_gst_total['invoice_discount_item_tax_amt'];
+            } else if ($discount_item_without_tax_amt > 0) {
+                $params['AmountCurCredit'] = $discount_item_without_tax_amt + $tcs_total['invoice_discount_item_tax_amt'] + $cess_on_gst_total['invoice_discount_item_tax_amt'];
             } else {
                 $params['AmountCurCredit'] = 0;
             }
