@@ -1704,6 +1704,8 @@ class ServiceInvoiceController extends Controller
                 $igst_amt = 0;
                 $tcs_total = 0;
                 $cess_on_gst_total = 0;
+                $discountItemAmount = 0;
+                $discountTaxAmount = 0;
                 foreach ($service_invoice->serviceInvoiceItems as $key => $serviceInvoiceItem) {
                     $item = [];
                     // dd($serviceInvoiceItem);
@@ -1737,17 +1739,29 @@ class ServiceInvoiceController extends Controller
                                 //FOR CGST
                                 if ($value->name == 'CGST') {
                                     $cgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
-                                    $cgst_total += round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+                                    // $cgst_total += round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+                                    if ($serviceInvoiceItem->is_discount == 1)
+                                        $discountTaxAmount += $cgst_amt;
+                                    else
+                                        $cgst_total += $cgst_amt;
                                 }
                                 //FOR CGST
                                 if ($value->name == 'SGST') {
                                     $sgst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
-                                    $sgst_total += round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+                                    // $sgst_total += round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+                                    if ($serviceInvoiceItem->is_discount == 1)
+                                        $discountTaxAmount += $sgst_amt;
+                                    else
+                                        $sgst_total += $sgst_amt;
                                 }
                                 //FOR CGST
                                 if ($value->name == 'IGST') {
                                     $igst_amt = round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
-                                    $igst_total += round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+                                    // $igst_total += round($serviceInvoiceItem->sub_total * $value->pivot->percentage / 100, 2);
+                                    if ($serviceInvoiceItem->is_discount == 1)
+                                        $discountTaxAmount += $igst_amt;
+                                    else
+                                        $igst_total += $igst_amt;
                                 }
                             }
                         }
@@ -1762,7 +1776,10 @@ class ServiceInvoiceController extends Controller
                     // //FOR TCS TAX
                     $tcs_amount = DB::table('service_invoice_item_tax')->where('service_invoice_item_id', $serviceInvoiceItem->id)->where('tax_id', 5)->pluck('amount')->first();
                     if ($tcs_amount > 0) {
-                        $tcs_total += $tcs_amount;
+                        if ($serviceInvoiceItem->is_discount == 1)
+                            $discountTaxAmount += $tcs_amount;
+                        else
+                            $tcs_total += $tcs_amount;
                     }
                     // if ($service_item->tcs_percentage) {
                     //     $date = date('d-m-Y', strtotime($service_invoice->document_date));
@@ -1787,7 +1804,17 @@ class ServiceInvoiceController extends Controller
                         // $gst_total = 0;
                         // $gst_total = $cgst_amt + $sgst_amt + $igst_amt;
                         // $cess_on_gst_total += round(($gst_total + $serviceInvoiceItem->sub_total) * $service_item->cess_on_gst_percentage / 100, 2);
-                        $cess_on_gst_total += round(($serviceInvoiceItem->sub_total) * $service_item->cess_on_gst_percentage / 100, 2);
+                        // $cess_on_gst_total += round(($serviceInvoiceItem->sub_total) * $service_item->cess_on_gst_percentage / 100, 2);
+                        $cess_amount = round(($serviceInvoiceItem->sub_total) * $service_item->cess_on_gst_percentage / 100, 2);
+                        if ($serviceInvoiceItem->is_discount == 1)
+                            $discountTaxAmount += $cess_amount;
+                        else
+                            $cess_on_gst_total += $cess_amount;
+                            
+                    }
+                    if ($serviceInvoiceItem->is_discount == 1) {
+                        $discountItemAmount += $serviceInvoiceItem->sub_total;
+                        continue;
                     }
 
                     $item['SlNo'] = $sno; //Statically assumed
@@ -1879,6 +1906,21 @@ class ServiceInvoiceController extends Controller
                 // dd(preg_replace("/\r|\n/", "", $service_invoice->customer->primaryAddress->address_line1));
                 // dd($cgst_total, $sgst_total, $igst_total);
 
+                $subTotal = number_format($service_invoice->sub_total ? $service_invoice->sub_total : 0, 2)
+                    + number_format($discountItemAmount, 2);
+                $totalAmount = number_format($subTotal, 2)
+                    + number_format($cgst_total, 2)
+                    + number_format($sgst_total, 2)
+                    + number_format($igst_total, 2)
+                    + number_format($tcs_total + $cess_on_gst_total, 2);
+                    // - number_format($discountTaxAmount, 2);
+                $discountAmount = $discountItemAmount + $discountTaxAmount;
+                $discountAmount = number_format($discountAmount, 2);
+                $totalAmount = round($totalAmount, 2);
+                $finalAmount = round($totalAmount);
+                $roundOffAmount = number_format(($finalAmount - $totalAmount), 2);
+                $finalAmount = number_format($finalAmount, 2);
+            
                 $json_encoded_data =
                     json_encode(
                     array(
@@ -1955,18 +1997,33 @@ class ServiceInvoiceController extends Controller
                         'ItemList' => array(
                             'Item' => $items,
                         ),
+                        // 'ValDtls' => array(
+                        //     "AssVal" => number_format($service_invoice->sub_total ? $service_invoice->sub_total : 0, 2),
+                        //     "CgstVal" => number_format($cgst_total, 2),
+                        //     "SgstVal" => number_format($sgst_total, 2),
+                        //     "IgstVal" => number_format($igst_total, 2),
+                        //     "CesVal" => 0,
+                        //     "StCesVal" => 0,
+                        //     "Discount" => 0,
+                        //     "OthChrg" => number_format($tcs_total + $cess_on_gst_total, 2),
+                        //     "RndOffAmt" => number_format($service_invoice->final_amount - $service_invoice->total, 2),
+                        //     // "RndOffAmt" => 0, // Invalid invoice round off amount ,should be  + or - RS 10.
+                        //     "TotInvVal" => number_format($service_invoice->final_amount, 2),
+                        //     "TotInvValFc" => null,
+                        // ),
                         'ValDtls' => array(
-                            "AssVal" => number_format($service_invoice->sub_total ? $service_invoice->sub_total : 0, 2),
+                            "AssVal" => $subTotal,
                             "CgstVal" => number_format($cgst_total, 2),
                             "SgstVal" => number_format($sgst_total, 2),
                             "IgstVal" => number_format($igst_total, 2),
                             "CesVal" => 0,
                             "StCesVal" => 0,
-                            "Discount" => 0,
+                            // "Discount" => 0,
+                            "Discount" => $discountAmount ? $discountAmount : 0,
                             "OthChrg" => number_format($tcs_total + $cess_on_gst_total, 2),
-                            "RndOffAmt" => number_format($service_invoice->final_amount - $service_invoice->total, 2),
+                            "RndOffAmt" => $roundOffAmount,
                             // "RndOffAmt" => 0, // Invalid invoice round off amount ,should be  + or - RS 10.
-                            "TotInvVal" => number_format($service_invoice->final_amount, 2),
+                            "TotInvVal" => $finalAmount,
                             "TotInvValFc" => null,
                         ),
                         "PayDtls" => array(
