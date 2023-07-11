@@ -1913,8 +1913,9 @@ class ServiceInvoiceController extends Controller
                     + $sgst_total
                     + $igst_total
                     + $tcs_total 
-                    + $cess_on_gst_total;
-                    // - number_format($discountTaxAmount, 2);
+                    + $cess_on_gst_total
+                    + $discountItemAmount
+                    + $discountTaxAmount;
                 $subTotal = number_format($subTotal, 2);
                 $discountAmount = $discountItemAmount + $discountTaxAmount;
                 $discountAmount = number_format($discountAmount, 2);
