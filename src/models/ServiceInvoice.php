@@ -744,10 +744,13 @@ class ServiceInvoice extends Model
 
         //INVOICE DISCOUNT ITEM TOTAL AMOUNT CREDIT ENTRY
         if($this->type_id == 1062 && $discount_item_without_tax_amt > 0){
+            $params['AmountCurDebit'] = 0;
             if($total_amount_with_gst_not_kfc['invoice_discount_item_tax_amt'] > 0){
                 $params['AmountCurCredit'] = $discount_item_without_tax_amt + $total_amount_with_gst_not_kfc['invoice_discount_item_tax_amt'] + $tcs_total['invoice_discount_item_tax_amt'] + $cess_on_gst_total['invoice_discount_item_tax_amt'];
             }else if ($total_amount_with_gst['invoice_discount_item_tax_amt'] > 0) {
                 $params['AmountCurCredit'] = $discount_item_without_tax_amt + $total_amount_with_gst['invoice_discount_item_tax_amt'] + $tcs_total['invoice_discount_item_tax_amt'] + $cess_on_gst_total['invoice_discount_item_tax_amt'];
+            } else {
+                $params['AmountCurCredit'] = 0;
             }
             $this->exportRowToAxapta($params);
         }
@@ -770,11 +773,14 @@ class ServiceInvoice extends Model
                 // $params['AmountCurCredit'] = $this->type_id == 1062 ? $invoice_item->sub_total : 0;
                 if($invoice_item->is_discount == 0){
                     $params['AmountCurCredit'] = $invoice_item->sub_total;
+                    $params['AmountCurDebit'] = 0;
                 }else{
+                    $params['AmountCurCredit'] = 0;
                     $params['AmountCurDebit'] = $invoice_item->sub_total;
                 }
             } else {
                 $params['AmountCurCredit'] = 0;
+                $params['AmountCurDebit'] = 0;
             }
 
             if ($invoice_item->serviceItem->taxCode && $KFC_IN == 0) {
@@ -835,6 +841,7 @@ class ServiceInvoice extends Model
                             foreach ($invoice_item->serviceItem->taxCode->taxes as $tax) {
                                 //FOR CGST
                                 if ($tax->name == 'CGST') {
+                                    $params['AmountCurDebit'] = $params['AmountCurCredit'] = 0;
                                     if ($this->type_id == 1061) {
                                         $params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
                                     } elseif ($this->type_id == 1062) {
@@ -845,11 +852,13 @@ class ServiceInvoice extends Model
                                         }else{
                                             $params['AmountCurDebit'] = round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2);
                                         } 
+                                    } else if ($this->type_id == 1060) {
+                                        $params['AmountCurDebit'] = round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2);
                                     } else {
                                         $params['AmountCurCredit'] = 0;
                                     }
 
-                                    $params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+                                    // $params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
                                     $params['LedgerDimension'] = '7132' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
                                     $params['LineNum'] = ++$line_number;
@@ -863,6 +872,7 @@ class ServiceInvoice extends Model
                                 }
                                 //FOR CGST
                                 if ($tax->name == 'SGST') {
+                                    $params['AmountCurDebit'] = $params['AmountCurCredit'] = 0;
                                     if ($this->type_id == 1061) {
                                         $params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
                                     } elseif ($this->type_id == 1062) {
@@ -873,11 +883,13 @@ class ServiceInvoice extends Model
                                         }else{
                                             $params['AmountCurDebit'] = round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2);
                                         }
+                                    } else if ($this->type_id == 1060) {
+                                        $params['AmountCurDebit'] = round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2);
                                     } else {
                                         $params['AmountCurCredit'] = 0;
                                     }
 
-                                    $params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+                                    // $params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
                                     $params['LedgerDimension'] = '7432' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
                                     //REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
@@ -889,6 +901,7 @@ class ServiceInvoice extends Model
                             }
                             //FOR KFC
                             if ($invoice_item->serviceItem->taxCode) {
+                                $params['AmountCurCredit'] = $params['AmountCurDebit'] = 0;
                                 if ($this->type_id == 1061) {
                                     $params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
                                 } elseif ($this->type_id == 1062) {
@@ -899,10 +912,12 @@ class ServiceInvoice extends Model
                                     }else{
                                         $params['AmountCurDebit'] = round($invoice_item->sub_total * 1 / 100, 2);
                                     }
+                                } else if ($this->type_id == 1060) {
+                                    $params['AmountCurDebit'] = round($invoice_item->sub_total * 1 / 100, 2);
                                 } else {
                                     $params['AmountCurCredit'] = 0;
                                 }
-                                $params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
+                                // $params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
                                 $params['LedgerDimension'] = '2230' . '-' . $this->branch->code . '-' . $this->sbu->name;
 
                                 $params['LineNum'] = ++$line_number;
@@ -923,6 +938,7 @@ class ServiceInvoice extends Model
                             foreach ($invoice_item->serviceItem->taxCode->taxes as $tax) {
                                 //FOR CGST
                                 if ($tax->name == 'CGST' && $invoice_cgst_percentage != 0.00) {
+                                    $params['AmountCurCredit'] = $params['AmountCurDebit'] = 0;
                                     if ($this->type_id == 1061) {
                                         $params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
                                     } elseif ($this->type_id == 1062) {
@@ -933,11 +949,13 @@ class ServiceInvoice extends Model
                                         }else{
                                             $params['AmountCurDebit'] = round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2);
                                         }
+                                    } else if ($this->type_id == 1060) {
+                                        $params['AmountCurDebit'] = round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2);
                                     } else {
                                         $params['AmountCurCredit'] = 0;
                                     }
 
-                                    $params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+                                    // $params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
                                     $params['LedgerDimension'] = $this->branch->primaryAddress->state->cgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
 
                                     $params['LineNum'] = ++$line_number;
@@ -951,6 +969,7 @@ class ServiceInvoice extends Model
                                 }
                                 //FOR CGST
                                 if ($tax->name == 'SGST' && $invoice_sgst_percentage != 0.00) {
+                                    $params['AmountCurDebit'] = $params['AmountCurCredit'] = 0;
                                     if ($this->type_id == 1061) {
                                         $params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
                                     } elseif ($this->type_id == 1062) {
@@ -961,11 +980,13 @@ class ServiceInvoice extends Model
                                         }else{
                                             $params['AmountCurDebit'] = round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2);
                                         }
+                                    } else if ($this->type_id == 1060) {
+                                        $params['AmountCurDebit'] = round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2);
                                     } else {
                                         $params['AmountCurCredit'] = 0;
                                     }
 
-                                    $params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+                                    // $params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
                                     $params['LedgerDimension'] = $this->branch->primaryAddress->state->sgst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
 
                                     $params['LineNum'] = ++$line_number;
@@ -980,6 +1001,7 @@ class ServiceInvoice extends Model
                                 }
                                 //FOR IGST
                                 if ($tax->name == 'IGST' && $invoice_igst_percentage != 0.00) {
+                                    $params['AmountCurDebit'] = $params['AmountCurCredit'] = 0;
                                     if ($this->type_id == 1061) {
                                         $params['AmountCurCredit'] = $this->type_id == 1061 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
                                     } elseif ($this->type_id == 1062) {
@@ -990,11 +1012,13 @@ class ServiceInvoice extends Model
                                         }else{
                                             $params['AmountCurDebit'] = round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2);
                                         }
+                                    } else if ($this->type_id == 1060) {
+                                        $params['AmountCurDebit'] = round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2);
                                     } else {
                                         $params['AmountCurCredit'] = 0;
                                     }
 
-                                    $params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
+                                    // $params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
                                     $params['LedgerDimension'] = $this->branch->primaryAddress->state->igst_coa_code . '-' . $this->branch->code . '-' . $this->sbu->name;
 
                                     $params['LineNum'] = ++$line_number;
