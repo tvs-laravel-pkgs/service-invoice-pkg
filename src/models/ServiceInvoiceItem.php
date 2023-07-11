@@ -14,6 +14,7 @@ class ServiceInvoiceItem extends Model {
 		'qty',
 		'rate',
 		'sub_total',
+		'is_discount',
 	];
 
 	public $timestamps = false;

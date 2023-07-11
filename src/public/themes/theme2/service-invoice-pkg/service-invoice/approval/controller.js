@@ -704,10 +704,22 @@ app.component('serviceInvoiceApprovalView', {
                 }
             };
 
+            const isDiscountItemType = 1;
             $(self.service_invoice.service_invoice_items).each(function (key, service_invoice_item) {
                 self.table_qty += parseInt(service_invoice_item.qty);
-                self.table_rate = (parseFloat(self.table_rate) + parseFloat(service_invoice_item.rate)).toFixed(2);
-                st = parseFloat(service_invoice_item.sub_total).toFixed(2);
+                let itemRate = service_invoice_item.rate;
+                let itemSubTotal = service_invoice_item.sub_total;
+                let itemTotal = service_invoice_item.total;
+                // If the item was discount type
+                if (service_invoice_item.is_discount == isDiscountItemType) {
+                    itemRate = -1 * itemRate;
+                    itemTotal = -1 * itemTotal;
+                    itemSubTotal = -1 * itemSubTotal;
+                }
+                // self.table_rate = (parseFloat(self.table_rate) + parseFloat(service_invoice_item.rate)).toFixed(2);
+                // st = parseFloat(service_invoice_item.sub_total).toFixed(2);
+                self.table_rate = (parseFloat(self.table_rate) + parseFloat(itemRate)).toFixed(2);
+                st = parseFloat(itemSubTotal).toFixed(2);
                 // console.log(parseFloat(self.table_sub_total));
                 // console.log(parseFloat(st));
 
@@ -718,6 +730,11 @@ app.component('serviceInvoiceApprovalView', {
                     tax_obj = self.extras.tax_list[i];
                     if (service_invoice_item[tax_obj.name]) {
                         tax = parseFloat(service_invoice_item[tax_obj.name].amount).toFixed(2);
+                        // If the item was discount type
+                        if (service_invoice_item.is_discount == isDiscountItemType) {
+                            tax = tax * -1;
+                        }
+                        tax = parseFloat(tax).toFixed(2);
                         self.table_gst_total = parseFloat(self.table_gst_total) + parseFloat(tax);
                         if (typeof (self.tax_wise_total[tax_obj.name + '_amount']) == 'undefined') {
                             self.tax_wise_total[tax_obj.name + '_amount'] = 0;
@@ -728,13 +745,15 @@ app.component('serviceInvoiceApprovalView', {
                     }
                 };
                 // console.log(parseFloat(self.table_sub_total));
-                self.table_total = parseFloat(self.table_total) + parseFloat(service_invoice_item.total); // parseFloat(self.table_sub_total) + parseFloat(self.table_gst_total);
+                // self.table_total = parseFloat(self.table_total) + parseFloat(service_invoice_item.total); // parseFloat(self.table_sub_total) + parseFloat(self.table_gst_total);
+                self.table_total = parseFloat(self.table_total) + parseFloat(itemTotal); // parseFloat(self.table_sub_total) + parseFloat(self.table_gst_total);
                 // self.service_invoice.final_amount = Math.round(self.table_total).toFixed(2);
-                if (self.table_total > 1) {
-                    self.service_invoice.final_amount = Math.round(self.table_total).toFixed(2);
-                } else {
-                    self.service_invoice.final_amount = self.table_total.toFixed(2);
-                }
+                // if (self.table_total > 1) {
+                //     self.service_invoice.final_amount = Math.round(self.table_total).toFixed(2);
+                // } else {
+                //     self.service_invoice.final_amount = self.table_total.toFixed(2);
+                // }
+                self.service_invoice.final_amount = Math.round(self.table_total).toFixed(2);
                 self.service_invoice.round_off_amount = parseFloat(self.service_invoice.final_amount - self.table_total).toFixed(2);
             });
             $scope.$apply()

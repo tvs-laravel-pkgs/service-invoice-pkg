@@ -364,6 +364,7 @@
                                         <thead>
                                             <tr>
                                                 <th class="action">Action</th>
+                                                <th>Item Type</th>
                                                 <th>Item Code</th>
                                                 <th>Item Name</th>
                                                 <th>Reference</th>
@@ -384,6 +385,7 @@
                                                 <input type="hidden" name="service_invoice_items[{{index}}][rate]" value="{{service_invoice_item.rate}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][sub_total]" value="{{service_invoice_item.sub_total}}">
                                                 <input type="hidden" name="service_invoice_items[{{index}}][e_invoice_uom_id]" value="{{service_invoice_item.e_invoice_uom.id}}">
+                                                <input type="hidden" name="service_invoice_items[{{index}}][is_discount]" value="{{service_invoice_item.is_discount}}">
                                                 <!-- FIELD GROUPS -->
                                                 <td style="display: none;">
                                                     <span ng-repeat="(index_fg, field_group) in service_invoice_item.field_groups">
@@ -402,6 +404,7 @@
                                                         <img class="img-responsive" src="./public/theme/img/table/cndn/delete.svg" alt="Delete" />
                                                     </a>
                                                 </td>
+                                                <td>{{service_invoice_item.is_discount==1 ? 'Discount' : 'Item'}}</td>
                                                 <td>{{service_invoice_item.code}}</td>
                                                 <td>{{service_invoice_item.name}}</td>
                                                 <td>{{service_invoice_item.description}}</td>
@@ -421,7 +424,7 @@
                                         </tbody>
                                         <tfoot>
                                             <tr>
-                                                <td colspan="5"></td>
+                                                <td colspan="6"></td>
                                                 <!-- <td>Total</td> -->
                                                 <td class="text-right">{{$ctrl.table_qty}}</td>
                                                 <td class="text-right">{{$ctrl.table_rate | number : 2}}</td>
@@ -430,14 +433,14 @@
                                                 <td class="text-right"><span ng-show="$ctrl.type_id == 1060">-</span>{{$ctrl.table_total | number : 2}}</td>
                                             </tr>
                                             <tr>
-                                                <td colspan="7"></td>
+                                                <td colspan="8"></td>
                                                 <td class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list"></td>
                                                 <th>Round Off</th>
                                                 <input type="hidden" ng-model="$ctrl.service_invoice.round_off_amount" name="round_off_amount" class="type-sm form-control" placeholder="Enter Round Off amount" readonly value="{{$ctrl.service_invoice.round_off_amount}}">
                                                 <th class="text-right">{{$ctrl.service_invoice.round_off_amount | number : 2}}</th>
                                             </tr>
                                             <tr>
-                                                <th colspan="7"></th>
+                                                <th colspan="8"></th>
                                                 <th class="text-right" ng-repeat="(index, tax) in $ctrl.extras.tax_list"></th>
                                                 <input type="hidden" ng-model="$ctrl.service_invoice.final_amount" name="final_amount" class="type-sm form-control" placeholder="Enter Final amount" readonly value="{{$ctrl.service_invoice.final_amount}}">
                                                 <th>Total</th>
