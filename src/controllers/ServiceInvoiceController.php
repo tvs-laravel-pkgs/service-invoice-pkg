@@ -1906,19 +1906,22 @@ class ServiceInvoiceController extends Controller
                 // dd(preg_replace("/\r|\n/", "", $service_invoice->customer->primaryAddress->address_line1));
                 // dd($cgst_total, $sgst_total, $igst_total);
 
-                $subTotal = number_format($service_invoice->sub_total ? $service_invoice->sub_total : 0, 2)
-                    + number_format($discountItemAmount, 2);
-                $totalAmount = number_format($subTotal, 2)
-                    + number_format($cgst_total, 2)
-                    + number_format($sgst_total, 2)
-                    + number_format($igst_total, 2)
-                    + number_format($tcs_total + $cess_on_gst_total, 2);
+                $subTotal = ($service_invoice->sub_total ? $service_invoice->sub_total : 0)
+                    + $discountItemAmount;
+                $totalAmount = $subTotal
+                    + $cgst_total
+                    + $sgst_total
+                    + $igst_total
+                    + $tcs_total 
+                    + $cess_on_gst_total;
                     // - number_format($discountTaxAmount, 2);
+                $subTotal = number_format($subTotal, 2);
                 $discountAmount = $discountItemAmount + $discountTaxAmount;
                 $discountAmount = number_format($discountAmount, 2);
                 $totalAmount = round($totalAmount, 2);
                 $finalAmount = round($totalAmount);
                 $roundOffAmount = number_format(($finalAmount - $totalAmount), 2);
+                $totalAmount = number_format($totalAmount, 2);
                 $finalAmount = number_format($finalAmount, 2);
             
                 $json_encoded_data =
@@ -2085,6 +2088,7 @@ class ServiceInvoiceController extends Controller
                 //     DB::commit();
                 // }
                 // dump($json_encoded_data);
+                // dd($json_encoded_data);
                 // dd(1);
 
                 //AES ENCRYPT
