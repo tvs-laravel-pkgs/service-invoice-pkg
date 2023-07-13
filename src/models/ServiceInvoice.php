@@ -3434,7 +3434,12 @@ class ServiceInvoice extends Model {
 
 				$export_record['tax_classification'] = $taxClassifications;
 				if ($showInvoiceAmount == true) {
-					$export_record['invoice_amount'] = $this->final_amount;
+					// $export_record['invoice_amount'] = $this->final_amount;
+					if($this->type_id == 1060){
+						$export_record['invoice_amount'] = '-'.($this->final_amount);
+					}else{
+						$export_record['invoice_amount'] = $this->final_amount;
+					}
 				}
 				$export_records[] = $export_record;
 				$storeInOracleTable = ArInvoiceExport::store($export_record);
@@ -3887,7 +3892,12 @@ class ServiceInvoice extends Model {
 				// }
 
 				if ($showInvoiceAmount == true) {
-					$export_record['invoice_amount'] = $this->final_amount;
+					// $export_record['invoice_amount'] = $this->final_amount;
+					if($this->type_id == 1060){
+						$export_record['invoice_amount'] = '-'.($this->final_amount);
+					}else{
+						$export_record['invoice_amount'] = $this->final_amount;
+					}
 				}
 				$export_records[] = $export_record;
 				$storeInOracleTable = ApInvoiceExport::store($export_record);
