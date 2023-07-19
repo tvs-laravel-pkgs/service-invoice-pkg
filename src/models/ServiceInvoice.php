@@ -782,7 +782,7 @@ class ServiceInvoice extends Model
                 }
             } else {
                 $params['AmountCurCredit'] = 0;
-                $params['AmountCurDebit'] = 0;
+                //$params['AmountCurDebit'] = 0;
             }
 
             if ($invoice_item->serviceItem->taxCode && $KFC_IN == 0) {
