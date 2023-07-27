@@ -3430,7 +3430,8 @@ class ServiceInvoice extends Model {
 						$taxPercentages .= ' ' . (round(floatval($itemRecord['cess_percentage'])));
 					}
 				}
-				$taxClassifications = $taxNames . $taxPercentages;
+				// $taxClassifications = $taxNames . $taxPercentages;
+				$taxClassifications = $taxNames . ' REC ' . $taxPercentages;
 
 				$export_record['tax_classification'] = $taxClassifications;
 				if ($showInvoiceAmount == true) {
@@ -3882,7 +3883,8 @@ class ServiceInvoice extends Model {
 						$taxPercentages .= ' ' . (round(floatval($itemRecord['cess_percentage'])));
 					}
 				}
-				$taxClassifications = $taxNames . $taxPercentages;
+				// $taxClassifications = $taxNames . $taxPercentages;
+				$taxClassifications = $taxNames . ' REC ' . $taxPercentages;
 
 				$export_record['tax_classification'] = $taxClassifications;
 				$export_record['tax_amount'] = floatval($itemRecord['cgst_amount']) + floatval($itemRecord['sgst_amount']) + floatval($itemRecord['igst_amount']) + floatval($itemRecord['ugst_amount']) + floatval($itemRecord['kfc_amount']) + floatval($itemRecord['tcs_amount']) + floatval($itemRecord['cess_amount']);
