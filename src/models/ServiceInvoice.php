@@ -3628,7 +3628,8 @@ class ServiceInvoice extends Model {
 		$export_record['tax_amount'] = null;
 		$export_record['product_group'] = $productGroup;
 		$export_record['accounting_class'] = $accountingClass;
-		$export_record['company'] = $company;
+		// $export_record['company'] = $company;
+		$export_record['company'] = $companyCode;
 		$export_record['lob'] = $lob;
 		$export_record['location'] = $location;
 		$export_record['department'] = $department;
