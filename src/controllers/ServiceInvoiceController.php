@@ -2321,6 +2321,12 @@ class ServiceInvoiceController extends Controller
         // ];
         $r['api_logs'] = [];
 
+        //ENTRY IN ORACLE
+        $r = $service_invoice->generateVimsCnDnOracleAxapta();
+		if (!$r['success']) {
+			return $r;
+		}
+
         //ENTRY IN AX_EXPORTS
         $r = $service_invoice->exportToAxapta();
         if (!$r['success']) {
@@ -6071,6 +6077,9 @@ class ServiceInvoiceController extends Controller
         //     'success' => true,
         // ];
         // $r['api_logs'] = [];
+
+        //ENTRY IN ORACLE
+        $r = $service_invoice->generateVimsCnDnOracleAxapta();
 
         //ENTRY IN AX_EXPORTS
         $axaptaExportsCheck = AxaptaExport::where([
