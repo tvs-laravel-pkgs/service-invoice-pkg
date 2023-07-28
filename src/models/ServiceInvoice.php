@@ -3504,15 +3504,18 @@ class ServiceInvoice extends Model {
 		$businessUnit = $companyName;
 		if ($this->type_id == 1060) {
 			//CN
-			$transactionDetail = $this->company ? $this->company->vimsCreditNoteTransaction() : null;
+			// $transactionDetail = $this->company ? $this->company->vimsCreditNoteTransaction() : null;
+			$transactionDetail = $this->company ? $this->company->vendorVimsCreditNoteTransaction() : null;
 			$invoiceDescription = 'Credit note';
 		} elseif ($this->type_id == 1061) {
 			//DN
-			$transactionDetail = $this->company ? $this->company->vimsDebitNoteTransaction() : null;
+			// $transactionDetail = $this->company ? $this->company->vimsDebitNoteTransaction() : null;
+			$transactionDetail = $this->company ? $this->company->vendorVimsDebitNoteTransaction() : null;
 			$invoiceDescription = 'Debit note';
 		} elseif ($this->type_id == 1062) {
 			//INV
-			$transactionDetail = $this->company ? $this->company->vimsInvoiceNoteTransaction() : null;
+			// $transactionDetail = $this->company ? $this->company->vimsInvoiceNoteTransaction() : null;
+			$transactionDetail = $this->company ? $this->company->vendorVimsInvoiceNoteTransaction() : null;
 			$invoiceDescription = 'Invoice';
 		} else {
 			$transactionDetail = null;
