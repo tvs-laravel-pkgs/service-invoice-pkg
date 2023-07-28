@@ -126,7 +126,7 @@ class HondaServiceInvoiceItem extends Model {
 	}
 
 	public function coaCode() {
-		return $this->belongsTo('Abs\CoaPkg\CoaCode', 'service_item_coa_id', 'id');
+		return $this->belongsTo('Abs\CoaPkg\CoaCode', 'service_item_coa_id', 'id')->withTrashed();
 	}
 
 	public function sub_gl() {
@@ -134,7 +134,7 @@ class HondaServiceInvoiceItem extends Model {
 	}
 
 	public function taxCode() {
-		return $this->belongsTo('Abs\TaxPkg\TaxCode', 'service_item_hsn_id', 'id');
+		return $this->belongsTo('Abs\TaxPkg\TaxCode', 'service_item_hsn_id', 'id')->withTrashed();
 	}
 	 public function serviceItemCategory()
     {
