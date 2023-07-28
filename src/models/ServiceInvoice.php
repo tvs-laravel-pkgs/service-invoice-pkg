@@ -3519,9 +3519,13 @@ class ServiceInvoice extends Model {
 			$invoiceDescription = '';
 		}
 
-		$invoiceSource = 'VIMS-Invoice';
+		// $invoiceSource = 'VIMS-Invoice';
+		$invoiceSource = 'VIMS';
+		$documentType = 'Invoice';
 		if ($transactionDetail) {
-			$invoiceSource = $transactionDetail->type ? $transactionDetail->type : $invoiceSource;
+			// $invoiceSource = $transactionDetail->type ? $transactionDetail->type : $invoiceSource;
+			$invoiceSource = $transactionDetail->batch ? $transactionDetail->batch : $invoiceSource;
+			$documentType = $transactionDetail->type ? $transactionDetail->type : $documentType;
 		}
 
 		$invoiceNumber = $this->number;
@@ -3548,7 +3552,6 @@ class ServiceInvoice extends Model {
 		// $dmsGrnNumber = $this->number;
 		$dmsGrnNumber = null;
 		$outletCode = $this->outlet ? $this->outlet->oracle_code_l2 : '';
-		$documentType = '';
 		// $poNumber = $this->po_number;
 		// $poDate = isset($this->po_date) && !empty($this->po_date) ? date("Y-m-d", strtotime($this->po_date)) : null;
 		$poNumber = null;
