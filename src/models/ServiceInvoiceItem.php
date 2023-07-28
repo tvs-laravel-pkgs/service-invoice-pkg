@@ -36,7 +36,7 @@ class ServiceInvoiceItem extends Model {
 	}
 
 	public function serviceItem() {
-		return $this->belongsTo('Abs\ServiceInvoicePkg\ServiceItem', 'service_item_id', 'id');
+		return $this->belongsTo('Abs\ServiceInvoicePkg\ServiceItem', 'service_item_id', 'id')->withTrashed();
 	}
 
 	public function eInvoiceUom() {

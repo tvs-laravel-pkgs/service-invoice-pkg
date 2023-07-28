@@ -133,7 +133,7 @@ class ServiceInvoice extends Model
     {
         if ($this->to_account_type_id == 1440) {
             //customer
-            return $this->belongsTo('Abs\CustomerPkg\Customer', 'customer_id');
+            return $this->belongsTo('Abs\CustomerPkg\Customer', 'customer_id')->withTrashed();
         } elseif ($this->to_account_type_id == 1441) {
             //vendor
             return $this->belongsTo('App\Vendor', 'customer_id');
@@ -163,7 +163,7 @@ class ServiceInvoice extends Model
 
     public function sbu()
     {
-        return $this->belongsTo('App\Sbu', 'sbu_id', 'id');
+        return $this->belongsTo('App\Sbu', 'sbu_id', 'id')->withTrashed();
     }
 
     public function type()
@@ -207,7 +207,7 @@ class ServiceInvoice extends Model
 
     public function outlet()
     {
-        return $this->belongsTo('App\Outlet', 'branch_id', 'id');
+        return $this->belongsTo('App\Outlet', 'branch_id', 'id')->withTrashed();
     }
 
     public function company()
