@@ -3406,10 +3406,10 @@ class ServiceInvoice extends Model
 			$sacCodeId = !empty($invoiceItem->serviceItem->sac_code_id) ? $invoiceItem->serviceItem->sac_code_id : 0;
 			$sacCodes[] = $sacCodeId;
 		}
-		if (in_array(0, $sacCodes)) {
-			$res['errors'] = ['Kindly map the SAC Code for the invoice items'];
-			return $res;
-		}
+		// if (in_array(0, $sacCodes)) {
+		// 	$res['errors'] = ['Kindly map the SAC Code for the invoice items'];
+		// 	return $res;
+		// }
 
 		$itemRecords = [];
 		foreach ($this->serviceInvoiceItems as $itemDetail) {
@@ -3870,10 +3870,10 @@ class ServiceInvoice extends Model
 			$sacCodeId = !empty($invoiceItem->serviceItem->sac_code_id) ? $invoiceItem->serviceItem->sac_code_id : 0;
 			$sacCodes[] = $sacCodeId;
 		}
-		if (in_array(0, $sacCodes)) {
-			$res['errors'] = ['Kindly map the SAC Code for the invoice items'];
-			return $res;
-		}
+		// if (in_array(0, $sacCodes)) {
+		// 	$res['errors'] = ['Kindly map the SAC Code for the invoice items'];
+		// 	return $res;
+		// }
 
 		$itemRecords = [];
 		foreach ($this->serviceInvoiceItems as $itemDetail) {
