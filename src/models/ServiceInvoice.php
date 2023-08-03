@@ -4146,470 +4146,960 @@ class ServiceInvoice extends Model
         return $res;
     }
 
-	public function generateVimsCnDnVendorOracleAxapta() {
-		$res = [];
-		$res['success'] = false;
-		$res['errors'] = [];
-		$companyName = $this->company ? ($this->company->oem_business_unit ? $this->company->oem_business_unit->name : '') : '';
-		$companyCode = $this->company ? ($this->company->oem_business_unit ? $this->company->oem_business_unit->code : '') : '';
-		$apInvoiceExports = ApInvoiceExport::where([
-			'invoice_number' => $this->number,
-			'business_unit' => $companyName,
-		])->get();
-		if (count($apInvoiceExports) > 0) {
-			$res['errors'] = ['Already exported to oracle table'];
-			return $res;
-		}
+	// public function generateVimsCnDnVendorOracleAxapta() {
+	// 	$res = [];
+	// 	$res['success'] = false;
+	// 	$res['errors'] = [];
+	// 	$companyName = $this->company ? ($this->company->oem_business_unit ? $this->company->oem_business_unit->name : '') : '';
+	// 	$companyCode = $this->company ? ($this->company->oem_business_unit ? $this->company->oem_business_unit->code : '') : '';
+	// 	$apInvoiceExports = ApInvoiceExport::where([
+	// 		'invoice_number' => $this->number,
+	// 		'business_unit' => $companyName,
+	// 	])->get();
+	// 	if (count($apInvoiceExports) > 0) {
+	// 		$res['errors'] = ['Already exported to oracle table'];
+	// 		return $res;
+	// 	}
 
-		if (empty($this->final_amount) || $this->final_amount == '0.00') {
-			$res['errors'] = ['The invoice total amount is 0'];
-			return $res;
-		}
+	// 	if (empty($this->final_amount) || $this->final_amount == '0.00') {
+	// 		$res['errors'] = ['The invoice total amount is 0'];
+	// 		return $res;
+	// 	}
 
-		$businessUnit = $companyName;
-		if ($this->type_id == 1060) {
-			//CN
-			// $transactionDetail = $this->company ? $this->company->vimsCreditNoteTransaction() : null;
-			$transactionDetail = $this->company ? $this->company->vendorVimsCreditNoteTransaction() : null;
-			$invoiceDescription = 'Credit note';
-		} elseif ($this->type_id == 1061) {
-			//DN
-			// $transactionDetail = $this->company ? $this->company->vimsDebitNoteTransaction() : null;
-			$transactionDetail = $this->company ? $this->company->vendorVimsDebitNoteTransaction() : null;
-			$invoiceDescription = 'Debit note';
-		} elseif ($this->type_id == 1062) {
-			//INV
-			// $transactionDetail = $this->company ? $this->company->vimsInvoiceNoteTransaction() : null;
-			$transactionDetail = $this->company ? $this->company->vendorVimsInvoiceNoteTransaction() : null;
-			$invoiceDescription = 'Invoice';
-		} else {
-			$transactionDetail = null;
-			$invoiceDescription = '';
-		}
+	// 	$businessUnit = $companyName;
+	// 	if ($this->type_id == 1060) {
+	// 		//CN
+	// 		// $transactionDetail = $this->company ? $this->company->vimsCreditNoteTransaction() : null;
+	// 		$transactionDetail = $this->company ? $this->company->vendorVimsCreditNoteTransaction() : null;
+	// 		$invoiceDescription = 'Credit note';
+	// 	} elseif ($this->type_id == 1061) {
+	// 		//DN
+	// 		// $transactionDetail = $this->company ? $this->company->vimsDebitNoteTransaction() : null;
+	// 		$transactionDetail = $this->company ? $this->company->vendorVimsDebitNoteTransaction() : null;
+	// 		$invoiceDescription = 'Debit note';
+	// 	} elseif ($this->type_id == 1062) {
+	// 		//INV
+	// 		// $transactionDetail = $this->company ? $this->company->vimsInvoiceNoteTransaction() : null;
+	// 		$transactionDetail = $this->company ? $this->company->vendorVimsInvoiceNoteTransaction() : null;
+	// 		$invoiceDescription = 'Invoice';
+	// 	} else {
+	// 		$transactionDetail = null;
+	// 		$invoiceDescription = '';
+	// 	}
 
-		// $invoiceSource = 'VIMS-Invoice';
-		$invoiceSource = 'VIMS';
-		$documentType = 'Invoice';
-		if ($transactionDetail) {
-			// $invoiceSource = $transactionDetail->type ? $transactionDetail->type : $invoiceSource;
-			$invoiceSource = $transactionDetail->batch ? $transactionDetail->batch : $invoiceSource;
-			$documentType = $transactionDetail->type ? $transactionDetail->type : $documentType;
-		}
+	// 	// $invoiceSource = 'VIMS-Invoice';
+	// 	$invoiceSource = 'VIMS';
+	// 	$documentType = 'Invoice';
+	// 	if ($transactionDetail) {
+	// 		// $invoiceSource = $transactionDetail->type ? $transactionDetail->type : $invoiceSource;
+	// 		$invoiceSource = $transactionDetail->batch ? $transactionDetail->batch : $invoiceSource;
+	// 		$documentType = $transactionDetail->type ? $transactionDetail->type : $documentType;
+	// 	}
 
-		$invoiceNumber = $this->number;
-		$invoiceAmount = $this->final_amount;
-		$invoiceDate = isset($this->document_date) ? date("Y-m-d", strtotime($this->document_date)) : '';
-		// $supplierName = $this->vendor ? $this->vendor->name : '';
-		$supplierNumber = $this->customer ? $this->customer->code : '';
-		$customerName = $this->customer ? $this->customer->name : '';
-		// $supplierSiteName = '';
-		$invoiceType = 'Standard';
-		// $invoiceGroup = 'Standard';
-		// $paymentTerm = 'IMMEDIATE';
-		$accountingDate = null; // isset($this->date) ? date("Y-m-d", strtotime($this->date)) : '';
-		// $description = $this->number . ' ' . $this->customer->name;
-		$description = null;
-		$invoiceLineDescription = $invoiceDescription . ' - ' . ($invoiceNumber) . ' - ' . ($customerName);
-		// $paymentMethod = null;
-		// $payGroup = null;
-		$remitToSupplier = null;
-		$addressName = null;
-		$remitPaymentMethod = null;
-		$bankAccount = null;
-		// $info1 = $info2 = $info3 = null;
-		// $dmsGrnNumber = $this->number;
-		$dmsGrnNumber = null;
-		$outletCode = $this->outlet ? $this->outlet->oracle_code_l2 : '';
-		// $poNumber = $this->po_number;
-		// $poDate = isset($this->po_date) && !empty($this->po_date) ? date("Y-m-d", strtotime($this->po_date)) : null;
-		$poNumber = null;
-		$poDate = null;
-		$invoiceLineType = 'Item';
-		$invoiceLineAmount = $this->final_amount;
-		// $invoiceLineDescription = 'Item';
-		$taxClassification = '';
-		$hsnCode = null;
-		$productGroup = null;
-		// $intededUse = null;
-		// $withHoldingTax = null;
-		// $accountingClass = 'Payable';
-		$accountingClass = 'Purchase/Expense';
-		$company = $this->company ? $this->company->oracle_code : '';
-		$sbu = $this->sbu;
-		$lob = $naturalAccount = $department = null;
-		if ($sbu) {
-			$lob = $sbu->oracle_code ? $sbu->oracle_code : $lob;
-			$department = $sbu->oracle_cost_centre ? $sbu->oracle_cost_centre : $department;
-		}
+	// 	$invoiceNumber = $this->number;
+	// 	$invoiceAmount = $this->final_amount;
+	// 	$invoiceDate = isset($this->document_date) ? date("Y-m-d", strtotime($this->document_date)) : '';
+	// 	// $supplierName = $this->vendor ? $this->vendor->name : '';
+	// 	$supplierNumber = $this->customer ? $this->customer->code : '';
+	// 	$customerName = $this->customer ? $this->customer->name : '';
+	// 	// $supplierSiteName = '';
+	// 	$invoiceType = 'Standard';
+	// 	// $invoiceGroup = 'Standard';
+	// 	// $paymentTerm = 'IMMEDIATE';
+	// 	$accountingDate = null; // isset($this->date) ? date("Y-m-d", strtotime($this->date)) : '';
+	// 	// $description = $this->number . ' ' . $this->customer->name;
+	// 	$description = null;
+	// 	$invoiceLineDescription = $invoiceDescription . ' - ' . ($invoiceNumber) . ' - ' . ($customerName);
+	// 	// $paymentMethod = null;
+	// 	// $payGroup = null;
+	// 	$remitToSupplier = null;
+	// 	$addressName = null;
+	// 	$remitPaymentMethod = null;
+	// 	$bankAccount = null;
+	// 	// $info1 = $info2 = $info3 = null;
+	// 	// $dmsGrnNumber = $this->number;
+	// 	$dmsGrnNumber = null;
+	// 	$outletCode = $this->outlet ? $this->outlet->oracle_code_l2 : '';
+	// 	// $poNumber = $this->po_number;
+	// 	// $poDate = isset($this->po_date) && !empty($this->po_date) ? date("Y-m-d", strtotime($this->po_date)) : null;
+	// 	$poNumber = null;
+	// 	$poDate = null;
+	// 	$invoiceLineType = 'Item';
+	// 	$invoiceLineAmount = $this->final_amount;
+	// 	// $invoiceLineDescription = 'Item';
+	// 	$taxClassification = '';
+	// 	$hsnCode = null;
+	// 	$productGroup = null;
+	// 	// $intededUse = null;
+	// 	// $withHoldingTax = null;
+	// 	// $accountingClass = 'Payable';
+	// 	$accountingClass = 'Purchase/Expense';
+	// 	$company = $this->company ? $this->company->oracle_code : '';
+	// 	$sbu = $this->sbu;
+	// 	$lob = $naturalAccount = $department = null;
+	// 	if ($sbu) {
+	// 		$lob = $sbu->oracle_code ? $sbu->oracle_code : $lob;
+	// 		$department = $sbu->oracle_cost_centre ? $sbu->oracle_cost_centre : $department;
+	// 	}
 
-		$location = $outletCode;
-		$supplierSiteName = $outletCode;
-		$productSegment = $customerSegment = null;
-		$interCompany = $future1 = $future2 = null;
-		$lineInfo1 = $lineInfo2 = $lineInfo3 = '';
+	// 	$location = $outletCode;
+	// 	$supplierSiteName = $outletCode;
+	// 	$productSegment = $customerSegment = null;
+	// 	$interCompany = $future1 = $future2 = null;
+	// 	$lineInfo1 = $lineInfo2 = $lineInfo3 = '';
 
-		$export_record = [];
-		$export_record['company_id'] = $this->company_id;
-		$export_record['business_unit'] = $businessUnit;
-		$export_record['invoice_source'] = $invoiceSource;
-		$export_record['invoice_number'] = $invoiceNumber;
-		$export_record['invoice_amount'] = $invoiceAmount;
-		// $export_record['invoice_currency'] = $invoiceCurrency;
-		$export_record['invoice_date'] = $invoiceDate;
-		// $export_record['supplier_name'] = $supplierName;
-		$export_record['supplier_number'] = $supplierNumber;
-		$export_record['supplier_site_name'] = $supplierSiteName;
-		$export_record['invoice_type'] = $invoiceType;
-		// $export_record['invoice_group'] = $invoiceGroup;
-		// $export_record['payment_terms'] = $paymentTerm;
-		$export_record['accounting_date'] = $accountingDate;
-		$export_record['description'] = $description;
-		// $export_record['payment_method'] = $paymentMethod;
-		// $export_record['remit_pay_group'] = $payGroup;
-		$export_record['remit_to_supplier'] = $remitToSupplier;
-		$export_record['remit_address_name'] = $addressName;
-		$export_record['remit_payment_method'] = $remitPaymentMethod;
-		$export_record['remit_bank_account'] = $bankAccount;
-		// $export_record['additional_info_1'] = $info1;
-		// $export_record['additional_info_2'] = $info2;
-		// $export_record['additional_info_3'] = $info3;
-		$export_record['dms_grn_number'] = $dmsGrnNumber;
-		$export_record['outlet'] = $outletCode;
-		$export_record['chassis_number'] = '';
-		$export_record['engine_number'] = '';
-		$export_record['model'] = '';
-		$export_record['model_code'] = '';
-		$export_record['document_type'] = $documentType;
-		$export_record['po_number'] = $poNumber;
-		$export_record['po_date'] = $poDate;
-		$export_record['line_type'] = $invoiceLineType;
-		// $export_record['amount'] = $invoiceLineAmount;
-		$export_record['invoice_description'] = $invoiceLineDescription;
-		$export_record['tax_classification'] = $taxClassification;
-		$export_record['cgst'] = null;
-		$export_record['sgst'] = null;
-		$export_record['igst'] = null;
-		$export_record['tcs_tax_classification'] = null;
-		$export_record['tcs'] = null;
-		$export_record['cess_tax_classification'] = null;
-		$export_record['cess'] = null;
-		$export_record['ugst'] = null;
-		$export_record['round_off_amount'] = null;
-		$export_record['hsn_code'] = $hsnCode;
-		$export_record['tax_amount'] = null;
-		$export_record['product_group'] = $productGroup;
-		$export_record['accounting_class'] = $accountingClass;
-		// $export_record['company'] = $company;
-		$export_record['company'] = $companyCode;
-		$export_record['lob'] = $lob;
-		$export_record['location'] = $location;
-		$export_record['department'] = $department;
-		$export_record['natural_account'] = $naturalAccount;
-		// $export_record['distribution_product_group'] = $distributionProductGroup;
-		// $export_record['customer_group'] = $customerGroup;
-		$export_record['product_segment'] = $productSegment;
-		$export_record['customer_segment'] = $customerSegment;
-		$export_record['inter_company'] = $interCompany;
-		$export_record['future_1'] = $future1;
-		$export_record['future_2'] = $future2;
-		$export_record['info_1'] = $lineInfo1;
-		$export_record['info_2'] = $lineInfo2;
-		$export_record['info_3'] = $lineInfo3;
-		$export_record['created_by_id'] = (isset(Auth::user()->id) && Auth::user()->id) ? Auth::user()->id : $this->updated_by_id;
+	// 	$export_record = [];
+	// 	$export_record['company_id'] = $this->company_id;
+	// 	$export_record['business_unit'] = $businessUnit;
+	// 	$export_record['invoice_source'] = $invoiceSource;
+	// 	$export_record['invoice_number'] = $invoiceNumber;
+	// 	$export_record['invoice_amount'] = $invoiceAmount;
+	// 	// $export_record['invoice_currency'] = $invoiceCurrency;
+	// 	$export_record['invoice_date'] = $invoiceDate;
+	// 	// $export_record['supplier_name'] = $supplierName;
+	// 	$export_record['supplier_number'] = $supplierNumber;
+	// 	$export_record['supplier_site_name'] = $supplierSiteName;
+	// 	$export_record['invoice_type'] = $invoiceType;
+	// 	// $export_record['invoice_group'] = $invoiceGroup;
+	// 	// $export_record['payment_terms'] = $paymentTerm;
+	// 	$export_record['accounting_date'] = $accountingDate;
+	// 	$export_record['description'] = $description;
+	// 	// $export_record['payment_method'] = $paymentMethod;
+	// 	// $export_record['remit_pay_group'] = $payGroup;
+	// 	$export_record['remit_to_supplier'] = $remitToSupplier;
+	// 	$export_record['remit_address_name'] = $addressName;
+	// 	$export_record['remit_payment_method'] = $remitPaymentMethod;
+	// 	$export_record['remit_bank_account'] = $bankAccount;
+	// 	// $export_record['additional_info_1'] = $info1;
+	// 	// $export_record['additional_info_2'] = $info2;
+	// 	// $export_record['additional_info_3'] = $info3;
+	// 	$export_record['dms_grn_number'] = $dmsGrnNumber;
+	// 	$export_record['outlet'] = $outletCode;
+	// 	$export_record['chassis_number'] = '';
+	// 	$export_record['engine_number'] = '';
+	// 	$export_record['model'] = '';
+	// 	$export_record['model_code'] = '';
+	// 	$export_record['document_type'] = $documentType;
+	// 	$export_record['po_number'] = $poNumber;
+	// 	$export_record['po_date'] = $poDate;
+	// 	$export_record['line_type'] = $invoiceLineType;
+	// 	// $export_record['amount'] = $invoiceLineAmount;
+	// 	$export_record['invoice_description'] = $invoiceLineDescription;
+	// 	$export_record['tax_classification'] = $taxClassification;
+	// 	$export_record['cgst'] = null;
+	// 	$export_record['sgst'] = null;
+	// 	$export_record['igst'] = null;
+	// 	$export_record['tcs_tax_classification'] = null;
+	// 	$export_record['tcs'] = null;
+	// 	$export_record['cess_tax_classification'] = null;
+	// 	$export_record['cess'] = null;
+	// 	$export_record['ugst'] = null;
+	// 	$export_record['round_off_amount'] = null;
+	// 	$export_record['hsn_code'] = $hsnCode;
+	// 	$export_record['tax_amount'] = null;
+	// 	$export_record['product_group'] = $productGroup;
+	// 	$export_record['accounting_class'] = $accountingClass;
+	// 	// $export_record['company'] = $company;
+	// 	$export_record['company'] = $companyCode;
+	// 	$export_record['lob'] = $lob;
+	// 	$export_record['location'] = $location;
+	// 	$export_record['department'] = $department;
+	// 	$export_record['natural_account'] = $naturalAccount;
+	// 	// $export_record['distribution_product_group'] = $distributionProductGroup;
+	// 	// $export_record['customer_group'] = $customerGroup;
+	// 	$export_record['product_segment'] = $productSegment;
+	// 	$export_record['customer_segment'] = $customerSegment;
+	// 	$export_record['inter_company'] = $interCompany;
+	// 	$export_record['future_1'] = $future1;
+	// 	$export_record['future_2'] = $future2;
+	// 	$export_record['info_1'] = $lineInfo1;
+	// 	$export_record['info_2'] = $lineInfo2;
+	// 	$export_record['info_3'] = $lineInfo3;
+	// 	$export_record['created_by_id'] = (isset(Auth::user()->id) && Auth::user()->id) ? Auth::user()->id : $this->updated_by_id;
 
-		// Item based
-		if (count($this->serviceInvoiceItems) == 0) {
-			$res['errors'] = ['Invoice item details not found'];
-			return $res;
-		}
+	// 	// Item based
+	// 	if (count($this->serviceInvoiceItems) == 0) {
+	// 		$res['errors'] = ['Invoice item details not found'];
+	// 		return $res;
+	// 	}
 
-		//CHECK SAC CODE
-		$sacCodes = [];
-		foreach ($this->serviceInvoiceItems as $invoiceItem) {
-			$sacCodeId = !empty($invoiceItem->serviceItem->sac_code_id) ? $invoiceItem->serviceItem->sac_code_id : 0;
-			$sacCodes[] = $sacCodeId;
-		}
-		if (in_array(0, $sacCodes)) {
-			$res['errors'] = ['Kindly map the SAC Code for the invoice items'];
-			return $res;
-		}
+	// 	//CHECK SAC CODE
+	// 	$sacCodes = [];
+	// 	foreach ($this->serviceInvoiceItems as $invoiceItem) {
+	// 		$sacCodeId = !empty($invoiceItem->serviceItem->sac_code_id) ? $invoiceItem->serviceItem->sac_code_id : 0;
+	// 		$sacCodes[] = $sacCodeId;
+	// 	}
+	// 	if (in_array(0, $sacCodes)) {
+	// 		$res['errors'] = ['Kindly map the SAC Code for the invoice items'];
+	// 		return $res;
+	// 	}
 
-		$itemRecords = [];
-		foreach ($this->serviceInvoiceItems as $itemDetail) {
-			$hsnId = isset($itemDetail->serviceItem->sac_code_id) ? $itemDetail->serviceItem->sac_code_id : 0;
-			if (!isset($itemRecords[$hsnId]) || !$itemRecords[$hsnId]) {
-				$itemRecords[$hsnId] = [];
-				$itemRecords[$hsnId]['amount'] = 0;
-				$itemRecords[$hsnId]['hsn_code'] = isset($itemDetail->serviceItem->taxCode) ? $itemDetail->serviceItem->taxCode->code : '';
-				$itemRecords[$hsnId]['cgst_amount'] = 0;
-				$itemRecords[$hsnId]['sgst_amount'] = 0;
-				$itemRecords[$hsnId]['igst_amount'] = 0;
-				$itemRecords[$hsnId]['ugst_amount'] = 0;
-				$itemRecords[$hsnId]['kfc_amount'] = 0;
-				$itemRecords[$hsnId]['tcs_amount'] = 0;
-				$itemRecords[$hsnId]['cess_amount'] = 0;
-				$itemRecords[$hsnId]['cgst_percentage'] = 0;
-				$itemRecords[$hsnId]['sgst_percentage'] = 0;
-				$itemRecords[$hsnId]['igst_percentage'] = 0;
-				$itemRecords[$hsnId]['ugst_percentage'] = 0;
-				$itemRecords[$hsnId]['kfc_percentage'] = 0;
-				$itemRecords[$hsnId]['tcs_percentage'] = 0;
-				$itemRecords[$hsnId]['cess_percentage'] = 0;
-				$itemRecords[$hsnId]['natural_account'] = null;
-				// $itemRecords[$hsnId]['invoice_description'] = null;
-			}
+	// 	$itemRecords = [];
+	// 	foreach ($this->serviceInvoiceItems as $itemDetail) {
+	// 		$hsnId = isset($itemDetail->serviceItem->sac_code_id) ? $itemDetail->serviceItem->sac_code_id : 0;
+	// 		if (!isset($itemRecords[$hsnId]) || !$itemRecords[$hsnId]) {
+	// 			$itemRecords[$hsnId] = [];
+	// 			$itemRecords[$hsnId]['amount'] = 0;
+	// 			$itemRecords[$hsnId]['hsn_code'] = isset($itemDetail->serviceItem->taxCode) ? $itemDetail->serviceItem->taxCode->code : '';
+	// 			$itemRecords[$hsnId]['cgst_amount'] = 0;
+	// 			$itemRecords[$hsnId]['sgst_amount'] = 0;
+	// 			$itemRecords[$hsnId]['igst_amount'] = 0;
+	// 			$itemRecords[$hsnId]['ugst_amount'] = 0;
+	// 			$itemRecords[$hsnId]['kfc_amount'] = 0;
+	// 			$itemRecords[$hsnId]['tcs_amount'] = 0;
+	// 			$itemRecords[$hsnId]['cess_amount'] = 0;
+	// 			$itemRecords[$hsnId]['cgst_percentage'] = 0;
+	// 			$itemRecords[$hsnId]['sgst_percentage'] = 0;
+	// 			$itemRecords[$hsnId]['igst_percentage'] = 0;
+	// 			$itemRecords[$hsnId]['ugst_percentage'] = 0;
+	// 			$itemRecords[$hsnId]['kfc_percentage'] = 0;
+	// 			$itemRecords[$hsnId]['tcs_percentage'] = 0;
+	// 			$itemRecords[$hsnId]['cess_percentage'] = 0;
+	// 			$itemRecords[$hsnId]['natural_account'] = null;
+	// 			// $itemRecords[$hsnId]['invoice_description'] = null;
+	// 		}
 
-			//WITHOUT TAX AMOUNT
-			$itemRecords[$hsnId]['amount'] += floatval($itemDetail->sub_total);
-			//TAXES
-			$cgstDetail = $itemDetail->taxes()->where('tax_id', 1)->select('amount', 'percentage')->first();
-			$sgstDetail = $itemDetail->taxes()->where('tax_id', 2)->select('amount', 'percentage')->first();
-			$igstDetail = $itemDetail->taxes()->where('tax_id', 3)->select('amount', 'percentage')->first();
-			$ugstDetail = $itemDetail->taxes()->where('tax_id', 7)->select('amount', 'percentage')->first();
-			$kfcDetail = $itemDetail->taxes()->where('tax_id', 4)->select('amount', 'percentage')->first();
-			$tcsDetail = $itemDetail->taxes()->where('tax_id', 5)->select('amount', 'percentage')->first();
-			$cessDetail = $itemDetail->taxes()->where('tax_id', 6)->select('amount', 'percentage')->first();
+	// 		//WITHOUT TAX AMOUNT
+	// 		$itemRecords[$hsnId]['amount'] += floatval($itemDetail->sub_total);
+	// 		//TAXES
+	// 		$cgstDetail = $itemDetail->taxes()->where('tax_id', 1)->select('amount', 'percentage')->first();
+	// 		$sgstDetail = $itemDetail->taxes()->where('tax_id', 2)->select('amount', 'percentage')->first();
+	// 		$igstDetail = $itemDetail->taxes()->where('tax_id', 3)->select('amount', 'percentage')->first();
+	// 		$ugstDetail = $itemDetail->taxes()->where('tax_id', 7)->select('amount', 'percentage')->first();
+	// 		$kfcDetail = $itemDetail->taxes()->where('tax_id', 4)->select('amount', 'percentage')->first();
+	// 		$tcsDetail = $itemDetail->taxes()->where('tax_id', 5)->select('amount', 'percentage')->first();
+	// 		$cessDetail = $itemDetail->taxes()->where('tax_id', 6)->select('amount', 'percentage')->first();
 
-			if (isset($cgstDetail->amount) && floatval($cgstDetail->amount) > 0) {
-				$itemRecords[$hsnId]['cgst_amount'] += floatval($cgstDetail->amount);
-				$itemRecords[$hsnId]['cgst_percentage'] = $cgstDetail->percentage;
-			}
+	// 		if (isset($cgstDetail->amount) && floatval($cgstDetail->amount) > 0) {
+	// 			$itemRecords[$hsnId]['cgst_amount'] += floatval($cgstDetail->amount);
+	// 			$itemRecords[$hsnId]['cgst_percentage'] = $cgstDetail->percentage;
+	// 		}
 
-			if (isset($sgstDetail->amount) && floatval($sgstDetail->amount) > 0) {
-				$itemRecords[$hsnId]['sgst_amount'] += floatval($sgstDetail->amount);
-				$itemRecords[$hsnId]['sgst_percentage'] = $sgstDetail->percentage;
-			}
+	// 		if (isset($sgstDetail->amount) && floatval($sgstDetail->amount) > 0) {
+	// 			$itemRecords[$hsnId]['sgst_amount'] += floatval($sgstDetail->amount);
+	// 			$itemRecords[$hsnId]['sgst_percentage'] = $sgstDetail->percentage;
+	// 		}
 
-			if (isset($igstDetail->amount) && floatval($igstDetail->amount) > 0) {
-				$itemRecords[$hsnId]['igst_amount'] += floatval($igstDetail->amount);
-				$itemRecords[$hsnId]['igst_percentage'] = $igstDetail->percentage;
-			}
+	// 		if (isset($igstDetail->amount) && floatval($igstDetail->amount) > 0) {
+	// 			$itemRecords[$hsnId]['igst_amount'] += floatval($igstDetail->amount);
+	// 			$itemRecords[$hsnId]['igst_percentage'] = $igstDetail->percentage;
+	// 		}
 
-			if (isset($ugstDetail->amount) && floatval($ugstDetail->amount) > 0) {
-				$itemRecords[$hsnId]['ugst_amount'] += floatval($ugstDetail->amount);
-				$itemRecords[$hsnId]['ugst_percentage'] = $ugstDetail->percentage;
-			}
+	// 		if (isset($ugstDetail->amount) && floatval($ugstDetail->amount) > 0) {
+	// 			$itemRecords[$hsnId]['ugst_amount'] += floatval($ugstDetail->amount);
+	// 			$itemRecords[$hsnId]['ugst_percentage'] = $ugstDetail->percentage;
+	// 		}
 
-			if (isset($kfcDetail->amount) && floatval($kfcDetail->amount) > 0) {
-				$itemRecords[$hsnId]['kfc_amount'] += floatval($kfcDetail->amount);
-				$itemRecords[$hsnId]['kfc_percentage'] = $kfcDetail->percentage;
-			}
+	// 		if (isset($kfcDetail->amount) && floatval($kfcDetail->amount) > 0) {
+	// 			$itemRecords[$hsnId]['kfc_amount'] += floatval($kfcDetail->amount);
+	// 			$itemRecords[$hsnId]['kfc_percentage'] = $kfcDetail->percentage;
+	// 		}
 
-			if (isset($tcsDetail->amount) && floatval($tcsDetail->amount) > 0) {
-				$itemRecords[$hsnId]['tcs_amount'] += floatval($tcsDetail->amount);
-				$itemRecords[$hsnId]['tcs_percentage'] = $tcsDetail->percentage;
-			}
+	// 		if (isset($tcsDetail->amount) && floatval($tcsDetail->amount) > 0) {
+	// 			$itemRecords[$hsnId]['tcs_amount'] += floatval($tcsDetail->amount);
+	// 			$itemRecords[$hsnId]['tcs_percentage'] = $tcsDetail->percentage;
+	// 		}
 
-			if (isset($cessDetail->amount) && floatval($cessDetail->amount) > 0) {
-				$itemRecords[$hsnId]['cess_amount'] += floatval($cessDetail->amount);
-				$itemRecords[$hsnId]['cess_percentage'] = $cessDetail->percentage;
-			}
+	// 		if (isset($cessDetail->amount) && floatval($cessDetail->amount) > 0) {
+	// 			$itemRecords[$hsnId]['cess_amount'] += floatval($cessDetail->amount);
+	// 			$itemRecords[$hsnId]['cess_percentage'] = $cessDetail->percentage;
+	// 		}
 
-			//Natural account from service item coa code
-			if (empty($itemRecords[$hsnId]['natural_account'])) {
-				if (!empty($itemDetail->serviceItem->coaCode->oracle_code)) {
-					$itemRecords[$hsnId]['natural_account'] = $itemDetail->serviceItem->coaCode->oracle_code;
-				}
-			}
+	// 		//Natural account from service item coa code
+	// 		if (empty($itemRecords[$hsnId]['natural_account'])) {
+	// 			if (!empty($itemDetail->serviceItem->coaCode->oracle_code)) {
+	// 				$itemRecords[$hsnId]['natural_account'] = $itemDetail->serviceItem->coaCode->oracle_code;
+	// 			}
+	// 		}
 
-			// Invoice Description from item commodity master
-			// if (empty($itemRecords[$hsnId]['invoice_description'])) {
-			// 	if (!empty($itemDetail->serviceItem->coaCode->name)) {
-			// 		$itemRecords[$hsnId]['invoice_description'] = $itemDetail->serviceItem->coaCode->name;
-			// 	}
-			// }
-		}
+	// 		// Invoice Description from item commodity master
+	// 		// if (empty($itemRecords[$hsnId]['invoice_description'])) {
+	// 		// 	if (!empty($itemDetail->serviceItem->coaCode->name)) {
+	// 		// 		$itemRecords[$hsnId]['invoice_description'] = $itemDetail->serviceItem->coaCode->name;
+	// 		// 	}
+	// 		// }
+	// 	}
 
-		// $showRoundOff = true;
-		$showInvoiceAmount = true;
-		if (count($itemRecords) > 0) {
-			foreach ($itemRecords as $itemRecord) {
-				$export_record['round_off_amount'] = null;
-				$export_record['invoice_amount'] = null;
+	// 	// $showRoundOff = true;
+	// 	$showInvoiceAmount = true;
+	// 	if (count($itemRecords) > 0) {
+	// 		foreach ($itemRecords as $itemRecord) {
+	// 			$export_record['round_off_amount'] = null;
+	// 			$export_record['invoice_amount'] = null;
 
-				// ITEM SAVE
-				$export_record['amount'] = $itemRecord['amount'];
-				$export_record['hsn_code'] = $itemRecord['hsn_code'];
-				// $export_record['accounting_class'] = 'Purchase/Expense';
-				$export_record['natural_account'] = $itemRecord['natural_account'];
-				// $export_record['invoice_description'] = $itemRecord['invoice_description'];
+	// 			// ITEM SAVE
+	// 			$export_record['amount'] = $itemRecord['amount'];
+	// 			$export_record['hsn_code'] = $itemRecord['hsn_code'];
+	// 			// $export_record['accounting_class'] = 'Purchase/Expense';
+	// 			$export_record['natural_account'] = $itemRecord['natural_account'];
+	// 			// $export_record['invoice_description'] = $itemRecord['invoice_description'];
 
-				//FOR TAX
-				$export_record['cgst'] = $itemRecord['cgst_amount'];
-				$export_record['sgst'] = $itemRecord['sgst_amount'];
-				$export_record['igst'] = $itemRecord['igst_amount'];
-				$export_record['ugst'] = $itemRecord['ugst_amount'];
-				$export_record['kfc'] = $itemRecord['kfc_amount'];
-				$export_record['tcs'] = $itemRecord['tcs_amount'];
-				$export_record['cess'] = $itemRecord['cess_amount'];
+	// 			//FOR TAX
+	// 			$export_record['cgst'] = $itemRecord['cgst_amount'];
+	// 			$export_record['sgst'] = $itemRecord['sgst_amount'];
+	// 			$export_record['igst'] = $itemRecord['igst_amount'];
+	// 			$export_record['ugst'] = $itemRecord['ugst_amount'];
+	// 			$export_record['kfc'] = $itemRecord['kfc_amount'];
+	// 			$export_record['tcs'] = $itemRecord['tcs_amount'];
+	// 			$export_record['cess'] = $itemRecord['cess_amount'];
 
-				// $amountDiff = 0;
-				// if (!empty($this->final_amount) && !empty($this->total)) {
-				// 	$amountDiff = number_format(($this->final_amount - $this->total), 2);
-				// }
+	// 			// $amountDiff = 0;
+	// 			// if (!empty($this->final_amount) && !empty($this->total)) {
+	// 			// 	$amountDiff = number_format(($this->final_amount - $this->total), 2);
+	// 			// }
 
-				// $taxClassifications = '';
-				// if (floatval($itemRecord['cgst_amount']) > 0 && floatval($itemRecord['sgst_amount']) > 0) {
-				// 	// $taxClassifications .= 'CGST + SGST + ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
-				// 	$taxClassifications .= 'CGST+SGST REC ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
-				// }
+	// 			// $taxClassifications = '';
+	// 			// if (floatval($itemRecord['cgst_amount']) > 0 && floatval($itemRecord['sgst_amount']) > 0) {
+	// 			// 	// $taxClassifications .= 'CGST + SGST + ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
+	// 			// 	$taxClassifications .= 'CGST+SGST REC ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
+	// 			// }
 
-				// if (floatval($itemRecord['igst_amount']) > 0) {
-				// 	// $taxClassifications .= 'IGST + ' . (round($itemRecord['igst_percentage']));
-				// 	$taxClassifications .= 'IGST REC ' . (round($itemRecord['igst_percentage']));
-				// }
+	// 			// if (floatval($itemRecord['igst_amount']) > 0) {
+	// 			// 	// $taxClassifications .= 'IGST + ' . (round($itemRecord['igst_percentage']));
+	// 			// 	$taxClassifications .= 'IGST REC ' . (round($itemRecord['igst_percentage']));
+	// 			// }
 
-				// if (floatval($itemRecord['ugst_amount']) > 0) {
-				// 	if (!empty($taxClassifications)) {
-				// 		$taxClassifications .= ' + UGST + ' . (round($itemRecord['ugst_percentage']));
-				// 	} else {
-				// 		$taxClassifications .= 'UGST + ' . (round($itemRecord['ugst_percentage']));
-				// 	}
-				// }
+	// 			// if (floatval($itemRecord['ugst_amount']) > 0) {
+	// 			// 	if (!empty($taxClassifications)) {
+	// 			// 		$taxClassifications .= ' + UGST + ' . (round($itemRecord['ugst_percentage']));
+	// 			// 	} else {
+	// 			// 		$taxClassifications .= 'UGST + ' . (round($itemRecord['ugst_percentage']));
+	// 			// 	}
+	// 			// }
 
-				// $tcsTaxClassification = '';
-				// if (floatval($itemRecord['tcs_amount']) > 0) {
-				// 	// if(!empty($taxClassifications)){
-				// 	//     $taxClassifications .= ' + TCS + '. ($itemRecord['tcs_percentage']);
-				// 	// }else{
-				// 	//     $taxClassifications .= 'TCS + '. ($itemRecord['tcs_percentage']);
-				// 	// }
-				// 	// $tcsTaxClassification = 'TCS - ' . (round($itemRecord['tcs_percentage']));
-				// 	$tcsTaxClassification = 'TCS REC ' . (round($itemRecord['tcs_percentage']));
-				// }
-				// $export_record['tcs_tax_classification'] = $tcsTaxClassification;
+	// 			// $tcsTaxClassification = '';
+	// 			// if (floatval($itemRecord['tcs_amount']) > 0) {
+	// 			// 	// if(!empty($taxClassifications)){
+	// 			// 	//     $taxClassifications .= ' + TCS + '. ($itemRecord['tcs_percentage']);
+	// 			// 	// }else{
+	// 			// 	//     $taxClassifications .= 'TCS + '. ($itemRecord['tcs_percentage']);
+	// 			// 	// }
+	// 			// 	// $tcsTaxClassification = 'TCS - ' . (round($itemRecord['tcs_percentage']));
+	// 			// 	$tcsTaxClassification = 'TCS REC ' . (round($itemRecord['tcs_percentage']));
+	// 			// }
+	// 			// $export_record['tcs_tax_classification'] = $tcsTaxClassification;
 
-				// $cessTaxClassification = '';
-				// if (floatval($itemRecord['cess_amount']) > 0) {
-				// 	// if(!empty($taxClassifications)){
-				// 	//     $taxClassifications .= ' + CESS + '. ($itemRecord['cess_percentage']);
-				// 	// }else{
-				// 	//     $taxClassifications .= 'CESS + '. ($itemRecord['cess_percentage']);
-				// 	// }
-				// 	// $cessTaxClassification = 'CESS - ' . (round($itemRecord['cess_percentage']));
-				// 	$cessTaxClassification = 'CESS REC ' . (round($itemRecord['cess_percentage']));
-				// }
-				// $export_record['cess_tax_classification'] = $cessTaxClassification;
+	// 			// $cessTaxClassification = '';
+	// 			// if (floatval($itemRecord['cess_amount']) > 0) {
+	// 			// 	// if(!empty($taxClassifications)){
+	// 			// 	//     $taxClassifications .= ' + CESS + '. ($itemRecord['cess_percentage']);
+	// 			// 	// }else{
+	// 			// 	//     $taxClassifications .= 'CESS + '. ($itemRecord['cess_percentage']);
+	// 			// 	// }
+	// 			// 	// $cessTaxClassification = 'CESS - ' . (round($itemRecord['cess_percentage']));
+	// 			// 	$cessTaxClassification = 'CESS REC ' . (round($itemRecord['cess_percentage']));
+	// 			// }
+	// 			// $export_record['cess_tax_classification'] = $cessTaxClassification;
 
-				//TAX CLASSIFICATIONS
-				$taxNames = '';
-				$taxPercentages = '';
-				if (floatval($itemRecord['cgst_amount']) > 0 && floatval($itemRecord['sgst_amount']) > 0) {
-					$taxNames = 'CGST+SGST';
+	// 			//TAX CLASSIFICATIONS
+	// 			$taxNames = '';
+	// 			$taxPercentages = '';
+	// 			if (floatval($itemRecord['cgst_amount']) > 0 && floatval($itemRecord['sgst_amount']) > 0) {
+	// 				$taxNames = 'CGST+SGST';
 
-					$taxPercentages = ' ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
-				}
+	// 				$taxPercentages = ' ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
+	// 			}
 
-				if (floatval($itemRecord['igst_amount']) > 0) {
-					if (!empty($taxNames)) {
-						$taxNames .= '+IGST';
-					} else {
-						$taxNames .= 'IGST';
-					}
+	// 			if (floatval($itemRecord['igst_amount']) > 0) {
+	// 				if (!empty($taxNames)) {
+	// 					$taxNames .= '+IGST';
+	// 				} else {
+	// 					$taxNames .= 'IGST';
+	// 				}
 
-					if (!empty($taxPercentages)) {
-						$taxPercentages .= '+' . (round(floatval($itemRecord['igst_percentage'])));
-					} else {
-						$taxPercentages .= ' ' . (round(floatval($itemRecord['igst_percentage'])));
-					}
-				}
+	// 				if (!empty($taxPercentages)) {
+	// 					$taxPercentages .= '+' . (round(floatval($itemRecord['igst_percentage'])));
+	// 				} else {
+	// 					$taxPercentages .= ' ' . (round(floatval($itemRecord['igst_percentage'])));
+	// 				}
+	// 			}
 
-				if (floatval($itemRecord['ugst_amount']) > 0) {
-					if (!empty($taxNames)) {
-						$taxNames .= '+UGST';
-					} else {
-						$taxNames .= 'UGST';
-					}
+	// 			if (floatval($itemRecord['ugst_amount']) > 0) {
+	// 				if (!empty($taxNames)) {
+	// 					$taxNames .= '+UGST';
+	// 				} else {
+	// 					$taxNames .= 'UGST';
+	// 				}
 
-					if (!empty($taxPercentages)) {
-						$taxPercentages .= '+' . (round(floatval($itemRecord['ugst_percentage'])));
-					} else {
-						$taxPercentages .= ' ' . (round(floatval($itemRecord['ugst_percentage'])));
-					}
-				}
+	// 				if (!empty($taxPercentages)) {
+	// 					$taxPercentages .= '+' . (round(floatval($itemRecord['ugst_percentage'])));
+	// 				} else {
+	// 					$taxPercentages .= ' ' . (round(floatval($itemRecord['ugst_percentage'])));
+	// 				}
+	// 			}
 
-				if (floatval($itemRecord['tcs_amount']) > 0) {
-					if (!empty($taxNames)) {
-						$taxNames .= '+TCS';
-					} else {
-						$taxNames .= 'TCS';
-					}
+	// 			if (floatval($itemRecord['tcs_amount']) > 0) {
+	// 				if (!empty($taxNames)) {
+	// 					$taxNames .= '+TCS';
+	// 				} else {
+	// 					$taxNames .= 'TCS';
+	// 				}
 
-					if (!empty($taxPercentages)) {
-						$taxPercentages .= '+' . (round(floatval($itemRecord['tcs_percentage'])));
-					} else {
-						$taxPercentages .= ' ' . (round(floatval($itemRecord['tcs_percentage'])));
-					}
-				}
+	// 				if (!empty($taxPercentages)) {
+	// 					$taxPercentages .= '+' . (round(floatval($itemRecord['tcs_percentage'])));
+	// 				} else {
+	// 					$taxPercentages .= ' ' . (round(floatval($itemRecord['tcs_percentage'])));
+	// 				}
+	// 			}
 
-				if (floatval($itemRecord['cess_amount']) > 0) {
-					if (!empty($taxNames)) {
-						$taxNames .= '+CESS';
-					} else {
-						$taxNames .= 'CESS';
-					}
+	// 			if (floatval($itemRecord['cess_amount']) > 0) {
+	// 				if (!empty($taxNames)) {
+	// 					$taxNames .= '+CESS';
+	// 				} else {
+	// 					$taxNames .= 'CESS';
+	// 				}
 
-					if (!empty($taxPercentages)) {
-						$taxPercentages .= '+' . (round(floatval($itemRecord['cess_percentage'])));
-					} else {
-						$taxPercentages .= ' ' . (round(floatval($itemRecord['cess_percentage'])));
-					}
-				}
-				// $taxClassifications = $taxNames . $taxPercentages;
-				$taxClassifications = $taxNames . ' REC ' . $taxPercentages;
+	// 				if (!empty($taxPercentages)) {
+	// 					$taxPercentages .= '+' . (round(floatval($itemRecord['cess_percentage'])));
+	// 				} else {
+	// 					$taxPercentages .= ' ' . (round(floatval($itemRecord['cess_percentage'])));
+	// 				}
+	// 			}
+	// 			// $taxClassifications = $taxNames . $taxPercentages;
+	// 			$taxClassifications = $taxNames . ' REC ' . $taxPercentages;
 
-				$export_record['tax_classification'] = $taxClassifications;
-				$export_record['tax_amount'] = floatval($itemRecord['cgst_amount']) + floatval($itemRecord['sgst_amount']) + floatval($itemRecord['igst_amount']) + floatval($itemRecord['ugst_amount']) + floatval($itemRecord['kfc_amount']) + floatval($itemRecord['tcs_amount']) + floatval($itemRecord['cess_amount']);
+	// 			$export_record['tax_classification'] = $taxClassifications;
+	// 			$export_record['tax_amount'] = floatval($itemRecord['cgst_amount']) + floatval($itemRecord['sgst_amount']) + floatval($itemRecord['igst_amount']) + floatval($itemRecord['ugst_amount']) + floatval($itemRecord['kfc_amount']) + floatval($itemRecord['tcs_amount']) + floatval($itemRecord['cess_amount']);
 
-				// if ($showRoundOff == true && $amountDiff && $amountDiff != '0.00') {
-				// 	$export_record['round_off_amount'] = $amountDiff;
-				// }
+	// 			// if ($showRoundOff == true && $amountDiff && $amountDiff != '0.00') {
+	// 			// 	$export_record['round_off_amount'] = $amountDiff;
+	// 			// }
 
-				if ($showInvoiceAmount == true) {
-					// $export_record['invoice_amount'] = $this->final_amount;
-					if($this->type_id == 1060){
-						$export_record['invoice_amount'] = '-'.($this->final_amount);
-					}else{
-						$export_record['invoice_amount'] = $this->final_amount;
-					}
-				}
-				$export_records[] = $export_record;
-				$storeInOracleTable = ApInvoiceExport::store($export_record);
-				// $showRoundOff = false;
-				$showInvoiceAmount = false;
-			}
+	// 			if ($showInvoiceAmount == true) {
+	// 				// $export_record['invoice_amount'] = $this->final_amount;
+	// 				if($this->type_id == 1060){
+	// 					$export_record['invoice_amount'] = '-'.($this->final_amount);
+	// 				}else{
+	// 					$export_record['invoice_amount'] = $this->final_amount;
+	// 				}
+	// 			}
+	// 			$export_records[] = $export_record;
+	// 			$storeInOracleTable = ApInvoiceExport::store($export_record);
+	// 			// $showRoundOff = false;
+	// 			$showInvoiceAmount = false;
+	// 		}
 
-			//ROUNDOFF ENTRY
-			$roundOffTransaction = OtherTypeDetail::apRoundOffTransaction();
-			$amountDiff = 0;
-			if (!empty($this->final_amount) && !empty($this->total)) {
-				$amountDiff = number_format(($this->final_amount - $this->total), 2);
-			}
-			if ($amountDiff && $amountDiff != '0.00') {
-				$export_record['round_off_amount'] = null;
-				$export_record['invoice_amount'] = null;
-				// $export_record['description'] = $roundOffTransaction ? $roundOffTransaction->name : null;
-				$export_record['amount'] = $amountDiff;
-				$export_record['accounting_class'] = $roundOffTransaction ? $roundOffTransaction->accounting_class : null;
-				$export_record['hsn_code'] = null;
-				$export_record['natural_account'] = $roundOffTransaction ? $roundOffTransaction->natural_account : null;
-				// $export_record['invoice_description'] = null;
-				$export_record['invoice_description'] = $roundOffTransaction ? $roundOffTransaction->name : null;
-				$export_record['cgst'] = null;
-				$export_record['sgst'] = null;
-				$export_record['igst'] = null;
-				$export_record['ugst'] = null;
-				$export_record['kfc'] = null;
-				$export_record['tcs'] = null;
-				$export_record['cess'] = null;
-				$export_record['tcs_tax_classification'] = null;
-				$export_record['cess_tax_classification'] = null;
-				$export_record['tax_amount'] = null;
-				$export_record['tax_classification'] = null;
-				$storeInOracleTable = ApInvoiceExport::store($export_record);
-			}
-		}
-		$res['success'] = true;
-		return $res;
-	}
+	// 		//ROUNDOFF ENTRY
+	// 		$roundOffTransaction = OtherTypeDetail::apRoundOffTransaction();
+	// 		$amountDiff = 0;
+	// 		if (!empty($this->final_amount) && !empty($this->total)) {
+	// 			$amountDiff = number_format(($this->final_amount - $this->total), 2);
+	// 		}
+	// 		if ($amountDiff && $amountDiff != '0.00') {
+	// 			$export_record['round_off_amount'] = null;
+	// 			$export_record['invoice_amount'] = null;
+	// 			// $export_record['description'] = $roundOffTransaction ? $roundOffTransaction->name : null;
+	// 			$export_record['amount'] = $amountDiff;
+	// 			$export_record['accounting_class'] = $roundOffTransaction ? $roundOffTransaction->accounting_class : null;
+	// 			$export_record['hsn_code'] = null;
+	// 			$export_record['natural_account'] = $roundOffTransaction ? $roundOffTransaction->natural_account : null;
+	// 			// $export_record['invoice_description'] = null;
+	// 			$export_record['invoice_description'] = $roundOffTransaction ? $roundOffTransaction->name : null;
+	// 			$export_record['cgst'] = null;
+	// 			$export_record['sgst'] = null;
+	// 			$export_record['igst'] = null;
+	// 			$export_record['ugst'] = null;
+	// 			$export_record['kfc'] = null;
+	// 			$export_record['tcs'] = null;
+	// 			$export_record['cess'] = null;
+	// 			$export_record['tcs_tax_classification'] = null;
+	// 			$export_record['cess_tax_classification'] = null;
+	// 			$export_record['tax_amount'] = null;
+	// 			$export_record['tax_classification'] = null;
+	// 			$storeInOracleTable = ApInvoiceExport::store($export_record);
+	// 		}
+	// 	}
+	// 	$res['success'] = true;
+	// 	return $res;
+	// }
+
+    public function generateVimsCnDnVendorOracleAxapta() {
+        $res = [];
+        $res['success'] = false;
+        $res['errors'] = [];
+        $companyName = $this->company ? ($this->company->oem_business_unit ? $this->company->oem_business_unit->name : '') : '';
+        $companyCode = $this->company ? ($this->company->oem_business_unit ? $this->company->oem_business_unit->code : '') : '';
+        $apInvoiceExports = ApInvoiceExport::where([
+            'invoice_number' => $this->number,
+            'business_unit' => $companyName,
+        ])->get();
+        if (count($apInvoiceExports) > 0) {
+            $res['errors'] = ['Already exported to oracle table'];
+            return $res;
+        }
+
+        if (empty($this->final_amount) || $this->final_amount == '0.00') {
+            $res['errors'] = ['The invoice total amount is 0'];
+            return $res;
+        }
+
+        $businessUnit = $companyName;
+        if ($this->type_id == 1060) {
+            //CN
+            // $transactionDetail = $this->company ? $this->company->vimsCreditNoteTransaction() : null;
+            $transactionDetail = $this->company ? $this->company->vendorVimsCreditNoteTransaction() : null;
+            $invoiceDescription = 'Credit note';
+        } elseif ($this->type_id == 1061) {
+            //DN
+            // $transactionDetail = $this->company ? $this->company->vimsDebitNoteTransaction() : null;
+            $transactionDetail = $this->company ? $this->company->vendorVimsDebitNoteTransaction() : null;
+            $invoiceDescription = 'Debit note';
+        } elseif ($this->type_id == 1062) {
+            //INV
+            // $transactionDetail = $this->company ? $this->company->vimsInvoiceNoteTransaction() : null;
+            $transactionDetail = $this->company ? $this->company->vendorVimsInvoiceNoteTransaction() : null;
+            $invoiceDescription = 'Invoice';
+        } else {
+            $transactionDetail = null;
+            $invoiceDescription = '';
+        }
+
+        // $invoiceSource = 'VIMS-Invoice';
+        $invoiceSource = 'VIMS';
+        $documentType = 'Invoice';
+        if ($transactionDetail) {
+            // $invoiceSource = $transactionDetail->type ? $transactionDetail->type : $invoiceSource;
+            $invoiceSource = $transactionDetail->batch ? $transactionDetail->batch : $invoiceSource;
+            $documentType = $transactionDetail->type ? $transactionDetail->type : $documentType;
+        }
+
+        $invoiceNumber = $this->number;
+        $invoiceAmount = $this->final_amount;
+        $invoiceDate = isset($this->document_date) ? date("Y-m-d", strtotime($this->document_date)) : '';
+        // $supplierName = $this->vendor ? $this->vendor->name : '';
+        $supplierNumber = $this->customer ? $this->customer->code : '';
+        $customerName = $this->customer ? $this->customer->name : '';
+        // $supplierSiteName = '';
+        $invoiceType = 'Standard';
+        // $invoiceGroup = 'Standard';
+        // $paymentTerm = 'IMMEDIATE';
+        $accountingDate = null; // isset($this->date) ? date("Y-m-d", strtotime($this->date)) : '';
+        // $description = $this->number . ' ' . $this->customer->name;
+        $description = null;
+        $invoiceLineDescription = $invoiceDescription . ' - ' . ($invoiceNumber) . ' - ' . ($customerName);
+        // $paymentMethod = null;
+        // $payGroup = null;
+        $remitToSupplier = null;
+        $addressName = null;
+        $remitPaymentMethod = null;
+        $bankAccount = null;
+        // $info1 = $info2 = $info3 = null;
+        // $dmsGrnNumber = $this->number;
+        $dmsGrnNumber = null;
+        $outletCode = $this->outlet ? $this->outlet->oracle_code_l2 : '';
+        // $poNumber = $this->po_number;
+        // $poDate = isset($this->po_date) && !empty($this->po_date) ? date("Y-m-d", strtotime($this->po_date)) : null;
+        $poNumber = null;
+        $poDate = null;
+        $invoiceLineType = 'Item';
+        $invoiceLineAmount = $this->final_amount;
+        // $invoiceLineDescription = 'Item';
+        $taxClassification = '';
+        $hsnCode = null;
+        $productGroup = null;
+        // $intededUse = null;
+        // $withHoldingTax = null;
+        // $accountingClass = 'Payable';
+        $accountingClass = 'Purchase/Expense';
+        $company = $this->company ? $this->company->oracle_code : '';
+        $sbu = $this->sbu;
+        $lob = $naturalAccount = $department = null;
+        if ($sbu) {
+            $lob = $sbu->oracle_code ? $sbu->oracle_code : $lob;
+            $department = $sbu->oracle_cost_centre ? $sbu->oracle_cost_centre : $department;
+        }
+
+        $location = $outletCode;
+        $supplierSiteName = $outletCode;
+        $productSegment = $customerSegment = null;
+        $interCompany = $future1 = $future2 = null;
+        $lineInfo1 = $lineInfo2 = $lineInfo3 = '';
+
+        $export_record = [];
+        $export_record['company_id'] = $this->company_id;
+        $export_record['business_unit'] = $businessUnit;
+        $export_record['invoice_source'] = $invoiceSource;
+        $export_record['invoice_number'] = $invoiceNumber;
+        $export_record['invoice_amount'] = $invoiceAmount;
+        // $export_record['invoice_currency'] = $invoiceCurrency;
+        $export_record['invoice_date'] = $invoiceDate;
+        // $export_record['supplier_name'] = $supplierName;
+        $export_record['supplier_number'] = $supplierNumber;
+        $export_record['supplier_site_name'] = $supplierSiteName;
+        $export_record['invoice_type'] = $invoiceType;
+        // $export_record['invoice_group'] = $invoiceGroup;
+        // $export_record['payment_terms'] = $paymentTerm;
+        $export_record['accounting_date'] = $accountingDate;
+        $export_record['description'] = $description;
+        // $export_record['payment_method'] = $paymentMethod;
+        // $export_record['remit_pay_group'] = $payGroup;
+        $export_record['remit_to_supplier'] = $remitToSupplier;
+        $export_record['remit_address_name'] = $addressName;
+        $export_record['remit_payment_method'] = $remitPaymentMethod;
+        $export_record['remit_bank_account'] = $bankAccount;
+        // $export_record['additional_info_1'] = $info1;
+        // $export_record['additional_info_2'] = $info2;
+        // $export_record['additional_info_3'] = $info3;
+        $export_record['dms_grn_number'] = $dmsGrnNumber;
+        $export_record['outlet'] = $outletCode;
+        $export_record['chassis_number'] = '';
+        $export_record['engine_number'] = '';
+        $export_record['model'] = '';
+        $export_record['model_code'] = '';
+        $export_record['document_type'] = $documentType;
+        $export_record['po_number'] = $poNumber;
+        $export_record['po_date'] = $poDate;
+        $export_record['line_type'] = $invoiceLineType;
+        // $export_record['amount'] = $invoiceLineAmount;
+        $export_record['invoice_description'] = $invoiceLineDescription;
+        $export_record['tax_classification'] = $taxClassification;
+        $export_record['cgst'] = null;
+        $export_record['sgst'] = null;
+        $export_record['igst'] = null;
+        $export_record['tcs_tax_classification'] = null;
+        $export_record['tcs'] = null;
+        $export_record['cess_tax_classification'] = null;
+        $export_record['cess'] = null;
+        $export_record['ugst'] = null;
+        $export_record['round_off_amount'] = null;
+        $export_record['hsn_code'] = $hsnCode;
+        $export_record['tax_amount'] = null;
+        $export_record['product_group'] = $productGroup;
+        $export_record['accounting_class'] = $accountingClass;
+        // $export_record['company'] = $company;
+        $export_record['company'] = $companyCode;
+        $export_record['lob'] = $lob;
+        $export_record['location'] = $location;
+        $export_record['department'] = $department;
+        $export_record['natural_account'] = $naturalAccount;
+        // $export_record['distribution_product_group'] = $distributionProductGroup;
+        // $export_record['customer_group'] = $customerGroup;
+        $export_record['product_segment'] = $productSegment;
+        $export_record['customer_segment'] = $customerSegment;
+        $export_record['inter_company'] = $interCompany;
+        $export_record['future_1'] = $future1;
+        $export_record['future_2'] = $future2;
+        $export_record['info_1'] = $lineInfo1;
+        $export_record['info_2'] = $lineInfo2;
+        $export_record['info_3'] = $lineInfo3;
+        $export_record['created_by_id'] = (isset(Auth::user()->id) && Auth::user()->id) ? Auth::user()->id : $this->updated_by_id;
+
+        // Item based
+        if (count($this->serviceInvoiceItems) == 0) {
+            $res['errors'] = ['Invoice item details not found'];
+            return $res;
+        }
+
+        //CHECK SAC CODE
+        // $sacCodes = [];
+        // foreach ($this->serviceInvoiceItems as $invoiceItem) {
+        //     $sacCodeId = !empty($invoiceItem->serviceItem->sac_code_id) ? $invoiceItem->serviceItem->sac_code_id : 0;
+        //     $sacCodes[] = $sacCodeId;
+        // }
+        // if (in_array(0, $sacCodes)) {
+        //     $res['errors'] = ['Kindly map the SAC Code for the invoice items'];
+        //     return $res;
+        // }
+
+        $itemRecords = [];
+        foreach ($this->serviceInvoiceItems as $key => $itemDetail) {
+            $hsnId = !empty($itemDetail->serviceItem->sac_code_id) ? $itemDetail->serviceItem->sac_code_id : 0;
+            if(empty($hsnId)){
+                $hsnId = 'ws'.$key;
+            }
+            if (!isset($itemRecords[$hsnId]) || !$itemRecords[$hsnId]) {
+                $itemRecords[$hsnId] = [];
+                $itemRecords[$hsnId]['amount'] = 0;
+                $itemRecords[$hsnId]['hsn_code'] = isset($itemDetail->serviceItem->taxCode) ? $itemDetail->serviceItem->taxCode->code : '';
+                $itemRecords[$hsnId]['cgst_amount'] = 0;
+                $itemRecords[$hsnId]['sgst_amount'] = 0;
+                $itemRecords[$hsnId]['igst_amount'] = 0;
+                $itemRecords[$hsnId]['ugst_amount'] = 0;
+                $itemRecords[$hsnId]['kfc_amount'] = 0;
+                $itemRecords[$hsnId]['tcs_amount'] = 0;
+                $itemRecords[$hsnId]['cess_amount'] = 0;
+                $itemRecords[$hsnId]['cgst_percentage'] = 0;
+                $itemRecords[$hsnId]['sgst_percentage'] = 0;
+                $itemRecords[$hsnId]['igst_percentage'] = 0;
+                $itemRecords[$hsnId]['ugst_percentage'] = 0;
+                $itemRecords[$hsnId]['kfc_percentage'] = 0;
+                $itemRecords[$hsnId]['tcs_percentage'] = 0;
+                $itemRecords[$hsnId]['cess_percentage'] = 0;
+                $itemRecords[$hsnId]['natural_account'] = null;
+                $itemRecords[$hsnId]['invoice_description'] = '';
+            }
+
+            //WITHOUT TAX AMOUNT
+            $itemRecords[$hsnId]['amount'] += floatval($itemDetail->sub_total);
+            //TAXES
+            $cgstDetail = $itemDetail->taxes()->where('tax_id', 1)->select('amount', 'percentage')->first();
+            $sgstDetail = $itemDetail->taxes()->where('tax_id', 2)->select('amount', 'percentage')->first();
+            $igstDetail = $itemDetail->taxes()->where('tax_id', 3)->select('amount', 'percentage')->first();
+            $ugstDetail = $itemDetail->taxes()->where('tax_id', 7)->select('amount', 'percentage')->first();
+            $kfcDetail = $itemDetail->taxes()->where('tax_id', 4)->select('amount', 'percentage')->first();
+            $tcsDetail = $itemDetail->taxes()->where('tax_id', 5)->select('amount', 'percentage')->first();
+            $cessDetail = $itemDetail->taxes()->where('tax_id', 6)->select('amount', 'percentage')->first();
+
+            if (isset($cgstDetail->amount) && floatval($cgstDetail->amount) > 0) {
+                $itemRecords[$hsnId]['cgst_amount'] += floatval($cgstDetail->amount);
+                $itemRecords[$hsnId]['cgst_percentage'] = $cgstDetail->percentage;
+            }
+
+            if (isset($sgstDetail->amount) && floatval($sgstDetail->amount) > 0) {
+                $itemRecords[$hsnId]['sgst_amount'] += floatval($sgstDetail->amount);
+                $itemRecords[$hsnId]['sgst_percentage'] = $sgstDetail->percentage;
+            }
+
+            if (isset($igstDetail->amount) && floatval($igstDetail->amount) > 0) {
+                $itemRecords[$hsnId]['igst_amount'] += floatval($igstDetail->amount);
+                $itemRecords[$hsnId]['igst_percentage'] = $igstDetail->percentage;
+            }
+
+            if (isset($ugstDetail->amount) && floatval($ugstDetail->amount) > 0) {
+                $itemRecords[$hsnId]['ugst_amount'] += floatval($ugstDetail->amount);
+                $itemRecords[$hsnId]['ugst_percentage'] = $ugstDetail->percentage;
+            }
+
+            if (isset($kfcDetail->amount) && floatval($kfcDetail->amount) > 0) {
+                $itemRecords[$hsnId]['kfc_amount'] += floatval($kfcDetail->amount);
+                $itemRecords[$hsnId]['kfc_percentage'] = $kfcDetail->percentage;
+            }
+
+            if (isset($tcsDetail->amount) && floatval($tcsDetail->amount) > 0) {
+                $itemRecords[$hsnId]['tcs_amount'] += floatval($tcsDetail->amount);
+                $itemRecords[$hsnId]['tcs_percentage'] = $tcsDetail->percentage;
+            }
+
+            if (isset($cessDetail->amount) && floatval($cessDetail->amount) > 0) {
+                $itemRecords[$hsnId]['cess_amount'] += floatval($cessDetail->amount);
+                $itemRecords[$hsnId]['cess_percentage'] = $cessDetail->percentage;
+            }
+
+            //Natural account from service item coa code
+            if (empty($itemRecords[$hsnId]['natural_account'])) {
+                if (!empty($itemDetail->serviceItem->coaCode->oracle_code)) {
+                    $itemRecords[$hsnId]['natural_account'] = $itemDetail->serviceItem->coaCode->oracle_code;
+                }
+            }
+
+            if (strpos(strtolower($hsnId), 'ws') !== false) {
+                //ITEM WHICH IS NOT HAVING SAC
+                $withoutSacInvoiceDescription = '';
+                if (!empty($itemDetail->serviceItem->coaCode->code)) {
+                    $withoutSacInvoiceDescription .= $itemDetail->serviceItem->coaCode->code;
+                }
+                if ($itemDetail->description) {
+                    $withoutSacInvoiceDescription .=  ($withoutSacInvoiceDescription ? ' , ' . ($itemDetail->description) : $itemDetail->description);
+                }
+                $itemRecords[$hsnId]['invoice_description'] = $withoutSacInvoiceDescription;
+            }
+
+            // Invoice Description from item commodity master
+            // if (empty($itemRecords[$hsnId]['invoice_description'])) {
+            //  if (!empty($itemDetail->serviceItem->coaCode->name)) {
+            //      $itemRecords[$hsnId]['invoice_description'] = $itemDetail->serviceItem->coaCode->name;
+            //  }
+            // }
+        }
+
+        // $showRoundOff = true;
+        $showInvoiceAmount = true;
+        if (count($itemRecords) > 0) {
+            foreach ($itemRecords as $itemRecord) {
+                $export_record['round_off_amount'] = null;
+                $export_record['invoice_amount'] = null;
+
+                // ITEM SAVE
+                $export_record['amount'] = $itemRecord['amount'];
+                $export_record['hsn_code'] = $itemRecord['hsn_code'];
+                // $export_record['accounting_class'] = 'Purchase/Expense';
+                $export_record['natural_account'] = $itemRecord['natural_account'];
+                // $export_record['invoice_description'] = $itemRecord['invoice_description'];
+
+                //FOR TAX
+                $export_record['cgst'] = $itemRecord['cgst_amount'];
+                $export_record['sgst'] = $itemRecord['sgst_amount'];
+                $export_record['igst'] = $itemRecord['igst_amount'];
+                $export_record['ugst'] = $itemRecord['ugst_amount'];
+                $export_record['kfc'] = $itemRecord['kfc_amount'];
+                $export_record['tcs'] = $itemRecord['tcs_amount'];
+                $export_record['cess'] = $itemRecord['cess_amount'];
+
+                if(!empty($itemRecord['invoice_description'])){
+                    $export_record['invoice_description'] = $itemRecord['invoice_description'];
+                }
+
+                // $amountDiff = 0;
+                // if (!empty($this->final_amount) && !empty($this->total)) {
+                //  $amountDiff = number_format(($this->final_amount - $this->total), 2);
+                // }
+
+                // $taxClassifications = '';
+                // if (floatval($itemRecord['cgst_amount']) > 0 && floatval($itemRecord['sgst_amount']) > 0) {
+                //  // $taxClassifications .= 'CGST + SGST + ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
+                //  $taxClassifications .= 'CGST+SGST REC ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
+                // }
+
+                // if (floatval($itemRecord['igst_amount']) > 0) {
+                //  // $taxClassifications .= 'IGST + ' . (round($itemRecord['igst_percentage']));
+                //  $taxClassifications .= 'IGST REC ' . (round($itemRecord['igst_percentage']));
+                // }
+
+                // if (floatval($itemRecord['ugst_amount']) > 0) {
+                //  if (!empty($taxClassifications)) {
+                //      $taxClassifications .= ' + UGST + ' . (round($itemRecord['ugst_percentage']));
+                //  } else {
+                //      $taxClassifications .= 'UGST + ' . (round($itemRecord['ugst_percentage']));
+                //  }
+                // }
+
+                // $tcsTaxClassification = '';
+                // if (floatval($itemRecord['tcs_amount']) > 0) {
+                //  // if(!empty($taxClassifications)){
+                //  //     $taxClassifications .= ' + TCS + '. ($itemRecord['tcs_percentage']);
+                //  // }else{
+                //  //     $taxClassifications .= 'TCS + '. ($itemRecord['tcs_percentage']);
+                //  // }
+                //  // $tcsTaxClassification = 'TCS - ' . (round($itemRecord['tcs_percentage']));
+                //  $tcsTaxClassification = 'TCS REC ' . (round($itemRecord['tcs_percentage']));
+                // }
+                // $export_record['tcs_tax_classification'] = $tcsTaxClassification;
+
+                // $cessTaxClassification = '';
+                // if (floatval($itemRecord['cess_amount']) > 0) {
+                //  // if(!empty($taxClassifications)){
+                //  //     $taxClassifications .= ' + CESS + '. ($itemRecord['cess_percentage']);
+                //  // }else{
+                //  //     $taxClassifications .= 'CESS + '. ($itemRecord['cess_percentage']);
+                //  // }
+                //  // $cessTaxClassification = 'CESS - ' . (round($itemRecord['cess_percentage']));
+                //  $cessTaxClassification = 'CESS REC ' . (round($itemRecord['cess_percentage']));
+                // }
+                // $export_record['cess_tax_classification'] = $cessTaxClassification;
+
+                //TAX CLASSIFICATIONS
+                $taxNames = '';
+                $taxPercentages = '';
+                if (floatval($itemRecord['cgst_amount']) > 0 && floatval($itemRecord['sgst_amount']) > 0) {
+                    $taxNames = 'CGST+SGST';
+
+                    $taxPercentages = ' ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
+                }
+
+                if (floatval($itemRecord['igst_amount']) > 0) {
+                    if (!empty($taxNames)) {
+                        $taxNames .= '+IGST';
+                    } else {
+                        $taxNames .= 'IGST';
+                    }
+
+                    if (!empty($taxPercentages)) {
+                        $taxPercentages .= '+' . (round(floatval($itemRecord['igst_percentage'])));
+                    } else {
+                        $taxPercentages .= ' ' . (round(floatval($itemRecord['igst_percentage'])));
+                    }
+                }
+
+                if (floatval($itemRecord['ugst_amount']) > 0) {
+                    if (!empty($taxNames)) {
+                        $taxNames .= '+UGST';
+                    } else {
+                        $taxNames .= 'UGST';
+                    }
+
+                    if (!empty($taxPercentages)) {
+                        $taxPercentages .= '+' . (round(floatval($itemRecord['ugst_percentage'])));
+                    } else {
+                        $taxPercentages .= ' ' . (round(floatval($itemRecord['ugst_percentage'])));
+                    }
+                }
+
+                if (floatval($itemRecord['tcs_amount']) > 0) {
+                    if (!empty($taxNames)) {
+                        $taxNames .= '+TCS';
+                    } else {
+                        $taxNames .= 'TCS';
+                    }
+
+                    if (!empty($taxPercentages)) {
+                        $taxPercentages .= '+' . (round(floatval($itemRecord['tcs_percentage'])));
+                    } else {
+                        $taxPercentages .= ' ' . (round(floatval($itemRecord['tcs_percentage'])));
+                    }
+                }
+
+                if (floatval($itemRecord['cess_amount']) > 0) {
+                    if (!empty($taxNames)) {
+                        $taxNames .= '+CESS';
+                    } else {
+                        $taxNames .= 'CESS';
+                    }
+
+                    if (!empty($taxPercentages)) {
+                        $taxPercentages .= '+' . (round(floatval($itemRecord['cess_percentage'])));
+                    } else {
+                        $taxPercentages .= ' ' . (round(floatval($itemRecord['cess_percentage'])));
+                    }
+                }
+                // $taxClassifications = $taxNames . $taxPercentages;
+                // $taxClassifications = $taxNames . ' REC ' . $taxPercentages;
+                $taxClassifications = '';
+                if($taxNames || $taxPercentages){
+                    $taxClassifications = $taxNames . ' REC ' . $taxPercentages;
+                }
+
+                $export_record['tax_classification'] = $taxClassifications;
+                $export_record['tax_amount'] = floatval($itemRecord['cgst_amount']) + floatval($itemRecord['sgst_amount']) + floatval($itemRecord['igst_amount']) + floatval($itemRecord['ugst_amount']) + floatval($itemRecord['kfc_amount']) + floatval($itemRecord['tcs_amount']) + floatval($itemRecord['cess_amount']);
+
+                // if ($showRoundOff == true && $amountDiff && $amountDiff != '0.00') {
+                //  $export_record['round_off_amount'] = $amountDiff;
+                // }
+
+                if ($showInvoiceAmount == true) {
+                    // $export_record['invoice_amount'] = $this->final_amount;
+                    if($this->type_id == 1060){
+                        $export_record['invoice_amount'] = '-'.($this->final_amount);
+                    }else{
+                        $export_record['invoice_amount'] = $this->final_amount;
+                    }
+                }
+                $export_records[] = $export_record;
+                $storeInOracleTable = ApInvoiceExport::store($export_record);
+                // $showRoundOff = false;
+                $showInvoiceAmount = false;
+            }
+
+            //ROUNDOFF ENTRY
+            $roundOffTransaction = OtherTypeDetail::apRoundOffTransaction();
+            $amountDiff = 0;
+            if (!empty($this->final_amount) && !empty($this->total)) {
+                $amountDiff = number_format(($this->final_amount - $this->total), 2);
+            }
+            if ($amountDiff && $amountDiff != '0.00') {
+                $export_record['round_off_amount'] = null;
+                $export_record['invoice_amount'] = null;
+                // $export_record['description'] = $roundOffTransaction ? $roundOffTransaction->name : null;
+                $export_record['amount'] = $amountDiff;
+                $export_record['accounting_class'] = $roundOffTransaction ? $roundOffTransaction->accounting_class : null;
+                $export_record['hsn_code'] = null;
+                $export_record['natural_account'] = $roundOffTransaction ? $roundOffTransaction->natural_account : null;
+                // $export_record['invoice_description'] = null;
+                $export_record['invoice_description'] = $roundOffTransaction ? $roundOffTransaction->name : null;
+                $export_record['cgst'] = null;
+                $export_record['sgst'] = null;
+                $export_record['igst'] = null;
+                $export_record['ugst'] = null;
+                $export_record['kfc'] = null;
+                $export_record['tcs'] = null;
+                $export_record['cess'] = null;
+                $export_record['tcs_tax_classification'] = null;
+                $export_record['cess_tax_classification'] = null;
+                $export_record['tax_amount'] = null;
+                $export_record['tax_classification'] = null;
+                $storeInOracleTable = ApInvoiceExport::store($export_record);
+            }
+        }
+        $res['success'] = true;
+        return $res;
+    }
 }
