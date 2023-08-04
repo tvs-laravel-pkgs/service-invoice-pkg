@@ -3401,20 +3401,23 @@ class ServiceInvoice extends Model
 		}
 
 		//CHECK SAC CODE
-		$sacCodes = [];
-		foreach ($this->serviceInvoiceItems as $invoiceItem) {
-			$sacCodeId = !empty($invoiceItem->serviceItem->sac_code_id) ? $invoiceItem->serviceItem->sac_code_id : 0;
-			$sacCodes[] = $sacCodeId;
-		}
+		// $sacCodes = [];
+		// foreach ($this->serviceInvoiceItems as $invoiceItem) {
+		// 	$sacCodeId = !empty($invoiceItem->serviceItem->sac_code_id) ? $invoiceItem->serviceItem->sac_code_id : 0;
+		// 	$sacCodes[] = $sacCodeId;
+		// }
 		// if (in_array(0, $sacCodes)) {
 		// 	$res['errors'] = ['Kindly map the SAC Code for the invoice items'];
 		// 	return $res;
 		// }
 
 		$itemRecords = [];
-		foreach ($this->serviceInvoiceItems as $itemDetail) {
-			$hsnId = isset($itemDetail->serviceItem->sac_code_id) ? $itemDetail->serviceItem->sac_code_id : 0;
-			if (!isset($itemRecords[$hsnId]) || !$itemRecords[$hsnId]) {
+		foreach ($this->serviceInvoiceItems as $key => $itemDetail) {
+			$hsnId = !empty($itemDetail->serviceItem->sac_code_id) ? $itemDetail->serviceItem->sac_code_id : 0;
+			if(empty($hsnId)){
+                $hsnId = 'WS'.$key;
+            }
+            if (!isset($itemRecords[$hsnId]) || !$itemRecords[$hsnId]) {
 				$itemRecords[$hsnId] = [];
 				$itemRecords[$hsnId]['amount'] = 0;
 				$itemRecords[$hsnId]['hsn_code'] = isset($itemDetail->serviceItem->taxCode) ? $itemDetail->serviceItem->taxCode->code : '';
@@ -3434,6 +3437,7 @@ class ServiceInvoice extends Model
 				$itemRecords[$hsnId]['cess_percentage'] = 0;
 				$itemRecords[$hsnId]['natural_account'] = null;
 				$itemRecords[$hsnId]['chassis_number'] = null;
+                $itemRecords[$hsnId]['description'] = '';
 			}
 
 			//WITHOUT TAX AMOUNT
@@ -3489,6 +3493,18 @@ class ServiceInvoice extends Model
 				}
 			}
 
+            if (strpos(strtolower($hsnId), 'ws') !== false) {
+                //ITEM WHICH IS NOT HAVING SAC
+                $withoutSacInvoiceDescription = '';
+                if (!empty($itemDetail->serviceItem->coaCode->code)) {
+                    $withoutSacInvoiceDescription .= $itemDetail->serviceItem->coaCode->code;
+                }
+                if ($itemDetail->description) {
+                    $withoutSacInvoiceDescription .=  ($withoutSacInvoiceDescription ? ' , ' . ($itemDetail->description) : $itemDetail->description);
+                }
+                $itemRecords[$hsnId]['description'] = $withoutSacInvoiceDescription;
+            }
+
 			// if($itemDetail->tvsone_order_item_id && empty($itemRecords[$hsnId]['chassis_number'])){
 			//     $customerMembership = CustomerMembership::where('tvs_one_order_id', $itemDetail->tvsone_order_item_id)->first();
 			//     if($customerMembership && count($customerMembership->membershipVehicles) > 0){
@@ -3519,6 +3535,10 @@ class ServiceInvoice extends Model
 				$export_record['kfc'] = $itemRecord['kfc_amount'];
 				$export_record['tcs'] = $itemRecord['tcs_amount'];
 				$export_record['cess'] = $itemRecord['cess_amount'];
+                if(!empty($itemRecord['description'])){
+                    //ITEM WHICH IS NOT HAVING SAC CODE
+                    $export_record['description'] = $itemRecord['description'];
+                }
 
 				// $amountDiff = 0;
 				// if (!empty($this->final_amount) && !empty($this->total)) {
@@ -3637,7 +3657,11 @@ class ServiceInvoice extends Model
 					}
 				}
 				// $taxClassifications = $taxNames . $taxPercentages;
-				$taxClassifications = $taxNames . ' REC ' . $taxPercentages;
+				// $taxClassifications = $taxNames . ' REC ' . $taxPercentages;
+                $taxClassifications = '';
+                if($taxNames || $taxPercentages){
+                    $taxClassifications = $taxNames . ' REC ' . $taxPercentages;
+                }
 
 				$export_record['tax_classification'] = $taxClassifications;
 				if ($showInvoiceAmount == true) {
@@ -3865,19 +3889,22 @@ class ServiceInvoice extends Model
 		}
 
 		//CHECK SAC CODE
-		$sacCodes = [];
-		foreach ($this->serviceInvoiceItems as $invoiceItem) {
-			$sacCodeId = !empty($invoiceItem->serviceItem->sac_code_id) ? $invoiceItem->serviceItem->sac_code_id : 0;
-			$sacCodes[] = $sacCodeId;
-		}
+		// $sacCodes = [];
+		// foreach ($this->serviceInvoiceItems as $invoiceItem) {
+		// 	$sacCodeId = !empty($invoiceItem->serviceItem->sac_code_id) ? $invoiceItem->serviceItem->sac_code_id : 0;
+		// 	$sacCodes[] = $sacCodeId;
+		// }
 		// if (in_array(0, $sacCodes)) {
 		// 	$res['errors'] = ['Kindly map the SAC Code for the invoice items'];
 		// 	return $res;
 		// }
 
 		$itemRecords = [];
-		foreach ($this->serviceInvoiceItems as $itemDetail) {
-			$hsnId = isset($itemDetail->serviceItem->sac_code_id) ? $itemDetail->serviceItem->sac_code_id : 0;
+		foreach ($this->serviceInvoiceItems as $key => $itemDetail) {
+			$hsnId = !empty($itemDetail->serviceItem->sac_code_id) ? $itemDetail->serviceItem->sac_code_id : 0;
+            if(empty($hsnId)){
+                $hsnId = 'ws'.$key;
+            }
 			if (!isset($itemRecords[$hsnId]) || !$itemRecords[$hsnId]) {
 				$itemRecords[$hsnId] = [];
 				$itemRecords[$hsnId]['amount'] = 0;
@@ -3898,6 +3925,7 @@ class ServiceInvoice extends Model
 				$itemRecords[$hsnId]['cess_percentage'] = 0;
 				$itemRecords[$hsnId]['natural_account'] = null;
 				// $itemRecords[$hsnId]['invoice_description'] = null;
+                $itemRecords[$hsnId]['invoice_description'] = '';
 			}
 
 			//WITHOUT TAX AMOUNT
@@ -3953,6 +3981,18 @@ class ServiceInvoice extends Model
 				}
 			}
 
+            if (strpos(strtolower($hsnId), 'ws') !== false) {
+                //ITEM WHICH IS NOT HAVING SAC
+                $withoutSacInvoiceDescription = '';
+                if (!empty($itemDetail->serviceItem->coaCode->code)) {
+                    $withoutSacInvoiceDescription .= $itemDetail->serviceItem->coaCode->code;
+                }
+                if ($itemDetail->description) {
+                    $withoutSacInvoiceDescription .=  ($withoutSacInvoiceDescription ? ' , ' . ($itemDetail->description) : $itemDetail->description);
+                }
+                $itemRecords[$hsnId]['invoice_description'] = $withoutSacInvoiceDescription;
+            }
+
 			// Invoice Description from item commodity master
 			// if (empty($itemRecords[$hsnId]['invoice_description'])) {
 			// 	if (!empty($itemDetail->serviceItem->coaCode->name)) {
@@ -3983,6 +4023,9 @@ class ServiceInvoice extends Model
 				$export_record['kfc'] = $itemRecord['kfc_amount'];
 				$export_record['tcs'] = $itemRecord['tcs_amount'];
 				$export_record['cess'] = $itemRecord['cess_amount'];
+                if(!empty($itemRecord['invoice_description'])){
+                    $export_record['invoice_description'] = $itemRecord['invoice_description'];
+                }
 
 				// $amountDiff = 0;
 				// if (!empty($this->final_amount) && !empty($this->total)) {
@@ -4097,7 +4140,11 @@ class ServiceInvoice extends Model
 					}
 				}
 				// $taxClassifications = $taxNames . $taxPercentages;
-				$taxClassifications = $taxNames . ' REC ' . $taxPercentages;
+				// $taxClassifications = $taxNames . ' REC ' . $taxPercentages;
+                $taxClassifications = '';
+                if($taxNames || $taxPercentages){
+                    $taxClassifications = $taxNames . ' REC ' . $taxPercentages;
+                }
 
 				$export_record['tax_classification'] = $taxClassifications;
 				$export_record['tax_amount'] = floatval($itemRecord['cgst_amount']) + floatval($itemRecord['sgst_amount']) + floatval($itemRecord['igst_amount']) + floatval($itemRecord['ugst_amount']) + floatval($itemRecord['kfc_amount']) + floatval($itemRecord['tcs_amount']) + floatval($itemRecord['cess_amount']);
