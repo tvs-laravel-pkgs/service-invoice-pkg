@@ -3981,7 +3981,10 @@ class ServiceInvoiceController extends Controller
             //     $customer->name = $request->data['name'];
             // }
             $customer->cust_group = empty($request->data['cust_group']) ? null : $request->data['cust_group'];
-            $customer->gst_number = empty($request->data['gst_number']) ? null : $request->data['gst_number'];
+            // $customer->gst_number = empty($request->data['gst_number']) ? null : $request->data['gst_number'];
+            if(!empty($request->data['gst_number'])){
+                $customer->gst_number = $request->data['gst_number'];
+            }
             $customer->pan_number = empty($request->data['pan_number']) ? null : $request->data['pan_number'];
             $customer->mobile_no = empty($request->data['mobile_no']) ? null : $request->data['mobile_no'];
             $customer->address = null;
@@ -4007,7 +4010,13 @@ class ServiceInvoiceController extends Controller
                                 $address->entity_id = $customer->id;
                                 $address->ax_id = $customer_data['RECID'];
                                 // $address->gst_number = isset($customer_data['GST_NUMBER']) ? $customer_data['GST_NUMBER'] : NULL;
-                                $address->gst_number = isset($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available' ? $customer_data['GST_NUMBER'] : null;
+                                // $address->gst_number = isset($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available' ? $customer_data['GST_NUMBER'] : null;
+
+                                if(!empty($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available'){
+                                    $address->gst_number = $customer_data['GST_NUMBER'];
+                                }else{
+                                    $address->gst_number = $customer->gst_number;
+                                }
 
                                 $address->ax_customer_location_id = isset($customer_data['CUSTOMER_LOCATION_ID']) ? $customer_data['CUSTOMER_LOCATION_ID'] : null;
 
@@ -4018,8 +4027,10 @@ class ServiceInvoiceController extends Controller
                                 // $bdo_trade = null;
                                 // $bdo_legal = null;
                                 // $bdo_address = null;
-                                if(!empty($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available'){
-                                    $bdo_response = Customer::getGstDetail($customer_data['GST_NUMBER']);
+                                // if(!empty($customer_data['GST_NUMBER']) && $customer_data['GST_NUMBER'] != 'Not available'){
+                                if(!empty($address->gst_number) && $address->gst_number != 'Not available'){
+                                    // $bdo_response = Customer::getGstDetail($customer_data['GST_NUMBER']);
+                                    $bdo_response = Customer::getGstDetail($address->gst_number);
                                     if (isset($bdo_response->original) && $bdo_response->original['success'] == false) {
                                         return response()->json([
                                             'success' => false,
@@ -4078,8 +4089,12 @@ class ServiceInvoiceController extends Controller
                             $address->entity_id = $customer->id;
                             $address->ax_id = $api_customer_data['RECID'];
                             // $address->gst_number = isset($api_customer_data['GST_NUMBER']) ? $api_customer_data['GST_NUMBER'] : NULL;
-                            $address->gst_number = isset($api_customer_data['GST_NUMBER']) && $api_customer_data['GST_NUMBER'] != 'Not available' ? $api_customer_data['GST_NUMBER'] : null;
-
+                            // $address->gst_number = isset($api_customer_data['GST_NUMBER']) && $api_customer_data['GST_NUMBER'] != 'Not available' ? $api_customer_data['GST_NUMBER'] : null;
+                            if(!empty($api_customer_data['GST_NUMBER']) && $api_customer_data['GST_NUMBER'] != 'Not available'){
+                                $address->gst_number = $api_customer_data['GST_NUMBER'];
+                            }else{
+                                $address->gst_number = $customer->gst_number;
+                            }
                             $address->ax_customer_location_id = isset($api_customer_data['CUSTOMER_LOCATION_ID']) ? $api_customer_data['CUSTOMER_LOCATION_ID'] : null;
 
                             $address->address_of_id = 24;
@@ -4089,8 +4104,10 @@ class ServiceInvoiceController extends Controller
                             // $bdo_trade = null;
                             // $bdo_legal = null;
                             // $bdo_address = null;
-                            if(!empty($api_customer_data['GST_NUMBER']) && $api_customer_data['GST_NUMBER'] != 'Not available'){
-                                $bdo_response = Customer::getGstDetail($api_customer_data['GST_NUMBER']);
+                            // if(!empty($api_customer_data['GST_NUMBER']) && $api_customer_data['GST_NUMBER'] != 'Not available'){
+                            if(!empty($address->gst_number) && $address->gst_number != 'Not available'){
+                                // $bdo_response = Customer::getGstDetail($api_customer_data['GST_NUMBER']);
+                                $bdo_response = Customer::getGstDetail($address->gst_number);
                                 if (isset($bdo_response->original) && $bdo_response->original['success'] == false) {
                                     return response()->json([
                                         'success' => false,
