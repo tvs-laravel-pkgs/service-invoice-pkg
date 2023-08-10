@@ -3521,20 +3521,47 @@ class ServiceInvoice extends Model
 			foreach ($itemRecords as $itemRecord) {
 				$export_record['round_off_amount'] = null;
 				$export_record['invoice_amount'] = null;
-				$export_record['unit_price'] = $itemRecord['amount'];
-				$export_record['amount'] = $itemRecord['amount'];
+				// $export_record['unit_price'] = $itemRecord['amount'];
+                // $export_record['amount'] = $itemRecord['amount'];
+                if($this->type_id == 1060){
+                    //CN
+                    $export_record['unit_price'] = $itemRecord['amount'] > 0 ? '-'.$itemRecord['amount'] : 0;
+                    $export_record['amount'] = $itemRecord['amount'] > 0 ? '-'.$itemRecord['amount'] : 0;
+                }else{
+                    $export_record['unit_price'] = $itemRecord['amount'];
+                    $export_record['amount'] = $itemRecord['amount'];
+                }
 				$export_record['hsn_code'] = $itemRecord['hsn_code'];
 				$export_record['natural_account'] = $itemRecord['natural_account'];
 				$export_record['chassis_number'] = $itemRecord['chassis_number'];
 
 				// FOR TAX
-				$export_record['cgst'] = $itemRecord['cgst_amount'];
-				$export_record['sgst'] = $itemRecord['sgst_amount'];
-				$export_record['igst'] = $itemRecord['igst_amount'];
-				$export_record['ugst'] = $itemRecord['ugst_amount'];
-				$export_record['kfc'] = $itemRecord['kfc_amount'];
-				$export_record['tcs'] = $itemRecord['tcs_amount'];
-				$export_record['cess'] = $itemRecord['cess_amount'];
+				// $export_record['cgst'] = $itemRecord['cgst_amount'];
+				// $export_record['sgst'] = $itemRecord['sgst_amount'];
+				// $export_record['igst'] = $itemRecord['igst_amount'];
+				// $export_record['ugst'] = $itemRecord['ugst_amount'];
+				// $export_record['kfc'] = $itemRecord['kfc_amount'];
+				// $export_record['tcs'] = $itemRecord['tcs_amount'];
+				// $export_record['cess'] = $itemRecord['cess_amount'];
+                if($this->type_id == 1060){
+                    //CN
+                    $export_record['cgst'] = $itemRecord['cgst_amount'] > 0 ? '-'.$itemRecord['cgst_amount'] : 0;
+                    $export_record['sgst'] = $itemRecord['sgst_amount'] > 0 ? '-'.$itemRecord['sgst_amount'] : 0;
+                    $export_record['igst'] = $itemRecord['igst_amount'] > 0 ? '-'.$itemRecord['igst_amount'] : 0;
+                    $export_record['ugst'] = $itemRecord['ugst_amount'] > 0 ? '-'.$itemRecord['ugst_amount'] : 0;
+                    $export_record['kfc'] = $itemRecord['kfc_amount'] > 0 ? '-'.$itemRecord['kfc_amount'] : 0;
+                    $export_record['tcs'] = $itemRecord['tcs_amount'] > 0 ? '-'.$itemRecord['tcs_amount'] : 0;
+                    $export_record['cess'] = $itemRecord['cess_amount'] > 0 ? '-'.$itemRecord['cess_amount'] : 0;
+                }else{
+                    $export_record['cgst'] = $itemRecord['cgst_amount'];
+                    $export_record['sgst'] = $itemRecord['sgst_amount'];
+                    $export_record['igst'] = $itemRecord['igst_amount'];
+                    $export_record['ugst'] = $itemRecord['ugst_amount'];
+                    $export_record['kfc'] = $itemRecord['kfc_amount'];
+                    $export_record['tcs'] = $itemRecord['tcs_amount'];
+                    $export_record['cess'] = $itemRecord['cess_amount'];
+                }
+
                 if(!empty($itemRecord['description'])){
                     //ITEM WHICH IS NOT HAVING SAC CODE
                     $export_record['description'] = $itemRecord['description'];
@@ -3598,7 +3625,8 @@ class ServiceInvoice extends Model
 				if (floatval($itemRecord['cgst_amount']) > 0 && floatval($itemRecord['sgst_amount']) > 0) {
 					$taxNames = 'CGST+SGST';
 
-					$taxPercentages = ' ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
+					// $taxPercentages = ' ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
+                    $taxPercentages = round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage']));
 				}
 
 				if (floatval($itemRecord['igst_amount']) > 0) {
@@ -3611,7 +3639,8 @@ class ServiceInvoice extends Model
 					if (!empty($taxPercentages)) {
 						$taxPercentages .= '+' . (round(floatval($itemRecord['igst_percentage'])));
 					} else {
-						$taxPercentages .= ' ' . (round(floatval($itemRecord['igst_percentage'])));
+						// $taxPercentages .= ' ' . (round(floatval($itemRecord['igst_percentage'])));
+                        $taxPercentages .= round(floatval($itemRecord['igst_percentage']));
 					}
 				}
 
@@ -3625,7 +3654,8 @@ class ServiceInvoice extends Model
 					if (!empty($taxPercentages)) {
 						$taxPercentages .= '+' . (round(floatval($itemRecord['ugst_percentage'])));
 					} else {
-						$taxPercentages .= ' ' . (round(floatval($itemRecord['ugst_percentage'])));
+						// $taxPercentages .= ' ' . (round(floatval($itemRecord['ugst_percentage'])));
+                        $taxPercentages .=  round(floatval($itemRecord['ugst_percentage']));
 					}
 				}
 
@@ -3639,7 +3669,8 @@ class ServiceInvoice extends Model
 					if (!empty($taxPercentages)) {
 						$taxPercentages .= '+' . (round(floatval($itemRecord['tcs_percentage'])));
 					} else {
-						$taxPercentages .= ' ' . (round(floatval($itemRecord['tcs_percentage'])));
+						// $taxPercentages .= ' ' . (round(floatval($itemRecord['tcs_percentage'])));
+                        $taxPercentages .= round(floatval($itemRecord['tcs_percentage']));
 					}
 				}
 
@@ -3653,13 +3684,14 @@ class ServiceInvoice extends Model
 					if (!empty($taxPercentages)) {
 						$taxPercentages .= '+' . (round(floatval($itemRecord['cess_percentage'])));
 					} else {
-						$taxPercentages .= ' ' . (round(floatval($itemRecord['cess_percentage'])));
+						// $taxPercentages .= ' ' . (round(floatval($itemRecord['cess_percentage'])));
+                        $taxPercentages .= round(floatval($itemRecord['cess_percentage']));
 					}
 				}
 				// $taxClassifications = $taxNames . $taxPercentages;
 				// $taxClassifications = $taxNames . ' REC ' . $taxPercentages;
                 $taxClassifications = '';
-                if($taxNames || $taxPercentages){
+                if(!empty($taxNames) || !empty($taxPercentages)){
                     $taxClassifications = $taxNames . ' REC ' . $taxPercentages;
                 }
 
@@ -4009,20 +4041,44 @@ class ServiceInvoice extends Model
 				$export_record['invoice_amount'] = null;
 
 				// ITEM SAVE
-				$export_record['amount'] = $itemRecord['amount'];
+				// $export_record['amount'] = $itemRecord['amount'];
+                if ($this->type_id == 1060) {
+                    $export_record['amount'] = $itemRecord['amount'] > 0 ? '-'.$itemRecord['amount'] : 0;
+                }else{
+                    $export_record['amount'] = $itemRecord['amount'];
+                }
 				$export_record['hsn_code'] = $itemRecord['hsn_code'];
 				// $export_record['accounting_class'] = 'Purchase/Expense';
 				$export_record['natural_account'] = $itemRecord['natural_account'];
 				// $export_record['invoice_description'] = $itemRecord['invoice_description'];
 
 				//FOR TAX
-				$export_record['cgst'] = $itemRecord['cgst_amount'];
-				$export_record['sgst'] = $itemRecord['sgst_amount'];
-				$export_record['igst'] = $itemRecord['igst_amount'];
-				$export_record['ugst'] = $itemRecord['ugst_amount'];
-				$export_record['kfc'] = $itemRecord['kfc_amount'];
-				$export_record['tcs'] = $itemRecord['tcs_amount'];
-				$export_record['cess'] = $itemRecord['cess_amount'];
+				// $export_record['cgst'] = $itemRecord['cgst_amount'];
+				// $export_record['sgst'] = $itemRecord['sgst_amount'];
+				// $export_record['igst'] = $itemRecord['igst_amount'];
+				// $export_record['ugst'] = $itemRecord['ugst_amount'];
+				// $export_record['kfc'] = $itemRecord['kfc_amount'];
+				// $export_record['tcs'] = $itemRecord['tcs_amount'];
+				// $export_record['cess'] = $itemRecord['cess_amount'];
+
+                if ($this->type_id == 1060) {
+                    $export_record['cgst'] = $itemRecord['cgst_amount'] > 0 ? '-'.$itemRecord['cgst_amount'] : 0;
+                    $export_record['sgst'] = $itemRecord['sgst_amount'] > 0 ? '-'.$itemRecord['sgst_amount'] : 0;
+                    $export_record['igst'] = $itemRecord['igst_amount'] > 0 ? '-'.$itemRecord['igst_amount'] : 0;
+                    $export_record['ugst'] = $itemRecord['ugst_amount'] > 0 ? '-'.$itemRecord['ugst_amount'] : 0;
+                    $export_record['kfc'] = $itemRecord['kfc_amount'] > 0 ? '-'.$itemRecord['kfc_amount'] : 0;
+                    $export_record['tcs'] = $itemRecord['tcs_amount'] > 0 ? '-'.$itemRecord['tcs_amount'] : 0;
+                    $export_record['cess'] = $itemRecord['cess_amount'] > 0 ? '-'.$itemRecord['cess_amount'] : 0;
+                }else{
+                    $export_record['cgst'] = $itemRecord['cgst_amount'];
+                    $export_record['sgst'] = $itemRecord['sgst_amount'];
+                    $export_record['igst'] = $itemRecord['igst_amount'];
+                    $export_record['ugst'] = $itemRecord['ugst_amount'];
+                    $export_record['kfc'] = $itemRecord['kfc_amount'];
+                    $export_record['tcs'] = $itemRecord['tcs_amount'];
+                    $export_record['cess'] = $itemRecord['cess_amount'];
+                }
+
                 if(!empty($itemRecord['invoice_description'])){
                     $export_record['invoice_description'] = $itemRecord['invoice_description'];
                 }
@@ -4081,7 +4137,8 @@ class ServiceInvoice extends Model
 				if (floatval($itemRecord['cgst_amount']) > 0 && floatval($itemRecord['sgst_amount']) > 0) {
 					$taxNames = 'CGST+SGST';
 
-					$taxPercentages = ' ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
+					// $taxPercentages = ' ' . (round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage'])));
+                    $taxPercentages = round(floatval($itemRecord['cgst_percentage']) + floatval($itemRecord['sgst_percentage']));
 				}
 
 				if (floatval($itemRecord['igst_amount']) > 0) {
@@ -4094,7 +4151,8 @@ class ServiceInvoice extends Model
 					if (!empty($taxPercentages)) {
 						$taxPercentages .= '+' . (round(floatval($itemRecord['igst_percentage'])));
 					} else {
-						$taxPercentages .= ' ' . (round(floatval($itemRecord['igst_percentage'])));
+						// $taxPercentages .= ' ' . (round(floatval($itemRecord['igst_percentage'])));
+                        $taxPercentages .= round(floatval($itemRecord['igst_percentage']));
 					}
 				}
 
@@ -4108,7 +4166,8 @@ class ServiceInvoice extends Model
 					if (!empty($taxPercentages)) {
 						$taxPercentages .= '+' . (round(floatval($itemRecord['ugst_percentage'])));
 					} else {
-						$taxPercentages .= ' ' . (round(floatval($itemRecord['ugst_percentage'])));
+						// $taxPercentages .= ' ' . (round(floatval($itemRecord['ugst_percentage'])));
+                        $taxPercentages .= round(floatval($itemRecord['ugst_percentage']));
 					}
 				}
 
@@ -4122,7 +4181,8 @@ class ServiceInvoice extends Model
 					if (!empty($taxPercentages)) {
 						$taxPercentages .= '+' . (round(floatval($itemRecord['tcs_percentage'])));
 					} else {
-						$taxPercentages .= ' ' . (round(floatval($itemRecord['tcs_percentage'])));
+						// $taxPercentages .= ' ' . (round(floatval($itemRecord['tcs_percentage'])));
+                        $taxPercentages .= round(floatval($itemRecord['tcs_percentage']));
 					}
 				}
 
@@ -4136,18 +4196,25 @@ class ServiceInvoice extends Model
 					if (!empty($taxPercentages)) {
 						$taxPercentages .= '+' . (round(floatval($itemRecord['cess_percentage'])));
 					} else {
-						$taxPercentages .= ' ' . (round(floatval($itemRecord['cess_percentage'])));
+						// $taxPercentages .= ' ' . (round(floatval($itemRecord['cess_percentage'])));
+                        $taxPercentages .= round(floatval($itemRecord['cess_percentage']));
 					}
 				}
 				// $taxClassifications = $taxNames . $taxPercentages;
 				// $taxClassifications = $taxNames . ' REC ' . $taxPercentages;
                 $taxClassifications = '';
-                if($taxNames || $taxPercentages){
+                if(!empty($taxNames) || !empty($taxPercentages)){
                     $taxClassifications = $taxNames . ' REC ' . $taxPercentages;
                 }
 
 				$export_record['tax_classification'] = $taxClassifications;
-				$export_record['tax_amount'] = floatval($itemRecord['cgst_amount']) + floatval($itemRecord['sgst_amount']) + floatval($itemRecord['igst_amount']) + floatval($itemRecord['ugst_amount']) + floatval($itemRecord['kfc_amount']) + floatval($itemRecord['tcs_amount']) + floatval($itemRecord['cess_amount']);
+				// $export_record['tax_amount'] = floatval($itemRecord['cgst_amount']) + floatval($itemRecord['sgst_amount']) + floatval($itemRecord['igst_amount']) + floatval($itemRecord['ugst_amount']) + floatval($itemRecord['kfc_amount']) + floatval($itemRecord['tcs_amount']) + floatval($itemRecord['cess_amount']);
+                $taxAmount = floatval($itemRecord['cgst_amount']) + floatval($itemRecord['sgst_amount']) + floatval($itemRecord['igst_amount']) + floatval($itemRecord['ugst_amount']) + floatval($itemRecord['kfc_amount']) + floatval($itemRecord['tcs_amount']) + floatval($itemRecord['cess_amount']);
+                if ($this->type_id == 1060) {
+                    $export_record['tax_amount'] = $taxAmount > 0 ? '-'.$taxAmount : 0;
+                }else{
+                    $export_record['tax_amount'] = $taxAmount;
+                }
 
 				// if ($showRoundOff == true && $amountDiff && $amountDiff != '0.00') {
 				// 	$export_record['round_off_amount'] = $amountDiff;
