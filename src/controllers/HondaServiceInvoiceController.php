@@ -3325,6 +3325,24 @@ class HondaServiceInvoiceController extends Controller {
 		// return Customer::searchCustomer($r);
 		// dd(strlen($r->key));
 		try {
+			$company_id = Auth::user()->company_id;
+            $customer_details = Customer::select(
+				'customers.code', 
+				'customers.name',
+				'customers.mobile_no', 
+				'customers.cust_group',
+				'customers.pan_number',
+				'customers.zipcode',
+				'states.name as state' ,
+				 DB::raw('"local" as customer_from'))
+			->leftjoin('states', 'states.id', 'customers.state_id')
+			->where('customers.code', 'like', '' . $r->key . '%')
+            ->where('customers.company_id', $company_id)
+            ->get()
+            ->toArray();
+            if(count($customer_details) > 0){
+                return response()->json($customer_details);        
+            }else{
 			$key = $r->key;
 			$axUrl = "GetCustMasterDetails_Honda";
 			$this->soapWrapper->add('customer', function ($service) {
@@ -3382,6 +3400,7 @@ class HondaServiceInvoiceController extends Controller {
 				}
 			}
 			return response()->json($list);
+		}
 		} catch (\SoapFault $e) {
 			return response()->json([]);
 			//return response()->json(['success' => false, 'error' => 'Somthing went worng in SOAP Service!']);
@@ -3598,6 +3617,66 @@ class HondaServiceInvoiceController extends Controller {
 	public function getHondaCustomerAddress(Request $request) {
 		// dd($request->all());
 		try {
+			if (isset($request->data['customer_from']) && $request->data['customer_from'] == "local") {
+                $customer_address = [];
+                $customer = Customer::where('code', $request->data['code'])
+                ->where('company_id', Auth::user()->company_id)->first();
+                if ($customer) {
+                    $customer_primary_address = Address::select('addresses.*','customers.pan_number')
+						->leftjoin('customers', 'customers.id', 'addresses.entity_id')
+					    ->where('addresses.company_id', Auth::user()->company_id)
+                        ->where('addresses.entity_id', $customer->id)
+                        ->where('addresses.address_of_id', 24)
+                        ->where('addresses.address_type_id',40)
+                        ->where('addresses.is_primary',1)
+                        ->orderBy('addresses.id', 'DESC')
+                        ->limit(1)
+                        ->get();
+                    $customer_non_primary_address = Address::select('addresses.*','customers.pan_number')
+						->leftjoin('customers', 'customers.id', 'addresses.entity_id')
+						->where('addresses.company_id', Auth::user()->company_id)
+                        ->where('addresses.entity_id', $customer->id)
+                        ->where('addresses.address_of_id', 24)
+                        ->where('addresses.address_type_id',40)
+                        ->where(function($q) {
+                            $q->where('addresses.is_primary', 0)
+                            ->orWhereNull('addresses.is_primary');
+                        })
+                        ->orderBy('addresses.id', 'DESC')
+                        ->limit(1)
+                        ->get();
+                        if(count($customer_primary_address) > 0){
+                            $customer_address = $customer_primary_address;
+                        }elseif(count($customer_non_primary_address) > 0){
+                            $customer_address = $customer_non_primary_address;
+                        }
+                        
+                        foreach ($customer_primary_address as $key => $customer_data){
+                           
+                            if (!empty($customer_data->gst_number) && $customer_data->gst_number != 'Not available') {
+                                // $bdo_response = Customer::getGstDetail($api_customer_data['GST_NUMBER']);
+                                $bdo_response = Customer::getGstDetail($customer_data->gst_number);
+                                
+                                if (isset($bdo_response->original) && $bdo_response->original['success'] == false) {
+                                    return response()->json([
+                                        'success' => false,
+                                        'error' => 'BDO Error',
+                                        'errors' => [$bdo_response->original['error']]
+                                    ]);
+                                }
+                                $customer->trade_name = $bdo_response->original['trade_name'];
+                                $customer->legal_name = $bdo_response->original['legal_name'];
+                                $customer->save();
+                            }
+                        }
+                }
+                
+                    return response()->json([
+                        'success' => true,
+                        'customer_address' => $customer_address,
+                        'customer' => $customer,
+                    ]);
+            }else{
 			$key = $request->data['code'];
 			$axUrl = "GetCustMasterDetails_Honda";
 			$this->soapWrapper->add('customer', function ($service) {
@@ -3747,6 +3826,7 @@ class HondaServiceInvoiceController extends Controller {
 				'customer_address' => $customer_address,
 				'customer' => $customer,
 			]);
+		}
 		} catch (\SoapFault $e) {
 			return response()->json(['success' => false, 'error' => 'Somthing went worng in SOAP Service!']);
 		} catch (\Exception $e) {
