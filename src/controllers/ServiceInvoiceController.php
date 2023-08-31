@@ -3960,7 +3960,8 @@ class ServiceInvoiceController extends Controller
                             $customer_address = $customer_non_primary_address;
                         }
                         
-                        foreach ($customer_primary_address as $key => $customer_data){
+                        // foreach ($customer_primary_address as $key => $customer_data){
+                        foreach ($customer_address as $key => $customer_data){
                            
                             if (!empty($customer_data->gst_number) && $customer_data->gst_number != 'Not available') {
                                 // $bdo_response = Customer::getGstDetail($api_customer_data['GST_NUMBER']);
