@@ -3996,7 +3996,10 @@ class HondaServiceInvoiceController extends Controller {
 								$address->address_of_id = 21;
 								$address->address_type_id = 40;
 								$address->name = 'Primary Address_' . $vendor_data['ACCOUNTNUM'];
-								$address->address_line1 = str_replace('""', '', $vendor_data['ADDRESS']);
+								// $address->address_line1 = str_replace('""', '', $vendor_data['ADDRESS']);
+								if(empty($address->address_line1)){
+                                	$address->address_line1 = str_replace('""', '', $vendor_data['ADDRESS']);
+                                }
 
 								$state = State::firstOrNew(['code' => $vendor_data['STATE']]);
 								if ($state && $vendor_data['CITY']) {
@@ -4028,7 +4031,10 @@ class HondaServiceInvoiceController extends Controller {
 							$address->address_of_id = 21;
 							$address->address_type_id = 40;
 							$address->name = 'Primary Address_' . $api_vendor_data['ACCOUNTNUM'];
-							$address->address_line1 = str_replace('""', '', $api_vendor_data['ADDRESS']);
+							// $address->address_line1 = str_replace('""', '', $api_vendor_data['ADDRESS']);
+							if(empty($address->address_line1)){
+                            	$address->address_line1 = str_replace('""', '', $api_vendor_data['ADDRESS']);
+                            }
 							$state = State::firstOrNew(['code' => $api_vendor_data['STATE']]);
 							if ($state) {
 								$city = City::firstOrNew(['name' => $api_vendor_data['CITY'], 'state_id' => $state->id]);
