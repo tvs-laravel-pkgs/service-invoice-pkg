@@ -3622,34 +3622,43 @@ class HondaServiceInvoiceController extends Controller {
                 $customer = Customer::where('code', $request->data['code'])
                 ->where('company_id', Auth::user()->company_id)->first();
                 if ($customer) {
-                    $customer_primary_address = Address::select('addresses.*','customers.pan_number')
-						->leftjoin('customers', 'customers.id', 'addresses.entity_id')
-					    ->where('addresses.company_id', Auth::user()->company_id)
-                        ->where('addresses.entity_id', $customer->id)
-                        ->where('addresses.address_of_id', 24)
-                        ->where('addresses.address_type_id',40)
-                        ->where('addresses.is_primary',1)
-                        ->orderBy('addresses.id', 'DESC')
-                        ->limit(1)
-                        ->get();
-                    $customer_non_primary_address = Address::select('addresses.*','customers.pan_number')
-						->leftjoin('customers', 'customers.id', 'addresses.entity_id')
-						->where('addresses.company_id', Auth::user()->company_id)
-                        ->where('addresses.entity_id', $customer->id)
-                        ->where('addresses.address_of_id', 24)
-                        ->where('addresses.address_type_id',40)
-                        ->where(function($q) {
-                            $q->where('addresses.is_primary', 0)
-                            ->orWhereNull('addresses.is_primary');
-                        })
-                        ->orderBy('addresses.id', 'DESC')
-                        ->limit(1)
-                        ->get();
-                        if(count($customer_primary_address) > 0){
-                            $customer_address = $customer_primary_address;
-                        }elseif(count($customer_non_primary_address) > 0){
-                            $customer_address = $customer_non_primary_address;
-                        }
+                    // $customer_primary_address = Address::select('addresses.*','customers.pan_number')
+					// 	->leftjoin('customers', 'customers.id', 'addresses.entity_id')
+					//     ->where('addresses.company_id', Auth::user()->company_id)
+                    //     ->where('addresses.entity_id', $customer->id)
+                    //     ->where('addresses.address_of_id', 24)
+                    //     ->where('addresses.address_type_id',40)
+                    //     ->where('addresses.is_primary',1)
+                    //     ->orderBy('addresses.id', 'DESC')
+                    //     ->limit(1)
+                    //     ->get();
+                    // $customer_non_primary_address = Address::select('addresses.*','customers.pan_number')
+					// 	->leftjoin('customers', 'customers.id', 'addresses.entity_id')
+					// 	->where('addresses.company_id', Auth::user()->company_id)
+                    //     ->where('addresses.entity_id', $customer->id)
+                    //     ->where('addresses.address_of_id', 24)
+                    //     ->where('addresses.address_type_id',40)
+                    //     ->where(function($q) {
+                    //         $q->where('addresses.is_primary', 0)
+                    //         ->orWhereNull('addresses.is_primary');
+                    //     })
+                    //     ->orderBy('addresses.id', 'DESC')
+                    //     ->limit(1)
+                    //     ->get();
+                    //     if(count($customer_primary_address) > 0){
+                    //         $customer_address = $customer_primary_address;
+                    //     }elseif(count($customer_non_primary_address) > 0){
+                    //         $customer_address = $customer_non_primary_address;
+                    //     }
+
+
+                        $customer_address = Address::select('addresses.*','customers.pan_number')
+							->leftjoin('customers', 'customers.id', 'addresses.entity_id')
+						    ->where('addresses.company_id', Auth::user()->company_id)
+	                        ->where('addresses.entity_id', $customer->id)
+	                        ->where('addresses.address_of_id', 24)
+	                        ->where('addresses.address_type_id',40)
+	                        ->get();
                         
                         // foreach ($customer_primary_address as $key => $customer_data){
                         foreach ($customer_address as $key => $customer_data){
