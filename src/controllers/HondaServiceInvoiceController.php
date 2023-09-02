@@ -3658,10 +3658,22 @@ class HondaServiceInvoiceController extends Controller {
 	                        ->where('addresses.entity_id', $customer->id)
 	                        ->where('addresses.address_of_id', 24)
 	                        ->where('addresses.address_type_id',40)
+	                        ->orderBy('id', "DESC")
+	                        ->get();
+
+	                    $customer_last_address = Address::select('addresses.*','customers.pan_number')
+							->leftjoin('customers', 'customers.id', 'addresses.entity_id')
+						    ->where('addresses.company_id', Auth::user()->company_id)
+	                        ->where('addresses.entity_id', $customer->id)
+	                        ->where('addresses.address_of_id', 24)
+	                        ->where('addresses.address_type_id',40)
+	                        ->orderBy('id', "DESC")
+	                        ->limit(1)
 	                        ->get();
                         
                         // foreach ($customer_primary_address as $key => $customer_data){
-                        foreach ($customer_address as $key => $customer_data){
+                        // foreach ($customer_address as $key => $customer_data){
+                        foreach ($customer_last_address as $key => $customer_data){
                            
                             if (!empty($customer_data->gst_number) && $customer_data->gst_number != 'Not available') {
                                 // $bdo_response = Customer::getGstDetail($api_customer_data['GST_NUMBER']);
