@@ -3935,30 +3935,37 @@ class ServiceInvoiceController extends Controller
                 $customer = Customer::where('code', $request->data['code'])
                 ->where('company_id', Auth::user()->company_id)->first();
                 if ($customer) {
-                    $customer_primary_address = Address::where('company_id', Auth::user()->company_id)
+                    // $customer_primary_address = Address::where('company_id', Auth::user()->company_id)
+                    //     ->where('entity_id', $customer->id)
+                    //     ->where('address_of_id', 24)
+                    //     ->where('address_type_id',40)
+                    //     ->where('is_primary',1)
+                    //     ->orderBy('id', 'DESC')
+                    //     ->limit(1)
+                    //     ->get();
+                    // $customer_non_primary_address = Address::where('company_id', Auth::user()->company_id)
+                    //     ->where('entity_id', $customer->id)
+                    //     ->where('address_of_id', 24)
+                    //     ->where('address_type_id',40)
+                    //     ->where(function($q) {
+                    //         $q->where('is_primary', 0)
+                    //         ->orWhereNull('is_primary');
+                    //     })
+                    //     ->orderBy('id', 'DESC')
+                    //     ->limit(1)
+                    //     ->get();
+                    //     if(count($customer_primary_address) > 0){
+                    //         $customer_address = $customer_primary_address;
+                    //     }elseif(count($customer_non_primary_address) > 0){
+                    //         $customer_address = $customer_non_primary_address;
+                    //     }
+
+
+                    $customer_address = Address::where('company_id', Auth::user()->company_id)
                         ->where('entity_id', $customer->id)
                         ->where('address_of_id', 24)
                         ->where('address_type_id',40)
-                        ->where('is_primary',1)
-                        ->orderBy('id', 'DESC')
-                        ->limit(1)
                         ->get();
-                    $customer_non_primary_address = Address::where('company_id', Auth::user()->company_id)
-                        ->where('entity_id', $customer->id)
-                        ->where('address_of_id', 24)
-                        ->where('address_type_id',40)
-                        ->where(function($q) {
-                            $q->where('is_primary', 0)
-                            ->orWhereNull('is_primary');
-                        })
-                        ->orderBy('id', 'DESC')
-                        ->limit(1)
-                        ->get();
-                        if(count($customer_primary_address) > 0){
-                            $customer_address = $customer_primary_address;
-                        }elseif(count($customer_non_primary_address) > 0){
-                            $customer_address = $customer_non_primary_address;
-                        }
                         
                         // foreach ($customer_primary_address as $key => $customer_data){
                         foreach ($customer_address as $key => $customer_data){
