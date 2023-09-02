@@ -1035,7 +1035,8 @@ class ServiceInvoiceController extends Controller
                     'required:true',
                 ],
                 'ship_address_id' => [
-                    'required:true',
+                    // 'required:true',
+                    'nullable',
                 ],
                 // 'sub_category_id' => [
                 //     'required:true',
