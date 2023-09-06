@@ -535,6 +535,7 @@ class HondaServiceInvoice extends Model
                 'Voucher' => 'V',
                 'AccountType' => $this->to_account_type_id == 1440 ? 'Customer' : 'Vendor',
                 'LedgerDimension' => $this->customer->code,
+                'report_ledger_dimension' => $this->customer->code,
                 'Txt' => $Txt . '-' . $this->number,
                 // 'AmountCurDebit' => ($this->type_id == 1061 || $this->type_id == 1062) ? $this->serviceInvoiceItems()->sum('sub_total') : 0,
                 'TaxGroup' => '',
@@ -572,6 +573,7 @@ class HondaServiceInvoice extends Model
                 'Voucher' => 'V',
                 'AccountType' => $this->to_account_type_id == 1440 ? 'Customer' : 'Vendor',
                 'LedgerDimension' => $this->customer->code,
+                'report_ledger_dimension' => $this->customer->code,
                 'Txt' => $Txt . '-' . $this->number,
                 // 'AmountCurDebit' => $this->type_id == 1061 ? ($total_amount_with_gst['debit'] + ($this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') : 0)) : 0,
                 'TaxGroup' => '',
@@ -645,6 +647,7 @@ class HondaServiceInvoice extends Model
                 'Voucher' => 'D',
                 'AccountType' => 'Ledger',
                 'LedgerDimension' => $invoice_item->coaCode->code . '-' . $this->branch->code . '-' . $this->sbu->name,
+                'report_ledger_dimension' => $invoice_item->coaCode->code . '~' . $this->branch->code . '~' . $this->sbu->name,
                 'Txt' =>  $invoice_item->description . '-' . $this->number . '-' . $this->customer->code,
                 'AmountCurDebit' => $this->type_id == 1060 ? $invoice_item->sub_total : 0,
                 // 'AmountCurCredit' => $this->type_id == 1061 ? $invoice_item->sub_total : 0,
@@ -739,6 +742,7 @@ class HondaServiceInvoice extends Model
 
                                     $params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
                                     $params['LedgerDimension'] = '7132' . '-' . $this->branch->code . '-' . $this->sbu->name;
+                                    $params['report_ledger_dimension'] = '7132' . '~' . $this->branch->code . '~' . $this->sbu->name;
 
                                     $params['LineNum'] = ++$line_number;
                                     // dump($params['LineNum']);
@@ -762,6 +766,7 @@ class HondaServiceInvoice extends Model
 
                                     $params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
                                     $params['LedgerDimension'] = '7432' . '-' . $this->branch->code . '-' . $this->sbu->name;
+                                    $params['report_ledger_dimension'] = '7432' . '~' . $this->branch->code . '~' . $this->sbu->name;
 
                                     //REMOVE or PUT EMPTY THIS COLUMN WHILE KFC COMMING
                                     $params['TVSHSNCode'] = $params['TVSSACCode'] = null;
@@ -781,6 +786,7 @@ class HondaServiceInvoice extends Model
                                 }
                                 $params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
                                 $params['LedgerDimension'] = '2230' . '-' . $this->branch->code . '-' . $this->sbu->name;
+                                $params['report_ledger_dimension'] = '2230' . '~' . $this->branch->code . '~' . $this->sbu->name;
 
                                 $params['LineNum'] = ++$line_number;
                                 // dump($params['LineNum']);
@@ -811,6 +817,7 @@ class HondaServiceInvoice extends Model
 
                                     $params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
                                     $params['LedgerDimension'] = '146050' . '-' . $this->branch->code . '-' . $this->sbu->name;
+                                    $params['report_ledger_dimension'] = '146050' . '~' . $this->branch->code . '~' . $this->sbu->name;
 
                                     $params['LineNum'] = ++$line_number;
                                     // dump($params['LineNum']);
@@ -840,6 +847,7 @@ class HondaServiceInvoice extends Model
 
                                     $params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
                                     $params['LedgerDimension'] = '146051' . '-' . $this->branch->code . '-' . $this->sbu->name;
+                                    $params['report_ledger_dimension'] = '146051' . '~' . $this->branch->code . '~' . $this->sbu->name;
 
                                     $params['LineNum'] = ++$line_number;
                                     // dump($params['LineNum']);
@@ -868,6 +876,7 @@ class HondaServiceInvoice extends Model
 
                                     $params['AmountCurDebit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
                                     $params['LedgerDimension'] = '146053' . '-' . $this->branch->code . '-' . $this->sbu->name;
+                                    $params['report_ledger_dimension'] = '146053' . '~' . $this->branch->code . '~' . $this->sbu->name;
 
                                     $params['LineNum'] = ++$line_number;
                                     // dump($params['LineNum']);
@@ -907,6 +916,7 @@ class HondaServiceInvoice extends Model
             }
             $params['AmountCurDebit'] = $this->type_id == 1060 ? round($tcs_total['credit'], 2) : 0;
             $params['LedgerDimension'] = '900680038' . '-' . $this->branch->code . '-' . $this->sbu->name;
+            $params['report_ledger_dimension'] = '900680038' . '~' . $this->branch->code . '~' . $this->sbu->name;
 
             $params['LineNum'] = ++$line_number;
             // dump($params['LineNum']);
@@ -938,6 +948,7 @@ class HondaServiceInvoice extends Model
             }
             $params['AmountCurDebit'] = $this->type_id == 1060 ? round($cess_on_gst_total['credit'], 2) : 0;
             $params['LedgerDimension'] = '146054' . '-' . $this->branch->code . '-' . $this->sbu->name;
+            $params['report_ledger_dimension'] = '146054' . '~' . $this->branch->code . '~' . $this->sbu->name;
 
             $params['LineNum'] = ++$line_number;
             // dump($params['LineNum']);
@@ -985,6 +996,7 @@ class HondaServiceInvoice extends Model
                 }
                 $params['AmountCurDebit'] = $this->type_id == 1060 ? $amount_diff : 0;
                 $params['LedgerDimension'] = '648069' . '-' . $this->branch->code . '-' . $this->sbu->name;
+                $params['report_ledger_dimension'] = '648069' . '~' . $this->branch->code . '~' . $this->sbu->name;
 
                 $params['LineNum'] = ++$line_number;
                 // dump($params['LineNum']);
@@ -1000,6 +1012,7 @@ class HondaServiceInvoice extends Model
                 }
                 $params['AmountCurCredit'] = $this->type_id == 1060 ? ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : 0;
                 $params['LedgerDimension'] = '648069' . '-' . $this->branch->code . '-' . $this->sbu->name;
+                $params['report_ledger_dimension'] = '648069' . '~' . $this->branch->code . '~' . $this->sbu->name;
 
                 $params['LineNum'] = ++$line_number;
                 // dump($params['LineNum']);
@@ -1288,6 +1301,7 @@ class HondaServiceInvoice extends Model
                 'Voucher' => 'V',
                 'AccountType' => $this->to_account_type_id == 1440 ? 'Customer' : 'Vendor',
                 'LedgerDimension' => $this->customer->code,
+                'report_ledger_dimension' => $this->customer->code,
                 'Txt' => $Txt . '-' . $this->number,
                 // 'AmountCurDebit' => ($this->type_id == 1061 || $this->type_id == 1062) ? $this->serviceInvoiceItems()->sum('sub_total') : 0,
                 'TaxGroup' => '',
@@ -1325,6 +1339,7 @@ class HondaServiceInvoice extends Model
                 'Voucher' => 'V',
                 'AccountType' => $this->to_account_type_id == 1440 ? 'Customer' : 'Vendor',
                 'LedgerDimension' => $this->customer->code,
+                'report_ledger_dimension' => $this->customer->code,
                 'Txt' => $Txt . '-' . $this->number,
                 // 'AmountCurDebit' => $this->type_id == 1061 ? ($total_amount_with_gst['debit'] + ($this->type_id == 1061 ? $this->serviceInvoiceItems()->sum('sub_total') : 0)) : 0,
                 'TaxGroup' => '',
@@ -1400,6 +1415,7 @@ class HondaServiceInvoice extends Model
                 'Voucher' => 'D',
                 'AccountType' => 'Ledger',
                 'LedgerDimension' => $invoice_item->coaCode->code . '-' . $this->branch->code . '-' . $this->sbu->name,
+                'report_ledger_dimension' => $invoice_item->coaCode->code . '~' . $this->branch->code . '~' . $this->sbu->name,
                 'Txt' => $invoice_item->description . '-' . $this->number . '-' . $this->customer->code,
                 'AmountCurCredit' => $this->type_id == 1060 ? $invoice_item->sub_total : 0,
                 // 'AmountCurCredit' => $this->type_id == 1061 ? $invoice_item->sub_total : 0,
@@ -1499,6 +1515,7 @@ class HondaServiceInvoice extends Model
 
                                     $params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
                                     $params['LedgerDimension'] = '7132' . '-' . $this->branch->code . '-' . $this->sbu->name;
+                                    $params['report_ledger_dimension'] = '7132' . '~' . $this->branch->code . '~' . $this->sbu->name;
 
                                     $params['LineNum'] = ++$line_number;
                                     // dump($params['LineNum']);
@@ -1529,6 +1546,7 @@ class HondaServiceInvoice extends Model
 
                                     $params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
                                     $params['LedgerDimension'] = '7432' . '-' . $this->branch->code . '-' . $this->sbu->name;
+                                    $params['report_ledger_dimension'] = '7432' . '~' . $this->branch->code . '~' . $this->sbu->name;
 
                                     $params['LineNum'] = ++$line_number;
                                     // dump($params['LineNum']);
@@ -1560,6 +1578,7 @@ class HondaServiceInvoice extends Model
                                 }
                                 $params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * 1 / 100, 2) : 0;
                                 $params['LedgerDimension'] = '2230' . '-' . $this->branch->code . '-' . $this->sbu->name;
+                                $params['report_ledger_dimension'] = '2230' . '~' . $this->branch->code . '~' . $this->sbu->name;
 
                                 $params['LineNum'] = ++$line_number;
                                 // dump($params['LineNum']);
@@ -1597,6 +1616,7 @@ class HondaServiceInvoice extends Model
 
                                     $params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
                                     $params['LedgerDimension'] = "146050" . '-' . $this->branch->code . '-' . $this->sbu->name;
+                                    $params['report_ledger_dimension'] = "146050" . '~' . $this->branch->code . '~' . $this->sbu->name;
 
                                     $params['LineNum'] = ++$line_number;
                                     // dump($params['LineNum']);
@@ -1628,6 +1648,7 @@ class HondaServiceInvoice extends Model
 
                                     $params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
                                     $params['LedgerDimension'] = '146051'  . '-' . $this->branch->code . '-' . $this->sbu->name;
+                                    $params['report_ledger_dimension'] = '146051'  . '~' . $this->branch->code . '~' . $this->sbu->name;
 
                                     $params['LineNum'] = ++$line_number;
                                     // dump($params['LineNum']);
@@ -1658,6 +1679,7 @@ class HondaServiceInvoice extends Model
 
                                     $params['AmountCurCredit'] = $this->type_id == 1060 ? round($invoice_item->sub_total * $tax->pivot->percentage / 100, 2) : 0;
                                     $params['LedgerDimension'] = '146053' . '-' . $this->branch->code . '-' . $this->sbu->name;
+                                    $params['report_ledger_dimension'] = '146053' . '~' . $this->branch->code . '~' . $this->sbu->name;
 
                                     $params['LineNum'] = ++$line_number;
                                     // dump($params['LineNum']);
@@ -1697,6 +1719,7 @@ class HondaServiceInvoice extends Model
             }
             $params['AmountCurCredit'] = $this->type_id == 1060 ? round($tcs_total['credit'], 2) : 0;
             $params['LedgerDimension'] = '900680038' . '-' . $this->branch->code . '-' . $this->sbu->name;
+            $params['report_ledger_dimension'] = '900680038' . '~' . $this->branch->code . '~' . $this->sbu->name;
 
             $params['LineNum'] = ++$line_number;
             // dump($params['LineNum']);
@@ -1728,6 +1751,7 @@ class HondaServiceInvoice extends Model
             }
             $params['AmountCurCredit'] = $this->type_id == 1060 ? round($cess_on_gst_total['credit'], 2) : 0;
             $params['LedgerDimension'] = '146054' . '-' . $this->branch->code . '-' . $this->sbu->name;
+            $params['report_ledger_dimension'] = '146054' . '~' . $this->branch->code . '~' . $this->sbu->name;
 
             $params['LineNum'] = ++$line_number;
             // dump($params['LineNum']);
@@ -1775,6 +1799,7 @@ class HondaServiceInvoice extends Model
                 }
                 $params['AmountCurCredit'] = $this->type_id == 1060 ? $amount_diff : "";
                 $params['LedgerDimension'] = '648069' . '-' . $this->branch->code . '-' . $this->sbu->name;
+                $params['report_ledger_dimension'] = '648069' . '~' . $this->branch->code . '~' . $this->sbu->name;
 
                 $params['LineNum'] = ++$line_number;
                 // dump($params['LineNum']);
@@ -1792,6 +1817,7 @@ class HondaServiceInvoice extends Model
                 }
                 $params['AmountCurDebit'] = $this->type_id == 1060 ? ($amount_diff > 0 ? $amount_diff : $amount_diff * -1) : 0;
                 $params['LedgerDimension'] = '648069' . '-' . $this->branch->code . '-' . $this->sbu->name;
+                $params['report_ledger_dimension'] = '648069' . '~' . $this->branch->code . '~' . $this->sbu->name;
 
                 $params['LineNum'] = ++$line_number;
                 // dump($params['LineNum']);
@@ -1904,6 +1930,7 @@ class HondaServiceInvoice extends Model
         $export->Qty =  $params['Qty'];
         $export->GSTIN = $this->outlets->gst_number;
         $export->VIN = ($params['ApplicationType'] =='TCS') ? $this->vin_number : "";
+        $export->report_ledger_dimension = isset($params['report_ledger_dimension']) ? $params['report_ledger_dimension'] : null;
         $export->save();
         $this->importRowToAxaptaStaging($params);
 
