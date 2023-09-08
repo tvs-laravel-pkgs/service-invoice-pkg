@@ -1394,6 +1394,12 @@ class ServiceInvoiceController extends Controller
             // } else {
             // $service_invoice->customer->state_code = '-';
             // }
+
+            //SHPPING STATE
+            if($service_invoice->shipAddress && $service_invoice->shipAddress->state_id){
+                $shipping_state = State::find($service_invoice->shipAddress->state_id);
+                $service_invoice->shipAddress->state_code = $shipping_state ? $shipping_state->e_invoice_state_code ? $shipping_state->name . '(' . $shipping_state->e_invoice_state_code . ')' : '-' : '-';
+            }
         } else {
             $state = State::find($service_invoice->address ? $service_invoice->address->state_id : null);
             // $state = State::find($service_invoice->customer->primaryAddress ? $service_invoice->customer->primaryAddress->state_id : NULL);
@@ -1413,6 +1419,12 @@ class ServiceInvoiceController extends Controller
             // } else {
             //     $service_invoice->customer->address = '';
             // }
+
+            //SHPPING STATE
+            if($service_invoice->shipAddress && $service_invoice->shipAddress->state_id){
+                $shipping_state = State::find($service_invoice->shipAddress->state_id);
+                $service_invoice->shipAddress->state_code = $shipping_state ? $shipping_state->e_invoice_state_code ? $shipping_state->name . '(' . $shipping_state->e_invoice_state_code . ')' : '-' : '-';
+            }
         }
         // dd(1);
         // dd($service_invoice);
