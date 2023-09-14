@@ -27,6 +27,7 @@ use Yajra\Datatables\Datatables;
 use phpseclib\Crypt\RSA as Crypt_RSA;
 use GuzzleHttp\Client;
 use App\ShortUrl;
+use Carbon\Carbon;
 
 class ServiceInvoiceApprovalController extends Controller {
 
@@ -453,8 +454,24 @@ class ServiceInvoiceApprovalController extends Controller {
 						$minOffSetDate = strtotime($startDate);
 						$maxOffSetDate = strtotime($endDate);
 						$docOffSetDate = strtotime($document_date);
-						if ($minOffSetDate > $docOffSetDate || $maxOffSetDate < $docOffSetDate)
-							return response()->json(['success' => false, 'errors' => ['Doc date should be match with minimum ' . $startDate . ' and maximum of ' . $endDate]]);
+						// if ($minOffSetDate > $docOffSetDate || $maxOffSetDate < $docOffSetDate)
+						// 	return response()->json(['success' => false, 'errors' => ['Doc date should be match with minimum ' . $startDate . ' and maximum of ' . $endDate]]);
+
+						$documentDate = date('Y-m-d', strtotime($approval_status->document_date));
+						$fromDate = date('Y-m-d', strtotime($minDate . 'days'));
+						$toDate = date('Y-m-d');
+						$previousMonth = date("m", strtotime("first day of previous month"));
+
+						if (($documentDate >= $fromDate) && ($documentDate <= $toDate)){
+						    $doumentMonth = date("m", strtotime($documentDate));
+						    if($doumentMonth != $previousMonth){
+						    	$approval_status->document_date = Carbon::now();
+						    	$approval_status->save();
+						    }
+						}else{
+						    $approval_status->document_date = Carbon::now();
+						    $approval_status->save();
+						}
 					}
 					// Doc date validation based on min and max offser from entities table
 					$r = $approved_status->createPdf($approval_status->id);
@@ -564,8 +581,24 @@ class ServiceInvoiceApprovalController extends Controller {
 								$minOffSetDate = strtotime($startDate);
 								$maxOffSetDate = strtotime($endDate);
 								$docOffSetDate = strtotime($document_date);
-								if ($minOffSetDate > $docOffSetDate || $maxOffSetDate < $docOffSetDate)
-									return response()->json(['success' => false, 'errors' => ['Doc date should be match with minimum ' . $startDate . ' and maximum of ' . $endDate . ' for the invoice ' . $send_approval->number]]);
+								// if ($minOffSetDate > $docOffSetDate || $maxOffSetDate < $docOffSetDate)
+								// 	return response()->json(['success' => false, 'errors' => ['Doc date should be match with minimum ' . $startDate . ' and maximum of ' . $endDate . ' for the invoice ' . $send_approval->number]]);
+
+								$documentDate = date('Y-m-d', strtotime($send_approval->document_date));
+								$fromDate = date('Y-m-d', strtotime($minDate . 'days'));
+								$toDate = date('Y-m-d');
+								$previousMonth = date("m", strtotime("first day of previous month"));
+
+								if (($documentDate >= $fromDate) && ($documentDate <= $toDate)){
+								    $doumentMonth = date("m", strtotime($documentDate));
+								    if($doumentMonth != $previousMonth){
+								    	$send_approval->document_date = Carbon::now();
+								    	$send_approval->save();
+								    }
+								}else{
+								    $send_approval->document_date = Carbon::now();
+								    $send_approval->save();
+								}
 							}
 							// Doc date validation based on min and max offser from entities table
 							$r = $approved_status->createPdf($send_approval->id);
