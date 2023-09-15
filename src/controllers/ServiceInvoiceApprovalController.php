@@ -472,6 +472,9 @@ class ServiceInvoiceApprovalController extends Controller {
 						    $approval_status->document_date = Carbon::now();
 						    $approval_status->save();
 						}
+					}else{
+						$approval_status->document_date = Carbon::now();
+						$approval_status->save();
 					}
 					// Doc date validation based on min and max offser from entities table
 					$r = $approved_status->createPdf($approval_status->id);
@@ -599,6 +602,9 @@ class ServiceInvoiceApprovalController extends Controller {
 								    $send_approval->document_date = Carbon::now();
 								    $send_approval->save();
 								}
+							}else{
+								$send_approval->document_date = Carbon::now();
+								$send_approval->save();
 							}
 							// Doc date validation based on min and max offser from entities table
 							$r = $approved_status->createPdf($send_approval->id);
