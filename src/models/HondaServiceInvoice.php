@@ -3323,14 +3323,14 @@ class HondaServiceInvoice extends Model
 
 		$companyName = isset($this->company->oem_business_unit->name) ? $this->company->oem_business_unit->name : null;
 		$companyCode = isset($this->company->oem_business_unit->code) ? $this->company->oem_business_unit->code : null;
-		$arInvoiceExports = ArInvoiceExport::where([
-			'transaction_number' => $this->number,
-			'business_unit' => $companyName,
-		])->get();
-		if (count($arInvoiceExports) > 0) {
-			$res['errors'] = ['Already exported to oracle table'];
-			return $res;
-		}
+		// $arInvoiceExports = ArInvoiceExport::where([
+		// 	'transaction_number' => $this->number,
+		// 	'business_unit' => $companyName,
+		// ])->get();
+		// if (count($arInvoiceExports) > 0) {
+		// 	$res['errors'] = ['Already exported to oracle table'];
+		// 	return $res;
+		// }
 
 		$businessUnitName = $companyName;
 		$transactionClass = '';
@@ -3342,6 +3342,16 @@ class HondaServiceInvoice extends Model
 			$transactionBatchName = $transactionDetail->batch ? $transactionDetail->batch : $transactionBatchName;
 			$transactionTypeName = $transactionDetail->type ? $transactionDetail->type : $transactionTypeName;
 		}
+
+        $arInvoiceExports = ArInvoiceExport::where([
+            'transaction_number' => $this->number,
+            'business_unit' => $companyName,
+            'transaction_type_name' => $transactionTypeName,
+        ])->get();
+        if (count($arInvoiceExports) > 0) {
+            $res['errors'] = ['Already exported to oracle table'];
+            return $res;
+        }
 
 		$transactionNumber = $this->number;
 		$invoiceDate = $this->document_date ? date("Y-m-d", strtotime($this->document_date)) : null;
@@ -3400,9 +3410,11 @@ class HondaServiceInvoice extends Model
 		$amountDiff = 0;
 		foreach ($this->serviceInvoiceItems as $itemDetail) {
 			$export_record['round_off_amount'] = null;
-			$export_record['invoice_amount'] = null;
-			$export_record['unit_price'] = $tcsDnInvoice ? $tcsDnInvoice->ex_showroom_price : null;
-			$export_record['amount'] = $tcsDnInvoice ? $tcsDnInvoice->ex_showroom_price : null;
+			$export_record['invoice_amount'] = 0;
+			// $export_record['unit_price'] = $tcsDnInvoice ? $tcsDnInvoice->ex_showroom_price : null;
+			// $export_record['amount'] = $tcsDnInvoice ? $tcsDnInvoice->ex_showroom_price : null;
+            $export_record['unit_price'] = 0;
+            $export_record['amount'] = 0;
 			$export_record['hsn_code'] = $itemDetail->taxCode ? $itemDetail->taxCode->code : null;
 			$export_record['natural_account'] = $itemDetail->coaCode ? $itemDetail->coaCode->oracle_code : null;
 			$export_record['chassis_number'] = $tcsDnInvoice ? $tcsDnInvoice->vin_number : null;
@@ -3423,17 +3435,18 @@ class HondaServiceInvoice extends Model
 			}
 			// $export_record['tcs_tax_classification'] = $taxClassifications;
 			$export_record['tax_classification'] = $taxClassifications;
-			$export_record['tcs'] = $itemDetail->sub_total;
-			if ($showInvoiceAmount == true) {
-				$invoiceAmount = floatval($export_record['amount']) + floatval($export_record['tcs']);
-				if (empty($invoiceAmount) || $invoiceAmount == '0.00') {
-					$res['errors'] = ['The invoice total amount is 0'];
-					return $res;
-				}
-				$amountDiff = number_format((round($invoiceAmount) - $invoiceAmount), 2);
+			// $export_record['tcs'] = $itemDetail->sub_total;
+            $export_record['tcs'] = round($itemDetail->sub_total);
+			// if ($showInvoiceAmount == true) {
+				// $invoiceAmount = floatval($export_record['amount']) + floatval($export_record['tcs']);
+				// if (empty($invoiceAmount) || $invoiceAmount == '0.00') {
+				// 	$res['errors'] = ['The invoice total amount is 0'];
+				// 	return $res;
+				// }
+				// $amountDiff = number_format((round($invoiceAmount) - $invoiceAmount), 2);
 				// $export_record['invoice_amount'] = $this->final_amount;
-				$export_record['invoice_amount'] = round(floatval($export_record['amount']) + floatval($export_record['tcs']));
-			}
+				// $export_record['invoice_amount'] = round(floatval($export_record['amount']) + floatval($export_record['tcs']));
+			// }
 			$storeInOracleTable = ArInvoiceExport::store($export_record);
 			// $showRoundOff = false;
 			$showInvoiceAmount = false;
@@ -3445,21 +3458,21 @@ class HondaServiceInvoice extends Model
 		// if (!empty($this->final_amount) && !empty($this->total)) {
 		// 	$amountDiff = number_format(($this->final_amount - $this->total), 2);
 		// }
-		if ($amountDiff && $amountDiff != '0.00') {
-			$export_record['round_off_amount'] = null;
-			$export_record['invoice_amount'] = null;
-			$export_record['description'] = $roundOffTransaction ? $roundOffTransaction->name : null;
-			$export_record['unit_price'] = $amountDiff;
-			$export_record['amount'] = $amountDiff;
-			$export_record['hsn_code'] = null;
-			// $export_record['chassis_number'] = null;
-			$export_record['tcs'] = null;
-			// $export_record['tcs_tax_classification'] = null;
-			$export_record['tax_classification'] = null;
-			$export_record['accounting_class'] = $roundOffTransaction ? $roundOffTransaction->accounting_class : null;
-			$export_record['natural_account'] = $roundOffTransaction ? $roundOffTransaction->natural_account : null;
-			$storeInOracleTable = ArInvoiceExport::store($export_record);
-		}
+		// if ($amountDiff && $amountDiff != '0.00') {
+		// 	$export_record['round_off_amount'] = null;
+		// 	$export_record['invoice_amount'] = null;
+		// 	$export_record['description'] = $roundOffTransaction ? $roundOffTransaction->name : null;
+		// 	$export_record['unit_price'] = $amountDiff;
+		// 	$export_record['amount'] = $amountDiff;
+		// 	$export_record['hsn_code'] = null;
+		// 	// $export_record['chassis_number'] = null;
+		// 	$export_record['tcs'] = null;
+		// 	// $export_record['tcs_tax_classification'] = null;
+		// 	$export_record['tax_classification'] = null;
+		// 	$export_record['accounting_class'] = $roundOffTransaction ? $roundOffTransaction->accounting_class : null;
+		// 	$export_record['natural_account'] = $roundOffTransaction ? $roundOffTransaction->natural_account : null;
+		// 	$storeInOracleTable = ArInvoiceExport::store($export_record);
+		// }
 
 		$res['success'] = true;
 		return $res;
