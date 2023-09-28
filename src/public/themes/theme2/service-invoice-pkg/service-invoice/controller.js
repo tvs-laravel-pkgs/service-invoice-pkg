@@ -830,6 +830,16 @@ app.component('serviceInvoiceForm', {
             }
         }
 
+        $scope.sbuChangeHandler = function(sbu_id){
+            self.service_invoice.oracle_cost_centre = null;
+            if(sbu_id){
+                let sbu_detail = self.sbu_details.filter(sbu => sbu.id === sbu_id);
+                if((sbu_detail.length) > 0){
+                    self.service_invoice.oracle_cost_centre = sbu_detail[0].oracle_cost_centre;
+                }
+            }
+        }
+
         //GET BRANCH DETAILS
         self.getBranchDetails = function () {
             if (self.service_invoice.branch == null) {
@@ -842,6 +852,9 @@ app.component('serviceInvoiceForm', {
         self.branchChanged = function () {
             self.service_invoice.sbu_id = '';
             self.extras.sbu_list = [];
+
+            self.service_invoice.oracle_cost_centre = null;
+            self.sbu_details = [];
 
             self.service_invoice.service_invoice_items = [];
             //SERVICE INVOICE ITEMS TABLE CALC
@@ -1292,6 +1305,7 @@ app.component('serviceInvoiceForm', {
         //GET SBU BY BRANCH
         $scope.getSbuByBranch = function (branch_id) {
             self.extras.sbu_list = [];
+            self.sbu_details = [];
             if (branch_id) {
                 $.ajax({
                     url: get_sbu_url + '/' + branch_id,
@@ -1306,6 +1320,7 @@ app.component('serviceInvoiceForm', {
                             }).show();
                         } else {
                             self.extras.sbu_list = res.sbu_list;
+                            self.sbu_details = res.sbu_details;
                             $scope.$apply()
                         }
                     })

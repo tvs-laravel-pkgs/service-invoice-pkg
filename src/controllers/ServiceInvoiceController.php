@@ -358,6 +358,7 @@ class ServiceInvoiceController extends Controller
         if (!$id) {
             $service_invoice = new ServiceInvoice;
             // $service_invoice->invoice_date = date('d-m-Y');
+            $service_invoice->oracle_cost_centre = null;
             $this->data['action'] = 'Add';
             Session::put('sac_code_value', 'new');
         } else {
@@ -385,6 +386,7 @@ class ServiceInvoiceController extends Controller
             $service_invoice->customer; //ADDED FOR CUSTOMER AND VENDOR BOTH
             // $service_invoice->customer->primaryAddress; //ADDED FOR CUSTOMER AND VENDOR BOTH
             // $service_invoice->customer_address = $service_invoice->address; //ADDED FOR CUSTOMER AND VENDOR BOTH
+            $service_invoice->oracle_cost_centre = Sbu::where('id', $service_invoice->sbu_id)->pluck('oracle_cost_centre')->first();
             $fields = Field::withTrashed()->get()->keyBy('id');
             if (count($service_invoice->serviceInvoiceItems) > 0) {
                 $gst_total = 0;
