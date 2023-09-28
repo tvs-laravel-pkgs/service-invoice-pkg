@@ -384,6 +384,7 @@ class ServiceInvoiceController extends Controller
                 return response()->json(['success' => false, 'error' => 'Service Invoice not found']);
             }
             $service_invoice->customer; //ADDED FOR CUSTOMER AND VENDOR BOTH
+            $service_invoice->customer->customer_from = "local";
             // $service_invoice->customer->primaryAddress; //ADDED FOR CUSTOMER AND VENDOR BOTH
             // $service_invoice->customer_address = $service_invoice->address; //ADDED FOR CUSTOMER AND VENDOR BOTH
             $service_invoice->oracle_cost_centre = Sbu::where('id', $service_invoice->sbu_id)->pluck('oracle_cost_centre')->first();
