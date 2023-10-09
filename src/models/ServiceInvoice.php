@@ -3776,20 +3776,20 @@ class ServiceInvoice extends Model
 			//CN
 			// $transactionDetail = $this->company ? $this->company->vimsCreditNoteTransaction() : null;
 			$transactionDetail = $this->company ? $this->company->vendorVimsCreditNoteTransaction() : null;
-			$invoiceDescription = 'Credit note';
+			// $invoiceDescription = 'Credit note';
 		} elseif ($this->type_id == 1061) {
 			//DN
 			// $transactionDetail = $this->company ? $this->company->vimsDebitNoteTransaction() : null;
 			$transactionDetail = $this->company ? $this->company->vendorVimsDebitNoteTransaction() : null;
-			$invoiceDescription = 'Debit note';
+			// $invoiceDescription = 'Debit note';
 		} elseif ($this->type_id == 1062) {
 			//INV
 			// $transactionDetail = $this->company ? $this->company->vimsInvoiceNoteTransaction() : null;
 			$transactionDetail = $this->company ? $this->company->vendorVimsInvoiceNoteTransaction() : null;
-			$invoiceDescription = 'Invoice';
+			// $invoiceDescription = 'Invoice';
 		} else {
 			$transactionDetail = null;
-			$invoiceDescription = '';
+			// $invoiceDescription = '';
 		}
 
 		// $invoiceSource = 'VIMS-Invoice';
@@ -3814,7 +3814,7 @@ class ServiceInvoice extends Model
 		$accountingDate = null; // isset($this->date) ? date("Y-m-d", strtotime($this->date)) : '';
 		// $description = $this->number . ' ' . $this->customer->name;
 		$description = null;
-		$invoiceLineDescription = $invoiceDescription . ' - ' . ($invoiceNumber) . ' - ' . ($customerName);
+		// $invoiceLineDescription = $invoiceDescription . ' - ' . ($invoiceNumber) . ' - ' . ($customerName);
 		// $paymentMethod = null;
 		// $payGroup = null;
 		$remitToSupplier = null;
@@ -3889,7 +3889,8 @@ class ServiceInvoice extends Model
 		$export_record['po_date'] = $poDate;
 		$export_record['line_type'] = $invoiceLineType;
 		// $export_record['amount'] = $invoiceLineAmount;
-		$export_record['invoice_description'] = $invoiceLineDescription;
+		// $export_record['invoice_description'] = $invoiceLineDescription;
+        $export_record['invoice_description'] = null;
 		$export_record['tax_classification'] = $taxClassification;
 		$export_record['cgst'] = null;
 		$export_record['sgst'] = null;
@@ -4031,6 +4032,12 @@ class ServiceInvoice extends Model
                     $withoutSacInvoiceDescription .=  ($withoutSacInvoiceDescription ? ' , ' . ($itemDetail->description) : $itemDetail->description);
                 }
                 $itemRecords[$hsnId]['invoice_description'] = $withoutSacInvoiceDescription;
+            }else{
+                if($itemRecords[$hsnId]['invoice_description']){
+                    $itemRecords[$hsnId]['invoice_description'] .= (','.$itemDetail->description);
+                }else{
+                    $itemRecords[$hsnId]['invoice_description'] .= ($itemDetail->description);
+                }
             }
 
 			// Invoice Description from item commodity master
@@ -4088,7 +4095,8 @@ class ServiceInvoice extends Model
                 }
 
                 if(!empty($itemRecord['invoice_description'])){
-                    $export_record['invoice_description'] = $itemRecord['invoice_description'];
+                    // $export_record['invoice_description'] = $itemRecord['invoice_description'];
+                    $export_record['invoice_description'] = substr($itemRecord['invoice_description'],0,250);
                 }
 
 				// $amountDiff = 0;
