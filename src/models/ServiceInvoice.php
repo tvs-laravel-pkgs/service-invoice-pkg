@@ -3283,11 +3283,11 @@ class ServiceInvoice extends Model
 		if ($this->type_id == 1060) {
 			//CN
 			$transactionDetail = $this->company ? $this->company->vimsCreditNoteTransaction() : null;
-			$invoiceDescription = 'Credit note';
+			// $invoiceDescription = 'Credit note';
 		} elseif ($this->type_id == 1061) {
 			//DN
 			$transactionDetail = $this->company ? $this->company->vimsDebitNoteTransaction() : null;
-			$invoiceDescription = 'Debit note';
+			// $invoiceDescription = 'Debit note';
 		} elseif ($this->type_id == 1062) {
 			//INV
 			// $transactionDetail = $this->company ? $this->company->vimsInvoiceNoteTransaction() : null;
@@ -3297,10 +3297,10 @@ class ServiceInvoice extends Model
 			} else {
 				$transactionDetail = $this->company ? $this->company->vimsInvoiceNoteTransaction() : null;
 			}
-			$invoiceDescription = 'Invoice';
+			// $invoiceDescription = 'Invoice';
 		} else {
 			$transactionDetail = null;
-			$invoiceDescription = '';
+			// $invoiceDescription = '';
 		}
 
 		if (!empty($transactionDetail)) {
@@ -3321,7 +3321,7 @@ class ServiceInvoice extends Model
 		$shipToCustomerAccount = $customerCode;
 		$shipToCustomerSite = null;
 		// $description = null;
-		$description = $invoiceDescription . ' - ' . $transactionNumber . ' - ' . ($customerName);
+		// $description = $invoiceDescription . ' - ' . $transactionNumber . ' - ' . ($customerName);
 		$revenueType = $uom = $unitPrice = null;
 		$quantity = 1;
 		$amount = null;
@@ -3360,7 +3360,8 @@ class ServiceInvoice extends Model
 		$export_record['credit_irn_number'] = $irnNumber;
 		$export_record['credit_lr_number'] = $lrNumber;
 		$export_record['credit_lr_date'] = $lrDate;
-		$export_record['description'] = $description;
+		// $export_record['description'] = $description;
+        $export_record['description'] = null;
 		$export_record['revenue_type'] = $revenueType;
 		$export_record['quantity'] = $quantity;
 		$export_record['uom'] = $uom;
@@ -3503,6 +3504,12 @@ class ServiceInvoice extends Model
                     $withoutSacInvoiceDescription .=  ($withoutSacInvoiceDescription ? ' , ' . ($itemDetail->description) : $itemDetail->description);
                 }
                 $itemRecords[$hsnId]['description'] = $withoutSacInvoiceDescription;
+            }else{
+                if($itemRecords[$hsnId]['description']){
+                    $itemRecords[$hsnId]['description'] .= (','.$itemDetail->description);
+                }else{
+                    $itemRecords[$hsnId]['description'] .= ($itemDetail->description);
+                }
             }
 
 			// if($itemDetail->tvsone_order_item_id && empty($itemRecords[$hsnId]['chassis_number'])){
@@ -3564,7 +3571,8 @@ class ServiceInvoice extends Model
 
                 if(!empty($itemRecord['description'])){
                     //ITEM WHICH IS NOT HAVING SAC CODE
-                    $export_record['description'] = $itemRecord['description'];
+                    // $export_record['description'] = $itemRecord['description'];
+                    $export_record['description'] = substr($itemRecord['description'],0,250);
                 }
 
 				// $amountDiff = 0;
