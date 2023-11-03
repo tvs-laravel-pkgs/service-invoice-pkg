@@ -980,6 +980,14 @@ class ServiceInvoiceController extends Controller
 
         $service_item->service_item_id = $service_item->id;
         $service_item->id = null;
+        if(isset($request->description)){
+            if (!preg_match("/^[A-Za-z0-9 ,.-]+$/", $request->description)) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Please enter only letters, numbers, and spaces in the reference.'
+                ]);
+            }
+        }
         $service_item->description = $request->description;
         $service_item->qty = $request->qty;
         $service_item->e_invoice_uom = $e_invoice_uom;

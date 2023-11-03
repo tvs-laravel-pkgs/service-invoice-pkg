@@ -1789,7 +1789,8 @@ app.component('serviceInvoiceForm', {
                             for (var i in res.errors) {
                                 errors += '<li>' + res.errors[i] + '</li>';
                             }
-                            custom_noty('error', errors);
+                            // custom_noty('error', errors);
+                            custom_noty('error', res.error);
                         } else {
                             console.log(res.service_item);
                             $('#modal-cn-addnew').modal('toggle');
