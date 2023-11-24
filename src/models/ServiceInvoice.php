@@ -3258,8 +3258,17 @@ class ServiceInvoice extends Model
 		$res['success'] = false;
 		$res['errors'] = [];
 
-		$companyName = isset($this->company->oem_business_unit->name) ? $this->company->oem_business_unit->name : null;
-		$companyCode = isset($this->company->oem_business_unit->code) ? $this->company->oem_business_unit->code : null;
+		// $companyName = isset($this->company->oem_business_unit->name) ? $this->company->oem_business_unit->name : null;
+		// $companyCode = isset($this->company->oem_business_unit->code) ? $this->company->oem_business_unit->code : null;
+        if(!empty($this->outlet->oracleBusinessUnit)){
+            $companyName = $this->outlet->oracleBusinessUnit->name;
+            $companyCode = $this->outlet->oracleBusinessUnit->code;
+        }else{
+            //OEM
+            $companyName = isset($this->company->oem_business_unit->name) ? $this->company->oem_business_unit->name : null;
+            $companyCode = isset($this->company->oem_business_unit->code) ? $this->company->oem_business_unit->code : null;
+        }
+
 		$arInvoiceExports = ArInvoiceExport::where([
 			'transaction_number' => $this->number,
 			'business_unit' => $companyName,
@@ -3755,8 +3764,17 @@ class ServiceInvoice extends Model
 		$res = [];
 		$res['success'] = false;
 		$res['errors'] = [];
-		$companyName = $this->company ? ($this->company->oem_business_unit ? $this->company->oem_business_unit->name : '') : '';
-		$companyCode = $this->company ? ($this->company->oem_business_unit ? $this->company->oem_business_unit->code : '') : '';
+		// $companyName = $this->company ? ($this->company->oem_business_unit ? $this->company->oem_business_unit->name : '') : '';
+		// $companyCode = $this->company ? ($this->company->oem_business_unit ? $this->company->oem_business_unit->code : '') : '';
+
+        if(!empty($this->outlet->oracleBusinessUnit)){
+            $companyName = $this->outlet->oracleBusinessUnit->name;
+            $companyCode = $this->outlet->oracleBusinessUnit->code;
+        }else{
+            //OEM
+            $companyName = $this->company ? ($this->company->oem_business_unit ? $this->company->oem_business_unit->name : '') : '';
+            $companyCode = $this->company ? ($this->company->oem_business_unit ? $this->company->oem_business_unit->code : '') : '';
+        }
 		$apInvoiceExports = ApInvoiceExport::where([
 			'invoice_number' => $this->number,
 			'business_unit' => $companyName,
