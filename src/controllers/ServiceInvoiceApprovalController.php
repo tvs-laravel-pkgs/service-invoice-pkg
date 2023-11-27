@@ -27,6 +27,8 @@ use Yajra\Datatables\Datatables;
 use phpseclib\Crypt\RSA as Crypt_RSA;
 use GuzzleHttp\Client;
 use App\ShortUrl;
+use Abs\ServiceInvoicePkg\ServiceInvoiceItem;
+use App\JobCardTvsoneCnHistory;
 
 class ServiceInvoiceApprovalController extends Controller {
 
@@ -441,9 +443,13 @@ class ServiceInvoiceApprovalController extends Controller {
 			// dd($approval_levels);
 			if ($approval_levels != '') {
 				if ($approval_status->status_id == $approval_levels->name) {
+					$invoiceItemIds = ServiceInvoiceItem::where('service_invoice_id', $approval_status->id)->pluck('id')->toArray();
+					$tvsOneCnDatas = JobCardTvsoneCnHistory::whereIn('service_invoice_item_id', $invoiceItemIds)->count();
+					$isTvsOneCn = $tvsOneCnDatas && $tvsOneCnDatas > 0;
 					// Doc date validation based on min and max offser from entities table
 					$minDate = intval(Entity::where('company_id', Auth::user()->company_id)->where('entity_type_id', 15)->pluck('name')->first());
-					if ($minDate) {
+					// if ($minDate) {
+					if ($minDate && !$isTvsOneCn) {
 						$minDate = $minDate * -1;
 						$startDate = date('d-m-Y', strtotime($minDate . 'days'));
 						$endDate = date('d-m-Y');
@@ -552,9 +558,13 @@ class ServiceInvoiceApprovalController extends Controller {
 					$approval_levels = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 19)->first(); //ENTITIES ALSO CHANGES FOR 3; FOR QUEUE PROCESS
 					if ($approval_levels != '') {
 						if ($send_approval->status_id == $approval_levels->name) {
+							$invoiceItemIds = ServiceInvoiceItem::where('service_invoice_id', $send_approval->id)->pluck('id')->toArray();
+							$tvsOneCnDatas = JobCardTvsoneCnHistory::whereIn('service_invoice_item_id', $invoiceItemIds)->count();
+							$isTvsOneCn = $tvsOneCnDatas && $tvsOneCnDatas > 0;
 							// Doc date validation based on min and max offser from entities table
 							$minDate = intval(Entity::where('company_id', Auth::user()->company_id)->where('entity_type_id', 15)->pluck('name')->first());
-							if ($minDate) {
+							// if ($minDate) {
+							if ($minDate && !$isTvsOneCn) {
 								$minDate = $minDate * -1;
 								$startDate = date('d-m-Y', strtotime($minDate . 'days'));
 								$endDate = date('d-m-Y');
