@@ -2719,6 +2719,7 @@ class ServiceInvoiceController extends Controller
 
     public function exportServiceInvoicesToExcel(Request $request)
     {
+        try{
         // dd($request->all());
         // ini_set('memory_limit', '-1');
         ini_set('max_execution_time', 0);
@@ -3229,7 +3230,7 @@ class ServiceInvoiceController extends Controller
                                         //FOR KFC
                                         if ($tax->tax_id == 4) {
                                             if ($service_invoice->type_id != 1060) {
-                                                if ($service_invoice->address->state_id && $service_invoice->outlets) {
+                                                if (!empty($service_invoice->address->state_id) && !empty($service_invoice->outlets)) {
                                                     if ($service_invoice->address->state_id == 3) {
                                                         if (($service_invoice->address->state_id == 3) && ($service_invoice->outlets->state_id == 3)) {
                                                             //3 FOR KERALA
@@ -3288,7 +3289,7 @@ class ServiceInvoiceController extends Controller
                             }
                             // dump($serviceInvoiceItem->serviceItem->taxCode);
 
-                            if ($service_invoice->outlets && $serviceInvoiceItem->serviceItem->taxCode) {
+                            if (!empty($service_invoice->outlets) && !empty($serviceInvoiceItem->serviceItem->taxCode)) {
                                 // dump(1);
                                 // $tcs_percentage = 0;
                                 // if($serviceInvoiceItem->serviceItem->tcs_percentage && $serviceInvoiceItem->serviceItem->is_tcs == 1) {
@@ -3308,21 +3309,21 @@ class ServiceInvoiceController extends Controller
                                 // }
 
                                 $service_invoice_details[] = [
-                                    $service_invoice->type->name,
+                                    $service_invoice->type ? $service_invoice->type->name : '',
                                     // $service_invoice->e_invoice_registration == 1 && $service_invoice->irn_number != null ? 'B2B' : 'B2C',
-                                    ($service_invoice->address->gst_number && $service_invoice->address->gst_number != '')? 'B2B' : 'B2C',
-                                    $service_invoice->toAccountType->name,
-                                    $service_invoice->customer->code,
+                                    !empty($service_invoice->address->gst_number) ? 'B2B' : 'B2C',
+                                    $service_invoice->toAccountType ? $service_invoice->toAccountType->name : '',
+                                    $service_invoice->customer ? $service_invoice->customer->code : '',
                                     $service_invoice->number,
                                     date('d/m/Y', strtotime($service_invoice->document_date)),
                                     $service_invoice->invoice_number,
                                     $service_invoice->invoice_date ? date('d/m/Y', strtotime($service_invoice->invoice_date)) : '',
-                                    $service_invoice->customer->name,
-                                    $service_invoice->address->gst_number,
-                                    $service_invoice->address->address_line1 . ',' . $service_invoice->address->address_line2,
+                                    $service_invoice->customer ? $service_invoice->customer->name : '',
+                                    $service_invoice->address ? $service_invoice->address->gst_number : '',
+                                    $service_invoice->address ? $service_invoice->address->address_line1 . ',' . $service_invoice->address->address_line2 : '',
                                     ($service_invoice->type_id == 1060 ? '-' : '') . ($serviceInvoiceItem->sub_total + $cgst_amt + $sgst_amt + $igst_amt + $kfc_amt + $tcs_total + $cess_on_gst_total),
-                                    $serviceInvoiceItem->serviceItem->taxCode->code,
-                                    $serviceInvoiceItem->eInvoiceUom->code,
+                                    !empty($serviceInvoiceItem->serviceItem->taxCode) ? $serviceInvoiceItem->serviceItem->taxCode->code : '',
+                                    $serviceInvoiceItem->eInvoiceUom ? $serviceInvoiceItem->eInvoiceUom->code : '',
                                     $serviceInvoiceItem->qty,
                                     ($service_invoice->type_id == 1060 ? '-' : '') . (float) ($serviceInvoiceItem->sub_total / $serviceInvoiceItem->qty),
                                     $cgst_percentage,
@@ -3331,7 +3332,7 @@ class ServiceInvoiceController extends Controller
                                     $kfc_percentage,
                                     // $serviceInvoiceItem->serviceItem->tcs_percentage,
                                     $tcs_percentage,
-                                    $serviceInvoiceItem->serviceItem->cess_on_gst_percentage,
+                                    $serviceInvoiceItem->serviceItem ? $serviceInvoiceItem->serviceItem->cess_on_gst_percentage : '',
                                     $cgst_amt ? ($service_invoice->type_id == 1060 ? '-' : '') . $cgst_amt : 0,
                                     $sgst_amt ? ($service_invoice->type_id == 1060 ? '-' : '') . $sgst_amt : 0,
                                     $igst_amt ? ($service_invoice->type_id == 1060 ? '-' : '') . $igst_amt : 0,
@@ -3363,7 +3364,15 @@ class ServiceInvoiceController extends Controller
         return Storage::download(storage_path('exports/') . $file_name . '.xlsx');
 
         // dd($r->all(), $date_range, $service_invoice_ids, $axapta_records);
-
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => 'Server Error',
+            'errors' => [
+                'Error : ' . $e->getMessage() . '. Line : ' . $e->getLine() . '. File : ' . $e->getFile(),
+            ],
+        ]);
+    }
     }
 
     public function cancelIrn(Request $request)
