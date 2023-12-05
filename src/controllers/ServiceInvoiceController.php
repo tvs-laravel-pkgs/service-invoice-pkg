@@ -3325,7 +3325,7 @@ class ServiceInvoiceController extends Controller
                                     !empty($serviceInvoiceItem->serviceItem->taxCode) ? $serviceInvoiceItem->serviceItem->taxCode->code : '',
                                     $serviceInvoiceItem->eInvoiceUom ? $serviceInvoiceItem->eInvoiceUom->code : '',
                                     $serviceInvoiceItem->qty,
-                                    ($service_invoice->type_id == 1060 ? '-' : '') . (float) ($serviceInvoiceItem->sub_total / $serviceInvoiceItem->qty),
+                                    ($service_invoice->type_id == 1060 ? '-' : '') . ($serviceInvoiceItem->qty > 0 ? (float) ($serviceInvoiceItem->sub_total / $serviceInvoiceItem->qty) : ''),
                                     $cgst_percentage,
                                     $sgst_percentage,
                                     $igst_percentage,
