@@ -3260,9 +3260,11 @@ class ServiceInvoice extends Model
 
 		// $companyName = isset($this->company->oem_business_unit->name) ? $this->company->oem_business_unit->name : null;
 		// $companyCode = isset($this->company->oem_business_unit->code) ? $this->company->oem_business_unit->code : null;
+        $oracleBusinessUnitTypeId = null;
         if(!empty($this->outlet->oracleBusinessUnit)){
             $companyName = $this->outlet->oracleBusinessUnit->name;
             $companyCode = $this->outlet->oracleBusinessUnit->code;
+            $oracleBusinessUnitTypeId = $this->outlet->oracleBusinessUnit->type_id;
         }else{
             //OEM
             $companyName = isset($this->company->oem_business_unit->name) ? $this->company->oem_business_unit->name : null;
@@ -3291,11 +3293,19 @@ class ServiceInvoice extends Model
 
 		if ($this->type_id == 1060) {
 			//CN
-			$transactionDetail = $this->company ? $this->company->vimsCreditNoteTransaction() : null;
+            if($oracleBusinessUnitTypeId == 133801){
+                $transactionDetail = $this->company ? $this->company->vimsOesCreditNoteTransaction() : null;
+            }else{
+                $transactionDetail = $this->company ? $this->company->vimsCreditNoteTransaction() : null;
+            }
 			// $invoiceDescription = 'Credit note';
 		} elseif ($this->type_id == 1061) {
 			//DN
-			$transactionDetail = $this->company ? $this->company->vimsDebitNoteTransaction() : null;
+            if($oracleBusinessUnitTypeId == 133801){
+                $transactionDetail = $this->company ? $this->company->vimsOesDebitNoteTransaction() : null;
+            }else{
+                $transactionDetail = $this->company ? $this->company->vimsDebitNoteTransaction() : null;
+            }
 			// $invoiceDescription = 'Debit note';
 		} elseif ($this->type_id == 1062) {
 			//INV
@@ -3304,7 +3314,11 @@ class ServiceInvoice extends Model
 				//TVSONE
 				$transactionDetail = $this->company ? $this->company->tvsoneTransaction() : null;
 			} else {
-				$transactionDetail = $this->company ? $this->company->vimsInvoiceNoteTransaction() : null;
+                if($oracleBusinessUnitTypeId == 133801){
+                    $transactionDetail = $this->company ? $this->company->vimsOesInvoiceTransaction() : null;
+                }else{
+                    $transactionDetail = $this->company ? $this->company->vimsInvoiceNoteTransaction() : null;
+                }
 			}
 			// $invoiceDescription = 'Invoice';
 		} else {
