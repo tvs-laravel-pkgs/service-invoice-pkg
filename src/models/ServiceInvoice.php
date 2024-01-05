@@ -3780,10 +3780,11 @@ class ServiceInvoice extends Model
 		$res['errors'] = [];
 		// $companyName = $this->company ? ($this->company->oem_business_unit ? $this->company->oem_business_unit->name : '') : '';
 		// $companyCode = $this->company ? ($this->company->oem_business_unit ? $this->company->oem_business_unit->code : '') : '';
-
+        $oracleBusinessUnitTypeId = null;
         if(!empty($this->outlet->oracleBusinessUnit)){
             $companyName = $this->outlet->oracleBusinessUnit->name;
             $companyCode = $this->outlet->oracleBusinessUnit->code;
+            $oracleBusinessUnitTypeId = $this->outlet->oracleBusinessUnit->type_id;
         }else{
             //OEM
             $companyName = $this->company ? ($this->company->oem_business_unit ? $this->company->oem_business_unit->name : '') : '';
@@ -3807,18 +3808,31 @@ class ServiceInvoice extends Model
 		if ($this->type_id == 1060) {
 			//CN
 			// $transactionDetail = $this->company ? $this->company->vimsCreditNoteTransaction() : null;
-			$transactionDetail = $this->company ? $this->company->vendorVimsCreditNoteTransaction() : null;
 			// $invoiceDescription = 'Credit note';
+            if($oracleBusinessUnitTypeId == 133801){
+                $transactionDetail = $this->company ? $this->company->vendorVimsOesCreditNoteTransaction() : null;
+            }else{
+                $transactionDetail = $this->company ? $this->company->vendorVimsCreditNoteTransaction() : null;
+            }
 		} elseif ($this->type_id == 1061) {
 			//DN
 			// $transactionDetail = $this->company ? $this->company->vimsDebitNoteTransaction() : null;
-			$transactionDetail = $this->company ? $this->company->vendorVimsDebitNoteTransaction() : null;
+			
 			// $invoiceDescription = 'Debit note';
+            if($oracleBusinessUnitTypeId == 133801){
+                $transactionDetail = $this->company ? $this->company->vendorVimsOesDebitNoteTransaction() : null;
+            }else{
+                $transactionDetail = $this->company ? $this->company->vendorVimsDebitNoteTransaction() : null;
+            }
 		} elseif ($this->type_id == 1062) {
 			//INV
 			// $transactionDetail = $this->company ? $this->company->vimsInvoiceNoteTransaction() : null;
-			$transactionDetail = $this->company ? $this->company->vendorVimsInvoiceNoteTransaction() : null;
 			// $invoiceDescription = 'Invoice';
+            if($oracleBusinessUnitTypeId == 133801){
+                $transactionDetail = $this->company ? $this->company->vendorVimsOesInvoiceTransaction() : null;
+            }else{
+                $transactionDetail = $this->company ? $this->company->vendorVimsInvoiceNoteTransaction() : null;
+            }
 		} else {
 			$transactionDetail = null;
 			// $invoiceDescription = '';
