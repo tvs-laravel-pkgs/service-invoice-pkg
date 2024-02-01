@@ -1077,7 +1077,7 @@ class HondaServiceInvoiceController extends Controller {
 						//INV
 						$serial_number_category = 126;
 					}
-					$generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, null, null, null);
+					$generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, null, null, null, Auth::user()->company_id);
 				} else {
 					//STATE BUSINESS BASED CODE
 					$generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, $branch->id, null, null);

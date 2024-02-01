@@ -1140,10 +1140,10 @@ class ServiceInvoiceController extends Controller
                         //INV
                         $serial_number_category = 126;
                     }
-                    $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, null, null, null);
+                    $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, null, null, null, Auth::user()->company_id);
                 } else {
                     //STATE BUSINESS BASED CODE
-                    $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, null, null, $sbu->business_id);
+                    $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, null, null, $sbu->business_id, Auth::user()->company_id);
                 }
                 // dd($generateNumber);
                 $generateNumber['service_invoice_id'] = $request->id;
