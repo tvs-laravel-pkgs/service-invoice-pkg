@@ -1140,10 +1140,10 @@ class ServiceInvoiceController extends Controller
                         //INV
                         $serial_number_category = 126;
                     }
-                    $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, null, null, null);
+                    $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, null, null, null, Auth::user()->company_id);
                 } else {
                     //STATE BUSINESS BASED CODE
-                    $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, null, null, $sbu->business_id);
+                    $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, null, null, $sbu->business_id, Auth::user()->company_id);
                 }
                 // dd($generateNumber);
                 $generateNumber['service_invoice_id'] = $request->id;
@@ -3669,8 +3669,14 @@ class ServiceInvoiceController extends Controller
         try {
              
             $company_id = Auth::user()->company_id;
+            $showMobCustomer = Config::getConfigName(8665);
+            $companyIds = [$company_id];
+            if ($company_id == 8 && $showMobCustomer == 'show') {
+                $companyIds = [$company_id, 4];
+            }
             $customer_details = Customer::select('code', 'name', 'mobile_no', 'cust_group', 'pan_number', DB::raw('"local" as customer_from'))->where('code', 'like', '' . $r->key . '%')
-            ->where('company_id', $company_id)
+            // ->where('company_id', $company_id)
+            ->whereIn('company_id', $companyIds)
             ->get()
             ->toArray();
             if(count($customer_details) > 0){
