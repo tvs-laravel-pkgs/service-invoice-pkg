@@ -3669,8 +3669,14 @@ class ServiceInvoiceController extends Controller
         try {
              
             $company_id = Auth::user()->company_id;
+            $showMobCustomer = Config::getConfigName(8665);
+            $companyIds = [$company_id];
+            if ($company_id == 8 && $showMobCustomer == 'show') {
+                $companyIds = [$company_id, 4];
+            }
             $customer_details = Customer::select('code', 'name', 'mobile_no', 'cust_group', 'pan_number', DB::raw('"local" as customer_from'))->where('code', 'like', '' . $r->key . '%')
-            ->where('company_id', $company_id)
+            // ->where('company_id', $company_id)
+            ->whereIn('company_id', $companyIds)
             ->get()
             ->toArray();
             if(count($customer_details) > 0){
