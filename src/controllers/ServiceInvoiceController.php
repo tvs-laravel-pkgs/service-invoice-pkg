@@ -23,6 +23,7 @@ use App\City;
 use App\Company;
 use App\Config;
 use App\Customer;
+use App\Services\OmwCustomerService;
 use App\EInvoiceUom;
 use App\Employee;
 use App\Entity;
@@ -3669,81 +3670,105 @@ class ServiceInvoiceController extends Controller
         try {
              
             $company_id = Auth::user()->company_id;
-            $customer_details = Customer::select('code', 'name', 'mobile_no', 'cust_group', 'pan_number', DB::raw('"local" as customer_from'))->where('code', 'like', '' . $r->key . '%')
-            ->where('company_id', $company_id)
-            ->get()
-            ->toArray();
-            if(count($customer_details) > 0){
-                return response()->json($customer_details);        
+            $customer_search_from_omw = Config::where('id', 134441)->pluck('name')->first();
+            $customer_business_unit = Config::where('id', 134442)->pluck('name')->first();
+            //CUSTOMER SEARCH FROM OMW SERVER
+            if($customer_search_from_omw == "true"){
+                $search_request = new Request();
+                $search_request->setMethod('POST');
+                $search_request->request->add(['key' => $r->key]);
+                $search_request->request->add(['business_unit' => $customer_business_unit]);
+                $search_response = OmwCustomerService::searchCustomer($search_request);
+                if(!$search_response['success']){
+                    return response()->json([
+                        'success' => false,
+                        'error' => implode(',', $search_response['errors']),
+                    ]);
+                }
+                return response()->json($search_response['customer_list']);
             }else{
+                $customer_details = Customer::select('code', 'name', 'mobile_no', 'cust_group', 'pan_number', DB::raw('"local" as customer_from'))->where('code', 'like', '' . $r->key . '%')
+                ->where('company_id', $company_id)
+                ->get()
+                ->toArray();
+                if(count($customer_details) > 0){
+                    return response()->json($customer_details);        
+                }else{
 
-            $key = $r->key;
-            $axUrl = "GetNewCustMasterDetails_Search";
-            if(Auth::user()->company_id == 1){
-                $axUrl = "GetNewCustMasterDetails_Search_TVS";
-            }
-            $this->soapWrapper->add('customer', function ($service) {
-                $service
-                    ->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
-                    ->trace(true);
-            });
-            $params = ['ACCOUNTNUM' => $r->key];
-            $getResult = $this->soapWrapper->call('customer.'.$axUrl, [$params]);
-            if(Auth::user()->company_id == 1){
-                $customer_data = $getResult->GetNewCustMasterDetails_Search_TVSResult;
-            }
-            else{
-                $customer_data = $getResult->GetNewCustMasterDetails_SearchResult;
-            }
-            if (empty($customer_data)) {
-                return response()->json(['success' => false, 'error' => 'Customer Not Available!.']);
-            }
+                $key = $r->key;
+                $axUrl = "GetNewCustMasterDetails_Search";
+                if(Auth::user()->company_id == 1){
+                    $axUrl = "GetNewCustMasterDetails_Search_TVS";
+                }
+                $this->soapWrapper->add('customer', function ($service) {
+                    $service
+                        ->wsdl('https://tvsapp.tvs.in/ongo/WebService.asmx?wsdl')
+                        ->trace(true);
+                });
+                $params = ['ACCOUNTNUM' => $r->key];
+                $getResult = $this->soapWrapper->call('customer.'.$axUrl, [$params]);
+                if(Auth::user()->company_id == 1){
+                    $customer_data = $getResult->GetNewCustMasterDetails_Search_TVSResult;
+                }
+                else{
+                    $customer_data = $getResult->GetNewCustMasterDetails_SearchResult;
+                }
+                if (empty($customer_data)) {
+                    return response()->json(['success' => false, 'error' => 'Customer Not Available!.']);
+                }
 
-            // Convert xml string into an object
-            $xml_customer_data = simplexml_load_string($customer_data->any);
-            // dd($xml_customer_data);
-            // Convert into json
-            $customer_encode = json_encode($xml_customer_data);
+                // Convert xml string into an object
+                $xml_customer_data = simplexml_load_string($customer_data->any);
+                // dd($xml_customer_data);
+                // Convert into json
+                $customer_encode = json_encode($xml_customer_data);
 
-            // Convert into associative array
-            $customer_data = json_decode($customer_encode, true);
+                // Convert into associative array
+                $customer_data = json_decode($customer_encode, true);
 
-            $api_customer_data = $customer_data['Table'];
-            if (count($api_customer_data) == 0) {
-                return response()->json(['success' => false, 'error' => 'Customer Not Available!.']);
-            }
-            // dd($api_customer_data);
-            $list = [];
-            if (isset($api_customer_data)) {
-                $data = [];
-                $array_count = array_filter($api_customer_data, 'is_array');
-                if (count($array_count) > 0) {
-                    // if (count($api_customer_data) > 0) {
-                    foreach ($api_customer_data as $key => $customer_data) {
-                        $data['code'] = $customer_data['ACCOUNTNUM'];
-                        $data['name'] = $customer_data['NAME'];
-                        $data['mobile_no'] = isset($customer_data['LOCATOR']) && $customer_data['LOCATOR'] != 'Not available' ? $customer_data['LOCATOR'] : null;
-                        $data['cust_group'] = isset($customer_data['CUSTGROUP']) && $customer_data['CUSTGROUP'] != 'Not available' ? $customer_data['CUSTGROUP'] : null;
-                        $data['pan_number'] = isset($customer_data['PANNO']) && $customer_data['PANNO'] != 'Not available' ? $customer_data['PANNO'] : null;
+                $api_customer_data = $customer_data['Table'];
+                if (count($api_customer_data) == 0) {
+                    return response()->json(['success' => false, 'error' => 'Customer Not Available!.']);
+                }
+                // dd($api_customer_data);
+                $list = [];
+                if (isset($api_customer_data)) {
+                    $data = [];
+                    $array_count = array_filter($api_customer_data, 'is_array');
+                    if (count($array_count) > 0) {
+                        // if (count($api_customer_data) > 0) {
+                        foreach ($api_customer_data as $key => $customer_data) {
+                            $data['code'] = $customer_data['ACCOUNTNUM'];
+                            $data['name'] = $customer_data['NAME'];
+                            $data['mobile_no'] = isset($customer_data['LOCATOR']) && $customer_data['LOCATOR'] != 'Not available' ? $customer_data['LOCATOR'] : null;
+                            $data['cust_group'] = isset($customer_data['CUSTGROUP']) && $customer_data['CUSTGROUP'] != 'Not available' ? $customer_data['CUSTGROUP'] : null;
+                            $data['pan_number'] = isset($customer_data['PANNO']) && $customer_data['PANNO'] != 'Not available' ? $customer_data['PANNO'] : null;
+
+                            $list[] = $data;
+                        }
+                    } else {
+                        $data['code'] = $api_customer_data['ACCOUNTNUM'];
+                        $data['name'] = $api_customer_data['NAME'];
+                        $data['mobile_no'] = isset($api_customer_data['LOCATOR']) && $api_customer_data['LOCATOR'] != 'Not available' ? $api_customer_data['LOCATOR'] : null;
+                        $data['cust_group'] = isset($api_customer_data['CUSTGROUP']) && $api_customer_data['CUSTGROUP'] != 'Not available' ? $api_customer_data['CUSTGROUP'] : null;
+                        $data['pan_number'] = isset($api_customer_data['PANNO']) && $api_customer_data['PANNO'] != 'Not available' ? $api_customer_data['PANNO'] : null;
 
                         $list[] = $data;
                     }
-                } else {
-                    $data['code'] = $api_customer_data['ACCOUNTNUM'];
-                    $data['name'] = $api_customer_data['NAME'];
-                    $data['mobile_no'] = isset($api_customer_data['LOCATOR']) && $api_customer_data['LOCATOR'] != 'Not available' ? $api_customer_data['LOCATOR'] : null;
-                    $data['cust_group'] = isset($api_customer_data['CUSTGROUP']) && $api_customer_data['CUSTGROUP'] != 'Not available' ? $api_customer_data['CUSTGROUP'] : null;
-                    $data['pan_number'] = isset($api_customer_data['PANNO']) && $api_customer_data['PANNO'] != 'Not available' ? $api_customer_data['PANNO'] : null;
-
-                    $list[] = $data;
                 }
+                return response()->json($list);
             }
-            return response()->json($list);
         }
         } catch (\SoapFault $e) {
             return response()->json(['success' => false, 'error' => 'Somthing went worng in SOAP Service!']);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'error' => 'Somthing went worng!']);
+            return response()->json([
+                'success' => false,
+                'error' => 'Somthing went worng!',
+                'errors' => [
+                    'Error : ' . $e->getMessage() . '. Line : ' . $e->getLine() . '. File : ' . $e->getFile(),
+                ],
+            ]);
         }
 
     }
