@@ -21,6 +21,7 @@ use App\City;
 use App\Company;
 use App\Config;
 use App\Customer;
+use App\Services\OmwCustomerService;
 use App\EInvoiceConfig;
 use App\EInvoiceUom;
 use App\Employee;
@@ -3326,6 +3327,24 @@ class HondaServiceInvoiceController extends Controller {
 		// dd(strlen($r->key));
 		try {
 			$company_id = Auth::user()->company_id;
+			$customer_search_from_omw = Config::where('id', 134443)->pluck('name')->first();
+            $customer_business_unit = Config::where('id', 134444)->pluck('name')->first();
+			if($customer_search_from_omw == "true"){
+                $search_request = new Request();
+                $search_request->setMethod('POST');
+                $search_request->request->add(['key' => $r->key]);
+                $search_request->request->add(['business_unit' => $customer_business_unit]);
+                $search_response = OmwCustomerService::searchCustomer($search_request);
+                if(!$search_response['success']){
+                    return response()->json([
+                        'success' => false,
+                        'error' => implode(',', $search_response['errors']),
+                    ]);
+                }
+                return response()->json($search_response['customer_list']);
+            }else{
+
+
             $customer_details = Customer::select(
 				'customers.code', 
 				'customers.name',
@@ -3400,6 +3419,7 @@ class HondaServiceInvoiceController extends Controller {
 				}
 			}
 			return response()->json($list);
+		}
 		}
 		} catch (\SoapFault $e) {
 			return response()->json([]);
