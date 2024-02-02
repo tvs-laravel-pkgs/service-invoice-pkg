@@ -3637,6 +3637,31 @@ class HondaServiceInvoiceController extends Controller {
 	public function getHondaCustomerAddress(Request $request) {
 		// dd($request->all());
 		try {
+			$customer_get_from_omw = Config::where('id', 134443)->pluck('name')->first();
+            $customer_business_unit = Config::where('id', 134444)->pluck('name')->first();
+            //CUSTOMER GET FROM OMW SERVER
+            if($customer_get_from_omw == "true"){
+                $get_request = new Request();
+                $get_request->setMethod('POST');
+                $get_request->request->add(['key' => $request->data['code']]);
+                $get_request->request->add(['business_unit' => $customer_business_unit]);
+                $get_response = OmwCustomerService::getCustomer($get_request);
+                if(!$get_response['success']){
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'Validation Error',
+                        'errors' => $get_response['errors'],
+                    ]);
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'customer_address' => $get_response['customer_address'],
+                    'customer' => $get_response['customer'],
+                ]);
+            }else{
+
+
 			if (isset($request->data['customer_from']) && $request->data['customer_from'] == "local") {
                 $customer_address = [];
                 $customer = Customer::where('code', $request->data['code'])
@@ -3868,6 +3893,7 @@ class HondaServiceInvoiceController extends Controller {
 				'customer_address' => $customer_address,
 				'customer' => $customer,
 			]);
+		}
 		}
 		} catch (\SoapFault $e) {
 			return response()->json(['success' => false, 'error' => 'Somthing went worng in SOAP Service!']);
