@@ -3668,7 +3668,8 @@ class HondaServiceInvoiceController extends Controller {
 
                         $customer_address = Address::select('addresses.*','customers.pan_number')
 							->leftjoin('customers', 'customers.id', 'addresses.entity_id')
-						    ->where('addresses.company_id', Auth::user()->company_id)
+						    //->where('addresses.company_id', Auth::user()->company_id)
+							->whereIn('addresses.company_id', $companyIds)
 	                        ->where('addresses.entity_id', $customer->id)
 	                        ->where('addresses.address_of_id', 24)
 	                        ->where('addresses.address_type_id',40)
@@ -3677,7 +3678,8 @@ class HondaServiceInvoiceController extends Controller {
 
 	                    $customer_last_address = Address::select('addresses.*','customers.pan_number')
 							->leftjoin('customers', 'customers.id', 'addresses.entity_id')
-						    ->where('addresses.company_id', Auth::user()->company_id)
+						    //->where('addresses.company_id', Auth::user()->company_id)
+							->whereIn('addresses.company_id', $companyIds)
 	                        ->where('addresses.entity_id', $customer->id)
 	                        ->where('addresses.address_of_id', 24)
 	                        ->where('addresses.address_type_id',40)

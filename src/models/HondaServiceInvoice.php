@@ -3320,9 +3320,14 @@ class HondaServiceInvoice extends Model
 		$res = [];
 		$res['success'] = false;
 		$res['errors'] = [];
-
-		$companyName = isset($this->company->oem_business_unit->name) ? $this->company->oem_business_unit->name : null;
-		$companyCode = isset($this->company->oem_business_unit->code) ? $this->company->oem_business_unit->code : null;
+        if($this->company->id == 8){
+            $companyName = isset($this->company->pv_business_unit->name) ? $this->company->pv_business_unit->name : null;
+            $companyCode = isset($this->company->pv_business_unit->code) ? $this->company->pv_business_unit->code : null;
+        }else{
+            $companyName = isset($this->company->oem_business_unit->name) ? $this->company->oem_business_unit->name : null;
+            $companyCode = isset($this->company->oem_business_unit->code) ? $this->company->oem_business_unit->code : null;
+        }
+		
 		// $arInvoiceExports = ArInvoiceExport::where([
 		// 	'transaction_number' => $this->number,
 		// 	'business_unit' => $companyName,
