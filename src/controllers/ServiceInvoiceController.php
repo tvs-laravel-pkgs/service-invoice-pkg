@@ -4008,14 +4008,16 @@ class ServiceInvoiceController extends Controller
                     //     }
 
 
-                    $customer_address = Address::where('company_id', Auth::user()->company_id)
+                    $customer_address = Address::whereIn('company_id', $companyIds)
+                        //->('company_id', Auth::user()->company_id)
                         ->where('entity_id', $customer->id)
                         ->where('address_of_id', 24)
                         ->where('address_type_id',40)
                         ->orderBy('id', "DESC")
                         ->get();
 
-                    $customer_last_address = Address::where('company_id', Auth::user()->company_id)
+                    $customer_last_address = Address::whereIn('company_id', $companyIds)
+                        //->where('company_id', Auth::user()->company_id)
                         ->where('entity_id', $customer->id)
                         ->where('address_of_id', 24)
                         ->where('address_type_id',40)
