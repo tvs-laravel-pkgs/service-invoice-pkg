@@ -3265,6 +3265,11 @@ class ServiceInvoice extends Model
             $companyName = $this->outlet->oracleBusinessUnit->name;
             $companyCode = $this->outlet->oracleBusinessUnit->code;
             $oracleBusinessUnitTypeId = $this->outlet->oracleBusinessUnit->type_id;
+        }
+        
+        if($this->company->id == 8){
+            $companyName = isset($this->company->pv_business_unit->name) ? $this->company->pv_business_unit->name : null;
+            $companyCode = isset($this->company->pv_business_unit->code) ? $this->company->pv_business_unit->code : null;
         }else{
             //OEM
             $companyName = isset($this->company->oem_business_unit->name) ? $this->company->oem_business_unit->name : null;

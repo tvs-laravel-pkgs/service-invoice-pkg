@@ -3326,6 +3326,11 @@ class HondaServiceInvoiceController extends Controller {
 		// dd(strlen($r->key));
 		try {
 			$company_id = Auth::user()->company_id;
+            $showMobCustomer = Config::getConfigName(8665);
+            $companyIds = [$company_id];
+            if ($company_id == 8 && $showMobCustomer == 'show') {
+                $companyIds = [$company_id, 4];
+            }
             $customer_details = Customer::select(
 				'customers.code', 
 				'customers.name',
@@ -3337,7 +3342,8 @@ class HondaServiceInvoiceController extends Controller {
 				 DB::raw('"local" as customer_from'))
 			->leftjoin('states', 'states.id', 'customers.state_id')
 			->where('customers.code', 'like', '' . $r->key . '%')
-            ->where('customers.company_id', $company_id)
+            //->where('customers.company_id', $company_id)
+			->whereIn('company_id', $companyIds)
             ->get()
             ->toArray();
             if(count($customer_details) > 0){
@@ -3619,8 +3625,16 @@ class HondaServiceInvoiceController extends Controller {
 		try {
 			if (isset($request->data['customer_from']) && $request->data['customer_from'] == "local") {
                 $customer_address = [];
+				$company_id = Auth::user()->company_id;
+                $showMobCustomer = Config::getConfigName(8665);
+                $companyIds = [$company_id];
+                if ($company_id == 8 && $showMobCustomer == 'show') {
+                    $companyIds = [$company_id, 4];
+                }
                 $customer = Customer::where('code', $request->data['code'])
-                ->where('company_id', Auth::user()->company_id)->first();
+                //->where('company_id', Auth::user()->company_id)
+				->whereIn('company_id', $companyIds)
+				->first();
                 if ($customer) {
                     // $customer_primary_address = Address::select('addresses.*','customers.pan_number')
 					// 	->leftjoin('customers', 'customers.id', 'addresses.entity_id')
@@ -3654,7 +3668,8 @@ class HondaServiceInvoiceController extends Controller {
 
                         $customer_address = Address::select('addresses.*','customers.pan_number')
 							->leftjoin('customers', 'customers.id', 'addresses.entity_id')
-						    ->where('addresses.company_id', Auth::user()->company_id)
+						    //->where('addresses.company_id', Auth::user()->company_id)
+							->whereIn('addresses.company_id', $companyIds)
 	                        ->where('addresses.entity_id', $customer->id)
 	                        ->where('addresses.address_of_id', 24)
 	                        ->where('addresses.address_type_id',40)
@@ -3663,7 +3678,8 @@ class HondaServiceInvoiceController extends Controller {
 
 	                    $customer_last_address = Address::select('addresses.*','customers.pan_number')
 							->leftjoin('customers', 'customers.id', 'addresses.entity_id')
-						    ->where('addresses.company_id', Auth::user()->company_id)
+						    //->where('addresses.company_id', Auth::user()->company_id)
+							->whereIn('addresses.company_id', $companyIds)
 	                        ->where('addresses.entity_id', $customer->id)
 	                        ->where('addresses.address_of_id', 24)
 	                        ->where('addresses.address_type_id',40)
