@@ -3971,8 +3971,16 @@ class ServiceInvoiceController extends Controller
         try {
             if (isset($request->data['customer_from']) && $request->data['customer_from'] == "local") {
                 $customer_address = [];
+                $company_id = Auth::user()->company_id;
+                $showMobCustomer = Config::getConfigName(8665);
+                $companyIds = [$company_id];
+                if ($company_id == 8 && $showMobCustomer == 'show') {
+                    $companyIds = [$company_id, 4];
+                }
                 $customer = Customer::where('code', $request->data['code'])
-                ->where('company_id', Auth::user()->company_id)->first();
+                //->where('company_id', Auth::user()->company_id)
+                ->whereIn('company_id', $companyIds)
+                ->first();
                 if ($customer) {
                     // $customer_primary_address = Address::where('company_id', Auth::user()->company_id)
                     //     ->where('entity_id', $customer->id)
