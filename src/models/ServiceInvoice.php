@@ -2171,22 +2171,32 @@ class ServiceInvoice extends Model
                             }
                             // dd($customer);
                             //CUSTOMER
-                            $customer = Customer::where([
-                                'company_id' => $job->company_id,
-                                'code' => trim($record['Customer/Vendor Code']),
-                            ])->first();
+                            // $customer = Customer::where([
+                            //     'company_id' => $job->company_id,
+                            //     'code' => trim($record['Customer/Vendor Code']),
+                            // ])->first();
+                            $customer = Customer::whereIn('company_id', [4, $job->company_id])
+                            ->where('code', trim($record['Customer/Vendor Code']))
+                            ->first();
+                            
                             if (!$customer) {
                                 $status['errors'][] = 'Invalid Customer: ' . $record['Customer/Vendor Code'];
                             }
                             if ($customer->id) {
-                                $customer_address = Address::where([
-                                    'company_id' => $job->company_id,
-                                    'entity_id' => $customer->id,
-                                    'address_of_id' => 24, //CUSTOMER
-                                    'is_primary' => 1, //PRIMARY
-                                ])
+                                $customer_address = Address::whereIn('company_id', [4, $job->company_id])
+                                ->where('entity_id', $customer->id)
+                                ->where('address_of_id', 24) // CUSTOMER
+                                ->where('is_primary', 1)     // PRIMARY
+                                ->first();
+
+                                // $customer_address = Address::where([
+                                //     'company_id' => $job->company_id,
+                                //     'entity_id' => $customer->id,
+                                //     'address_of_id' => 24, //CUSTOMER
+                                //     'is_primary' => 1, //PRIMARY
+                                // ])
                                 // ->orderBy('id', 'desc')
-                                    ->first();
+                                   
                             }
                             if (!$customer_address) {
                                 $status['errors'][] = 'Address Not Mapped with Customer: ' . $record['Customer/Vendor Code'];
@@ -2266,6 +2276,7 @@ class ServiceInvoice extends Model
                                     $serial_number_category = 126;
                                 }
                                 $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, null, null, null);
+        
                                 if (!$generateNumber['success']) {
                                     $status['errors'][] = 'No Serial number found';
                                     // dd($status['errors']);
