@@ -92,6 +92,14 @@
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
+                                            <li ng-show="$ctrl.type_id == 1060 && $ctrl.allow_other_discount_selection">
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Is Other Discount </label>
+                                                    <div class="table-form-list-control type-sm" style="min-width:130px !important;">
+                                                        <span class="type-sm"> {{$ctrl.service_invoice.is_other_discount == 1 ? 'Yes' : 'No'}}</span>
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
                                             <li>
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">PO Reference # </label>

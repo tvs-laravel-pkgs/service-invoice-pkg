@@ -165,6 +165,23 @@
                                                     </div><!-- Table Form List Control -->
                                                 </div><!-- Table Form List Wrap -->
                                             </li>
+                                            <li ng-show="$ctrl.type_id == 1060 && $ctrl.allow_other_discount_selection">
+                                                <div class="table-form-list-wrap">
+                                                    <label class="table-form-list-label">Is Other Discount </label>
+                                                    <div class="table-form-list-control is_other_discount_error">
+                                                        <div class="common-radio-button type-4">
+                                                            <input type="radio" id="is_od_yes" name="is_other_discount" ng-value="1" value="1" ng-model="$ctrl.service_invoice.is_other_discount" ng-checked="$ctrl.service_invoice.is_other_discount" class="is_other_discount">
+                                                            <label for="is_od_yes">
+                                                                Yes
+                                                            </label>
+                                                            <input type="radio" id="is_od_no" name="is_other_discount" ng-value="0" value="0" ng-model="$ctrl.service_invoice.is_other_discount" ng-checked="$ctrl.service_invoice.is_other_discount" class="is_other_discount">
+                                                            <label for="is_od_no">
+                                                                No
+                                                            </label>
+                                                        </div>
+                                                    </div><!-- Table Form List Control -->
+                                                </div><!-- Table Form List Wrap -->
+                                            </li>
                                             <li>
                                                 <div class="table-form-list-wrap">
                                                     <label class="table-form-list-label">PO Reference # </label>
