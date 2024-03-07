@@ -590,6 +590,7 @@ app.component('serviceInvoiceForm', {
         self.allow_e_invoice_selection = self.hasPermission('allow-e-invoice-selection');
         self.e_invoice_only = self.hasPermission('e-invoice-only');
         self.without_e_invoice_only = self.hasPermission('without-e-invoice-only');
+        self.allow_other_discount_selection = self.hasPermission('allow-other-discount-selection');
         self.angular_routes = angular_routes;
         self.type_id = $routeParams.type_id;
         self.enable_service_item_md_change = true;
@@ -672,6 +673,7 @@ app.component('serviceInvoiceForm', {
                 }, 1000);
                 self.service_invoice.is_reverse_charge_applicable = 0;
                 self.service_invoice.is_service = 1;
+                self.service_invoice.is_other_discount = 0;
             }
             $rootScope.loading = false;
         });
@@ -1940,6 +1942,7 @@ app.component('serviceInvoiceView', {
         self.angular_routes = angular_routes;
         self.type_id = $routeParams.type_id;
         self.enable_service_item_md_change = true;
+        self.allow_other_discount_selection = self.hasPermission('allow-other-discount-selection');
         // self.show_legal_confirmation_modal = false;
         self.legal_confirmation_accepted = false;
 
