@@ -3271,12 +3271,12 @@ class ServiceInvoice extends Model
 
 		// $companyName = isset($this->company->oem_business_unit->name) ? $this->company->oem_business_unit->name : null;
 		// $companyCode = isset($this->company->oem_business_unit->code) ? $this->company->oem_business_unit->code : null;
-        $oracleBusinessUnitTypeId = null;
-        if(!empty($this->outlet->oracleBusinessUnit)){
-            $companyName = $this->outlet->oracleBusinessUnit->name;
-            $companyCode = $this->outlet->oracleBusinessUnit->code;
-            $oracleBusinessUnitTypeId = $this->outlet->oracleBusinessUnit->type_id;
-        }
+        // $oracleBusinessUnitTypeId = null;
+        // if(!empty($this->outlet->oracleBusinessUnit)){
+        //     $companyName = $this->outlet->oracleBusinessUnit->name;
+        //     $companyCode = $this->outlet->oracleBusinessUnit->code;
+        //     $oracleBusinessUnitTypeId = $this->outlet->oracleBusinessUnit->type_id;
+        // }
         
         if($this->company->id == 8){
             $companyName = isset($this->company->pv_business_unit->name) ? $this->company->pv_business_unit->name : null;
@@ -3285,6 +3285,13 @@ class ServiceInvoice extends Model
             //OEM
             $companyName = isset($this->company->oem_business_unit->name) ? $this->company->oem_business_unit->name : null;
             $companyCode = isset($this->company->oem_business_unit->code) ? $this->company->oem_business_unit->code : null;
+        }
+
+        $oracleBusinessUnitTypeId = null;
+        if(!empty($this->outlet->oracleBusinessUnit)){
+            $companyName = $this->outlet->oracleBusinessUnit->name;
+            $companyCode = $this->outlet->oracleBusinessUnit->code;
+            $oracleBusinessUnitTypeId = $this->outlet->oracleBusinessUnit->type_id;
         }
 
 		$arInvoiceExports = ArInvoiceExport::where([
