@@ -61,6 +61,7 @@ class ServiceInvoice extends Model
         'total',
         'is_service',
         'is_reverse_charge_applicable',
+        'is_other_discount',
         'po_reference_number',
         'invoice_number',
         'round_off_amount',

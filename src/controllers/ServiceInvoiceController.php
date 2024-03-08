@@ -1128,22 +1128,27 @@ class ServiceInvoiceController extends Controller
                 //OUTLET BASED CODE
                 // $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, $branch->id, $sbu);
 
-                //ONLY FOR SCRAP INVOICE
-                if ($request->category_id == 4 || $request->category_id == 11 || $request->category_id == 34) {
-                    if ($request->type_id == 1061) {
-                        //DN
-                        $serial_number_category = 128;
-                    } elseif ($request->type_id == 1060) {
-                        //CN
-                        $serial_number_category = 127;
-                    } elseif ($request->type_id == 1062) {
-                        //INV
-                        $serial_number_category = 126;
-                    }
-                    $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, null, null, null, Auth::user()->company_id);
+                // FOR CN AND OTHER DISCOUNT IS YES
+                if ($request->type_id == 1060 && isset($request->is_other_discount) && $request->is_other_discount && $request->is_other_discount == 1) {
+                    $generateNumber = SerialNumberGroup::generateNumber(235, $financial_year->id, $branch->state_id, $branch->id);
                 } else {
-                    //STATE BUSINESS BASED CODE
-                    $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, null, null, $sbu->business_id, Auth::user()->company_id);
+                    //ONLY FOR SCRAP INVOICE
+                    if ($request->category_id == 4 || $request->category_id == 11 || $request->category_id == 34) {
+                        if ($request->type_id == 1061) {
+                            //DN
+                            $serial_number_category = 128;
+                        } elseif ($request->type_id == 1060) {
+                            //CN
+                            $serial_number_category = 127;
+                        } elseif ($request->type_id == 1062) {
+                            //INV
+                            $serial_number_category = 126;
+                        }
+                        $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, null, null, null, Auth::user()->company_id);
+                    } else {
+                        //STATE BUSINESS BASED CODE
+                        $generateNumber = SerialNumberGroup::generateNumber($serial_number_category, $financial_year->id, $branch->state_id, null, null, $sbu->business_id, Auth::user()->company_id);
+                    }
                 }
                 // dd($generateNumber);
                 $generateNumber['service_invoice_id'] = $request->id;
