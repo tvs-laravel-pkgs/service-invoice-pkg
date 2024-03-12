@@ -2522,7 +2522,7 @@ class ServiceInvoiceController extends Controller
         $service_invoice->ack_date = $service_invoice->ack_date ? date("d-m-Y H:i:s", strtotime($service_invoice->ack_date)) : null;
 
         $current_date_time = date('d-m-Y H:i:s');
-
+        if (Entrust::can('service-invoice-irn-cancel')) {
         if (!empty($service_invoice->ack_date)) {
             $t1 = strtotime($service_invoice->ack_date);
             $t2 = strtotime($current_date_time);
@@ -2537,7 +2537,7 @@ class ServiceInvoiceController extends Controller
             $service_invoice->cancel_irn = true;
         }
         // dd($service_invoice->cancel_irn);
-
+        }
         $this->data['extras'] = [
             'sbu_list' => [],
             'tax_list' => Tax::select('name', 'id')->where('company_id', 1)->orderBy('id', 'ASC')->get(),
