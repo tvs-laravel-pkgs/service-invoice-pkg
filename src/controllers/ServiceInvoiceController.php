@@ -6276,6 +6276,7 @@ class ServiceInvoiceController extends Controller
             $customer = Customer::find($service_invoice->customer->id);
 
             $this->data['check_legal_confirmation']  = false;
+            if($service_invoice->e_invoice_registration != 0){
             if($service_invoice->address && $service_invoice->address->gst_number){    
                 $bdo_response = Customer::getGstDetail($service_invoice->address->gst_number);
 
@@ -6294,6 +6295,7 @@ class ServiceInvoiceController extends Controller
                         $this->data['check_legal_confirmation'] = true;
                     }
                 }
+            }
             }
 
             $this->data['customer'] = $customer;
