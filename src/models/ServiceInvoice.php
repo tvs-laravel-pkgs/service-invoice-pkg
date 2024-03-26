@@ -2130,6 +2130,16 @@ class ServiceInvoice extends Model
                     }
                     // dd($is_reverse_charge_applicable);
 
+                    // For E invoice Without Gst
+                    if (isset($record['Einvoice Without Gst'])) {  
+                    if ($record['Einvoice Without Gst'] == 'Yes') {   
+                        $e_invoice_without_gst = 0;
+                    } else {
+                        $e_invoice_without_gst = 1;
+                    }
+                    }else {
+                        $e_invoice_without_gst = 1;
+                    }
                     $po_reference_number = !empty($record['PO Reference Number']) ? $record['PO Reference Number'] : null;
                     // dd($record);
                     $reference_invoice_number = !empty($record['Reference Invoice Number']) ? $record['Reference Invoice Number'] : null;
@@ -2526,6 +2536,9 @@ class ServiceInvoice extends Model
                                     ($to_account_type_id != 1440 && isset($vendor_address->gst_number) && $vendor_address->gst_number)
                                 )
                                     $eInvoiceRegistration = 1;
+                                if($e_invoice_without_gst == 0){
+                                    $eInvoiceRegistration = $e_invoice_without_gst;
+                                }     
                                 // $service_invoice->e_invoice_registration = 0; //FOR ONLY B2C CUSTOMERS
                                 $service_invoice->e_invoice_registration = $eInvoiceRegistration;
                                 $service_invoice->status_id = $status_id;
