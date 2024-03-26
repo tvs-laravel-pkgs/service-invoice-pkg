@@ -2131,12 +2131,15 @@ class ServiceInvoice extends Model
                     // dd($is_reverse_charge_applicable);
 
                     // For E invoice Without Gst
+                    if (isset($record['Einvoice Without Gst'])) {  
                     if ($record['Einvoice Without Gst'] == 'Yes') {   
                         $e_invoice_without_gst = 0;
                     } else {
                         $e_invoice_without_gst = 1;
                     }
-
+                    }else {
+                        $e_invoice_without_gst = 1;
+                    }
                     $po_reference_number = !empty($record['PO Reference Number']) ? $record['PO Reference Number'] : null;
                     // dd($record);
                     $reference_invoice_number = !empty($record['Reference Invoice Number']) ? $record['Reference Invoice Number'] : null;
