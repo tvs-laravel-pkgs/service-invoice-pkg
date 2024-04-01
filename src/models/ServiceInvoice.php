@@ -2193,7 +2193,7 @@ class ServiceInvoice extends Model
                             if (!$customer) {
                                 $status['errors'][] = 'Invalid Customer: ' . $record['Customer/Vendor Code'];
                             }
-                            if ($customer->id) {
+                            if (isset($customer->id)) {
                                 $customer_address = Address::whereIn('company_id', [4, $job->company_id])
                                 ->where('entity_id', $customer->id)
                                 ->where('address_of_id', 24) // CUSTOMER
