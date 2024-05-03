@@ -1177,8 +1177,16 @@ class ServiceInvoiceController extends Controller
             }
             $approval_status = Entity::select('entities.name')->where('company_id', Auth::user()->company_id)->where('entity_type_id', 18)->first();
 
+            $validate_supply_type = Address::select('id', 'gst_number')->where('id', $request->address_id)->first();
+            if(!empty($validate_supply_type->gst_number)){
+                $e_invoice_registration = 1;
+            }else{
+                $e_invoice_registration = 0;
+            }
+            //dd($e_invoice_registration);
             if ($request->id) {
                 $service_invoice = ServiceInvoice::find($request->id);
+                $service_invoice->e_invoice_registration = $e_invoice_registration;
                 $service_invoice->updated_at = date("Y-m-d H:i:s");
                 $service_invoice->updated_by_id = Auth()->user()->id;
                 $message = 'Service invoice updated successfully';
@@ -1199,7 +1207,7 @@ class ServiceInvoiceController extends Controller
             } elseif ($request->type_id == 1060) {
                 $service_invoice->is_cn_created = 1;
             }
-
+            $service_invoice->e_invoice_registration = $e_invoice_registration;
             $service_invoice->type_id = $request->type_id;
             $service_invoice->fill($request->all());
             $service_invoice->round_off_amount = abs($request->round_off_amount);
