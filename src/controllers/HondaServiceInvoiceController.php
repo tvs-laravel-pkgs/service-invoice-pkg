@@ -3328,7 +3328,7 @@ class HondaServiceInvoiceController extends Controller {
 			$company_id = Auth::user()->company_id;
             $showMobCustomer = Config::getConfigName(8665);
             $companyIds = [$company_id];
-            if ($company_id == 8 && $showMobCustomer == 'show') {
+            if ($company_id == 10 && $showMobCustomer == 'show') {
                 $companyIds = [$company_id, 4];
             }
             $customer_details = Customer::select(
